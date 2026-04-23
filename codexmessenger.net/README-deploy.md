@@ -6,7 +6,8 @@ This directory is a standalone sub-project inside the main `Codex-messenger` rep
 
 ## Files
 
-- `index.html`: static retro landing page, no JavaScript.
+- `index.html`: static retro landing page.
+- `assets/site.js`: small local interaction layer for XP-style button feedback.
 - `assets/`: PNG images used by the landing page.
 - `downloads/CodexMessenger.exe.sha256`: checksum for the installer currently deployed on the VPS.
 - `downloads/.gitkeep`: keeps the download directory in Git.
@@ -47,4 +48,4 @@ sudo systemctl reload nginx
 - Canonical redirect: `www.codexmessenger.net` to `codexmessenger.net`
 - TLS: Let's Encrypt, renewed by Certbot
 - CDN/DNS: Cloudflare proxy
-- Security posture: static site, strict CSP, no JavaScript execution
+- Security posture: static site, strict CSP, only same-origin JavaScript

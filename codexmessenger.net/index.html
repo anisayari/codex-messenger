@@ -67,6 +67,46 @@
       transition: transform .16s ease;
     }
 
+    .pressable {
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform .1s ease, filter .1s ease;
+    }
+
+    .pressable.is-pressed {
+      transform: translateY(4px) scale(.992);
+      filter: brightness(.94) saturate(1.12);
+    }
+
+    .lang-link.is-active .lang-frame {
+      stroke: #fff;
+      stroke-width: 3;
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, .72));
+    }
+
+    .feedback-text,
+    .feedback-box {
+      opacity: 0;
+      transition: opacity .14s ease;
+      pointer-events: none;
+    }
+
+    .feedback-on .feedback-text,
+    .feedback-on .feedback-box {
+      opacity: 1;
+    }
+
+    .feedback-ripple {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      pointer-events: none;
+    }
+
+    .feedback-ripple.is-on {
+      animation: xp-ripple .42s ease-out;
+    }
+
     @keyframes gloss-slide {
       0%, 44% {
         transform: translateX(-520px);
@@ -85,12 +125,25 @@
       }
     }
 
+    @keyframes xp-ripple {
+      0% {
+        opacity: .9;
+        transform: scale(.25);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.8);
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .gloss-pass {
+      .gloss-pass,
+      .feedback-ripple.is-on {
         animation: none;
       }
     }
   </style>
+  <script src="./assets/site.js" defer></script>
 </head>
 <body>
   <main class="site" aria-label="Codex Messenger landing page">
@@ -260,9 +313,9 @@
       </g>
       <text x="101" y="50" fill="#fff" font-family="Trebuchet MS, Arial" font-size="34" font-weight="900" font-style="italic" stroke="#00127d" stroke-width="1.1">codex messenger</text>
 
-      <a href="?lang=en" aria-label="English language">
+      <a class="lang-link pressable is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-label="English language">
         <rect class="focus-ring" x="1306" y="16" width="151" height="43" rx="4"/>
-        <rect x="1306" y="16" width="151" height="43" rx="4" fill="url(#langBlue)" stroke="#69a0ff" stroke-width="2"/>
+        <rect class="lang-frame" x="1306" y="16" width="151" height="43" rx="4" fill="url(#langBlue)" stroke="#69a0ff" stroke-width="2"/>
         <rect x="1310" y="20" width="143" height="11" rx="2" fill="#fff" opacity=".22"/>
         <g transform="translate(1318 27)">
           <rect width="34" height="22" fill="#184492"/>
@@ -274,9 +327,9 @@
         <text x="1368" y="46" fill="#fff" font-size="22" font-style="italic" stroke="#00127d" stroke-width=".8">English</text>
       </a>
 
-      <a href="?lang=fr" aria-label="French language">
+      <a class="lang-link pressable" href="?lang=fr" data-action="language" data-lang="fr" data-feedback="Mode francais selectionne" aria-label="French language">
         <rect class="focus-ring" x="1477" y="16" width="164" height="43" rx="4"/>
-        <rect x="1477" y="16" width="164" height="43" rx="4" fill="url(#redButton)" stroke="#ff8f84" stroke-width="2"/>
+        <rect class="lang-frame" x="1477" y="16" width="164" height="43" rx="4" fill="url(#redButton)" stroke="#ff8f84" stroke-width="2"/>
         <rect x="1481" y="20" width="156" height="11" rx="2" fill="#fff" opacity=".24"/>
         <g transform="translate(1490 27)">
           <rect width="34" height="22" fill="#fff"/>
@@ -324,7 +377,7 @@
         <text x="136" y="662">Secure, modern and Open Source</text>
       </g>
 
-      <a class="download-link" href="./downloads/CodexMessenger.exe?v=0.1.4" download="CodexMessenger.exe" aria-label="Download Codex Messenger for Windows">
+      <a class="download-link pressable" href="./downloads/CodexMessenger.exe?v=0.1.4" download="CodexMessenger.exe" data-action="download" data-feedback="Download starting..." aria-label="Download Codex Messenger for Windows">
         <rect class="focus-ring" x="542" y="468" width="458" height="82" rx="9"/>
         <g transform="translate(542 468)" filter="url(#buttonShadow)">
           <rect class="download-button" width="458" height="82" rx="9" fill="url(#downloadYellow)" stroke="url(#downloadStroke)" stroke-width="3"/>
@@ -356,7 +409,7 @@
         <text x="251" y="80" font-size="19" font-style="italic">Codex Messenger is 100% Open Source.</text>
         <text x="251" y="106" font-size="19" font-style="italic">Check out the code, contribute and</text>
         <text x="251" y="132" font-size="19" font-style="italic">help make it even better!</text>
-        <a class="source-link" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub">
+        <a class="source-link pressable" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" data-action="source" data-feedback="Opening source code..." aria-label="View source code on GitHub">
           <rect class="focus-ring" x="593" y="0" width="149" height="148"/>
           <rect class="source-panel" x="593" y="0" width="149" height="148" fill="#f4faee"/>
           <use href="#sourceDoc" x="617" y="43"/>
@@ -374,21 +427,21 @@
         <line x1="459" y1="62" x2="459" y2="158" stroke="#c5c5c5"/>
         <line x1="615" y1="62" x2="615" y2="158" stroke="#c5c5c5"/>
 
-        <a class="social-link" href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X Twitter">
+        <a class="social-link pressable" href="https://x.com/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening X..." aria-label="X Twitter">
           <rect class="social-hit" x="0" y="54" width="147" height="111" fill="#fff" fill-opacity="0"/>
           <rect x="42" y="73" width="50" height="50" rx="6" fill="#000" filter="url(#iconShadow)"/>
           <text x="67" y="111" text-anchor="middle" fill="#fff" font-size="38">X</text>
           <text x="67" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">X (Twitter)</text>
         </a>
 
-        <a class="social-link" href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <a class="social-link pressable" href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening LinkedIn..." aria-label="LinkedIn">
           <rect class="social-hit" x="147" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
           <rect x="196" y="74" width="49" height="49" rx="5" fill="#0a76b7" filter="url(#iconShadow)"/>
           <text x="221" y="110" text-anchor="middle" fill="#fff" font-family="Arial" font-size="34" font-weight="800">in</text>
           <text x="221" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">LinkedIn</text>
         </a>
 
-        <a class="social-link" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <a class="social-link pressable" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" data-action="source" data-feedback="Opening GitHub..." aria-label="GitHub">
           <rect class="social-hit" x="303" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
           <rect x="351" y="74" width="50" height="50" rx="6" fill="#111" filter="url(#iconShadow)"/>
           <circle cx="376" cy="98" r="14" fill="#fff"/>
@@ -399,14 +452,14 @@
           <text x="376" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">GitHub</text>
         </a>
 
-        <a class="social-link" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+        <a class="social-link pressable" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening YouTube..." aria-label="YouTube">
           <rect class="social-hit" x="459" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
           <rect x="507" y="78" width="60" height="42" rx="9" fill="#fb1111" filter="url(#iconShadow)"/>
           <path d="M531 88 L531 111 L550 100 Z" fill="#fff"/>
           <text x="537" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">YouTube</text>
         </a>
 
-        <a class="social-link" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <a class="social-link pressable" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening Instagram..." aria-label="Instagram">
           <rect class="social-hit" x="615" y="54" width="140" height="111" fill="#fff" fill-opacity="0"/>
           <rect x="664" y="73" width="50" height="50" rx="12" fill="url(#igGrad)" filter="url(#iconShadow)"/>
           <circle cx="689" cy="98" r="13" fill="none" stroke="#fff" stroke-width="4"/>
@@ -422,6 +475,12 @@
       <text x="930" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8">Bringing back the vibes. Powered by </text>
       <text x="1247" y="912" fill="#fff" font-size="18" font-style="italic" text-decoration="underline" stroke="#001268" stroke-width=".8">Codex</text>
       <text x="1310" y="912" fill="#ff3030" font-size="24" stroke="#001268" stroke-width=".8">&#10084;</text>
+
+      <g id="feedbackLayer" aria-hidden="true">
+        <circle id="feedbackRipple" class="feedback-ripple" cx="0" cy="0" r="34" fill="#fff35a" stroke="#1c33d7" stroke-width="4"/>
+        <rect id="feedbackBox" class="feedback-box" x="614" y="615" width="316" height="36" rx="5" fill="#fffbd7" stroke="#0a35d7" stroke-width="2"/>
+        <text id="feedbackText" class="feedback-text" x="772" y="640" text-anchor="middle" fill="#001ea8" font-size="18" font-weight="900" font-style="italic">Ready</text>
+      </g>
     </svg>
   </main>
 </body>
