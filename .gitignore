@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+artifacts/
+tmp/
+uploads/
+release/
+public/reference/
+*.log
+chat-*.png
+roster-*.png
+xp-chat-*.png
+msn-*.png
+login-people-logo.png
