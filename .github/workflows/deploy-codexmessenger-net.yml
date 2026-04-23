@@ -124,7 +124,6 @@ jobs:
           mkdir -p "$site_dir"
           rsync -a --delete \
             --exclude "README-deploy.md" \
-            --exclude "nginx.codexmessenger.net.conf" \
             "codexmessenger.net/" "$site_dir/"
 
           mkdir -p "$site_dir/downloads"
@@ -231,6 +230,9 @@ jobs:
               echo 'Downloaded macOS release asset checksum does not match GitHub release digest.'
               exit 1
             fi
+            cp '$remote_tmp/nginx.codexmessenger.net.conf' /etc/nginx/sites-available/codexmessenger.net
+            ln -sf /etc/nginx/sites-available/codexmessenger.net /etc/nginx/sites-enabled/codexmessenger.net
+            rm -f '$remote_tmp/nginx.codexmessenger.net.conf'
             mkdir -p '$SSH_WEBROOT'
             rsync -a --delete '$remote_tmp/' '$SSH_WEBROOT/'
             chown -R www-data:www-data '$SSH_WEBROOT'
