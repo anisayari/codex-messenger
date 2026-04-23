@@ -74,6 +74,7 @@ Deux raccourcis PowerShell sont aussi fournis:
 - Connexion à `codex app-server` depuis le process principal Electron.
 - Aucune clé API exposée au renderer.
 - Contacts Codex: agent principal, reviewer, designer, projets locaux et fils récents.
+- Création d'agents personnalisés depuis `Add a Contact`, avec nom, groupe, statut, icône, couleur et instructions dédiées.
 - Liste de contacts groupée façon Messenger.
 - Une fenêtre par conversation.
 - Streaming des réponses Codex sans doublons.

@@ -61,6 +61,13 @@ const gameCatalog = [
   { id: "memory", label: "Memory" },
   { id: "wizz", label: "Wizz" }
 ];
+const agentAvatarOptions = [
+  ["lens", "Loupe"],
+  ["brush", "Design"],
+  ["terminal", "Terminal"],
+  ["butterfly", "Codex"]
+];
+const agentColorOptions = ["#315fd0", "#11a77a", "#d88721", "#167c83", "#8b5bc7", "#c54545"];
 const ticLines = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -438,11 +445,112 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
   );
 }
 
-function RosterView({ bootstrap, profile, userAgent, refreshTick, profileEditorOpen, onProfileEditorOpenChange, onProfileChange }) {
+function AgentCreator({ onCreate, onClose, error }) {
+  const [draft, setDraft] = useState({
+    name: "Agent Specifique",
+    group: "Agents personnalises",
+    mood: "role sur mesure",
+    status: "online",
+    avatar: "lens",
+    color: agentColorOptions[0],
+    instructions: "Tu es un agent Codex specialise. Reponds en francais, garde ton role, pose les questions utiles, puis execute la tache de maniere pragmatique."
+  });
+  const [saving, setSaving] = useState(false);
+
+  function update(field, value) {
+    setDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      await onCreate(draft);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="agent-editor" onSubmit={submit}>
+      <div className="agent-editor-head">
+        <Avatar contact={{ ...draft, displayName: draft.name }} />
+        <div>
+          <strong>Nouveau contact agent</strong>
+          <p>Ce contact ouvre une conversation Codex avec ses propres instructions.</p>
+        </div>
+      </div>
+      <div className="agent-editor-grid">
+        <label>
+          <span>Nom du contact</span>
+          <input required value={draft.name} onChange={(event) => update("name", event.target.value)} />
+        </label>
+        <label>
+          <span>Groupe</span>
+          <input value={draft.group} onChange={(event) => update("group", event.target.value)} />
+        </label>
+        <label>
+          <span>Specialite</span>
+          <input value={draft.mood} onChange={(event) => update("mood", event.target.value)} />
+        </label>
+        <label>
+          <span>Statut</span>
+          <select value={draft.status} onChange={(event) => update("status", event.target.value)}>
+            {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Icone</span>
+          <select value={draft.avatar} onChange={(event) => update("avatar", event.target.value)}>
+            {agentAvatarOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+          </select>
+        </label>
+        <div className="agent-color-field">
+          <span>Couleur</span>
+          <div className="agent-swatches">
+            {agentColorOptions.map((color) => (
+              <button
+                className={draft.color === color ? "active" : ""}
+                key={color}
+                style={{ "--swatch": color }}
+                title={color}
+                type="button"
+                onClick={() => update("color", color)}
+              />
+            ))}
+          </div>
+        </div>
+        <label className="agent-instructions">
+          <span>Instructions de l'agent</span>
+          <textarea value={draft.instructions} onChange={(event) => update("instructions", event.target.value)} rows={5} />
+        </label>
+      </div>
+      {error ? <p className="agent-error">{error}</p> : null}
+      <div className="agent-editor-actions">
+        <button type="submit" disabled={saving}>{saving ? "Creation..." : "Creer et ouvrir"}</button>
+        <button type="button" onClick={onClose}>Annuler</button>
+      </div>
+    </form>
+  );
+}
+
+function RosterView({
+  bootstrap,
+  profile,
+  userAgent,
+  refreshTick,
+  profileEditorOpen,
+  agentEditorOpen,
+  onProfileEditorOpenChange,
+  onAgentEditorOpenChange,
+  onProfileChange,
+  onAgentsChange
+}) {
   const [finished, setFinished] = useState(null);
   const [conversations, setConversations] = useState(bootstrap.conversations);
   const [collapsed, setCollapsed] = useState({});
   const [query, setQuery] = useState("");
+  const [agentError, setAgentError] = useState("");
 
   useEffect(() => {
     api.listConversations().then(setConversations).catch(() => {});
@@ -530,6 +638,20 @@ function RosterView({ bootstrap, profile, userAgent, refreshTick, profileEditorO
     onProfileChange(result.profile, userAgent, result.settings);
   }
 
+  async function createAgent(draft) {
+    setAgentError("");
+    try {
+      const result = await api.createAgent(draft);
+      if (!result?.ok) throw new Error(result?.error || "Creation impossible.");
+      onAgentsChange(result.contacts, result.settings);
+      onAgentEditorOpenChange(false);
+      await api.openConversation(result.contact.id);
+    } catch (error) {
+      setAgentError(error.message);
+      throw error;
+    }
+  }
+
   return (
     <section className="roster">
       <div className="me">
@@ -554,6 +676,16 @@ function RosterView({ bootstrap, profile, userAgent, refreshTick, profileEditorO
           onChoosePicture={chooseProfilePicture}
           onClearPicture={clearProfilePicture}
           onClose={() => onProfileEditorOpenChange(false)}
+        />
+      ) : null}
+      {agentEditorOpen ? (
+        <AgentCreator
+          error={agentError}
+          onCreate={createAgent}
+          onClose={() => {
+            setAgentError("");
+            onAgentEditorOpenChange(false);
+          }}
         />
       ) : null}
       <div className="msn-tabs">
@@ -583,7 +715,7 @@ function RosterView({ bootstrap, profile, userAgent, refreshTick, profileEditorO
           </section>
         );})}
       </div>
-      <button className="add-contact" type="button" onClick={() => api.openConversation("codex")}><span className="mini plus" /> Add a Contact</button>
+      <button className="add-contact" type="button" onClick={() => onAgentEditorOpenChange(true)}><span className="mini plus" /> Add a Contact</button>
       <div className="wordmark"><span>Codex</span><Logo small /><strong>Messenger</strong></div>
       {finished ? <div className="toast"><Logo small /><span>{finished}</span></div> : null}
     </section>
@@ -598,6 +730,7 @@ function MainWindow() {
   const [codexStatus, setCodexStatus] = useState(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  const [agentEditorOpen, setAgentEditorOpen] = useState(false);
 
   useEffect(() => {
     api.bootstrap().then((data) => {
@@ -621,6 +754,15 @@ function MainWindow() {
     setSettings(result.settings);
   }
 
+  function updateAgents(nextContacts, nextSettings) {
+    setBootstrap((current) => ({ ...current, contacts: nextContacts, settings: nextSettings }));
+    if (nextSettings) setSettings(nextSettings);
+  }
+
+  function openAgentCreator() {
+    setAgentEditorOpen(true);
+  }
+
   const uploadsPath = `${bootstrap.cwd}\\uploads`;
   const mainMenus = [
     {
@@ -642,7 +784,7 @@ function MainWindow() {
           action: () => api.openConversation(contact.id)
         })),
         { separator: true },
-        { label: "Add a Contact", action: () => api.openConversation("codex") }
+        { label: "Add a Contact", action: openAgentCreator }
       ]
     },
     {
@@ -698,7 +840,10 @@ function MainWindow() {
           userAgent={userAgent}
           refreshTick={refreshTick}
           profileEditorOpen={profileEditorOpen}
+          agentEditorOpen={agentEditorOpen}
           onProfileEditorOpenChange={setProfileEditorOpen}
+          onAgentEditorOpenChange={setAgentEditorOpen}
+          onAgentsChange={updateAgents}
           onProfileChange={(nextProfile, nextUserAgent, nextSettings) => {
             setProfile(nextProfile);
             setUserAgent(nextUserAgent);

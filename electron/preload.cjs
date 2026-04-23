@@ -43,6 +43,7 @@ contextBridge.exposeInMainWorld("codexMsn", {
   saveText: (payload) => ipcRenderer.invoke("app:save-text", payload),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   setSettings: (settings) => ipcRenderer.invoke("settings:set", settings),
+  createAgent: (agent) => ipcRenderer.invoke("contacts:create-agent", agent),
   chooseCodex: () => ipcRenderer.invoke("settings:choose-codex"),
   testCodex: (candidatePath) => ipcRenderer.invoke("settings:test-codex", candidatePath),
   chooseProfilePicture: () => ipcRenderer.invoke("profile:choose-picture"),

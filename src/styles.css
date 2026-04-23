@@ -443,6 +443,116 @@ button { cursor: default; }
   box-shadow: inset 0 1px 0 white;
   font-size: 10px;
 }
+.agent-editor {
+  padding: 8px;
+  border-bottom: 1px solid #9eb2ca;
+  background:
+    linear-gradient(#fafdff, #e2effc),
+    radial-gradient(170px 78px at 100% 0, rgba(255,255,255,.92), rgba(255,255,255,0));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92);
+}
+.agent-editor-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.agent-editor-head .avatar {
+  width: 46px;
+  height: 46px;
+}
+.agent-editor-head strong {
+  display: block;
+  color: #153b74;
+  font-size: 13px;
+}
+.agent-editor-head p {
+  margin: 2px 0 0;
+  color: #53657d;
+  font-size: 11px;
+}
+.agent-editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.agent-editor label,
+.agent-color-field {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  color: #27384f;
+  font-size: 10px;
+  font-weight: 700;
+}
+.agent-editor input,
+.agent-editor select,
+.agent-editor textarea {
+  width: 100%;
+  min-height: 23px;
+  padding: 3px 5px;
+  border: 1px solid #7f9db9;
+  border-radius: 2px;
+  color: #172033;
+  background: white;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,.12);
+  font-size: 11px;
+}
+.agent-editor textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+.agent-instructions {
+  grid-column: 1 / -1;
+}
+.agent-swatches {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 23px;
+}
+.agent-swatches button {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid #7895bc;
+  border-radius: 3px;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255,255,255,.9), rgba(255,255,255,0) 38%),
+    var(--swatch);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.86);
+}
+.agent-swatches button.active {
+  outline: 1px solid #164fa8;
+  outline-offset: 1px;
+}
+.agent-error {
+  margin: 6px 0 0;
+  color: #9d1f1f;
+  font-size: 11px;
+}
+.agent-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 7px;
+}
+.agent-editor-actions button {
+  min-height: 22px;
+  padding: 2px 8px;
+  border: 1px solid #8ba8cf;
+  border-radius: 3px;
+  color: #173d72;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255,255,255,.95), rgba(255,255,255,0) 38%),
+    linear-gradient(#ffffff, #dcecff);
+  box-shadow: inset 0 1px 0 white;
+  font-size: 10px;
+}
+.agent-editor-actions button:disabled {
+  color: #7b8da5;
+}
 .glyph { position: relative; width: 26px; height: 26px; }
 .glyph.lens { border: 5px solid white; border-radius: 50%; box-shadow: 0 0 0 2px rgba(0,0,0,.14); }
 .glyph.lens::after { content: ""; position: absolute; right: -10px; bottom: -8px; width: 13px; height: 5px; border-radius: 8px; background: white; transform: rotate(45deg); }

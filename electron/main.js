@@ -68,6 +68,7 @@ const contacts = [
   }
 ];
 
+const agentAvatars = new Set(["butterfly", "lens", "brush", "terminal"]);
 const defaultProfile = {
   email: "anis@codex.local",
   status: "online",
@@ -84,7 +85,7 @@ const contactByThread = new Map();
 const unreadReminderByContact = new Map();
 const knownThreads = new Map();
 const unreadWizzDelayMs = Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 5 * 60 * 1000;
-const defaultSettings = { language: "fr", codexPath: "", profile: defaultProfile };
+const defaultSettings = { language: "fr", codexPath: "", profile: defaultProfile, customAgents: [] };
 let settingsCache = null;
 
 function defaultCwd() {
@@ -118,6 +119,69 @@ function normalizeProfile(nextProfile = {}) {
   return merged;
 }
 
+function slugifyAgentName(name) {
+  const slug = String(name || "agent")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 34);
+  return slug || "agent";
+}
+
+function normalizeAgentColor(color) {
+  const value = String(color ?? "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(value) ? value : "#315fd0";
+}
+
+function uniqueAgentId(name, existing = []) {
+  const used = new Set([...contacts.map((contact) => contact.id), ...existing.map((contact) => contact.id)]);
+  const base = `agent:${slugifyAgentName(name)}`;
+  let id = `${base}-${Date.now().toString(36)}`;
+  let index = 2;
+  while (used.has(id)) {
+    id = `${base}-${Date.now().toString(36)}-${index}`;
+    index += 1;
+  }
+  return id;
+}
+
+function normalizeCustomAgent(agent = {}, existing = []) {
+  const name = String(agent.name || "Nouvel agent").trim().slice(0, 48) || "Nouvel agent";
+  const id = String(agent.id || uniqueAgentId(name, existing)).trim();
+  const group = String(agent.group || "Agents personnalises").trim().slice(0, 48) || "Agents personnalises";
+  const mood = String(agent.mood || "agent specifique").trim().slice(0, 90) || "agent specifique";
+  const instructions = String(agent.instructions || "").trim().slice(0, 6000)
+    || `Tu es ${name}, un agent Codex specialise. Respecte ton role, demande les precisions utiles, puis execute la tache de maniere pragmatique.`;
+
+  return {
+    id,
+    name,
+    mail: String(agent.mail || `${slugifyAgentName(name)}@codex.local`).trim().slice(0, 90),
+    group,
+    status: String(agent.status || "online").trim(),
+    mood,
+    color: normalizeAgentColor(agent.color),
+    avatar: agentAvatars.has(agent.avatar) ? agent.avatar : "lens",
+    custom: true,
+    instructions
+  };
+}
+
+function normalizeCustomAgents(value = []) {
+  const agents = [];
+  for (const item of Array.isArray(value) ? value : []) {
+    const agent = normalizeCustomAgent(item, agents);
+    if (!agents.some((existing) => existing.id === agent.id)) agents.push(agent);
+  }
+  return agents.slice(0, 50);
+}
+
+function contactsForSettings(settings = settingsCache) {
+  return [...contacts, ...normalizeCustomAgents(settings?.customAgents ?? [])];
+}
+
 async function loadSettings() {
   if (settingsCache) return settingsCache;
   try {
@@ -131,6 +195,7 @@ async function loadSettings() {
     ...settingsCache.profile,
     language: settingsCache.language
   });
+  settingsCache.customAgents = normalizeCustomAgents(settingsCache.customAgents);
   Object.assign(profile, settingsCache.profile);
   return settingsCache;
 }
@@ -148,7 +213,8 @@ async function saveSettings(nextSettings = {}) {
     ...nextSettings,
     language: nextLanguage,
     codexPath: String(nextSettings.codexPath ?? current.codexPath ?? "").trim(),
-    profile: nextProfile
+    profile: nextProfile,
+    customAgents: normalizeCustomAgents(nextSettings.customAgents ?? current.customAgents)
   };
   await fs.mkdir(path.dirname(settingsFilePath()), { recursive: true });
   await fs.writeFile(settingsFilePath(), JSON.stringify(settingsCache, null, 2), "utf8");
@@ -523,7 +589,7 @@ function contactFromThread(threadId) {
 }
 
 function contactFor(id) {
-  const fixedContact = contacts.find((contact) => contact.id === id);
+  const fixedContact = contactsForSettings().find((contact) => contact.id === id);
   if (fixedContact) return fixedContact;
   const cwd = decodeProjectId(id);
   if (cwd) return contactFromProject(cwd);
@@ -817,7 +883,7 @@ codex.on("notification", (message) => {
 
   if (message.method === "error") {
     const text = message.params?.message ?? "Erreur Codex";
-    for (const contact of contacts) sendToChat(contact.id, "codex:error", { contactId: contact.id, text });
+    for (const contact of contactsForSettings()) sendToChat(contact.id, "codex:error", { contactId: contact.id, text });
     return;
   }
 
@@ -872,7 +938,7 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
   return {
     view: params.view,
     contactId: params.contactId,
-    contacts,
+    contacts: contactsForSettings(settings),
     contact,
     profile,
     cwd: defaultCwd(),
@@ -904,6 +970,22 @@ ipcMain.handle("settings:set", async (_event, nextSettings = {}) => ({
   settings: await saveSettings(nextSettings),
   codexStatus: await codexStatus(nextSettings.codexPath)
 }));
+
+ipcMain.handle("contacts:create-agent", async (_event, draft = {}) => {
+  const current = await loadSettings();
+  const contact = normalizeCustomAgent(draft, current.customAgents);
+  const customAgents = [
+    ...current.customAgents.filter((agent) => agent.id !== contact.id),
+    contact
+  ];
+  const settings = await saveSettings({ customAgents });
+  return {
+    ok: true,
+    contact,
+    contacts: contactsForSettings(settings),
+    settings
+  };
+});
 
 ipcMain.handle("settings:choose-codex", async (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
