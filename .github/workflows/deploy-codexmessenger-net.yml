@@ -73,16 +73,21 @@ jobs:
           fi
 
           asset_digest="$(jq -r --arg name "$asset_name" '.assets[] | select(.name == $name) | .digest // empty' "$release_json")"
+          asset_url="$(jq -r --arg name "$asset_name" '.assets[] | select(.name == $name) | .browser_download_url // empty' "$release_json")"
+          if [[ -z "$asset_url" ]]; then
+            echo "::error::Could not resolve browser download URL for release asset $asset_name."
+            exit 1
+          fi
 
           {
             echo "tag=$tag"
             echo "asset_name=$asset_name"
             echo "asset_digest=$asset_digest"
+            echo "asset_url=$asset_url"
           } >> "$GITHUB_OUTPUT"
 
       - name: Build static deployment bundle
         env:
-          GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_ASSET_NAME: ${{ steps.release.outputs.asset_name }}
           RELEASE_ASSET_DIGEST: ${{ steps.release.outputs.asset_digest }}
@@ -96,24 +101,8 @@ jobs:
             --exclude "nginx.codexmessenger.net.conf" \
             "codexmessenger.net/" "$site_dir/"
 
-          mkdir -p "$RUNNER_TEMP/release" "$site_dir/downloads"
-          rm -f "$site_dir/downloads/.gitkeep"
-          gh release download "$RELEASE_TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --pattern "$RELEASE_ASSET_NAME" \
-            --dir "$RUNNER_TEMP/release"
-
-          cp "$RUNNER_TEMP/release/$RELEASE_ASSET_NAME" "$site_dir/downloads/CodexMessenger.exe"
-          sha256sum "$site_dir/downloads/CodexMessenger.exe" > "$site_dir/downloads/CodexMessenger.exe.sha256"
-
-          actual_sha="$(cut -d ' ' -f1 "$site_dir/downloads/CodexMessenger.exe.sha256")"
-          if [[ "$RELEASE_ASSET_DIGEST" == sha256:* ]]; then
-            expected_sha="${RELEASE_ASSET_DIGEST#sha256:}"
-            if [[ "${actual_sha,,}" != "${expected_sha,,}" ]]; then
-              echo "::error::Downloaded release asset checksum does not match GitHub release digest."
-              exit 1
-            fi
-          fi
+          mkdir -p "$site_dir/downloads"
+          rm -f "$site_dir/downloads/.gitkeep" "$site_dir/downloads/CodexMessenger.exe"
 
           SITE_DIR="$site_dir" python3 - <<'PY'
           import os
@@ -140,7 +129,7 @@ jobs:
             echo ""
             echo "- Release: $RELEASE_TAG"
             echo "- Asset: $RELEASE_ASSET_NAME"
-            echo "- SHA256: $actual_sha"
+            echo "- GitHub digest: ${RELEASE_ASSET_DIGEST:-not exposed}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Deploy to VPS
@@ -151,6 +140,8 @@ jobs:
           SSH_KEY: ${{ secrets.CODEXMESSENGER_DEPLOY_SSH_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.CODEXMESSENGER_DEPLOY_KNOWN_HOSTS }}
           SSH_WEBROOT: ${{ secrets.CODEXMESSENGER_DEPLOY_PATH }}
+          RELEASE_ASSET_URL: ${{ steps.release.outputs.asset_url }}
+          RELEASE_ASSET_DIGEST: ${{ steps.release.outputs.asset_digest }}
         run: |
           set -euo pipefail
 
@@ -174,6 +165,10 @@ jobs:
           )
           remote="$SSH_USER@$SSH_HOST"
           remote_tmp="/tmp/codexmessenger-net-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          expected_sha=""
+          if [[ "$RELEASE_ASSET_DIGEST" == sha256:* ]]; then
+            expected_sha="${RELEASE_ASSET_DIGEST#sha256:}"
+          fi
 
           ssh "${ssh_args[@]}" "$remote" "mkdir -p '$remote_tmp'"
           rsync -az --delete -e "ssh -i ~/.ssh/codexmessenger_deploy_key -p $SSH_PORT -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
@@ -181,6 +176,15 @@ jobs:
 
           ssh "${ssh_args[@]}" "$remote" "
             set -euo pipefail
+            command -v curl >/dev/null
+            mkdir -p '$remote_tmp/downloads'
+            curl -fL --retry 5 --retry-delay 3 --connect-timeout 20 '$RELEASE_ASSET_URL' -o '$remote_tmp/downloads/CodexMessenger.exe'
+            sha256sum '$remote_tmp/downloads/CodexMessenger.exe' > '$remote_tmp/downloads/CodexMessenger.exe.sha256'
+            actual_sha=\$(cut -d ' ' -f1 '$remote_tmp/downloads/CodexMessenger.exe.sha256')
+            if [ -n '$expected_sha' ] && [ \"\$actual_sha\" != '$expected_sha' ]; then
+              echo 'Downloaded release asset checksum does not match GitHub release digest.'
+              exit 1
+            fi
             mkdir -p '$SSH_WEBROOT'
             rsync -a --delete '$remote_tmp/' '$SSH_WEBROOT/'
             chown -R www-data:www-data '$SSH_WEBROOT'

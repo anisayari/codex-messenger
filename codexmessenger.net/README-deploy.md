@@ -13,7 +13,7 @@ This directory is a standalone sub-project inside the main `Codex-messenger` rep
 - `downloads/.gitkeep`: keeps the download directory in Git.
 - `nginx.codexmessenger.net.conf`: nginx vhost used on the VPS.
 
-The Windows installer itself is not committed to Git. The GitHub Actions deployment downloads the latest release `.exe`, renames it to `downloads/CodexMessenger.exe`, writes the checksum, patches the download cache parameter in `index.html`, then deploys the static bundle to the VPS.
+The Windows installer itself is not committed to Git. The GitHub Actions deployment resolves the latest release `.exe`, patches the download cache parameter in `index.html`, sends the static bundle to the VPS, then lets the VPS download the release asset directly as `downloads/CodexMessenger.exe` and write the checksum.
 
 ## GitHub Actions deployment
 
