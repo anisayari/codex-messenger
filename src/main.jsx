@@ -2812,6 +2812,7 @@ function ChatWindow({ bootstrap }) {
   const [mediaError, setMediaError] = useState("");
   const [activeThreadId, setActiveThreadId] = useState(contact.threadId ?? "");
   const [activeWinkAnimation, setActiveWinkAnimation] = useState(null);
+  const [approvalRequests, setApprovalRequests] = useState(bootstrap.approvalRequests ?? []);
   const scrollRef = useRef(null);
   const stickToBottomRef = useRef(true);
   const videoRef = useRef(null);
@@ -2856,6 +2857,12 @@ function ChatWindow({ bootstrap }) {
       optionLabel(codexSandboxOptions, codexOptions.sandbox)
     ].join(" / ")
   ), [codexOptions, modelMenuOptions, reasoningMenuOptions]);
+  const pendingApprovals = useMemo(
+    () => approvalRequests.filter((request) => request.contactId === contact.id),
+    [approvalRequests, contact.id]
+  );
+  const primaryApproval = pendingApprovals[0] ?? null;
+  const approvalMenuTarget = primaryApproval?.kind === "file" ? "modification" : "commande";
 
   useEffect(() => {
     setActiveContact(initialContact);
@@ -2999,11 +3006,22 @@ function ChatWindow({ bootstrap }) {
       setTyping(false);
       setMessages((current) => [...current, makeMessage("system", "system", text)]);
     });
+    const offApprovalRequest = api.on("codex:approval-request", (request) => {
+      if (!request?.approvalId) return;
+      setApprovalRequests((current) => [
+        ...current.filter((item) => item.approvalId !== request.approvalId),
+        request
+      ]);
+      if (request.contactId === contact.id) setTyping(false);
+    });
+    const offApprovalResolved = api.on("codex:approval-resolved", ({ approvalId }) => {
+      setApprovalRequests((current) => current.filter((item) => item.approvalId !== approvalId));
+    });
     const offWizz = api.on("window:wizz", () => {
       playWizz();
     });
     return () => {
-      offDelta(); offCompleted(); offTyping(); offDone(); offError(); offWizz();
+      offDelta(); offCompleted(); offTyping(); offDone(); offError(); offApprovalRequest(); offApprovalResolved(); offWizz();
     };
   }, [contact.id, conversationAgentName]);
 
@@ -3541,6 +3559,23 @@ function ChatWindow({ bootstrap }) {
     if (result?.settings) setChatSettings(result.settings);
   }
 
+  async function respondToApproval(request, decision) {
+    if (!request?.approvalId) return;
+    setApprovalRequests((current) => current.map((item) => (
+      item.approvalId === request.approvalId ? { ...item, sendingDecision: decision } : item
+    )));
+    try {
+      const result = await api.respondApproval({ approvalId: request.approvalId, decision });
+      if (!result?.ok) throw new Error(result?.error ?? "Autorisation impossible.");
+      setApprovalRequests((current) => current.filter((item) => item.approvalId !== request.approvalId));
+    } catch (error) {
+      setApprovalRequests((current) => current.map((item) => (
+        item.approvalId === request.approvalId ? { ...item, sendingDecision: "", error: error.message } : item
+      )));
+      setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
+    }
+  }
+
   const contactFrameMenu = [
     { label: "Infos du contact", action: showContactInfo },
     contact.cwd ? { label: "Ouvrir le projet", action: () => api.app.openPath(contact.cwd) } : null,
@@ -3653,6 +3688,14 @@ function ChatWindow({ bootstrap }) {
         { label: "Send Wink", action: () => toggleFlyout("activities") },
         { label: "Emoticons", action: () => toggleFlyout("emoticons") },
         { label: "Search Transcript...", action: handleSearch },
+        ...(primaryApproval ? [
+          { separator: true },
+          { label: `Autoriser la ${approvalMenuTarget} Codex`, action: () => respondToApproval(primaryApproval, "approved") },
+          ...(primaryApproval.canApproveForSession ? [
+            { label: "Autoriser pour la session", action: () => respondToApproval(primaryApproval, "approved_for_session") }
+          ] : []),
+          { label: `Refuser la ${approvalMenuTarget} Codex`, action: () => respondToApproval(primaryApproval, "denied") }
+        ] : []),
         { separator: true },
         { label: `Zoom + (${Math.round(conversationZoom * 100)}%)`, shortcut: "Ctrl++", disabled: conversationZoom >= 1.6, action: zoomConversationIn },
         { label: "Zoom -", shortcut: "Ctrl+-", disabled: conversationZoom <= 0.7, action: zoomConversationOut },
@@ -3823,6 +3866,7 @@ function ChatWindow({ bootstrap }) {
             {messages.map((message) => <Message key={message.id} message={message} />)}
             {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} ecrit...</div> : null}
           </div>
+          <ApprovalRequestsPanel requests={pendingApprovals} onRespond={respondToApproval} />
           <div className="format-strip">
             <FormatButton icon="font" title="Rendu texte" active={openFlyout === "text"} onClick={(event) => toggleFlyout("text", event)} />
             <FormatButton icon="smile" title="Emoticones MSN" active={openFlyout === "emoticons"} onClick={(event) => toggleFlyout("emoticons", event)} />
@@ -3896,6 +3940,52 @@ function mergeStreamText(current, incoming) {
 
 function normalizeMessageText(text) {
   return String(text ?? "").replace(/\s+/g, " ").trim();
+}
+
+function ApprovalRequestsPanel({ requests, onRespond }) {
+  if (!requests.length) return null;
+  return (
+    <div className="approval-stack">
+      {requests.map((request) => {
+        const disabled = Boolean(request.sendingDecision);
+        const changes = request.fileChanges ?? [];
+        const hiddenChanges = Math.max(0, changes.length - 4);
+        return (
+          <section className={`approval-card ${request.riskLevel || "unknown"}`} key={request.approvalId}>
+            <div className="approval-head">
+              <strong>{request.title}</strong>
+              <span>{request.riskLevel ? `risk: ${request.riskLevel}` : "limited access"}</span>
+            </div>
+            {request.reason ? <p className="approval-reason">{request.reason}</p> : null}
+            {request.kind === "command" ? (
+              <pre className="approval-command">{request.command || "Commande non detaillee"}</pre>
+            ) : (
+              <ul className="approval-files">
+                {changes.slice(0, 4).map((change) => (
+                  <li key={`${change.kind}:${change.path}`}><span>{change.kind}</span>{change.path}</li>
+                ))}
+                {!changes.length ? <li><span>write</span>Changements non detailles</li> : null}
+                {hiddenChanges ? <li><span>plus</span>{hiddenChanges} autre(s) fichier(s)</li> : null}
+              </ul>
+            )}
+            <div className="approval-meta">
+              {request.cwd ? <span>{request.cwd}</span> : null}
+              {request.riskDescription ? <span>{request.riskDescription}</span> : null}
+              {request.grantRoot ? <span>grant root: {request.grantRoot}</span> : null}
+            </div>
+            {request.error ? <p className="approval-error">{request.error}</p> : null}
+            <div className="approval-actions">
+              <button type="button" disabled={disabled} onClick={() => onRespond(request, "approved")}>Allow</button>
+              {request.canApproveForSession ? (
+                <button type="button" disabled={disabled} onClick={() => onRespond(request, "approved_for_session")}>Allow session</button>
+              ) : null}
+              <button type="button" disabled={disabled} className="deny" onClick={() => onRespond(request, "denied")}>Disallow</button>
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
 }
 
 function Message({ message }) {

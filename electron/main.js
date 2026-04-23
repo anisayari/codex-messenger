@@ -127,10 +127,13 @@ const unreadByContact = new Map();
 const recentIncomingByContact = new Map();
 const toastWindows = [];
 const knownThreads = new Map();
+const threadItemsByThread = new Map();
+const approvalRequests = new Map();
 let tray = null;
 let isQuitting = false;
 let updateCheckCache = null;
 let updateCheckPromise = null;
+let nextApprovalRequestId = 1;
 const defaultUnreadWizzDelayMs = Math.max(10_000, Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 60_000);
 const defaultThreadTabs = { orderByCwd: {}, hiddenIds: [] };
 const defaultProjectSort = "name-asc";
@@ -1081,6 +1084,11 @@ class CodexAppServer extends EventEmitter {
   }
 
   handleMessage(message) {
+    if (message.id !== undefined && message.method) {
+      this.emit("request", message);
+      return;
+    }
+
     if (message.id !== undefined && this.pending.has(message.id)) {
       const pending = this.pending.get(message.id);
       this.pending.delete(message.id);
@@ -1124,6 +1132,16 @@ class CodexAppServer extends EventEmitter {
     if (!this.child) return;
     const payload = params === undefined ? { method } : { method, params };
     this.child.stdin.write(`${JSON.stringify(payload)}\n`);
+  }
+
+  respond(id, result) {
+    if (!this.child) throw new Error("codex app-server is not running");
+    this.child.stdin.write(`${JSON.stringify({ id, result })}\n`);
+  }
+
+  respondError(id, message, code = -32000) {
+    if (!this.child) return;
+    this.child.stdin.write(`${JSON.stringify({ id, error: { code, message } })}\n`);
   }
 
   async startThread(contact, cwd = defaultCwd(), options = defaultCodexOptions) {
@@ -1715,6 +1733,174 @@ function sendToMain(channel, payload) {
   win.webContents.send(channel, payload);
 }
 
+function storeThreadItem(threadId, item) {
+  if (!threadId || !item?.id) return;
+  let items = threadItemsByThread.get(threadId);
+  if (!items) {
+    items = new Map();
+    threadItemsByThread.set(threadId, items);
+  }
+  items.set(item.id, item);
+  while (items.size > 250) items.delete(items.keys().next().value);
+}
+
+function threadItem(threadId, itemId) {
+  return threadItemsByThread.get(threadId)?.get(itemId) ?? null;
+}
+
+function approvalPayloadsForContact(contactId) {
+  return Array.from(approvalRequests.values())
+    .filter((request) => request.payload.contactId === contactId)
+    .map((request) => request.payload);
+}
+
+function quoteCommandPart(part) {
+  const text = String(part ?? "");
+  if (!text) return "\"\"";
+  if (!/[\s"`]/.test(text)) return text;
+  return `"${text.replace(/(["\\])/g, "\\$1")}"`;
+}
+
+function approvalCommandText(command) {
+  if (Array.isArray(command)) return command.map(quoteCommandPart).join(" ");
+  return String(command ?? "").trim();
+}
+
+function approvalRisk(risk) {
+  if (!risk) return { riskLevel: "", riskDescription: "" };
+  return {
+    riskLevel: risk.riskLevel ?? risk.risk_level ?? "",
+    riskDescription: risk.description ?? ""
+  };
+}
+
+function normalizeApprovalFileChanges(input) {
+  if (!input) return [];
+  if (Array.isArray(input)) {
+    return input.map((change) => ({
+      path: change?.path ?? "",
+      kind: change?.kind ?? change?.type ?? "modified"
+    })).filter((change) => change.path);
+  }
+  if (typeof input === "object") {
+    return Object.entries(input).map(([filePath, change]) => ({
+      path: filePath,
+      kind: change?.kind ?? change?.type ?? "modified"
+    })).filter((change) => change.path);
+  }
+  return [];
+}
+
+function contactIdForApproval(params = {}) {
+  const threadId = params.threadId ?? params.conversationId ?? params.turn_id ?? "";
+  const contactId = contactByThread.get(threadId);
+  if (contactId) return contactId;
+  const firstContact = contactsForSettings()[0];
+  return firstContact?.id ?? "codex";
+}
+
+function createApprovalRecord(message) {
+  const params = message.params ?? {};
+  const method = message.method;
+  const approvalId = `approval-${nextApprovalRequestId++}`;
+  const threadId = params.threadId ?? params.conversationId ?? "";
+  const item = threadItem(params.threadId, params.itemId);
+  const contactId = contactIdForApproval(params);
+  const contact = contactFor(contactId);
+  const isCommand = method === "execCommandApproval" || method === "item/commandExecution/requestApproval";
+  const isV2Command = method === "item/commandExecution/requestApproval";
+  const isV2File = method === "item/fileChange/requestApproval";
+  const command = approvalCommandText(params.command ?? item?.command);
+  const cwd = params.cwd ?? item?.cwd ?? knownThreads.get(threadId)?.cwd ?? contact?.cwd ?? defaultCwd();
+  const changes = normalizeApprovalFileChanges(params.fileChanges ?? params.changes ?? item?.changes);
+  const risk = approvalRisk(params.risk);
+  const payload = {
+    approvalId,
+    contactId,
+    threadId,
+    kind: isCommand ? "command" : "file",
+    title: isCommand ? "Codex veut executer une commande" : "Codex veut modifier des fichiers",
+    command,
+    cwd,
+    reason: params.reason ?? "",
+    riskLevel: risk.riskLevel,
+    riskDescription: risk.riskDescription,
+    fileChanges: changes,
+    grantRoot: params.grantRoot ?? params.grant_root ?? "",
+    canApproveForSession: isCommand,
+    createdAt: new Date().toISOString()
+  };
+
+  return {
+    approvalId,
+    requestId: message.id,
+    method,
+    protocol: isV2Command ? "v2-command" : isV2File ? "v2-file" : "legacy",
+    payload
+  };
+}
+
+function approvalResponseFor(record, decision) {
+  const approveForSession = decision === "approved_for_session" || decision === "allow_session";
+  const approve = approveForSession || decision === "approved" || decision === "allow" || decision === "accept";
+  if (record.protocol === "v2-command") {
+    return {
+      decision: approve ? "accept" : "decline",
+      acceptSettings: approve ? { forSession: approveForSession } : null
+    };
+  }
+  if (record.protocol === "v2-file") {
+    return { decision: approve ? "accept" : "decline" };
+  }
+  return { decision: approveForSession ? "approved_for_session" : approve ? "approved" : "denied" };
+}
+
+function deliverApprovalRequest(payload) {
+  let win = windows.get(`chat:${payload.contactId}`);
+  if (!win || win.isDestroyed()) {
+    win = createChatWindow(payload.contactId);
+  }
+  if (!win || win.isDestroyed()) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+
+  const send = () => {
+    if (!win.isDestroyed()) win.webContents.send("codex:approval-request", payload);
+  };
+  if (win.webContents.isLoading()) {
+    win.webContents.once("did-finish-load", () => setTimeout(send, 80));
+  } else {
+    send();
+  }
+}
+
+function resolveApprovalRequest(approvalId, decision) {
+  const record = approvalRequests.get(approvalId);
+  if (!record) return { ok: false, error: "Demande d'autorisation expiree." };
+  const response = approvalResponseFor(record, decision);
+  codex.respond(record.requestId, response);
+  approvalRequests.delete(approvalId);
+  sendToChat(record.payload.contactId, "codex:approval-resolved", {
+    approvalId,
+    contactId: record.payload.contactId,
+    decision
+  });
+  return { ok: true };
+}
+
+function clearApprovalRequests(reason = "Codex app-server stopped") {
+  for (const record of approvalRequests.values()) {
+    sendToChat(record.payload.contactId, "codex:approval-resolved", {
+      approvalId: record.approvalId,
+      contactId: record.payload.contactId,
+      decision: "expired",
+      reason
+    });
+  }
+  approvalRequests.clear();
+}
+
 function unreadState() {
   return Object.fromEntries(unreadByContact);
 }
@@ -2035,6 +2221,22 @@ function textFromCompletedItem(item) {
   return "";
 }
 
+codex.on("request", (message) => {
+  if (
+    message.method !== "execCommandApproval" &&
+    message.method !== "applyPatchApproval" &&
+    message.method !== "item/commandExecution/requestApproval" &&
+    message.method !== "item/fileChange/requestApproval"
+  ) {
+    codex.respondError(message.id, `Unsupported Codex server request: ${message.method}`);
+    return;
+  }
+
+  const record = createApprovalRecord(message);
+  approvalRequests.set(record.approvalId, record);
+  deliverApprovalRequest(record.payload);
+});
+
 codex.on("notification", (message) => {
   if (message.method === "item/agentMessage/delta") {
     const contactId = contactByThread.get(message.params.threadId);
@@ -2044,7 +2246,13 @@ codex.on("notification", (message) => {
     return;
   }
 
+  if (message.method === "item/started") {
+    storeThreadItem(message.params?.threadId, message.params?.item);
+    return;
+  }
+
   if (message.method === "item/completed") {
+    storeThreadItem(message.params?.threadId, message.params?.item);
     const contactId = contactByThread.get(message.params.threadId);
     const text = textFromCompletedItem(message.params.item);
     if (contactId && text) {
@@ -2092,6 +2300,7 @@ codex.on("notification", (message) => {
 });
 
 codex.on("status", (status) => {
+  if (status.kind === "exit" || status.kind === "error") clearApprovalRequests(status.text);
   sendToMain("codex:status", status);
 });
 
@@ -2147,7 +2356,8 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
     codexStatus: await codexStatus(),
     userAgent: codex.userAgent,
     conversations: params.view === "chat" ? await conversationBrowser() : null,
-    historyMessages
+    historyMessages,
+    approvalRequests: params.view === "chat" ? approvalPayloadsForContact(contactId) : []
   };
 });
 
@@ -2399,6 +2609,16 @@ ipcMain.handle("app:choose-directory", async (event, options = {}) => {
 });
 
 ipcMain.handle("conversation:list", async () => conversationBrowser());
+
+ipcMain.handle("approval:respond", async (_event, { approvalId, decision } = {}) => {
+  const cleanId = String(approvalId ?? "");
+  if (!cleanId) return { ok: false, error: "Demande d'autorisation invalide." };
+  try {
+    return resolveApprovalRequest(cleanId, decision);
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
 
 ipcMain.handle("conversation:reorder-threads", async (_event, { cwd, threadIds } = {}) => {
   const cleanCwd = String(cwd || "").trim();
