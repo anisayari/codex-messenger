@@ -80,10 +80,10 @@ export function optionLabel(options, value) {
 
 export function sandboxPolicyForMode(mode) {
   const sandbox = normalizeSandboxChoice(mode);
-  if (sandbox === "read-only") return { type: "read-only" };
-  if (sandbox === "danger-full-access") return { type: "danger-full-access" };
+  if (sandbox === "read-only") return { type: "readOnly" };
+  if (sandbox === "danger-full-access") return { type: "dangerFullAccess" };
   return {
-    type: "workspace-write",
+    type: "workspaceWrite",
     writableRoots: [],
     networkAccess: true,
     excludeTmpdirEnvVar: false,

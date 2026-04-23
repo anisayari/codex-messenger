@@ -402,9 +402,9 @@ npm run electron:start
 
 The app is unsigned. Verify that the executable comes from the official GitHub release, then choose `More info` and `Run anyway`.
 
-### `unknown variant workspaceWrite`
+### `unknown variant workspace-write`
 
-This means an old Codex Messenger build sent the sandbox mode as `workspaceWrite`. Current `codex app-server` expects `workspace-write`, `read-only`, or `danger-full-access`. Update Codex Messenger to a build that normalizes sandbox settings; existing saved settings using the old camelCase values are accepted and converted at runtime.
+This means an old Codex Messenger build sent a turn sandbox policy as `workspace-write`. Current `codex app-server` expects `workspaceWrite`, `readOnly`, `externalSandbox`, or `dangerFullAccess` for `turn/start`. Update Codex Messenger to a build that sends app-server policy variants correctly; existing saved settings using CLI-style values are still accepted and converted at runtime.
 
 ## Service and Liability Notice
 
