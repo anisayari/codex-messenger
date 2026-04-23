@@ -470,7 +470,7 @@ button { cursor: default; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.92);
 }
 .profile-editor-picture {
-  grid-row: span 4;
+  grid-row: span 3;
   width: 74px;
 }
 .profile-editor-picture .avatar {
@@ -512,6 +512,69 @@ button { cursor: default; }
   height: 100%;
   object-fit: cover;
   border-radius: 2px;
+}
+.profile-picture-dialog-backdrop {
+  z-index: 30;
+}
+.profile-picture-dialog {
+  width: min(430px, calc(100vw - 28px));
+}
+.profile-picture-dialog-preview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #b6c9e3;
+  border-radius: 3px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.95), rgba(255,255,255,0) 44%),
+    linear-gradient(#ffffff, #edf6ff);
+}
+.profile-picture-dialog-preview .avatar.large {
+  width: 66px;
+  height: 66px;
+}
+.profile-picture-dialog-preview strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #123f82;
+  font-size: 12px;
+}
+.profile-picture-dialog-preview p {
+  margin: 0;
+  color: #405670;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.profile-picture-gallery.large {
+  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  max-height: 246px;
+  overflow: auto;
+  gap: 5px;
+  padding: 6px;
+}
+.profile-picture-gallery.large button {
+  display: grid;
+  grid-template-rows: 54px auto;
+  gap: 3px;
+  width: auto;
+  height: auto;
+  min-height: 78px;
+  padding: 4px;
+}
+.profile-picture-gallery.large img {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto;
+}
+.profile-picture-gallery.large span {
+  overflow: hidden;
+  color: #173d72;
+  font-size: 10px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .profile-editor label {
   display: grid;
@@ -776,6 +839,12 @@ button { cursor: default; }
   font-size: 11px;
   font-weight: 700;
 }
+.update-card button:disabled {
+  color: #6d7f96;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255,255,255,.86), rgba(255,255,255,0) 38%),
+    linear-gradient(#f6f8fb, #ccd8e7);
+}
 .update-card.available button {
   border-color: #a77400;
   background:
@@ -786,6 +855,21 @@ button { cursor: default; }
 .settings-dialog footer button:active {
   transform: translateY(1px);
   box-shadow: inset 1px 1px 2px rgba(33,74,128,.22);
+}
+.update-card button:disabled:active {
+  transform: none;
+  box-shadow: none;
+}
+.update-action-message {
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid #8ba8cf;
+  border-radius: 3px;
+  color: #123f82;
+  background: #eef6ff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 .update-note {
   margin: 0;
@@ -870,6 +954,26 @@ button { cursor: default; }
 }
 .agent-instructions {
   grid-column: 1 / -1;
+}
+.agent-run-folder {
+  grid-column: 1 / -1;
+}
+.agent-path-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px;
+}
+.agent-path-picker button {
+  min-height: 23px;
+  padding: 2px 8px;
+  border: 1px solid #8ba8cf;
+  border-radius: 3px;
+  color: #173d72;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255,255,255,.95), rgba(255,255,255,0) 38%),
+    linear-gradient(#ffffff, #dcecff);
+  box-shadow: inset 0 1px 0 white;
+  font-size: 10px;
 }
 .agent-swatches {
   display: flex;
@@ -956,30 +1060,6 @@ button { cursor: default; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
 }
 .msn-tabs .logo.small { width: 18px; height: 14px; }
-.demo-mode-banner {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 7px;
-  align-items: center;
-  min-height: 24px;
-  padding: 4px 9px;
-  border-bottom: 1px solid #c7b46a;
-  color: #4d3b00;
-  background:
-    radial-gradient(circle at 16px 6px, rgba(255,255,255,.9), rgba(255,255,255,0) 34px),
-    linear-gradient(#fff7b9, #ffe06b);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.95);
-  font-size: 11px;
-}
-.demo-mode-banner strong {
-  color: #183a70;
-}
-.demo-mode-banner span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .search { padding: 5px 7px; background: #f6faff; border-bottom: 1px solid #d2deee; }
 .search input { min-height: 23px; border-radius: 2px; font-size: 11px; }
 .groups {
@@ -1277,6 +1357,19 @@ button { cursor: default; }
   color: #51627a;
   font-size: 10px;
 }
+.contact-context-menu {
+  width: 214px;
+}
+.rename-contact-backdrop {
+  inset: 0;
+  z-index: 245;
+}
+.rename-contact-dialog {
+  width: min(344px, calc(100vw - 32px));
+}
+.rename-contact-dialog .settings-row {
+  grid-template-columns: 92px minmax(0, 1fr);
+}
 .add-contact {
   min-height: 24px;
   padding: 3px 10px;
@@ -1511,13 +1604,13 @@ button { cursor: default; }
   width: 284px;
 }
 .toolbar-flyout.activities {
-  width: 318px;
+  width: min(438px, calc(100vw - 22px));
 }
 .toolbar-flyout.emoticons {
   width: min(560px, calc(100vw - 22px));
 }
 .toolbar-flyout.games {
-  width: 288px;
+  width: min(430px, calc(100vw - 22px));
 }
 .chat-body {
   position: relative;
@@ -2147,7 +2240,8 @@ button { cursor: default; }
   position: absolute;
   right: -2px;
   z-index: 230;
-  min-width: 174px;
+  min-width: 238px;
+  max-width: min(276px, calc(100vw - 22px));
   padding: 2px;
   border: 1px solid #7f9fc8;
   border-radius: 3px;
@@ -2183,6 +2277,43 @@ button { cursor: default; }
 .display-frame-menu button:disabled {
   color: #8b98a8;
   background: transparent;
+}
+.display-frame-menu-status {
+  padding: 4px 7px 3px;
+  color: #526985;
+  font: 10px Tahoma, Arial, sans-serif;
+  line-height: 1.25;
+  word-break: break-word;
+}
+.display-frame-menu-select {
+  display: grid;
+  grid-template-columns: minmax(72px, .86fr) minmax(112px, 1.14fr);
+  align-items: center;
+  gap: 6px;
+  min-height: 25px;
+  padding: 3px 6px;
+  color: #19375d;
+  font: 10px Tahoma, Arial, sans-serif;
+}
+.display-frame-menu-select:hover,
+.display-frame-menu-select:focus-within {
+  background: linear-gradient(#f4f9ff, #d9edff);
+}
+.display-frame-menu-select span {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.display-frame-menu-select select {
+  width: 100%;
+  min-width: 0;
+  min-height: 20px;
+  border: 1px solid #8aa7ca;
+  border-radius: 2px;
+  color: #173d72;
+  background: linear-gradient(#ffffff, #edf6ff);
+  font: 10px Tahoma, Arial, sans-serif;
 }
 .display-frame-menu-separator {
   height: 1px;
@@ -2492,24 +2623,33 @@ button { cursor: default; }
   color: #2b405d;
   font-size: 10px;
 }
+.activities-panel {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+}
 .activity-section {
   margin-bottom: 7px;
+}
+.activities-panel .activity-section {
+  margin-bottom: 0;
 }
 .activity-section h3 {
   margin: 2px 0 5px;
   color: #173d72;
-  font-size: 10px;
+  font-size: 11px;
 }
 .wink-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+  gap: 6px;
 }
 .wink-grid button {
   display: grid;
-  min-height: 68px;
+  grid-template-rows: minmax(76px, 1fr) auto;
+  min-height: 104px;
   place-items: center;
-  padding: 4px;
+  padding: 6px 5px 5px;
   border: 1px solid #93add0;
   border-radius: 3px;
   color: #173d72;
@@ -2521,8 +2661,8 @@ button { cursor: default; }
 }
 .wink-grid img {
   display: block;
-  max-width: 70px;
-  max-height: 48px;
+  max-width: 108px;
+  max-height: 76px;
   object-fit: contain;
 }
 .wink-grid span {
@@ -2574,8 +2714,8 @@ button { cursor: default; }
 }
 .sound-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3px;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 4px;
 }
 .sound-grid button,
 .activity-command {
@@ -2589,7 +2729,9 @@ button { cursor: default; }
   font-size: 10px;
 }
 .games-panel {
-  padding: 5px;
+  display: grid;
+  gap: 7px;
+  padding: 8px;
   color: #243b5c;
   font-size: 10px;
 }
@@ -2615,13 +2757,13 @@ button { cursor: default; }
 .game-tabs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  margin: 5px 0;
+  gap: 4px;
+  margin: 0;
 }
 .game-tabs button,
 .game-head button,
 .chat-game-prompts button {
-  min-height: 22px;
+  min-height: 26px;
   border: 1px solid #94afd0;
   border-radius: 3px;
   color: #193b6d;
@@ -2638,7 +2780,7 @@ button { cursor: default; }
     linear-gradient(#fff7cf, #ffd86a);
 }
 .game-card {
-  padding: 5px;
+  padding: 7px;
   border: 1px solid #a3b8d4;
   border-radius: 4px;
   background:
@@ -2662,7 +2804,7 @@ button { cursor: default; }
 }
 .game-head button {
   width: auto;
-  min-height: 19px;
+  min-height: 22px;
   padding: 1px 6px;
 }
 .game-score span {
@@ -2676,14 +2818,15 @@ button { cursor: default; }
 .reflex-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
+  gap: 5px;
 }
 .tic-cell,
 .memory-card,
 .reflex-cell {
   display: grid;
   min-width: 0;
-  min-height: 34px;
+  min-height: 48px;
+  aspect-ratio: 1;
   place-items: center;
   border: 1px solid #8fa9cb;
   border-radius: 4px;
@@ -2701,14 +2844,14 @@ button { cursor: default; }
 .memory-card img,
 .reflex-cell img {
   display: block;
-  max-width: 24px;
-  max-height: 24px;
+  max-width: 34px;
+  max-height: 34px;
   object-fit: contain;
   filter: drop-shadow(0 1px 0 rgba(255,255,255,.65));
 }
 .reflex-cell.target img {
-  max-width: 28px;
-  max-height: 28px;
+  max-width: 38px;
+  max-height: 38px;
 }
 .tic-cell.x {
   color: #0a7b53;
@@ -2722,10 +2865,10 @@ button { cursor: default; }
 .memory-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
+  gap: 5px;
 }
 .memory-card {
-  min-height: 29px;
+  min-height: 44px;
   color: #2b405d;
   background:
     linear-gradient(135deg, #8ec8ff, #1f74d3 54%, #0a4fa7);
@@ -2740,7 +2883,7 @@ button { cursor: default; }
     linear-gradient(#fffbe2, #dcecff);
 }
 .reflex-cell {
-  min-height: 30px;
+  min-height: 46px;
 }
 .reflex-cell.target {
   color: white;

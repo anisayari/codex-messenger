@@ -1,5 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import {
+  codexApprovalOptions,
+  codexCwdOptions,
+  codexModelOptions,
+  codexReasoningOptions,
+  codexSandboxOptions,
+  defaultCodexOptions,
+  normalizeCodexOptions,
+  optionLabel
+} from "../shared/codexOptions.js";
 import { loginCopyFor, normalizeLanguage, supportedLanguages } from "../shared/languages.js";
 import msnDisplayPictures from "./msnDisplayPictures.js";
 import msnEmoticons from "./msnEmoticons.js";
@@ -222,7 +232,55 @@ const animatedInlineEmoticons = [
   { id: "animated-wizz", label: "Wizz animé", code: ":wizz:", aliases: ["[emoji:wizz]", "[emote:wizz]"], src: "./msn-assets/winks/nudge-burst.gif" },
   { id: "animated-flow", label: "MSN animé", code: ":msn-flow:", aliases: ["[emoji:msn-flow]", "[emote:msn-flow]"], src: "./msn-assets/winks/msn-flow.gif" }
 ];
-const inlineEmoticons = [...msnEmoticons, ...animatedInlineEmoticons];
+const msnEmoticonById = Object.fromEntries(msnEmoticons.map((emoticon) => [emoticon.id, emoticon]));
+const unicodeEmojiEmoticons = [
+  ["big-smile", "Sourire", "\u{1F600}", ["\u{1F603}", "\u{1F604}", "\u{1F601}", "\u{1F642}"]],
+  ["smile", "Sourire doux", "\u{1F60A}", ["\u263A\uFE0F", "\u263A"]],
+  ["laughing", "Rire", "\u{1F602}", ["\u{1F923}"]],
+  ["wink", "Clin d'oeil", "\u{1F609}", []],
+  ["kiss", "Bisou", "\u{1F618}", ["\u{1F617}", "\u{1F619}", "\u{1F61A}", "\u{1F48B}"]],
+  ["sad", "Triste", "\u{1F622}", ["\u{1F62D}", "\u2639\uFE0F", "\u2639", "\u{1F641}", "\u{1F61E}"]],
+  ["surprised", "Surpris", "\u{1F62E}", ["\u{1F62F}", "\u{1F632}", "\u{1F631}"]],
+  ["cool", "Cool", "\u{1F60E}", []],
+  ["blank-face", "Neutre", "\u{1F610}", ["\u{1F611}", "\u{1F636}"]],
+  ["thinking", "Pensif", "\u{1F914}", ["\u{1F615}"]],
+  ["angry-soft", "Fache", "\u{1F620}", ["\u{1F621}"]],
+  ["angel", "Ange", "\u{1F607}", []],
+  ["sleep", "Sommeil", "\u{1F634}", []],
+  ["rose", "Rose", "\u{1F339}", []],
+  ["star", "Etoile", "\u2B50", ["\u{1F31F}"]],
+  ["gift", "Cadeau", "\u{1F381}", []],
+  ["butterfly", "Papillon", "\u{1F98B}", []],
+  ["sun", "Soleil", "\u2600\uFE0F", ["\u2600", "\u{1F31E}"]],
+  ["cloud", "Nuage", "\u2601\uFE0F", ["\u2601"]],
+  ["rain", "Pluie", "\u{1F327}\uFE0F", ["\u{1F327}"]],
+  ["umbrella", "Parapluie", "\u2614", ["\u2602\uFE0F", "\u2602"]],
+  ["storm", "Orage", "\u26C8\uFE0F", ["\u26C8"]],
+  ["moon-happy", "Lune", "\u{1F319}", ["\u{1F31B}", "\u{1F31C}"]]
+].map(([sourceId, label, code, aliases]) => ({
+  id: `unicode-${sourceId}-${code.codePointAt(0).toString(16)}`,
+  label,
+  code,
+  aliases,
+  src: msnEmoticonById[sourceId]?.src
+})).filter((emoticon) => emoticon.src);
+const extraUnicodeEmojiEmoticons = [
+  {
+    id: "unicode-heart",
+    label: "Coeur",
+    code: "\u2764\uFE0F",
+    aliases: ["\u2764", "\u2665\uFE0F", "\u2665", "\u{1F496}", "\u{1F499}", "\u{1F49A}", "\u{1F49B}", "\u{1F49C}"],
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.png"
+  },
+  {
+    id: "unicode-lightbulb",
+    label: "Idee",
+    code: "\u{1F4A1}",
+    aliases: [],
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.jpg"
+  }
+];
+const inlineEmoticons = [...msnEmoticons, ...animatedInlineEmoticons, ...unicodeEmojiEmoticons, ...extraUnicodeEmojiEmoticons];
 const gameAssets = {
   x: "./msn-assets/games/piece-x.png",
   o: "./msn-assets/games/piece-o.png",
@@ -348,6 +406,63 @@ function textStyleForContact(settings, contactId) {
   return normalizeTextStyle(settings?.textStyles?.[contactId]);
 }
 
+function codexModelValue(model) {
+  return String(model?.model ?? model?.id ?? "").trim();
+}
+
+function codexModelLabel(model) {
+  return String(model?.displayName ?? model?.model ?? model?.id ?? "").trim();
+}
+
+function uniqueOptions(options) {
+  const seen = new Set();
+  return options.filter((option) => {
+    if (seen.has(option.value)) return false;
+    seen.add(option.value);
+    return true;
+  });
+}
+
+function codexModelMenuOptions(models = [], selectedValue = "") {
+  const dynamicOptions = models
+    .map((model) => {
+      const value = codexModelValue(model);
+      if (!value) return null;
+      return { value, label: codexModelLabel(model) || value };
+    })
+    .filter(Boolean);
+  const selectedOption = selectedValue && !dynamicOptions.some((option) => option.value === selectedValue)
+    ? [{ value: selectedValue, label: selectedValue }]
+    : [];
+  return uniqueOptions([codexModelOptions[0], ...selectedOption, ...dynamicOptions, ...codexModelOptions.slice(1)]);
+}
+
+function codexReasoningMenuOptions(models = [], selectedModel = "", selectedReasoning = "") {
+  const model = models.find((item) => codexModelValue(item) === selectedModel);
+  const supported = Array.isArray(model?.supportedReasoningEfforts)
+    ? model.supportedReasoningEfforts
+        .map((item) => String(item?.reasoningEffort ?? "").trim())
+        .filter(Boolean)
+    : [];
+  const dynamicOptions = supported
+    .map((value) => codexReasoningOptions.find((option) => option.value === value) ?? { value, label: value })
+    .filter(Boolean);
+  const selectedOption = selectedReasoning && !dynamicOptions.some((option) => option.value === selectedReasoning)
+    ? [codexReasoningOptions.find((option) => option.value === selectedReasoning) ?? { value: selectedReasoning, label: selectedReasoning }]
+    : [];
+  const fallback = supported.length ? dynamicOptions : codexReasoningOptions.slice(1);
+  return uniqueOptions([codexReasoningOptions[0], ...selectedOption, ...fallback]);
+}
+
+function replaceChatContactUrl(contactId) {
+  const cleanContactId = String(contactId ?? "").trim();
+  if (!cleanContactId) return;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("view") !== "chat") return;
+  params.set("contactId", cleanContactId);
+  window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+}
+
 function normalizeWizzDelaySeconds(value) {
   const seconds = Math.round(Number(value) || 60);
   return Math.max(10, Math.min(1800, seconds));
@@ -371,6 +486,10 @@ function hasAvailableUpdates(updateState) {
 
 function versionLabel(value) {
   return String(value || "inconnue");
+}
+
+function normalizeConversationZoom(value) {
+  return Math.max(0.7, Math.min(1.6, Math.round((Number(value) || 1) * 10) / 10));
 }
 
 function updateLineState(item) {
@@ -739,6 +858,30 @@ function DisplayFrame({ contact, position, menuItems = [] }) {
           {menuItems.map((entry, index) => (
             entry.separator ? (
               <div className="display-frame-menu-separator" key={`separator-${index}`} />
+            ) : entry.type === "select" ? (
+              <label
+                className="display-frame-menu-select"
+                key={`${entry.label}-${index}`}
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <span>{entry.label}</span>
+                <select
+                  value={entry.value}
+                  aria-label={entry.label}
+                  onChange={(event) => entry.onChange?.(event.target.value)}
+                >
+                  {entry.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : entry.type === "status" ? (
+              <div className="display-frame-menu-status" key={`${entry.label}-${index}`}>
+                {entry.label}
+              </div>
             ) : (
               <button
                 type="button"
@@ -978,10 +1121,53 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   );
 }
 
-function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onClose }) {
+function ProfilePictureDialog({ draft, selecting, onSelectDefault, onImport, onClear, onClose }) {
+  return (
+    <div className="settings-dialog-backdrop profile-picture-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="settings-dialog profile-picture-dialog" role="dialog" aria-modal="true" aria-label="Choisir une image perso">
+        <header>
+          <strong>Choisir une image perso</strong>
+          <button type="button" aria-label="Fermer" onClick={onClose}>x</button>
+        </header>
+        <section>
+          <div className="profile-picture-dialog-preview">
+            <Avatar contact={{ ...draft, avatar: "butterfly", color: "#11a77a" }} large />
+            <div>
+              <strong>Images Windows/MSN d'epoque</strong>
+              <p>Selectionne une image fournie avec le style Messenger, ou importe une photo locale.</p>
+            </div>
+          </div>
+          <div className="profile-picture-gallery large" aria-label="Images Windows et MSN par defaut">
+            {msnDisplayPictures.map((picture) => (
+              <button
+                className={draft.displayPictureAsset === picture.src ? "active" : ""}
+                key={picture.id}
+                title={picture.label}
+                type="button"
+                onClick={() => onSelectDefault(picture)}
+              >
+                <img src={picture.src} alt="" draggable="false" />
+                <span>{picture.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+        <footer>
+          <button type="button" onClick={onImport} disabled={selecting}>{selecting ? "Import..." : "Importer une photo..."}</button>
+          <button type="button" onClick={onClear}>Defaut</button>
+          <button type="button" onClick={onClose}>Fermer</button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function ProfileEditor({ profile, onChange, onChoosePicture, onClose }) {
   const [draft, setDraft] = useState(profile);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [pictureDialogOpen, setPictureDialogOpen] = useState(false);
+  const [selectingPicture, setSelectingPicture] = useState(false);
 
   useEffect(() => {
     setDraft(profile);
@@ -1011,6 +1197,35 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
       displayPictureAsset: picture.src,
       displayPicturePath: ""
     }));
+    setPictureDialogOpen(false);
+  }
+
+  function clearDraftPicture() {
+    setDraft((current) => ({
+      ...current,
+      displayPictureAsset: "",
+      displayPicturePath: ""
+    }));
+    setPictureDialogOpen(false);
+  }
+
+  async function importPicture() {
+    setSelectingPicture(true);
+    setError("");
+    try {
+      const result = await onChoosePicture({ save: false });
+      if (result?.canceled) return;
+      setDraft((current) => ({
+        ...current,
+        displayPicturePath: result?.profile?.displayPicturePath ?? current.displayPicturePath ?? "",
+        displayPictureAsset: result?.profile?.displayPictureAsset ?? ""
+      }));
+      setPictureDialogOpen(false);
+    } catch (err) {
+      setError(err.message || "Image non importee.");
+    } finally {
+      setSelectingPicture(false);
+    }
   }
 
   return (
@@ -1018,22 +1233,9 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
       <div className="profile-editor-picture">
         <Avatar contact={{ ...draft, avatar: "butterfly", color: "#11a77a" }} />
         <div className="profile-picture-tools">
-          <button type="button" onClick={onChoosePicture}>Changer</button>
-          <button type="button" onClick={onClearPicture}>Defaut</button>
+          <button type="button" onClick={() => setPictureDialogOpen(true)}>Choisir...</button>
+          <button type="button" onClick={clearDraftPicture}>Defaut</button>
         </div>
-      </div>
-      <div className="profile-picture-gallery" aria-label="Images MSN par defaut">
-        {msnDisplayPictures.map((picture) => (
-          <button
-            className={draft.displayPictureAsset === picture.src ? "active" : ""}
-            key={picture.id}
-            title={picture.label}
-            type="button"
-            onClick={() => chooseDefaultPicture(picture)}
-          >
-            <img src={picture.src} alt="" draggable="false" />
-          </button>
-        ))}
       </div>
       <label>
         <span>Nom affiche</span>
@@ -1054,6 +1256,16 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
         <button type="submit" disabled={saving}>{saving ? "Enregistrement..." : "Appliquer"}</button>
         <button type="button" disabled={saving} onClick={onClose}>Fermer</button>
       </div>
+      {pictureDialogOpen ? (
+        <ProfilePictureDialog
+          draft={draft}
+          selecting={selectingPicture}
+          onSelectDefault={chooseDefaultPicture}
+          onImport={importPicture}
+          onClear={clearDraftPicture}
+          onClose={() => setPictureDialogOpen(false)}
+        />
+      ) : null}
     </form>
   );
 }
@@ -1154,10 +1366,11 @@ function SettingsDialog({ settings, onSave, onClose }) {
   );
 }
 
-function UpdateDialog({ updateState, checking, appVersion, userAgent, onCheck, onOpen, onClose }) {
+function UpdateDialog({ updateState, checking, installingTarget, actionMessage, appVersion, userAgent, onCheck, onOpen, onInstall, onClose }) {
   const front = updateState?.front ?? { currentVersion: appVersion };
   const codex = updateState?.codex ?? {};
   const checkedAt = updateState?.checkedAt ? new Date(updateState.checkedAt).toLocaleString() : "jamais";
+  const codexInstalling = installingTarget === "codex";
 
   return (
     <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
@@ -1190,11 +1403,12 @@ function UpdateDialog({ updateState, checking, appVersion, userAgent, onCheck, o
               <span>Version locale: {versionLabel(codex.currentVersion || userAgent)}</span>
               <span>Derniere version: {versionLabel(codex.latestVersion)}</span>
               <small>{updateLineState(codex)}</small>
-              <button type="button" onClick={() => onOpen("codex")}>
-                {codex.updateAvailable ? "Update" : "Ouvrir npm"}
+              <button type="button" onClick={() => onInstall("codex")} disabled={codexInstalling}>
+                {codexInstalling ? "Update..." : "Update automatiquement"}
               </button>
             </article>
           </div>
+          {actionMessage ? <p className="update-action-message">{actionMessage}</p> : null}
           <p className="update-note">
             Derniere verification: {checkedAt}. Codex Messenger ne stocke pas les conversations Codex:
             l'application est seulement un front client local.
@@ -1211,7 +1425,7 @@ function UpdateDialog({ updateState, checking, appVersion, userAgent, onCheck, o
   );
 }
 
-function AgentCreator({ onCreate, onClose, error }) {
+function AgentCreator({ onCreate, onClose, onChooseRunFolder, error }) {
   const [draft, setDraft] = useState({
     name: "Agent Specifique",
     group: "Agents personnalises",
@@ -1219,16 +1433,29 @@ function AgentCreator({ onCreate, onClose, error }) {
     status: "online",
     avatar: "lens",
     color: agentColorOptions[0],
+    cwd: "",
     instructions: "Tu es un agent Codex specialise. Reponds en francais, garde ton role, pose les questions utiles, puis execute la tache de maniere pragmatique."
   });
   const [saving, setSaving] = useState(false);
+  const [localError, setLocalError] = useState("");
 
   function update(field, value) {
     setDraft((current) => ({ ...current, [field]: value }));
   }
 
+  async function chooseRunFolder() {
+    setLocalError("");
+    const result = await onChooseRunFolder?.();
+    if (result?.canceled || !result?.cwd) return;
+    update("cwd", result.cwd);
+  }
+
   async function submit(event) {
     event.preventDefault();
+    if (!draft.cwd.trim()) {
+      setLocalError("Choisis le dossier de run Codex.");
+      return;
+    }
     setSaving(true);
     try {
       await onCreate(draft);
@@ -1258,6 +1485,13 @@ function AgentCreator({ onCreate, onClose, error }) {
         <label>
           <span>Specialite</span>
           <input value={draft.mood} onChange={(event) => update("mood", event.target.value)} />
+        </label>
+        <label className="agent-run-folder">
+          <span>Dossier de run Codex</span>
+          <div className="agent-path-picker">
+            <input required readOnly value={draft.cwd} placeholder="Choisir le dossier local..." />
+            <button type="button" onClick={chooseRunFolder}>Parcourir</button>
+          </div>
         </label>
         <label>
           <span>Statut</span>
@@ -1291,7 +1525,7 @@ function AgentCreator({ onCreate, onClose, error }) {
           <textarea value={draft.instructions} onChange={(event) => update("instructions", event.target.value)} rows={5} />
         </label>
       </div>
-      {error ? <p className="agent-error">{error}</p> : null}
+      {localError || error ? <p className="agent-error">{localError || error}</p> : null}
       <div className="agent-editor-actions">
         <button type="submit" disabled={saving}>{saving ? "Creation..." : "Creer et ouvrir"}</button>
         <button type="button" onClick={onClose}>Annuler</button>
@@ -1320,6 +1554,8 @@ function RosterView({
   const [agentError, setAgentError] = useState("");
   const [projectSort, setProjectSort] = useState(() => normalizeProjectSort(bootstrap.settings?.projectSort));
   const [projectSortMenu, setProjectSortMenu] = useState(null);
+  const [contactMenu, setContactMenu] = useState(null);
+  const [renameDraft, setRenameDraft] = useState(null);
   const [addContactPressed, setAddContactPressed] = useState(false);
   const rosterRef = useRef(null);
   const addContactPressTimerRef = useRef(null);
@@ -1333,7 +1569,10 @@ function RosterView({
   }, []);
 
   useEffect(() => {
-    const closeMenu = () => setProjectSortMenu(null);
+    const closeMenu = () => {
+      setProjectSortMenu(null);
+      setContactMenu(null);
+    };
     const closeOnEscape = (event) => {
       if (event.key === "Escape") closeMenu();
     };
@@ -1451,6 +1690,7 @@ function RosterView({
   function openProjectSortMenu(event) {
     event.preventDefault();
     event.stopPropagation();
+    setContactMenu(null);
     const bounds = rosterRef.current?.getBoundingClientRect();
     const width = bounds?.width ?? window.innerWidth;
     const height = bounds?.height ?? window.innerHeight;
@@ -1459,6 +1699,22 @@ function RosterView({
     setProjectSortMenu({
       x: Math.max(4, Math.min(left, width - 214)),
       y: Math.max(4, Math.min(top, height - 272))
+    });
+  }
+
+  function openContactMenu(event, item) {
+    event.preventDefault();
+    event.stopPropagation();
+    setProjectSortMenu(null);
+    const bounds = rosterRef.current?.getBoundingClientRect();
+    const width = bounds?.width ?? window.innerWidth;
+    const height = bounds?.height ?? window.innerHeight;
+    const left = bounds ? event.clientX - bounds.left : event.clientX;
+    const top = bounds ? event.clientY - bounds.top : event.clientY;
+    setContactMenu({
+      x: Math.max(4, Math.min(left, width - 218)),
+      y: Math.max(4, Math.min(top, height - 118)),
+      item
     });
   }
 
@@ -1496,15 +1752,12 @@ function RosterView({
     saveProfile({ ...profile, status });
   }
 
-  async function chooseProfilePicture() {
-    const result = await api.chooseProfilePicture();
-    if (result?.canceled) return;
+  async function chooseProfilePicture(options = {}) {
+    const result = await api.chooseProfilePicture(options);
+    if (result?.canceled) return result;
+    if (options?.save === false) return result;
     onProfileChange(result.profile, userAgent, result.settings);
-  }
-
-  async function clearProfilePicture() {
-    const result = await api.clearProfilePicture();
-    onProfileChange(result.profile, userAgent, result.settings);
+    return result;
   }
 
   async function createAgent(draft) {
@@ -1519,6 +1772,29 @@ function RosterView({
       setAgentError(error.message);
       throw error;
     }
+  }
+
+  async function saveContactRename(event) {
+    event.preventDefault();
+    if (!renameDraft?.item?.id) return;
+    const cleanName = String(renameDraft.name || "").trim();
+    if (!cleanName) return;
+    const result = await api.renameContact({ contactId: renameDraft.item.id, name: cleanName });
+    if (!result?.ok) {
+      window.alert(result?.error || "Renommage impossible.");
+      return;
+    }
+    if (result.contacts && result.settings) onAgentsChange(result.contacts, result.settings);
+    if (result.conversations) setConversations(result.conversations);
+    setRenameDraft(null);
+  }
+
+  async function resetContactName(item) {
+    if (!item?.id) return;
+    const result = await api.renameContact({ contactId: item.id, name: "" });
+    if (result?.contacts && result?.settings) onAgentsChange(result.contacts, result.settings);
+    if (result?.conversations) setConversations(result.conversations);
+    setContactMenu(null);
   }
 
   return (
@@ -1543,7 +1819,6 @@ function RosterView({
           profile={profile}
           onChange={saveProfile}
           onChoosePicture={chooseProfilePicture}
-          onClearPicture={clearProfilePicture}
           onClose={() => onProfileEditorOpenChange(false)}
         />
       ) : null}
@@ -1551,6 +1826,7 @@ function RosterView({
         <AgentCreator
           error={agentError}
           onCreate={createAgent}
+          onChooseRunFolder={() => api.chooseDirectory({ title: "Choisir le dossier de run Codex" })}
           onClose={() => {
             setAgentError("");
             onAgentEditorOpenChange(false);
@@ -1560,12 +1836,6 @@ function RosterView({
       <div className="msn-tabs">
         <button type="button" onClick={() => api.openConversation(bootstrap.contacts[0]?.id ?? "codex")}><Logo small /> Codex Today</button>
       </div>
-      {bootstrap.settings?.demoMode ? (
-        <div className="demo-mode-banner">
-          <strong>Demo mode</strong>
-          <span>conversations reelles masquees</span>
-        </div>
-      ) : null}
       <div className="search"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." /></div>
       <div className="groups">
         {groups.map((group) => {
@@ -1586,7 +1856,13 @@ function RosterView({
             {!collapsed[group.id] ? group.items.map((item) => {
               const pending = unread[item.id] ?? 0;
               return (
-                <button className={pending ? "contact-line has-unread" : "contact-line"} type="button" key={item.id} onClick={item.onOpen}>
+                <button
+                  className={pending ? "contact-line has-unread" : "contact-line"}
+                  type="button"
+                  key={item.id}
+                  onClick={item.onOpen}
+                  onContextMenu={(event) => openContactMenu(event, item)}
+                >
                   <span className={`msn-presence ${item.status}`} />
                   <span className="contact-mini-avatar"><Avatar contact={item.contact ?? item} /></span>
                   <span className="contact-line-copy">
@@ -1625,14 +1901,63 @@ function RosterView({
           ))}
         </div>
       ) : null}
+      {contactMenu ? (
+        <div
+          className="group-context-menu contact-context-menu"
+          style={{ left: contactMenu.x, top: contactMenu.y }}
+          role="menu"
+          onClick={(event) => event.stopPropagation()}
+          onContextMenu={(event) => event.preventDefault()}
+        >
+          <div className="group-context-title">{contactMenu.item.name}</div>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setRenameDraft({ item: contactMenu.item, name: contactMenu.item.name ?? "" });
+              setContactMenu(null);
+            }}
+          >
+            <span>Renommer...</span>
+          </button>
+          {contactMenu.item.cwd ? (
+            <button type="button" role="menuitem" onClick={() => api.app.openPath(contactMenu.item.cwd)}>
+              <span>Ouvrir le dossier</span>
+            </button>
+          ) : null}
+          <button type="button" role="menuitem" onClick={() => resetContactName(contactMenu.item)}>
+            <span>Nom original</span>
+          </button>
+        </div>
+      ) : null}
+      {renameDraft ? (
+        <div className="settings-dialog-backdrop rename-contact-backdrop">
+          <form className="settings-dialog rename-contact-dialog" onSubmit={saveContactRename} role="dialog" aria-modal="true" aria-label="Renommer la conversation">
+            <header>
+              <strong>Renommer</strong>
+              <button type="button" onClick={() => setRenameDraft(null)}>x</button>
+            </header>
+            <section>
+              <label className="settings-row">
+                <span>Nouveau nom</span>
+                <input autoFocus value={renameDraft.name} onChange={(event) => setRenameDraft((current) => ({ ...current, name: event.target.value }))} />
+              </label>
+            </section>
+            <footer>
+              <button type="submit" disabled={!renameDraft.name.trim()}>OK</button>
+              <button type="button" onClick={() => setRenameDraft(null)}>Annuler</button>
+            </footer>
+          </form>
+        </div>
+      ) : null}
       <button
         className={addContactPressed ? "add-contact pressed" : "add-contact"}
         type="button"
         disabled={bootstrap.settings?.demoMode}
         onClick={handleAddContactClick}
-        title={bootstrap.settings?.demoMode ? "Desactive Demo mode pour creer un vrai agent." : undefined}
+        title={bootstrap.settings?.demoMode ? "Creation indisponible dans cet espace." : undefined}
       >
-        <span className="mini plus" /> {bootstrap.settings?.demoMode ? "Demo mode actif" : "Add a Contact"}
+        <span className="mini plus" /> Add a Contact
       </button>
       <div className="wordmark"><span>Codex</span><Logo small /><strong>Messenger</strong></div>
       {finished ? <div className="toast"><Logo small /><span>{finished}</span></div> : null}
@@ -1653,6 +1978,8 @@ function MainWindow() {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [updateState, setUpdateState] = useState(null);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
+  const [installingUpdateTarget, setInstallingUpdateTarget] = useState("");
+  const [updateActionMessage, setUpdateActionMessage] = useState("");
 
   useEffect(() => {
     api.bootstrap().then((data) => {
@@ -1734,6 +2061,7 @@ function MainWindow() {
 
   async function checkForUpdates({ force = true, showDialog = true } = {}) {
     setCheckingUpdates(true);
+    setUpdateActionMessage("");
     try {
       const result = await api.checkUpdates({ force });
       setUpdateState(result);
@@ -1755,6 +2083,23 @@ function MainWindow() {
 
   function openUpdateTarget(target) {
     return api.openUpdateTarget(target);
+  }
+
+  async function installUpdateTarget(target) {
+    setInstallingUpdateTarget(target);
+    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Mise a jour en cours...");
+    try {
+      const result = await api.installUpdateTarget(target);
+      setUpdateActionMessage(result?.message || "Mise a jour terminee.");
+      const refreshed = await api.checkUpdates({ force: true });
+      setUpdateState(refreshed);
+      return result;
+    } catch (error) {
+      setUpdateActionMessage(error.message || "Mise a jour impossible.");
+      return { ok: false, error: error.message };
+    } finally {
+      setInstallingUpdateTarget("");
+    }
   }
 
   async function toggleDemoMode() {
@@ -1792,7 +2137,7 @@ function MainWindow() {
           action: () => api.openConversation(contact.id)
         })),
         { separator: true },
-        { label: settings?.demoMode ? "Add a Contact (desactive en Demo mode)" : "Add a Contact", disabled: settings?.demoMode, action: openAgentCreator }
+        { label: "Add a Contact", disabled: settings?.demoMode, action: openAgentCreator }
       ]
     },
     {
@@ -1849,11 +2194,6 @@ function MainWindow() {
       label: "Aide",
       entries: [
         {
-          label: `Demo mode: ${settings?.demoMode ? "active" : "desactive"}`,
-          action: toggleDemoMode
-        },
-        { separator: true },
-        {
           label: "A propos de Codex Messenger",
           action: () => setUpdateDialogOpen(true)
         },
@@ -1881,10 +2221,13 @@ function MainWindow() {
         <UpdateDialog
           updateState={updateState}
           checking={checkingUpdates}
+          installingTarget={installingUpdateTarget}
+          actionMessage={updateActionMessage}
           appVersion={bootstrap.appVersion}
           userAgent={userAgent}
           onCheck={() => checkForUpdates({ force: true })}
           onOpen={openUpdateTarget}
+          onInstall={installUpdateTarget}
           onClose={() => setUpdateDialogOpen(false)}
         />
       ) : null}
@@ -2443,7 +2786,9 @@ function WizzReflexGame() {
 }
 
 function ChatWindow({ bootstrap }) {
-  const contact = bootstrap.contact ?? bootstrap.contacts.find((item) => item.id === bootstrap.contactId) ?? bootstrap.contacts[0];
+  const initialContact = bootstrap.contact ?? bootstrap.contacts.find((item) => item.id === bootstrap.contactId) ?? bootstrap.contacts[0];
+  const [activeContact, setActiveContact] = useState(initialContact);
+  const contact = activeContact ?? initialContact;
   const conversationAgentName = contact.kind === "project" || contact.kind === "thread" ? "Codex" : contact.name;
   const [profile, setProfile] = useState(bootstrap.profile);
   const [messages, setMessages] = useState(bootstrap.historyMessages ?? []);
@@ -2451,9 +2796,13 @@ function ChatWindow({ bootstrap }) {
   const [typing, setTyping] = useState(false);
   const [conversations, setConversations] = useState(bootstrap.conversations);
   const [chatSettings, setChatSettings] = useState(bootstrap.settings ?? {});
+  const [codexModels, setCodexModels] = useState([]);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [updateState, setUpdateState] = useState(null);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
+  const [installingUpdateTarget, setInstallingUpdateTarget] = useState("");
+  const [updateActionMessage, setUpdateActionMessage] = useState("");
+  const [conversationZoom, setConversationZoom] = useState(1);
   const [textStyle, setTextStyle] = useState(() => textStyleForContact(bootstrap.settings, contact.id));
   const [openFlyout, setOpenFlyout] = useState("");
   const [flyoutPosition, setFlyoutPosition] = useState({ left: 8, top: 88, arrowX: 24, placement: "below" });
@@ -2487,6 +2836,30 @@ function ChatWindow({ bootstrap }) {
     if (contact.cwd) return projects.find((project) => project.cwd === contact.cwd) ?? null;
     return null;
   }, [contact.cwd, conversations]);
+  const codexOptions = useMemo(
+    () => normalizeCodexOptions(chatSettings?.codexOptionsByContact?.[contact.id] ?? defaultCodexOptions),
+    [chatSettings?.codexOptionsByContact, contact.id]
+  );
+  const modelMenuOptions = useMemo(
+    () => codexModelMenuOptions(codexModels, codexOptions.model),
+    [codexModels, codexOptions.model]
+  );
+  const reasoningMenuOptions = useMemo(
+    () => codexReasoningMenuOptions(codexModels, codexOptions.model, codexOptions.reasoningEffort),
+    [codexModels, codexOptions.model, codexOptions.reasoningEffort]
+  );
+  const codexOptionsSummary = useMemo(() => (
+    [
+      optionLabel(modelMenuOptions, codexOptions.model),
+      optionLabel(reasoningMenuOptions, codexOptions.reasoningEffort),
+      optionLabel(codexCwdOptions, codexOptions.cwdMode),
+      optionLabel(codexSandboxOptions, codexOptions.sandbox)
+    ].join(" / ")
+  ), [codexOptions, modelMenuOptions, reasoningMenuOptions]);
+
+  useEffect(() => {
+    setActiveContact(initialContact);
+  }, [initialContact.id, initialContact.threadId]);
 
   useEffect(() => {
     setActiveThreadId(contact.threadId ?? "");
@@ -2521,6 +2894,20 @@ function ChatWindow({ bootstrap }) {
   useEffect(() => {
     api.listConversations().then(setConversations).catch(() => {});
   }, [contact.id]);
+
+  useEffect(() => {
+    let alive = true;
+    api.listCodexModels()
+      .then((result) => {
+        if (alive) setCodexModels(Array.isArray(result?.models) ? result.models : []);
+      })
+      .catch(() => {
+        if (alive) setCodexModels([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     setChatSettings(bootstrap.settings ?? {});
@@ -2638,6 +3025,24 @@ function ChatWindow({ bootstrap }) {
     return () => element.removeEventListener("scroll", updateStickiness);
   }, []);
 
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (!event.ctrlKey || event.altKey || event.metaKey) return;
+      if (event.key === "+" || event.key === "=") {
+        event.preventDefault();
+        zoomConversationIn();
+      } else if (event.key === "-") {
+        event.preventDefault();
+        zoomConversationOut();
+      } else if (event.key === "0") {
+        event.preventDefault();
+        resetConversationZoom();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [conversationZoom]);
+
   async function sendItems(items, displayText, options = {}) {
     const cleanText = String(displayText ?? "").trim();
     if (!items.length || !cleanText) return;
@@ -2710,31 +3115,51 @@ function ChatWindow({ bootstrap }) {
     textareaRef.current?.select();
   }
 
+  async function setConversationZoomFactor(nextZoom) {
+    const zoomFactor = normalizeConversationZoom(nextZoom);
+    const result = await api.window.setZoomFactor(zoomFactor);
+    setConversationZoom(normalizeConversationZoom(result?.zoomFactor ?? zoomFactor));
+  }
+
+  function zoomConversationIn() {
+    return setConversationZoomFactor(conversationZoom + 0.1);
+  }
+
+  function zoomConversationOut() {
+    return setConversationZoomFactor(conversationZoom - 0.1);
+  }
+
+  function resetConversationZoom() {
+    return setConversationZoomFactor(1);
+  }
+
   function flyoutSize(name) {
+    const root = chatWindowRef.current?.getBoundingClientRect();
+    const rootWidth = root?.width ?? window.innerWidth;
+    const rootHeight = root?.height ?? window.innerHeight;
+    const availableWidth = Math.max(230, rootWidth - 18);
+    const availableHeight = Math.max(146, rootHeight - 118);
     if (name === "emoticons") {
-      const root = chatWindowRef.current?.getBoundingClientRect();
-      const rootWidth = root?.width ?? window.innerWidth;
-      const rootHeight = root?.height ?? window.innerHeight;
       return {
-        width: Math.min(560, Math.max(344, rootWidth - 34)),
-        height: Math.min(520, Math.max(278, rootHeight - 118))
+        width: Math.min(560, Math.max(344, availableWidth - 16)),
+        height: Math.min(520, Math.max(278, availableHeight))
       };
     }
     if (name === "text") return { width: 284, height: 318 };
-    if (name === "activities") return { width: 318, height: 360 };
-    if (name === "games") return { width: 288, height: 322 };
+    if (name === "activities") return { width: Math.min(438, availableWidth), height: Math.min(520, Math.max(390, availableHeight)) };
+    if (name === "games") return { width: Math.min(430, availableWidth), height: Math.min(510, Math.max(386, availableHeight)) };
     if (name === "camera") return { width: 250, height: 240 };
     if (name === "files") return { width: 254, height: 136 };
     if (name === "voice") return { width: 246, height: 112 };
     return { width: 246, height: 146 };
   }
 
-  function clampFlyoutHeight(name, desiredHeight, targetTop, targetBottom, rootHeight) {
+  function flyoutSpace(targetTop, targetBottom, rootHeight) {
     const margin = 8;
-    const availableAbove = Math.max(96, targetTop - margin);
-    const availableBelow = Math.max(96, rootHeight - targetBottom - margin);
-    if (name === "emoticons") return Math.min(desiredHeight, Math.max(availableAbove, availableBelow));
-    return Math.min(desiredHeight, availableAbove, availableBelow) || Math.min(desiredHeight, Math.max(availableAbove, availableBelow));
+    return {
+      above: Math.max(96, targetTop - margin),
+      below: Math.max(96, rootHeight - targetBottom - margin)
+    };
   }
 
   function placeFlyout(name, event) {
@@ -2751,9 +3176,11 @@ function ChatWindow({ bootstrap }) {
     const left = Math.max(8, Math.min(rawLeft, rootWidth - width - 8));
     const targetTop = target ? target.top - (root?.top ?? 0) : 82;
     const targetBottom = target ? target.bottom - (root?.top ?? 0) : 118;
-    const height = clampFlyoutHeight(name, desired.height, targetTop, targetBottom, rootHeight);
-    const hasRoomAbove = targetTop >= Math.min(desired.height, height) + 8;
-    const placement = hasRoomAbove && targetTop > rootHeight * 0.42 ? "above" : "below";
+    const space = flyoutSpace(targetTop, targetBottom, rootHeight);
+    const belowFits = space.below >= Math.min(desired.height, 220);
+    const aboveFits = space.above >= Math.min(desired.height, 220);
+    const placement = belowFits || (!aboveFits && space.below >= space.above) ? "below" : "above";
+    const height = Math.min(desired.height, placement === "above" ? space.above : space.below);
     const top = placement === "above"
       ? targetTop - height - 4
       : targetBottom - 1;
@@ -2970,8 +3397,13 @@ function ChatWindow({ bootstrap }) {
   async function openThreadTab(threadId) {
     if (!threadId || threadId === activeThreadId) return;
     setActiveThreadId(threadId);
-    if (contact.kind === "project") {
+    if (currentProject) {
       const result = await api.loadThread({ contactId: contact.id, threadId });
+      if (result?.contact) {
+        setActiveContact(result.contact);
+        setActiveThreadId(result.threadId ?? result.contact.threadId ?? threadId);
+        replaceChatContactUrl(result.contactId ?? result.contact.id);
+      }
       if (result?.messages) {
         stickToBottomRef.current = true;
         setMessages(result.messages);
@@ -3031,11 +3463,13 @@ function ChatWindow({ bootstrap }) {
     window.alert(lines.join("\n"));
   }
 
-  async function chooseSelfPicture() {
-    const result = await api.chooseProfilePicture();
-    if (result?.canceled) return;
+  async function chooseSelfPicture(options = {}) {
+    const result = await api.chooseProfilePicture(options);
+    if (result?.canceled) return result;
+    if (options?.save === false) return result;
     setProfile(result.profile);
     if (result.settings) setChatSettings(result.settings);
+    return result;
   }
 
   async function clearSelfPicture() {
@@ -3055,6 +3489,7 @@ function ChatWindow({ bootstrap }) {
 
   async function checkForUpdates({ force = true } = {}) {
     setCheckingUpdates(true);
+    setUpdateActionMessage("");
     try {
       const result = await api.checkUpdates({ force });
       setUpdateState(result);
@@ -3074,13 +3509,86 @@ function ChatWindow({ bootstrap }) {
     }
   }
 
+  async function installUpdateTarget(target) {
+    setInstallingUpdateTarget(target);
+    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Mise a jour en cours...");
+    try {
+      const result = await api.installUpdateTarget(target);
+      setUpdateActionMessage(result?.message || "Mise a jour terminee.");
+      const refreshed = await api.checkUpdates({ force: true });
+      setUpdateState(refreshed);
+      return result;
+    } catch (error) {
+      setUpdateActionMessage(error.message || "Mise a jour impossible.");
+      return { ok: false, error: error.message };
+    } finally {
+      setInstallingUpdateTarget("");
+    }
+  }
+
   async function toggleDemoModeFromChat() {
     await api.setSettings({ demoMode: !(chatSettings?.demoMode === true) });
+  }
+
+  async function saveContactCodexOptions(patch) {
+    const nextOptions = normalizeCodexOptions({ ...codexOptions, ...patch });
+    const nextOptionsByContact = {
+      ...(chatSettings?.codexOptionsByContact ?? {}),
+      [contact.id]: nextOptions
+    };
+    setChatSettings((current) => ({ ...(current ?? {}), codexOptionsByContact: nextOptionsByContact }));
+    const result = await api.setSettings({ codexOptionsByContact: nextOptionsByContact });
+    if (result?.settings) setChatSettings(result.settings);
   }
 
   const contactFrameMenu = [
     { label: "Infos du contact", action: showContactInfo },
     contact.cwd ? { label: "Ouvrir le projet", action: () => api.app.openPath(contact.cwd) } : null,
+    { separator: true },
+    { type: "status", label: `Codex: ${codexOptionsSummary}` },
+    {
+      type: "select",
+      label: "Modele",
+      value: codexOptions.model,
+      options: modelMenuOptions,
+      onChange: (value) => {
+        const nextReasoningOptions = codexReasoningMenuOptions(codexModels, value, codexOptions.reasoningEffort);
+        const supportsCurrentReasoning = nextReasoningOptions.some((option) => option.value === codexOptions.reasoningEffort);
+        saveContactCodexOptions({
+          model: value,
+          reasoningEffort: supportsCurrentReasoning ? codexOptions.reasoningEffort : ""
+        });
+      }
+    },
+    {
+      type: "select",
+      label: "Reflexion",
+      value: codexOptions.reasoningEffort,
+      options: reasoningMenuOptions,
+      onChange: (value) => saveContactCodexOptions({ reasoningEffort: value })
+    },
+    {
+      type: "select",
+      label: "Execution",
+      value: codexOptions.cwdMode,
+      options: codexCwdOptions,
+      onChange: (value) => saveContactCodexOptions({ cwdMode: value })
+    },
+    {
+      type: "select",
+      label: "Zone d'autorisation",
+      value: codexOptions.sandbox,
+      options: codexSandboxOptions,
+      onChange: (value) => saveContactCodexOptions({ sandbox: value })
+    },
+    {
+      type: "select",
+      label: "Confirmation",
+      value: codexOptions.approvalPolicy,
+      options: codexApprovalOptions,
+      onChange: (value) => saveContactCodexOptions({ approvalPolicy: value })
+    },
+    { separator: true },
     {
       label: "Demander le contexte a Codex",
       action: () => sendQuickPrompt(`Resume le contexte de cette conversation avec ${contact.name}.`)
@@ -3146,6 +3654,10 @@ function ChatWindow({ bootstrap }) {
         { label: "Emoticons", action: () => toggleFlyout("emoticons") },
         { label: "Search Transcript...", action: handleSearch },
         { separator: true },
+        { label: `Zoom + (${Math.round(conversationZoom * 100)}%)`, shortcut: "Ctrl++", disabled: conversationZoom >= 1.6, action: zoomConversationIn },
+        { label: "Zoom -", shortcut: "Ctrl+-", disabled: conversationZoom <= 0.7, action: zoomConversationOut },
+        { label: "Zoom par defaut", shortcut: "Ctrl+0", disabled: conversationZoom === 1, action: resetConversationZoom },
+        { separator: true },
         { label: "Activities", action: () => toggleFlyout("activities") },
         { label: "Games", action: () => toggleFlyout("games") },
         { label: "Play Morpion", action: () => { setActiveGame("morpion"); openPanel("games"); } },
@@ -3168,11 +3680,6 @@ function ChatWindow({ bootstrap }) {
     {
       label: "Help",
       entries: [
-        {
-          label: `Demo mode: ${chatSettings?.demoMode ? "on" : "off"}`,
-          action: toggleDemoModeFromChat
-        },
-        { separator: true },
         {
           label: "About Codex Messenger",
           action: () => setUpdateDialogOpen(true)
@@ -3197,10 +3704,13 @@ function ChatWindow({ bootstrap }) {
         <UpdateDialog
           updateState={updateState}
           checking={checkingUpdates}
+          installingTarget={installingUpdateTarget}
+          actionMessage={updateActionMessage}
           appVersion={bootstrap.appVersion}
           userAgent={bootstrap.userAgent ?? ""}
           onCheck={() => checkForUpdates({ force: true })}
           onOpen={(target) => api.openUpdateTarget(target)}
+          onInstall={installUpdateTarget}
           onClose={() => setUpdateDialogOpen(false)}
         />
       ) : null}

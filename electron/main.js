@@ -8,6 +8,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveExecutableCandidate } from "../shared/codexExecutable.js";
+import { defaultCodexOptions, normalizeCodexOptions, sandboxPolicyForMode } from "../shared/codexOptions.js";
 import { codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -155,9 +156,11 @@ const defaultSettings = {
   codexPath: "",
   profile: defaultProfile,
   customAgents: [],
+  contactAliases: {},
   threadTabs: defaultThreadTabs,
   projectSort: defaultProjectSort,
   textStyles: {},
+  codexOptionsByContact: {},
   unreadWizzDelayMs: defaultUnreadWizzDelayMs,
   notificationsEnabled: true,
   newMessageSoundEnabled: true,
@@ -217,6 +220,54 @@ function normalizeBoolean(value, fallback = true) {
   if (value === true || value === "true" || value === 1 || value === "1") return true;
   if (value === false || value === "false" || value === 0 || value === "0") return false;
   return fallback;
+}
+
+function normalizeContactAliases(value = {}) {
+  const aliases = {};
+  if (!value || typeof value !== "object") return aliases;
+  for (const [contactId, name] of Object.entries(value)) {
+    const key = String(contactId ?? "").trim();
+    const label = String(name ?? "").trim().slice(0, 80);
+    if (key && label) aliases[key] = label;
+  }
+  return aliases;
+}
+
+function contactAliasFor(contactId, settings = settingsCache) {
+  return normalizeContactAliases(settings?.contactAliases)[String(contactId ?? "").trim()] ?? "";
+}
+
+function applyContactAlias(contact, settings = settingsCache) {
+  if (!contact?.id) return contact;
+  const alias = contactAliasFor(contact.id, settings);
+  return alias ? { ...contact, name: alias } : contact;
+}
+
+function applyThreadAlias(thread, settings = settingsCache) {
+  if (!thread?.contactId) return thread;
+  const alias = contactAliasFor(thread.contactId, settings);
+  return alias ? { ...thread, preview: alias } : thread;
+}
+
+function normalizeCodexOptionsByContact(value = {}) {
+  const clean = {};
+  if (!value || typeof value !== "object") return clean;
+  for (const [contactId, options] of Object.entries(value)) {
+    const key = String(contactId ?? "").trim();
+    if (!key) continue;
+    clean[key] = normalizeCodexOptions(options);
+  }
+  return clean;
+}
+
+function codexOptionsForContact(contactId, settings = settingsCache) {
+  return normalizeCodexOptions(settings?.codexOptionsByContact?.[contactId] ?? defaultCodexOptions);
+}
+
+function cwdForCodexContact(contact, options, fallback = defaultCwd()) {
+  const cleanOptions = normalizeCodexOptions(options);
+  if (cleanOptions.cwdMode === "local") return defaultCwd();
+  return contact?.cwd ?? fallback ?? defaultCwd();
 }
 
 function normalizeTextStyle(value = {}) {
@@ -475,6 +526,7 @@ function normalizeCustomAgent(agent = {}, existing = []) {
   const id = String(agent.id || uniqueAgentId(name, existing)).trim();
   const group = String(agent.group || "Agents personnalises").trim().slice(0, 48) || "Agents personnalises";
   const mood = String(agent.mood || "agent specifique").trim().slice(0, 90) || "agent specifique";
+  const cwd = String(agent.cwd || defaultCwd()).trim() || defaultCwd();
   const instructions = String(agent.instructions || "").trim().slice(0, 6000)
     || `Tu es ${name}, un agent Codex specialise. Respecte ton role, demande les precisions utiles, puis execute la tache de maniere pragmatique.`;
 
@@ -489,6 +541,7 @@ function normalizeCustomAgent(agent = {}, existing = []) {
     avatar: agentAvatars.has(agent.avatar) ? agent.avatar : "lens",
     kind: "agent",
     custom: true,
+    cwd,
     instructions
   };
 }
@@ -519,8 +572,8 @@ function normalizeThreadTabs(value = {}) {
 }
 
 function contactsForSettings(settings = settingsCache) {
-  if (demoModeIsEnabled(settings)) return demoContacts();
-  return [...contacts, ...normalizeCustomAgents(settings?.customAgents ?? [])];
+  const source = demoModeIsEnabled(settings) ? demoContacts() : [...contacts, ...normalizeCustomAgents(settings?.customAgents ?? [])];
+  return source.map((contact) => applyContactAlias(contact, settings));
 }
 
 async function loadSettings() {
@@ -537,9 +590,11 @@ async function loadSettings() {
     language: settingsCache.language
   });
   settingsCache.customAgents = normalizeCustomAgents(settingsCache.customAgents);
+  settingsCache.contactAliases = normalizeContactAliases(settingsCache.contactAliases);
   settingsCache.threadTabs = normalizeThreadTabs(settingsCache.threadTabs);
   settingsCache.projectSort = normalizeProjectSort(settingsCache.projectSort);
   settingsCache.textStyles = normalizeTextStyles(settingsCache.textStyles);
+  settingsCache.codexOptionsByContact = normalizeCodexOptionsByContact(settingsCache.codexOptionsByContact);
   settingsCache.unreadWizzDelayMs = normalizeUnreadWizzDelayMs(settingsCache.unreadWizzDelayMs);
   settingsCache.notificationsEnabled = normalizeBoolean(settingsCache.notificationsEnabled, true);
   settingsCache.newMessageSoundEnabled = normalizeBoolean(settingsCache.newMessageSoundEnabled, true);
@@ -566,9 +621,11 @@ async function saveSettings(nextSettings = {}) {
     codexPath: String(nextSettings.codexPath ?? current.codexPath ?? "").trim(),
     profile: nextProfile,
     customAgents: normalizeCustomAgents(nextSettings.customAgents ?? current.customAgents),
+    contactAliases: normalizeContactAliases(nextSettings.contactAliases ?? current.contactAliases),
     threadTabs: normalizeThreadTabs(nextSettings.threadTabs ?? current.threadTabs),
     projectSort: normalizeProjectSort(nextSettings.projectSort ?? current.projectSort),
     textStyles: normalizeTextStyles(nextSettings.textStyles ?? current.textStyles),
+    codexOptionsByContact: normalizeCodexOptionsByContact(nextSettings.codexOptionsByContact ?? current.codexOptionsByContact),
     unreadWizzDelayMs: normalizeUnreadWizzDelayMs(nextSettings.unreadWizzDelayMs ?? current.unreadWizzDelayMs),
     notificationsEnabled: normalizeBoolean(nextSettings.notificationsEnabled ?? current.notificationsEnabled, true),
     newMessageSoundEnabled: normalizeBoolean(nextSettings.newMessageSoundEnabled ?? current.newMessageSoundEnabled, true),
@@ -759,6 +816,92 @@ function updateAvailable(latestVersion, currentVersion) {
 
 function updateCheckError(error) {
   return String(error?.message || error || "Update check failed");
+}
+
+function formatCommandForDisplay(command, args = []) {
+  return [command, ...args].join(" ");
+}
+
+function compactUpdateOutput(stdout = "", stderr = "") {
+  const combined = [stdout, stderr].filter(Boolean).join("\n").trim();
+  if (!combined) return "";
+  return combined.length > 4000 ? `${combined.slice(-4000)}` : combined;
+}
+
+function spawnableUpdateCommand(command, args = []) {
+  if (process.platform === "win32" && [".cmd", ".bat"].includes(path.extname(command).toLowerCase())) {
+    return {
+      command: "cmd.exe",
+      args: ["/d", "/s", "/c", command, ...args]
+    };
+  }
+  return { command, args };
+}
+
+function runUpdateCommand(command, args = [], { timeoutMs = 5 * 60_000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const spawnable = spawnableUpdateCommand(command, args);
+    const child = spawn(spawnable.command, spawnable.args, {
+      cwd: defaultCwd(),
+      env: process.env,
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    let stdout = "";
+    let stderr = "";
+    const timeout = setTimeout(() => {
+      child.kill();
+      reject(new Error(`${formatCommandForDisplay(command, args)} timed out`));
+    }, timeoutMs);
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.on("exit", (code) => {
+      clearTimeout(timeout);
+      if (code === 0) {
+        resolve({ stdout, stderr });
+        return;
+      }
+      const output = compactUpdateOutput(stdout, stderr);
+      reject(new Error(output || `${formatCommandForDisplay(command, args)} exited with ${code}`));
+    });
+  });
+}
+
+async function installCodexUpdate() {
+  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+  const args = ["install", "-g", `${codexNpmPackageName}@latest`];
+  const command = formatCommandForDisplay("npm", args);
+  const before = await checkCodexUpdate();
+  const output = await runUpdateCommand(npmCommand, args);
+  updateCheckCache = null;
+  const after = await checkCodexUpdate();
+  const currentLabel = versionLabelForResult(after.currentVersion || after.latestVersion);
+  const message = after.error
+    ? `Codex app-server update command finished, but verification failed: ${after.error}`
+    : after.updateAvailable
+      ? `Codex app-server update command finished, but detected version is still ${currentLabel}.`
+      : `Codex app-server is up to date (${currentLabel}).`;
+  return {
+    ok: true,
+    target: "codex",
+    command,
+    before,
+    after,
+    message,
+    output: compactUpdateOutput(output.stdout, output.stderr)
+  };
+}
+
+function versionLabelForResult(value) {
+  return displayVersion(value) || "unknown";
 }
 
 async function checkFrontUpdate() {
@@ -983,14 +1126,15 @@ class CodexAppServer extends EventEmitter {
     this.child.stdin.write(`${JSON.stringify(payload)}\n`);
   }
 
-  async startThread(contact, cwd = defaultCwd()) {
+  async startThread(contact, cwd = defaultCwd(), options = defaultCodexOptions) {
     await this.ensureReady();
+    const codexOptions = normalizeCodexOptions(options);
     const result = await this.request("thread/start", {
-      model: null,
+      model: codexOptions.model || null,
       modelProvider: null,
       cwd,
-      approvalPolicy: "never",
-      sandbox: "workspaceWrite",
+      approvalPolicy: codexOptions.approvalPolicy,
+      sandbox: codexOptions.sandbox,
       config: null,
       baseInstructions: null,
       developerInstructions: localizedInstructions(contact)
@@ -1000,15 +1144,16 @@ class CodexAppServer extends EventEmitter {
 
   async resumeThread(threadId, overrides = {}) {
     await this.ensureReady();
+    const codexOptions = normalizeCodexOptions(overrides.codexOptions);
     const result = await this.request("thread/resume", {
       threadId,
       history: null,
       path: null,
-      model: null,
+      model: codexOptions.model || null,
       modelProvider: null,
       cwd: overrides.cwd ?? null,
-      approvalPolicy: "never",
-      sandbox: "workspaceWrite",
+      approvalPolicy: codexOptions.approvalPolicy,
+      sandbox: codexOptions.sandbox,
       config: null,
       baseInstructions: null,
       developerInstructions: overrides.developerInstructions ?? null
@@ -1032,17 +1177,33 @@ class CodexAppServer extends EventEmitter {
     return data;
   }
 
-  async startTurn(threadId, input) {
+  async listModels() {
+    await this.ensureReady();
+    const data = [];
+    let cursor = null;
+    do {
+      const result = await this.request("model/list", {
+        cursor,
+        limit: 100
+      });
+      data.push(...(result.data ?? []));
+      cursor = result.nextCursor ?? null;
+    } while (cursor);
+    return data;
+  }
+
+  async startTurn(threadId, input, options = defaultCodexOptions) {
     await this.ensureReady();
     const items = typeof input === "string" ? [{ type: "text", text: input }] : input;
+    const codexOptions = normalizeCodexOptions(options);
     return this.request("turn/start", {
       threadId,
       input: items,
       cwd: null,
-      approvalPolicy: null,
-      sandboxPolicy: null,
-      model: null,
-      effort: null,
+      approvalPolicy: codexOptions.approvalPolicy,
+      sandboxPolicy: sandboxPolicyForMode(codexOptions.sandbox),
+      model: codexOptions.model || null,
+      effort: codexOptions.reasoningEffort || null,
       summary: null
     });
   }
@@ -1082,7 +1243,7 @@ function projectNameFor(cwd) {
 function contactFromProject(cwd) {
   const name = projectNameFor(cwd);
   const isDemo = isDemoProjectPath(cwd);
-  return {
+  return applyContactAlias({
     id: encodeProjectId(cwd),
     name,
     mail: `${name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@${isDemo ? "codex.local" : "project.local"}`,
@@ -1098,7 +1259,7 @@ function contactFromProject(cwd) {
         ? `Tu es Codex dans Codex Messenger. Cette conversation est le tour isole "${name}" dans ${cwd}. Reponds en francais et n'utilise pas de vraies conversations utilisateur.`
         : `Tu es Codex dans Codex Messenger. Cette conversation correspond au projet local "${name}" dans ${cwd}. ` +
           "Travaille dans ce dossier, reponds en francais, et reste pragmatique."
-  };
+  });
 }
 
 function contactFromThread(threadId) {
@@ -1108,7 +1269,7 @@ function contactFromThread(threadId) {
   const preview = String(thread?.preview ?? "").trim();
   const name = preview ? preview.slice(0, 44) : `Fil ${threadId.slice(0, 8)}`;
   const isDemo = isDemoProjectPath(cwd);
-  return {
+  return applyContactAlias({
     id: `thread:${threadId}`,
     name,
     mail: `${projectNameFor(cwd).toLowerCase().replace(/[^a-z0-9]+/g, ".")}@thread.local`,
@@ -1125,7 +1286,7 @@ function contactFromThread(threadId) {
         ? `Tu es Codex dans Codex Messenger. Ce fil appartient au tour isole ${projectNameFor(cwd)} (${cwd}). Continue la demonstration sans acceder aux vraies conversations utilisateur.`
         : `Tu es Codex dans Codex Messenger. Ce fil appartient au projet ${projectNameFor(cwd)} (${cwd}). ` +
           "Reprends le contexte existant et reponds en francais."
-  };
+  });
 }
 
 function contactFor(id) {
@@ -1220,15 +1381,16 @@ async function conversationBrowser() {
   for (const thread of threads) projectPaths.add(thread.cwd);
 
   const projects = await Promise.all(Array.from(projectPaths).map(async (cwd) => {
+    const projectContactId = encodeProjectId(cwd);
     const projectThreads = sortThreadsForCwd(
       threads.filter((thread) => thread.cwd === cwd),
       cwd,
       settings.threadTabs
     );
     return {
-      id: encodeProjectId(cwd),
+      id: projectContactId,
       cwd,
-      name: projectNameFor(cwd),
+      name: contactAliasFor(projectContactId, settings) || projectNameFor(cwd),
       threads: projectThreads,
       ...(await projectMetadata(cwd, projectThreads))
     };
@@ -1245,18 +1407,18 @@ async function listVisibleThreads(settings = settingsCache) {
   const currentSettings = settings ?? await loadSettings();
   const hiddenIds = new Set(currentSettings.threadTabs.hiddenIds);
   try {
-    const threads = (await codex.listThreads()).map(normalizeThread).filter((thread) => !hiddenIds.has(thread.id));
+    const threads = (await codex.listThreads()).map(normalizeThread).map((thread) => applyThreadAlias(thread, currentSettings)).filter((thread) => !hiddenIds.has(thread.id));
     if (demoModeIsEnabled(currentSettings)) {
       await ensureDemoProject();
       const realDemoThreads = threads.filter((thread) => isDemoProjectPath(thread.cwd));
-      const seeded = demoSeedThreads().filter((thread) => !hiddenIds.has(thread.id));
+      const seeded = demoSeedThreads().map((thread) => applyThreadAlias(thread, currentSettings)).filter((thread) => !hiddenIds.has(thread.id));
       return [...seeded, ...realDemoThreads];
     }
     return threads;
   } catch {
     if (demoModeIsEnabled(currentSettings)) {
       await ensureDemoProject();
-      return demoSeedThreads().filter((thread) => !hiddenIds.has(thread.id));
+      return demoSeedThreads().map((thread) => applyThreadAlias(thread, currentSettings)).filter((thread) => !hiddenIds.has(thread.id));
     }
     return [];
   }
@@ -1510,12 +1672,9 @@ function quitApplication() {
   app.quit();
 }
 
-function switchChatWindow(event, contactId) {
+function retargetChatWindow(event, contactId) {
   const win = BrowserWindow.fromWebContents(event.sender);
-  if (!win || win.isDestroyed()) {
-    createChatWindow(contactId);
-    return { ok: true };
-  }
+  if (!win || win.isDestroyed()) return null;
 
   const targetKey = `chat:${contactId}`;
   const existing = windows.get(targetKey);
@@ -1530,6 +1689,16 @@ function switchChatWindow(event, contactId) {
   }
   windows.set(targetKey, win);
   setStableWindowTitle(win, chatWindowTitle(contactFor(contactId)));
+  return win;
+}
+
+function switchChatWindow(event, contactId) {
+  const win = retargetChatWindow(event, contactId);
+  if (!win) {
+    createChatWindow(contactId);
+    return { ok: true };
+  }
+
   win.loadURL(rendererUrl({ view: "chat", contactId }));
   return { ok: true };
 }
@@ -1830,13 +1999,16 @@ function normalizeMessageTextForDedupe(text) {
 
 async function ensureThread(contactId) {
   if (threadByContact.has(contactId)) return threadByContact.get(contactId);
+  const settings = await loadSettings();
   const contact = contactFor(contactId);
+  const codexOptions = codexOptionsForContact(contactId, settings);
 
   const existingThreadId = threadIdFromContactId(contactId);
   if (existingThreadId && !isDemoSeedThreadId(existingThreadId)) {
     const thread = await codex.resumeThread(existingThreadId, {
-      cwd: contact.cwd ?? knownThreads.get(existingThreadId)?.cwd ?? defaultCwd(),
-      developerInstructions: localizedInstructions(contact)
+      cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(existingThreadId)?.cwd),
+      developerInstructions: localizedInstructions(contact),
+      codexOptions
     });
     knownThreads.set(existingThreadId, thread);
     threadByContact.set(contactId, existingThreadId);
@@ -1845,7 +2017,7 @@ async function ensureThread(contactId) {
   }
 
   if (isDemoProjectPath(contact.cwd)) await ensureDemoProject();
-  const threadId = await codex.startThread(contact, contact.cwd ?? defaultCwd());
+  const threadId = await codex.startThread(contact, cwdForCodexContact(contact, codexOptions), codexOptions);
   threadByContact.set(contactId, threadId);
   contactByThread.set(threadId, contactId);
   return threadId;
@@ -1937,11 +2109,13 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
       }
 
       if (threadId) {
+        const codexOptions = codexOptionsForContact(contactId, settings);
         const thread = isDemoSeedThreadId(threadId)
           ? demoSeedThreadById(threadId)
           : await codex.resumeThread(threadId, {
-            cwd: contact.cwd ?? knownThreads.get(threadId)?.cwd ?? defaultCwd(),
-            developerInstructions: localizedInstructions(contact)
+            cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(threadId)?.cwd),
+            developerInstructions: localizedInstructions(contact),
+            codexOptions
           });
         if (thread) knownThreads.set(threadId, thread);
         if (threadIdFromContactId(contactId)) {
@@ -1987,6 +2161,14 @@ ipcMain.handle("updates:open", (_event, target = "front") => {
   return { ok: true, url };
 });
 
+ipcMain.handle("updates:install", async (_event, target = "codex") => {
+  if (target !== "codex") {
+    shell.openExternal(frontReleasesUrl);
+    return { ok: true, target: "front", url: frontReleasesUrl };
+  }
+  return installCodexUpdate();
+});
+
 ipcMain.handle("auth:sign-in", async (_event, nextProfile) => {
   const settings = await saveSettings({
     language: nextProfile.language,
@@ -2009,8 +2191,21 @@ ipcMain.handle("settings:set", async (_event, nextSettings = {}) => ({
   codexStatus: await codexStatus(nextSettings.codexPath)
 }));
 
+ipcMain.handle("models:list", async () => ({
+  ok: true,
+  models: await codex.listModels()
+}));
+
 ipcMain.handle("contacts:create-agent", async (_event, draft = {}) => {
   const current = await loadSettings();
+  const cwd = String(draft?.cwd || "").trim();
+  if (!cwd) return { ok: false, error: "Choisis le dossier de run avant de creer le contact." };
+  try {
+    const stat = await fs.stat(cwd);
+    if (!stat.isDirectory()) return { ok: false, error: "Le dossier de run selectionne n'est pas un dossier." };
+  } catch {
+    return { ok: false, error: "Le dossier de run selectionne est introuvable." };
+  }
   const contact = normalizeCustomAgent(draft, current.customAgents);
   const customAgents = [
     ...current.customAgents.filter((agent) => agent.id !== contact.id),
@@ -2021,6 +2216,23 @@ ipcMain.handle("contacts:create-agent", async (_event, draft = {}) => {
     ok: true,
     contact,
     contacts: contactsForSettings(settings),
+    settings
+  };
+});
+
+ipcMain.handle("contacts:rename", async (_event, payload = {}) => {
+  const contactId = String(payload.contactId || "").trim();
+  if (!contactId) return { ok: false, error: "Contact invalide" };
+  const name = String(payload.name || "").trim().slice(0, 80);
+  const current = await loadSettings();
+  const contactAliases = normalizeContactAliases(current.contactAliases);
+  if (name) contactAliases[contactId] = name;
+  else delete contactAliases[contactId];
+  const settings = await saveSettings({ contactAliases });
+  return {
+    ok: true,
+    contacts: contactsForSettings(settings),
+    conversations: await conversationBrowser(),
     settings
   };
 });
@@ -2049,7 +2261,7 @@ ipcMain.handle("settings:test-codex", async (_event, candidatePath = null) => {
   };
 });
 
-ipcMain.handle("profile:choose-picture", async (event) => {
+ipcMain.handle("profile:choose-picture", async (event, options = {}) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = await dialog.showOpenDialog(win, {
     title: "Change Display Picture",
@@ -2066,6 +2278,17 @@ ipcMain.handle("profile:choose-picture", async (event) => {
   await fs.mkdir(profileDir, { recursive: true });
   const targetPath = path.join(profileDir, safeFileName(path.basename(sourcePath)));
   await fs.copyFile(sourcePath, targetPath);
+  if (options?.save === false) {
+    return {
+      canceled: false,
+      path: targetPath,
+      profile: {
+        ...profile,
+        displayPicturePath: targetPath,
+        displayPictureAsset: ""
+      }
+    };
+  }
   const settings = await saveSettings({
     profile: {
       ...profile,
@@ -2108,26 +2331,32 @@ ipcMain.handle("conversation:switch-thread", (event, threadId) => {
   return switchChatWindow(event, `thread:${threadId}`);
 });
 
-ipcMain.handle("conversation:load-thread", async (_event, { contactId, threadId } = {}) => {
+ipcMain.handle("conversation:load-thread", async (event, { contactId, threadId } = {}) => {
   const cleanThreadId = String(threadId || "").trim();
   const cleanContactId = String(contactId || "").trim();
   if (!cleanThreadId || !cleanContactId) return { ok: false, error: "Fil invalide" };
+  const settings = await loadSettings();
   const contact = contactFor(cleanContactId);
+  const codexOptions = codexOptionsForContact(cleanContactId, settings);
   const thread = isDemoSeedThreadId(cleanThreadId)
     ? demoSeedThreadById(cleanThreadId)
     : await codex.resumeThread(cleanThreadId, {
-      cwd: contact.cwd ?? knownThreads.get(cleanThreadId)?.cwd ?? defaultCwd(),
-      developerInstructions: localizedInstructions(contact)
-    });
+      cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(cleanThreadId)?.cwd),
+      developerInstructions: localizedInstructions(contact),
+      codexOptions
+  });
   if (thread) knownThreads.set(cleanThreadId, thread);
   const hydratedContact = contact.kind === "project" ? { ...contact, threadId: cleanThreadId } : contactFromThread(cleanThreadId);
+  const targetContactId = hydratedContact.id;
   if (!isDemoSeedThreadId(cleanThreadId)) {
-    threadByContact.set(cleanContactId, cleanThreadId);
-    contactByThread.set(cleanThreadId, cleanContactId);
+    threadByContact.set(targetContactId, cleanThreadId);
+    contactByThread.set(cleanThreadId, targetContactId);
   }
+  retargetChatWindow(event, targetContactId);
   return {
     ok: true,
     threadId: cleanThreadId,
+    contactId: targetContactId,
     contact: hydratedContact,
     messages: messagesFromThread(thread, hydratedContact),
     conversations: await conversationBrowser()
@@ -2156,6 +2385,17 @@ ipcMain.handle("conversation:open-project-picker", async (event) => {
   const cwd = result.filePaths[0];
   createChatWindow(encodeProjectId(cwd));
   return { canceled: false, cwd };
+});
+
+ipcMain.handle("app:choose-directory", async (event, options = {}) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win, {
+    title: String(options.title || "Choisir un dossier"),
+    defaultPath: String(options.defaultPath || projectsRoot()),
+    properties: ["openDirectory"]
+  });
+  if (result.canceled || !result.filePaths?.[0]) return { canceled: true };
+  return { canceled: false, cwd: result.filePaths[0] };
 });
 
 ipcMain.handle("conversation:list", async () => conversationBrowser());
@@ -2210,8 +2450,10 @@ async function sendConversationItems(contactId, items) {
   try {
     clearUnread(contactId);
     sendToChat(contactId, "codex:typing", { contactId });
+    const settings = await loadSettings();
+    const codexOptions = codexOptionsForContact(contactId, settings);
     const threadId = await ensureThread(contactId);
-    await codex.startTurn(threadId, cleanItems);
+    await codex.startTurn(threadId, cleanItems, codexOptions);
     return { ok: true, threadId, conversations: await conversationBrowser() };
   } catch (error) {
     sendToChat(contactId, "codex:error", { contactId, text: error.message });
@@ -2333,6 +2575,14 @@ ipcMain.handle("window:maximize", (event) => {
 
 ipcMain.handle("window:close", (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();
+});
+
+ipcMain.handle("window:set-zoom-factor", (event, factor = 1) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win) return { ok: false, zoomFactor: 1 };
+  const zoomFactor = Math.max(0.7, Math.min(1.6, Number(factor) || 1));
+  win.webContents.setZoomFactor(zoomFactor);
+  return { ok: true, zoomFactor: win.webContents.getZoomFactor() };
 });
 
 app.whenReady().then(() => {
