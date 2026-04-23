@@ -1,7 +1,9 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell, Tray } from "electron";
 import { execFile, spawn } from "node:child_process";
 import { EventEmitter } from "node:events";
+import { readFileSync } from "node:fs";
 import fs from "node:fs/promises";
+import https from "node:https";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -15,7 +17,14 @@ const isDev = Boolean(process.env.VITE_DEV_SERVER_URL);
 const devUrl = process.env.VITE_DEV_SERVER_URL ?? "http://127.0.0.1:5174/";
 const smokeTest = process.argv.includes("--smoke-test");
 const appIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people.ico");
-const toastIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people.png");
+const toastIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people-256.png");
+const repositoryUrl = "https://github.com/anisayari/codex-messenger";
+const frontPackageUrl = "https://raw.githubusercontent.com/anisayari/codex-messenger/main/package.json";
+const frontReleasesUrl = `${repositoryUrl}/releases`;
+const codexNpmPackageName = "@openai/codex";
+const codexNpmRegistryUrl = "https://registry.npmjs.org/@openai%2Fcodex/latest";
+const codexNpmUrl = "https://www.npmjs.com/package/@openai/codex";
+const updateCheckCacheMs = 10 * 60_000;
 
 app.setName("Codex Messenger");
 if (process.platform === "win32") app.setAppUserModelId("com.codex.messenger");
@@ -91,6 +100,13 @@ const displayPictureAssets = [
 const displayPictureAssetByAvatar = new Map(displayPictureAssets);
 const displayPictureAssetSet = new Set(displayPictureAssets.map(([, asset]) => asset));
 const agentAvatars = new Set(["butterfly", "lens", "brush", "terminal", ...displayPictureAssetByAvatar.keys()]);
+const demoProjectDisplayName = "Codex Messenger Tour";
+const demoProjectFolderName = "codex-messenger-tour";
+const demoSeedThreadIds = new Set([
+  "demo-seed-welcome",
+  "demo-seed-xp-polish",
+  "demo-seed-release-check"
+]);
 const defaultProfile = {
   email: "anis@codex.local",
   status: "online",
@@ -112,6 +128,8 @@ const toastWindows = [];
 const knownThreads = new Map();
 let tray = null;
 let isQuitting = false;
+let updateCheckCache = null;
+let updateCheckPromise = null;
 const defaultUnreadWizzDelayMs = Math.max(10_000, Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 60_000);
 const defaultThreadTabs = { orderByCwd: {}, hiddenIds: [] };
 const defaultProjectSort = "name-asc";
@@ -141,6 +159,10 @@ const defaultSettings = {
   projectSort: defaultProjectSort,
   textStyles: {},
   unreadWizzDelayMs: defaultUnreadWizzDelayMs,
+  notificationsEnabled: true,
+  newMessageSoundEnabled: true,
+  unreadWizzEnabled: true,
+  demoMode: false,
   closeBehavior: "ask"
 };
 let settingsCache = null;
@@ -155,6 +177,10 @@ function projectsRoot() {
 
 function uploadsDir() {
   return path.join(app.isPackaged ? app.getPath("userData") : rootDir, "uploads");
+}
+
+function demoProjectCwd() {
+  return path.join(app.getPath("userData"), demoProjectFolderName);
 }
 
 function settingsFilePath() {
@@ -187,6 +213,12 @@ function normalizeUnreadWizzDelayMs(value) {
   return Math.max(10_000, Math.min(30 * 60_000, Math.round(delay)));
 }
 
+function normalizeBoolean(value, fallback = true) {
+  if (value === true || value === "true" || value === 1 || value === "1") return true;
+  if (value === false || value === "false" || value === 0 || value === "0") return false;
+  return fallback;
+}
+
 function normalizeTextStyle(value = {}) {
   const fontFamily = String(value.fontFamily || defaultTextStyle.fontFamily).trim().slice(0, 48) || defaultTextStyle.fontFamily;
   const fontSize = Math.max(9, Math.min(18, Math.round(Number(value.fontSize) || defaultTextStyle.fontSize)));
@@ -209,6 +241,205 @@ function normalizeTextStyles(value = {}) {
 
 function currentUnreadWizzDelayMs() {
   return normalizeUnreadWizzDelayMs(settingsCache?.unreadWizzDelayMs ?? defaultUnreadWizzDelayMs);
+}
+
+function notificationsAreEnabled() {
+  return normalizeBoolean(settingsCache?.notificationsEnabled, true);
+}
+
+function newMessageSoundIsEnabled() {
+  return normalizeBoolean(settingsCache?.newMessageSoundEnabled, true);
+}
+
+function unreadWizzIsEnabled() {
+  return normalizeBoolean(settingsCache?.unreadWizzEnabled, true);
+}
+
+function demoModeIsEnabled(settings = settingsCache) {
+  return normalizeBoolean(settings?.demoMode, false);
+}
+
+function normalizedPathKey(filePath) {
+  return path.resolve(String(filePath || "")).toLowerCase();
+}
+
+function isDemoProjectPath(cwd) {
+  return normalizedPathKey(cwd) === normalizedPathKey(demoProjectCwd());
+}
+
+async function writeFileIfMissing(filePath, text) {
+  try {
+    await fs.access(filePath);
+  } catch {
+    await fs.writeFile(filePath, text, "utf8");
+  }
+}
+
+async function ensureDemoProject() {
+  const cwd = demoProjectCwd();
+  await fs.mkdir(path.join(cwd, "notes"), { recursive: true });
+  await writeFileIfMissing(
+    path.join(cwd, "README.md"),
+    [
+      "# Codex Messenger Tour",
+      "",
+      "This folder is used by Codex Messenger demo mode.",
+      "It exists only so Codex has an isolated workspace while the app shows demo agents, projects, and threads.",
+      "",
+      "Real Codex conversations and user projects are not copied here."
+    ].join("\n")
+  );
+  await writeFileIfMissing(
+    path.join(cwd, "notes", "xp-window-checklist.md"),
+    [
+      "# XP Window Checklist",
+      "",
+      "- Glossy blue title bar",
+      "- MSN-style menu and toolbar",
+      "- Wizz movement on the native window",
+      "- Conversation tabs inside project windows"
+    ].join("\n")
+  );
+  await writeFileIfMissing(
+    path.join(cwd, "notes", "release-checklist.md"),
+    [
+      "# Release Checklist",
+      "",
+      "- Keep version at 0.0.1 until explicitly changed",
+      "- No build unless requested",
+      "- Update README before publishing",
+      "- Verify Codex CLI detection"
+    ].join("\n")
+  );
+  return cwd;
+}
+
+function demoContacts() {
+  const cwd = demoProjectCwd();
+  return [
+    {
+      id: "demo-agent:guide",
+      name: "Codex Guide",
+      mail: "guide@codex.local",
+      group: "Showcase",
+      status: "online",
+      mood: "visite guidee",
+      color: "#0f8b78",
+      avatar: "butterfly",
+      kind: "agent",
+      cwd,
+      instructions:
+        "Tu es Codex Guide dans Codex Messenger. Cette conversation est en mode demonstration isole. " +
+        "Aide l'utilisateur a decouvrir l'app sans mentionner ses vraies conversations. Travaille dans le dossier de tour fourni."
+    },
+    {
+      id: "demo-agent:designer",
+      name: "Interface Designer",
+      mail: "designer@codex.local",
+      group: "Showcase",
+      status: "away",
+      mood: "polish MSN 7",
+      color: "#d88721",
+      avatar: "msn-orange-daisy",
+      kind: "agent",
+      cwd,
+      instructions:
+        "Tu es un agent UI en mode demonstration Codex Messenger. Propose des ameliorations visuelles retro MSN/Windows XP, " +
+        "avec des actions concretes et courtes, dans le workspace de tour uniquement."
+    },
+    {
+      id: "demo-agent:release",
+      name: "Release Reviewer",
+      mail: "release@codex.local",
+      group: "Showcase",
+      status: "busy",
+      mood: "check release",
+      color: "#315fd0",
+      avatar: "msn-friendly-dog",
+      kind: "agent",
+      cwd,
+      instructions:
+        "Tu es un agent release en mode demonstration Codex Messenger. Verifie les risques, la documentation, les scripts, " +
+        "et les checks possibles sans lancer de build sauf demande explicite."
+    }
+  ];
+}
+
+function demoSeedThreadData() {
+  const cwd = demoProjectCwd();
+  const baseTime = Date.parse("2026-04-23T08:00:00.000Z") / 1000;
+  return [
+    {
+      id: "demo-seed-welcome",
+      preview: "Premiers pas dans Codex Messenger",
+      createdAt: baseTime + 60,
+      cwd,
+      source: "demo",
+      modelProvider: "demo",
+      turns: [
+        {
+          items: [
+            { id: "demo-welcome-user", type: "user_message", text: "Je veux voir l'app sans afficher mes vrais projets.", timestamp: "2026-04-23T08:01:00.000Z" },
+            { id: "demo-welcome-agent", type: "agent_message", text: "Mode demonstration actif. Je peux repondre normalement via Codex, mais la liste montre seulement des agents et fils de presentation.", timestamp: "2026-04-23T08:01:18.000Z" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "demo-seed-xp-polish",
+      preview: "Polish XP sur une fenetre de conversation",
+      createdAt: baseTime + 120,
+      cwd,
+      source: "demo",
+      modelProvider: "demo",
+      turns: [
+        {
+          items: [
+            { id: "demo-polish-user", type: "user_message", text: "Analyse la fenetre et trouve trois details qui ne font pas assez MSN 7.", timestamp: "2026-04-23T08:02:00.000Z" },
+            { id: "demo-polish-agent", type: "agent_message", text: "Priorites: renforcer les reflets du titre, rapprocher les flyouts des boutons, et garder la zone de saisie visible au resize. Je peux ensuite appliquer ces corrections.", timestamp: "2026-04-23T08:02:24.000Z" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "demo-seed-release-check",
+      preview: "Checklist release Windows",
+      createdAt: baseTime + 180,
+      cwd,
+      source: "demo",
+      modelProvider: "demo",
+      turns: [
+        {
+          items: [
+            { id: "demo-release-user", type: "user_message", text: "Prepare une checklist release sans changer la version.", timestamp: "2026-04-23T08:03:00.000Z" },
+            { id: "demo-release-agent", type: "agent_message", text: "Checklist: garder `0.0.1`, verifier detection Codex, relire README, tester le launcher, puis publier seulement les artefacts demandes.", timestamp: "2026-04-23T08:03:19.000Z" }
+          ]
+        }
+      ]
+    }
+  ];
+}
+
+function isDemoSeedThreadId(threadId) {
+  return demoSeedThreadIds.has(String(threadId || ""));
+}
+
+function demoSeedThreadById(threadId) {
+  return demoSeedThreadData().find((thread) => thread.id === threadId) ?? null;
+}
+
+function demoSeedThreads() {
+  return demoSeedThreadData().map((thread) => {
+    knownThreads.set(thread.id, thread);
+    return normalizeThread(thread);
+  });
+}
+
+function closeChatWindowsForModeSwitch() {
+  for (const [key, win] of windows.entries()) {
+    if (!key.startsWith("chat:")) continue;
+    if (!win.isDestroyed()) win.close();
+  }
 }
 
 function slugifyAgentName(name) {
@@ -288,6 +519,7 @@ function normalizeThreadTabs(value = {}) {
 }
 
 function contactsForSettings(settings = settingsCache) {
+  if (demoModeIsEnabled(settings)) return demoContacts();
   return [...contacts, ...normalizeCustomAgents(settings?.customAgents ?? [])];
 }
 
@@ -309,6 +541,10 @@ async function loadSettings() {
   settingsCache.projectSort = normalizeProjectSort(settingsCache.projectSort);
   settingsCache.textStyles = normalizeTextStyles(settingsCache.textStyles);
   settingsCache.unreadWizzDelayMs = normalizeUnreadWizzDelayMs(settingsCache.unreadWizzDelayMs);
+  settingsCache.notificationsEnabled = normalizeBoolean(settingsCache.notificationsEnabled, true);
+  settingsCache.newMessageSoundEnabled = normalizeBoolean(settingsCache.newMessageSoundEnabled, true);
+  settingsCache.unreadWizzEnabled = normalizeBoolean(settingsCache.unreadWizzEnabled, true);
+  settingsCache.demoMode = normalizeBoolean(settingsCache.demoMode, false);
   settingsCache.closeBehavior = normalizeCloseBehavior(settingsCache.closeBehavior);
   Object.assign(profile, settingsCache.profile);
   return settingsCache;
@@ -316,6 +552,7 @@ async function loadSettings() {
 
 async function saveSettings(nextSettings = {}) {
   const current = await loadSettings();
+  const previousDemoMode = demoModeIsEnabled(current);
   const nextLanguage = normalizeLanguage(nextSettings.language ?? nextSettings.profile?.language ?? current.language);
   const nextProfile = normalizeProfile({
     ...current.profile,
@@ -333,11 +570,26 @@ async function saveSettings(nextSettings = {}) {
     projectSort: normalizeProjectSort(nextSettings.projectSort ?? current.projectSort),
     textStyles: normalizeTextStyles(nextSettings.textStyles ?? current.textStyles),
     unreadWizzDelayMs: normalizeUnreadWizzDelayMs(nextSettings.unreadWizzDelayMs ?? current.unreadWizzDelayMs),
+    notificationsEnabled: normalizeBoolean(nextSettings.notificationsEnabled ?? current.notificationsEnabled, true),
+    newMessageSoundEnabled: normalizeBoolean(nextSettings.newMessageSoundEnabled ?? current.newMessageSoundEnabled, true),
+    unreadWizzEnabled: normalizeBoolean(nextSettings.unreadWizzEnabled ?? current.unreadWizzEnabled, true),
+    demoMode: normalizeBoolean(nextSettings.demoMode ?? current.demoMode, false),
     closeBehavior: normalizeCloseBehavior(nextSettings.closeBehavior ?? current.closeBehavior)
   };
   await fs.mkdir(path.dirname(settingsFilePath()), { recursive: true });
   await fs.writeFile(settingsFilePath(), JSON.stringify(settingsCache, null, 2), "utf8");
   Object.assign(profile, settingsCache.profile);
+  if (!settingsCache.unreadWizzEnabled) {
+    for (const contactId of unreadReminderByContact.keys()) clearUnreadReminder(contactId);
+  }
+  if (!settingsCache.notificationsEnabled) {
+    for (const win of [...toastWindows]) {
+      if (!win.isDestroyed()) win.close();
+    }
+  }
+  if (settingsCache.demoMode !== previousDemoMode) {
+    setTimeout(closeChatWindowsForModeSwitch, 80);
+  }
   return settingsCache;
 }
 
@@ -436,6 +688,165 @@ function runCodexCommand(command, args = []) {
       else reject(new Error((stderr || stdout || `codex exited with ${code}`).trim()));
     });
   });
+}
+
+function fetchJson(url, timeoutMs = 6500) {
+  return new Promise((resolve, reject) => {
+    const request = https.get(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": `Codex-Messenger/${app.getVersion()}`
+      },
+      timeout: timeoutMs
+    }, (response) => {
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+        response.resume();
+        fetchJson(new URL(response.headers.location, url).toString(), timeoutMs).then(resolve, reject);
+        return;
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        response.resume();
+        reject(new Error(`HTTP ${response.statusCode}`));
+        return;
+      }
+      let raw = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => { raw += chunk; });
+      response.on("end", () => {
+        try {
+          resolve(JSON.parse(raw));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+    request.on("timeout", () => {
+      request.destroy(new Error("Update check timeout"));
+    });
+    request.on("error", reject);
+  });
+}
+
+function parseVersion(value) {
+  const match = String(value ?? "").match(/v?(\d+)\.(\d+)\.(\d+)(?:[-+][0-9A-Za-z.-]+)?/);
+  if (!match) return null;
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+    raw: `${match[1]}.${match[2]}.${match[3]}`
+  };
+}
+
+function displayVersion(value) {
+  return parseVersion(value)?.raw || String(value ?? "").trim();
+}
+
+function compareVersions(left, right) {
+  const a = parseVersion(left);
+  const b = parseVersion(right);
+  if (!a || !b) return 0;
+  for (const key of ["major", "minor", "patch"]) {
+    if (a[key] > b[key]) return 1;
+    if (a[key] < b[key]) return -1;
+  }
+  return 0;
+}
+
+function updateAvailable(latestVersion, currentVersion) {
+  return compareVersions(latestVersion, currentVersion) > 0;
+}
+
+function updateCheckError(error) {
+  return String(error?.message || error || "Update check failed");
+}
+
+async function checkFrontUpdate() {
+  const currentVersion = app.getVersion();
+  const result = {
+    id: "front",
+    name: "Codex Messenger",
+    currentVersion,
+    latestVersion: "",
+    updateAvailable: false,
+    source: "github",
+    url: frontReleasesUrl,
+    error: ""
+  };
+
+  try {
+    const remotePackage = await fetchJson(frontPackageUrl);
+    result.latestVersion = displayVersion(remotePackage.version);
+    result.updateAvailable = updateAvailable(result.latestVersion, currentVersion);
+  } catch (error) {
+    result.error = updateCheckError(error);
+  }
+  return result;
+}
+
+async function checkCodexUpdate() {
+  const result = {
+    id: "codex",
+    name: "Codex app-server",
+    packageName: codexNpmPackageName,
+    command: "",
+    currentVersion: "",
+    latestVersion: "",
+    updateAvailable: false,
+    source: "npm",
+    url: codexNpmUrl,
+    installHint: `npm install -g ${codexNpmPackageName}`,
+    error: ""
+  };
+
+  try {
+    const status = await codexStatus();
+    result.command = status.command || "";
+    if (!status.ok) {
+      result.error = status.error || "Codex CLI not detected";
+    } else {
+      const current = await runCodexCommand(status.command, ["--version"]);
+      result.currentVersion = displayVersion(current.stdout || current.stderr);
+    }
+  } catch (error) {
+    result.error = updateCheckError(error);
+  }
+
+  try {
+    const latestPackage = await fetchJson(codexNpmRegistryUrl);
+    result.latestVersion = displayVersion(latestPackage.version);
+  } catch (error) {
+    result.error = result.error
+      ? `${result.error}; latest version unavailable: ${updateCheckError(error)}`
+      : updateCheckError(error);
+  }
+
+  result.updateAvailable = Boolean(result.currentVersion && result.latestVersion)
+    && updateAvailable(result.latestVersion, result.currentVersion);
+  return result;
+}
+
+async function checkUpdates({ force = false } = {}) {
+  const now = Date.now();
+  if (!force && updateCheckCache && now - updateCheckCache.checkedAtMs < updateCheckCacheMs) {
+    return updateCheckCache.payload;
+  }
+  if (!force && updateCheckPromise) return updateCheckPromise;
+
+  updateCheckPromise = Promise.all([checkFrontUpdate(), checkCodexUpdate()])
+    .then(([front, codex]) => {
+      const payload = {
+        checkedAt: new Date().toISOString(),
+        front,
+        codex
+      };
+      updateCheckCache = { checkedAtMs: Date.now(), payload };
+      return payload;
+    })
+    .finally(() => {
+      updateCheckPromise = null;
+    });
+  return updateCheckPromise;
 }
 
 async function codexStatus(candidatePath = null) {
@@ -664,48 +1075,56 @@ function threadIdFromContactId(contactId) {
 }
 
 function projectNameFor(cwd) {
+  if (isDemoProjectPath(cwd)) return demoProjectDisplayName;
   return path.basename(cwd) || cwd;
 }
 
 function contactFromProject(cwd) {
   const name = projectNameFor(cwd);
+  const isDemo = isDemoProjectPath(cwd);
   return {
     id: encodeProjectId(cwd),
     name,
-    mail: `${name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@project.local`,
-    group: "Projets",
+    mail: `${name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@${isDemo ? "codex.local" : "project.local"}`,
+    group: isDemo ? "Showcase" : "Projets",
     status: "online",
-    mood: cwd,
+    mood: isDemo ? "espace de presentation isole" : cwd,
     color: "#1f8fcf",
     avatar: "terminal",
     kind: "project",
     cwd,
     instructions:
-      `Tu es Codex dans Codex Messenger. Cette conversation correspond au projet local "${name}" dans ${cwd}. ` +
-      "Travaille dans ce dossier, reponds en francais, et reste pragmatique."
+      isDemo
+        ? `Tu es Codex dans Codex Messenger. Cette conversation est le tour isole "${name}" dans ${cwd}. Reponds en francais et n'utilise pas de vraies conversations utilisateur.`
+        : `Tu es Codex dans Codex Messenger. Cette conversation correspond au projet local "${name}" dans ${cwd}. ` +
+          "Travaille dans ce dossier, reponds en francais, et reste pragmatique."
   };
 }
 
 function contactFromThread(threadId) {
-  const thread = knownThreads.get(threadId);
+  const thread = knownThreads.get(threadId) ?? demoSeedThreadById(threadId);
+  if (thread) knownThreads.set(threadId, thread);
   const cwd = thread?.cwd ?? defaultCwd();
   const preview = String(thread?.preview ?? "").trim();
   const name = preview ? preview.slice(0, 44) : `Fil ${threadId.slice(0, 8)}`;
+  const isDemo = isDemoProjectPath(cwd);
   return {
     id: `thread:${threadId}`,
     name,
-    mail: `${projectNameFor(cwd).toLowerCase()}@thread.local`,
+    mail: `${projectNameFor(cwd).toLowerCase().replace(/[^a-z0-9]+/g, ".")}@thread.local`,
     group: projectNameFor(cwd),
     status: "online",
-    mood: cwd,
+    mood: isDemo ? "conversation de presentation" : cwd,
     color: "#2874d9",
     avatar: "terminal",
     kind: "thread",
     cwd,
     threadId,
     instructions:
-      `Tu es Codex dans Codex Messenger. Ce fil appartient au projet ${projectNameFor(cwd)} (${cwd}). ` +
-      "Reprends le contexte existant et reponds en francais."
+      isDemo
+        ? `Tu es Codex dans Codex Messenger. Ce fil appartient au tour isole ${projectNameFor(cwd)} (${cwd}). Continue la demonstration sans acceder aux vraies conversations utilisateur.`
+        : `Tu es Codex dans Codex Messenger. Ce fil appartient au projet ${projectNameFor(cwd)} (${cwd}). ` +
+          "Reprends le contexte existant et reponds en francais."
   };
 }
 
@@ -716,10 +1135,14 @@ function contactFor(id) {
   if (cwd) return contactFromProject(cwd);
   const threadId = threadIdFromContactId(id);
   if (threadId) return contactFromThread(threadId);
-  return contacts[0];
+  return contactsForSettings()[0] ?? contacts[0];
 }
 
-async function listWorkspaceProjects() {
+async function listWorkspaceProjects(settings = settingsCache) {
+  if (demoModeIsEnabled(settings)) {
+    await ensureDemoProject();
+    return [demoProjectCwd()];
+  }
   const root = projectsRoot();
   try {
     const entries = await fs.readdir(root, { withFileTypes: true });
@@ -793,7 +1216,7 @@ async function conversationBrowser() {
   const settings = await loadSettings();
   const threads = await listVisibleThreads(settings);
 
-  const projectPaths = new Set(await listWorkspaceProjects());
+  const projectPaths = new Set(await listWorkspaceProjects(settings));
   for (const thread of threads) projectPaths.add(thread.cwd);
 
   const projects = await Promise.all(Array.from(projectPaths).map(async (cwd) => {
@@ -822,8 +1245,19 @@ async function listVisibleThreads(settings = settingsCache) {
   const currentSettings = settings ?? await loadSettings();
   const hiddenIds = new Set(currentSettings.threadTabs.hiddenIds);
   try {
-    return (await codex.listThreads()).map(normalizeThread).filter((thread) => !hiddenIds.has(thread.id));
+    const threads = (await codex.listThreads()).map(normalizeThread).filter((thread) => !hiddenIds.has(thread.id));
+    if (demoModeIsEnabled(currentSettings)) {
+      await ensureDemoProject();
+      const realDemoThreads = threads.filter((thread) => isDemoProjectPath(thread.cwd));
+      const seeded = demoSeedThreads().filter((thread) => !hiddenIds.has(thread.id));
+      return [...seeded, ...realDemoThreads];
+    }
+    return threads;
   } catch {
+    if (demoModeIsEnabled(currentSettings)) {
+      await ensureDemoProject();
+      return demoSeedThreads().filter((thread) => !hiddenIds.has(thread.id));
+    }
     return [];
   }
 }
@@ -1161,6 +1595,10 @@ function clearUnreadReminder(contactId) {
 }
 
 function scheduleUnreadReminder(contactId) {
+  if (!unreadWizzIsEnabled()) {
+    clearUnreadReminder(contactId);
+    return;
+  }
   const win = windows.get(`chat:${contactId}`);
   clearUnreadReminder(contactId);
   unreadReminderByContact.set(contactId, setTimeout(() => {
@@ -1211,17 +1649,39 @@ function toastPreview(text) {
     .slice(0, 120) || "sent you a message.";
 }
 
-function publicAssetUrl(assetPath) {
+function publicAssetPath(assetPath) {
   const relativePath = String(assetPath || "").replace(/^\.\//, "");
-  return pathToFileURL(path.join(rootDir, "public", relativePath)).href;
+  return path.join(rootDir, "public", relativePath);
 }
 
-function avatarUrlForToast(contact) {
-  if (contact?.displayPicturePath) return pathToFileURL(contact.displayPicturePath).href;
-  if (contact?.displayPictureAsset && displayPictureAssetSet.has(contact.displayPictureAsset)) return publicAssetUrl(contact.displayPictureAsset);
+function mimeTypeForFile(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === ".png") return "image/png";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".gif") return "image/gif";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".avif") return "image/avif";
+  if (ext === ".ico") return "image/x-icon";
+  if (ext === ".wav") return "audio/wav";
+  if (ext === ".mp3") return "audio/mpeg";
+  return "application/octet-stream";
+}
+
+function dataUrlForFile(filePath) {
+  try {
+    const data = readFileSync(filePath);
+    return `data:${mimeTypeForFile(filePath)};base64,${data.toString("base64")}`;
+  } catch {
+    return "";
+  }
+}
+
+function avatarPathForToast(contact) {
+  if (contact?.displayPicturePath) return contact.displayPicturePath;
+  if (contact?.displayPictureAsset && displayPictureAssetSet.has(contact.displayPictureAsset)) return publicAssetPath(contact.displayPictureAsset);
   const defaultPicture = displayPictureAssetByAvatar.get(contact?.avatar);
-  if (defaultPicture) return publicAssetUrl(defaultPicture);
-  return pathToFileURL(toastIconPath).href;
+  if (defaultPicture) return publicAssetPath(defaultPicture);
+  return toastIconPath;
 }
 
 function positionToastWindows() {
@@ -1251,19 +1711,23 @@ function removeToastWindow(win) {
 function messengerToastHtml({ contact, preview, playSound = false }) {
   const name = escapeHtml(contact.name || "Codex");
   const message = escapeHtml(preview);
-  const avatar = escapeHtml(avatarUrlForToast(contact));
-  const logo = escapeHtml(pathToFileURL(toastIconPath).href);
-  const sound = escapeHtml(pathToFileURL(path.join(rootDir, "public", "msn-assets", "sounds", "type.wav")).href);
+  const avatar = escapeHtml(dataUrlForFile(avatarPathForToast(contact)) || dataUrlForFile(toastIconPath));
+  const logo = escapeHtml(dataUrlForFile(toastIconPath));
+  const sound = escapeHtml(dataUrlForFile(path.join(rootDir, "public", "msn-assets", "sounds", "type.wav")));
   return `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
+*{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;font-family:"Segoe UI",Tahoma,Arial,sans-serif;color:#3c3c3c}
-.toast{position:absolute;inset:8px;border:1px solid #61cce8;border-radius:18px;background:linear-gradient(135deg,#f7fcff 0%,#e6f7ff 50%,#ccecff 100%);box-shadow:0 9px 24px rgba(31,47,72,.38),inset 0 1px 0 rgba(255,255,255,.95)}
-.head{display:flex;align-items:center;gap:10px;padding:18px 18px 8px;font-size:23px;color:#515151;text-shadow:0 1px 0 white}
-.head img{width:29px;height:29px;object-fit:contain}.close{margin-left:auto;color:#717171;text-decoration:none;font-size:30px;line-height:1}
-.body{display:grid;grid-template-columns:104px 1fr;gap:18px;padding:6px 22px 0 22px}.avatar{width:94px;height:94px;padding:6px;border:1px solid #9eb8c7;border-radius:18px;background:linear-gradient(#fff,#d7ecf9);box-shadow:0 7px 12px rgba(42,65,83,.28),inset 0 0 0 4px rgba(239,248,255,.95)}.avatar img{width:100%;height:100%;border-radius:8px;object-fit:cover;background:#b8dcf5}.copy{padding-top:14px;font-size:24px;line-height:1.2}.copy strong{display:block;margin-bottom:4px;font-size:26px;font-weight:700;color:#3a3a3a}.copy span{display:block;max-height:58px;overflow:hidden}.options{position:absolute;right:26px;bottom:18px;color:#0a73da;text-decoration:none;font-size:24px}.open{position:absolute;inset:52px 0 0 0}
+.toast{position:absolute;inset:8px;display:grid;grid-template-rows:48px minmax(0,1fr) 31px;overflow:hidden;border:1px solid #61cce8;border-radius:18px;background:linear-gradient(135deg,#f7fcff 0%,#e6f7ff 53%,#ccecff 100%);box-shadow:0 9px 24px rgba(31,47,72,.38),inset 0 1px 0 rgba(255,255,255,.95)}
+.head{position:relative;z-index:2;display:grid;grid-template-columns:31px minmax(0,1fr) 30px;align-items:center;gap:9px;padding:14px 18px 5px 20px;color:#515151;text-shadow:0 1px 0 white}
+.head img{display:block;width:28px;height:28px;object-fit:contain}.head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:23px}.close{display:grid;width:30px;height:30px;place-items:center;color:#717171;text-decoration:none;font-size:28px;line-height:1}.close:hover{color:#333}
+.body{position:relative;z-index:2;display:grid;grid-template-columns:98px minmax(0,1fr);gap:16px;min-height:0;padding:2px 24px 0 28px;pointer-events:none}
+.avatar{width:94px;height:94px;padding:6px;border:1px solid #9eb8c7;border-radius:16px;background:linear-gradient(#fff,#d7ecf9);box-shadow:0 7px 12px rgba(42,65,83,.28),inset 0 0 0 4px rgba(239,248,255,.95)}
+.avatar img{display:block;width:100%;height:100%;border-radius:8px;object-fit:cover;background:#b8dcf5}.copy{min-width:0;padding-top:11px;line-height:1.14}.copy strong{display:block;overflow:hidden;margin-bottom:5px;color:#3a3a3a;font-size:23px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.copy span{display:-webkit-box;overflow:hidden;color:#414141;font-size:21px;line-height:1.18;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.options{position:relative;z-index:3;justify-self:end;align-self:start;margin-right:26px;color:#0a73da;text-decoration:none;font-size:22px;line-height:26px}.options:hover{text-decoration:underline}.open{position:absolute;inset:49px 0 31px 0;z-index:1}
 </style>
 </head>
 <body>
@@ -1347,10 +1811,13 @@ function registerIncomingMessage(contactId, text) {
     chatWin.flashFrame(true);
   }
   scheduleUnreadReminder(contactId);
-  const needsMainSound = !chatWin || chatWin.isDestroyed();
+  const shouldPlaySound = newMessageSoundIsEnabled();
+  const needsMainSound = shouldPlaySound && (!chatWin || chatWin.isDestroyed());
   const mainWin = windows.get("main");
   const mainCanPlaySound = mainWin && !mainWin.isDestroyed();
-  showMessengerToast(contactId, text, { playSound: needsMainSound && !mainCanPlaySound });
+  if (notificationsAreEnabled()) {
+    showMessengerToast(contactId, text, { playSound: needsMainSound && !mainCanPlaySound });
+  }
   if (needsMainSound && mainCanPlaySound) {
     sendToMain("conversation:notify", { contactId, contact: contactFor(contactId), text: toastPreview(text) });
   }
@@ -1366,7 +1833,7 @@ async function ensureThread(contactId) {
   const contact = contactFor(contactId);
 
   const existingThreadId = threadIdFromContactId(contactId);
-  if (existingThreadId) {
+  if (existingThreadId && !isDemoSeedThreadId(existingThreadId)) {
     const thread = await codex.resumeThread(existingThreadId, {
       cwd: contact.cwd ?? knownThreads.get(existingThreadId)?.cwd ?? defaultCwd(),
       developerInstructions: localizedInstructions(contact)
@@ -1377,6 +1844,7 @@ async function ensureThread(contactId) {
     return existingThreadId;
   }
 
+  if (isDemoProjectPath(contact.cwd)) await ensureDemoProject();
   const threadId = await codex.startThread(contact, contact.cwd ?? defaultCwd());
   threadByContact.set(contactId, threadId);
   contactByThread.set(threadId, contactId);
@@ -1469,18 +1937,22 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
       }
 
       if (threadId) {
-        const thread = await codex.resumeThread(threadId, {
-          cwd: contact.cwd ?? knownThreads.get(threadId)?.cwd ?? defaultCwd(),
-          developerInstructions: localizedInstructions(contact)
-        });
-        knownThreads.set(threadId, thread);
+        const thread = isDemoSeedThreadId(threadId)
+          ? demoSeedThreadById(threadId)
+          : await codex.resumeThread(threadId, {
+            cwd: contact.cwd ?? knownThreads.get(threadId)?.cwd ?? defaultCwd(),
+            developerInstructions: localizedInstructions(contact)
+          });
+        if (thread) knownThreads.set(threadId, thread);
         if (threadIdFromContactId(contactId)) {
           contact = contactFromThread(threadId);
         } else {
           contact = { ...contact, threadId };
         }
-        threadByContact.set(contactId, threadId);
-        contactByThread.set(threadId, contactId);
+        if (!isDemoSeedThreadId(threadId)) {
+          threadByContact.set(contactId, threadId);
+          contactByThread.set(threadId, contactId);
+        }
         historyMessages = messagesFromThread(thread, contact);
       }
     } catch (error) {
@@ -1495,6 +1967,7 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
     contact,
     profile,
     cwd: defaultCwd(),
+    appVersion: app.getVersion(),
     settings,
     unread: unreadState(),
     codexStatus: await codexStatus(),
@@ -1502,6 +1975,16 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
     conversations: params.view === "chat" ? await conversationBrowser() : null,
     historyMessages
   };
+});
+
+ipcMain.handle("updates:check", async (_event, options = {}) => {
+  return checkUpdates({ force: Boolean(options.force) });
+});
+
+ipcMain.handle("updates:open", (_event, target = "front") => {
+  const url = target === "codex" ? codexNpmUrl : frontReleasesUrl;
+  shell.openExternal(url);
+  return { ok: true, url };
 });
 
 ipcMain.handle("auth:sign-in", async (_event, nextProfile) => {
@@ -1614,8 +2097,10 @@ ipcMain.handle("conversation:open-thread", (_event, threadId) => {
   return { ok: true };
 });
 
-ipcMain.handle("conversation:open-project", (_event, cwd) => {
-  createChatWindow(encodeProjectId(cwd));
+ipcMain.handle("conversation:open-project", async (_event, cwd) => {
+  const settings = await loadSettings();
+  const targetCwd = demoModeIsEnabled(settings) && !isDemoProjectPath(cwd) ? await ensureDemoProject() : cwd;
+  createChatWindow(encodeProjectId(targetCwd));
   return { ok: true };
 });
 
@@ -1628,14 +2113,18 @@ ipcMain.handle("conversation:load-thread", async (_event, { contactId, threadId 
   const cleanContactId = String(contactId || "").trim();
   if (!cleanThreadId || !cleanContactId) return { ok: false, error: "Fil invalide" };
   const contact = contactFor(cleanContactId);
-  const thread = await codex.resumeThread(cleanThreadId, {
-    cwd: contact.cwd ?? knownThreads.get(cleanThreadId)?.cwd ?? defaultCwd(),
-    developerInstructions: localizedInstructions(contact)
-  });
-  knownThreads.set(cleanThreadId, thread);
+  const thread = isDemoSeedThreadId(cleanThreadId)
+    ? demoSeedThreadById(cleanThreadId)
+    : await codex.resumeThread(cleanThreadId, {
+      cwd: contact.cwd ?? knownThreads.get(cleanThreadId)?.cwd ?? defaultCwd(),
+      developerInstructions: localizedInstructions(contact)
+    });
+  if (thread) knownThreads.set(cleanThreadId, thread);
   const hydratedContact = contact.kind === "project" ? { ...contact, threadId: cleanThreadId } : contactFromThread(cleanThreadId);
-  threadByContact.set(cleanContactId, cleanThreadId);
-  contactByThread.set(cleanThreadId, cleanContactId);
+  if (!isDemoSeedThreadId(cleanThreadId)) {
+    threadByContact.set(cleanContactId, cleanThreadId);
+    contactByThread.set(cleanThreadId, cleanContactId);
+  }
   return {
     ok: true,
     threadId: cleanThreadId,
@@ -1645,11 +2134,19 @@ ipcMain.handle("conversation:load-thread", async (_event, { contactId, threadId 
   };
 });
 
-ipcMain.handle("conversation:switch-project", (event, cwd) => {
-  return switchChatWindow(event, encodeProjectId(cwd));
+ipcMain.handle("conversation:switch-project", async (event, cwd) => {
+  const settings = await loadSettings();
+  const targetCwd = demoModeIsEnabled(settings) && !isDemoProjectPath(cwd) ? await ensureDemoProject() : cwd;
+  return switchChatWindow(event, encodeProjectId(targetCwd));
 });
 
 ipcMain.handle("conversation:open-project-picker", async (event) => {
+  const settings = await loadSettings();
+  if (demoModeIsEnabled(settings)) {
+    const cwd = await ensureDemoProject();
+    createChatWindow(encodeProjectId(cwd));
+    return { canceled: false, cwd };
+  }
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = await dialog.showOpenDialog(win, {
     title: "Open Project",

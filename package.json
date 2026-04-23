@@ -1,6 +1,6 @@
 {
   "name": "codex-messenger",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "MSN Messenger-inspired Electron desktop client for running Codex locally.",
   "author": "Anis AYARI",
   "license": "MIT",
@@ -74,6 +74,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
       "shortcutName": "Codex Messenger"
     }
   }

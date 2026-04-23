@@ -51,8 +51,7 @@ const formatIcons = {
   wink: "./icons/format/wink.png",
   image: "./icons/format/image.png",
   gift: "./icons/format/gift.png",
-  wizz: "./icons/toolbar/wizz.png",
-  laugh: "./icons/format/laugh.png"
+  wizz: "./icons/toolbar/wizz.png"
 };
 const activityPrompts = [
   ["Plan", "Fais un plan de travail court pour ce projet, puis propose la premiere action concrete."],
@@ -354,6 +353,34 @@ function normalizeWizzDelaySeconds(value) {
   return Math.max(10, Math.min(1800, seconds));
 }
 
+function normalizeMessengerSettings(settings = {}) {
+  const source = settings ?? {};
+  return {
+    notificationsEnabled: source.notificationsEnabled !== false,
+    newMessageSoundEnabled: source.newMessageSoundEnabled !== false,
+    unreadWizzEnabled: source.unreadWizzEnabled !== false,
+    demoMode: source.demoMode === true,
+    unreadWizzDelaySeconds: normalizeWizzDelaySeconds((source.unreadWizzDelayMs ?? 60_000) / 1000),
+    closeBehavior: ["ask", "hide", "close"].includes(source.closeBehavior) ? source.closeBehavior : "ask"
+  };
+}
+
+function hasAvailableUpdates(updateState) {
+  return Boolean(updateState?.front?.updateAvailable || updateState?.codex?.updateAvailable);
+}
+
+function versionLabel(value) {
+  return String(value || "inconnue");
+}
+
+function updateLineState(item) {
+  if (!item) return "Non verifie";
+  if (item.updateAvailable) return `Mise a jour disponible: ${versionLabel(item.latestVersion)}`;
+  if (item.error) return `Verification incomplete: ${item.error}`;
+  if (item.latestVersion) return "A jour";
+  return "Non verifie";
+}
+
 function projectSortOption(sort) {
   return projectSortOptions.find((option) => option.id === normalizeProjectSort(sort)) ?? projectSortOptions[4];
 }
@@ -399,21 +426,149 @@ const emoticonPattern = new RegExp(
   "g"
 );
 
-function renderTextWithEmoticons(text) {
+const inlineTokenSource = [
+  "`[^`\\n]+`",
+  "\\*\\*[^*\\n]+\\*\\*",
+  "__[^_\\n]+__",
+  ...emoticonTokens.map(([code]) => escapeRegExp(code))
+].join("|");
+
+function renderInlineFormattedText(text, keyPrefix = "inline") {
   const source = String(text ?? "");
   if (!source) return null;
-  return source.split(emoticonPattern).map((part, index) => {
-    const emoticon = emoticonByToken[part];
-    if (!emoticon) return part;
+  const pattern = new RegExp(inlineTokenSource, "g");
+  const nodes = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = pattern.exec(source))) {
+    const token = match[0];
+    if (match.index > lastIndex) nodes.push(source.slice(lastIndex, match.index));
+    const emoticon = emoticonByToken[token];
+    if (emoticon) {
+      nodes.push(
+        <img
+          key={`${keyPrefix}-emoticon-${match.index}`}
+          className="message-emoticon"
+          src={emoticon.src}
+          alt={token}
+          title={`${emoticon.label} ${emoticon.code}`}
+          draggable="false"
+        />
+      );
+    } else if (token.startsWith("`") && token.endsWith("`")) {
+      nodes.push(<code className="message-code" key={`${keyPrefix}-code-${match.index}`}>{token.slice(1, -1)}</code>);
+    } else if ((token.startsWith("**") && token.endsWith("**")) || (token.startsWith("__") && token.endsWith("__"))) {
+      nodes.push(<strong key={`${keyPrefix}-strong-${match.index}`}>{renderInlineFormattedText(token.slice(2, -2), `${keyPrefix}-strong-${match.index}`)}</strong>);
+    } else {
+      nodes.push(token);
+    }
+    lastIndex = match.index + token.length;
+  }
+  if (lastIndex < source.length) nodes.push(source.slice(lastIndex));
+  return nodes;
+}
+
+function renderFormattedMessageText(text) {
+  const lines = String(text ?? "").replace(/\r\n?/g, "\n").split("\n");
+  const blocks = [];
+  let paragraph = [];
+  let list = null;
+  let codeBlock = null;
+
+  function flushParagraph() {
+    if (!paragraph.length) return;
+    blocks.push({ type: "paragraph", text: paragraph.join("\n") });
+    paragraph = [];
+  }
+
+  function flushList() {
+    if (!list) return;
+    blocks.push(list);
+    list = null;
+  }
+
+  function flushCodeBlock() {
+    if (!codeBlock) return;
+    blocks.push({ type: "code", text: codeBlock.join("\n") });
+    codeBlock = null;
+  }
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("```")) {
+      flushParagraph();
+      flushList();
+      if (codeBlock) flushCodeBlock();
+      else codeBlock = [];
+      continue;
+    }
+    if (codeBlock) {
+      codeBlock.push(line);
+      continue;
+    }
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const headingMatch = line.match(/^\s{0,3}(#{1,4})\s+(.+)$/);
+    if (headingMatch) {
+      flushParagraph();
+      flushList();
+      blocks.push({ type: "heading", level: headingMatch[1].length, text: headingMatch[2] });
+      continue;
+    }
+
+    const quoteMatch = line.match(/^\s*>\s+(.+)$/);
+    if (quoteMatch) {
+      flushParagraph();
+      flushList();
+      blocks.push({ type: "quote", text: quoteMatch[1] });
+      continue;
+    }
+
+    const bulletMatch = line.match(/^\s*[-*]\s+(.+)$/);
+    const orderedMatch = line.match(/^\s*\d+[.)]\s+(.+)$/);
+    if (bulletMatch || orderedMatch) {
+      flushParagraph();
+      const type = orderedMatch ? "ordered-list" : "list";
+      if (!list || list.type !== type) flushList();
+      if (!list) list = { type, items: [] };
+      list.items.push((bulletMatch ?? orderedMatch)[1]);
+      continue;
+    }
+
+    flushList();
+    paragraph.push(line);
+  }
+
+  flushParagraph();
+  flushList();
+  flushCodeBlock();
+
+  if (!blocks.length) return null;
+  return blocks.map((block, index) => {
+    if (block.type === "paragraph") {
+      return <p key={`p-${index}`}>{renderInlineFormattedText(block.text, `p-${index}`)}</p>;
+    }
+    if (block.type === "code") {
+      return <pre key={`code-${index}`}><code>{block.text}</code></pre>;
+    }
+    if (block.type === "heading") {
+      const HeadingTag = `h${Math.min(4, block.level + 2)}`;
+      return <HeadingTag key={`heading-${index}`}>{renderInlineFormattedText(block.text, `heading-${index}`)}</HeadingTag>;
+    }
+    if (block.type === "quote") {
+      return <blockquote key={`quote-${index}`}>{renderInlineFormattedText(block.text, `quote-${index}`)}</blockquote>;
+    }
+    const ListTag = block.type === "ordered-list" ? "ol" : "ul";
     return (
-      <img
-        key={`${part}-${index}`}
-        className="message-emoticon"
-        src={emoticon.src}
-        alt={part}
-        title={`${emoticon.label} ${emoticon.code}`}
-        draggable="false"
-      />
+      <ListTag key={`list-${index}`}>
+        {block.items.map((item, itemIndex) => (
+          <li key={`item-${index}-${itemIndex}`}>{renderInlineFormattedText(item, `item-${index}-${itemIndex}`)}</li>
+        ))}
+      </ListTag>
     );
   });
 }
@@ -540,6 +695,80 @@ function Avatar({ contact, large = false }) {
   );
 }
 
+function DisplayFrame({ contact, position, menuItems = [] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (event) => {
+      if (!ref.current?.contains(event.target)) setOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  function runEntry(entry) {
+    if (entry.disabled) return;
+    setOpen(false);
+    entry.action?.();
+  }
+
+  return (
+    <div className={`display-frame ${position ?? ""}`} ref={ref}>
+      <Avatar contact={contact} large />
+      <button
+        className="display-frame-menu-button"
+        type="button"
+        aria-label={`Options ${contact.name ?? "avatar"}`}
+        aria-expanded={open}
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen((current) => !current);
+        }}
+      />
+      {open ? (
+        <div className="display-frame-menu" role="menu">
+          {menuItems.map((entry, index) => (
+            entry.separator ? (
+              <div className="display-frame-menu-separator" key={`separator-${index}`} />
+            ) : (
+              <button
+                type="button"
+                role="menuitem"
+                disabled={entry.disabled}
+                key={entry.label}
+                onClick={() => runEntry(entry)}
+              >
+                {entry.label}
+              </button>
+            )
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function WinkAnimationOverlay({ animation }) {
+  if (!animation?.wink) return null;
+  const { wink, direction, key } = animation;
+  return (
+    <div className={`wink-animation-overlay ${direction}`} key={key} aria-hidden="true">
+      <div className="wink-animation-card">
+        <img src={wink.src} alt="" draggable="false" />
+      </div>
+    </div>
+  );
+}
+
 function Titlebar({ title }) {
   return (
     <header className="titlebar">
@@ -626,11 +855,9 @@ function Menu({ items }) {
 function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSignedIn }) {
   const [email, setEmail] = useState(initialProfile.email);
   const [displayName, setDisplayName] = useState(initialProfile.displayName ?? initialProfile.email.split("@")[0]);
-  const [personalMessage, setPersonalMessage] = useState(initialProfile.personalMessage ?? "");
   const [status, setStatus] = useState(initialProfile.status);
   const [language, setLanguage] = useState(normalizeLanguage(initialProfile.language ?? initialSettings?.language ?? "fr"));
   const [codexPath, setCodexPath] = useState(initialSettings?.codexPath ?? "");
-  const [unreadWizzDelaySeconds, setUnreadWizzDelaySeconds] = useState(() => normalizeWizzDelaySeconds((initialSettings?.unreadWizzDelayMs ?? 60_000) / 1000));
   const [codexStatus, setCodexStatus] = useState(initialCodexStatus);
   const [state, setState] = useState("idle");
   const [error, setError] = useState("");
@@ -664,11 +891,11 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
       const result = await api.signIn({
         email,
         displayName,
-        personalMessage,
+        personalMessage: initialProfile.personalMessage ?? "",
         status,
         language,
         codexPath,
-        unreadWizzDelayMs: normalizeWizzDelaySeconds(unreadWizzDelaySeconds) * 1000,
+        unreadWizzDelayMs: normalizeWizzDelaySeconds((initialSettings?.unreadWizzDelayMs ?? 60_000) / 1000) * 1000,
         displayPicturePath: initialProfile.displayPicturePath ?? "",
         displayPictureAsset: initialProfile.displayPictureAsset ?? ""
       });
@@ -726,10 +953,6 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
       </label>
       <label className="field">
-        <span>{text.personalMessage}</span>
-        <input value={personalMessage} onChange={(event) => setPersonalMessage(event.target.value)} maxLength={140} />
-      </label>
-      <label className="field">
         <span>{text.status}</span>
         <select value={status} onChange={(event) => setStatus(event.target.value)}>
           {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
@@ -738,17 +961,6 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
       <label className="field">
         <span>{text.codexPath}</span>
         <input value={codexPath} onChange={(event) => setCodexPath(event.target.value)} placeholder={text.autoPath} />
-      </label>
-      <label className="field">
-        <span>Delai Wizz rappel (secondes)</span>
-        <input
-          type="number"
-          min="10"
-          max="1800"
-          step="5"
-          value={unreadWizzDelaySeconds}
-          onChange={(event) => setUnreadWizzDelaySeconds(normalizeWizzDelaySeconds(event.target.value))}
-        />
       </label>
       <div className="codex-path-actions">
         <button className={pressedPathAction === "browse" ? "pressed" : ""} type="button" onClick={chooseCodex}>{text.browse}</button>
@@ -768,6 +980,8 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
 
 function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onClose }) {
   const [draft, setDraft] = useState(profile);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setDraft(profile);
@@ -777,9 +991,18 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
     setDraft((current) => ({ ...current, [field]: value }));
   }
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
-    onChange(draft);
+    setSaving(true);
+    setError("");
+    try {
+      await onChange(draft);
+      onClose();
+    } catch (err) {
+      setError(err.message || "Profil non sauvegarde.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function chooseDefaultPicture(picture) {
@@ -826,11 +1049,165 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
           {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
         </select>
       </label>
+      {error ? <p className="profile-editor-error">{error}</p> : null}
       <div className="profile-editor-actions">
-        <button type="submit">Appliquer</button>
-        <button type="button" onClick={onClose}>Fermer</button>
+        <button type="submit" disabled={saving}>{saving ? "Enregistrement..." : "Appliquer"}</button>
+        <button type="button" disabled={saving} onClick={onClose}>Fermer</button>
       </div>
     </form>
+  );
+}
+
+function SettingsDialog({ settings, onSave, onClose }) {
+  const [draft, setDraft] = useState(() => normalizeMessengerSettings(settings));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setDraft(normalizeMessengerSettings(settings));
+  }, [settings]);
+
+  function update(field, value) {
+    setDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      await onSave({
+        notificationsEnabled: draft.notificationsEnabled,
+        newMessageSoundEnabled: draft.newMessageSoundEnabled,
+        unreadWizzEnabled: draft.unreadWizzEnabled,
+        unreadWizzDelayMs: normalizeWizzDelaySeconds(draft.unreadWizzDelaySeconds) * 1000,
+        closeBehavior: draft.closeBehavior
+      });
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <form className="settings-dialog" onSubmit={submit} role="dialog" aria-modal="true" aria-label="Parametres Codex Messenger">
+        <header>
+          <strong>Parametres</strong>
+          <button type="button" aria-label="Fermer" onClick={onClose}>x</button>
+        </header>
+        <section>
+          <label className="settings-check">
+            <input
+              type="checkbox"
+              checked={draft.notificationsEnabled}
+              onChange={(event) => update("notificationsEnabled", event.target.checked)}
+            />
+            <span>Notifications de nouveau message</span>
+          </label>
+          <label className="settings-check">
+            <input
+              type="checkbox"
+              checked={draft.newMessageSoundEnabled}
+              onChange={(event) => update("newMessageSoundEnabled", event.target.checked)}
+            />
+            <span>Son a chaque nouveau message</span>
+          </label>
+          <label className="settings-check">
+            <input
+              type="checkbox"
+              checked={draft.unreadWizzEnabled}
+              onChange={(event) => update("unreadWizzEnabled", event.target.checked)}
+            />
+            <span>Wizz de rappel quand un message reste non lu</span>
+          </label>
+          <label className="settings-row">
+            <span>Delai du Wizz de rappel (secondes)</span>
+            <input
+              type="number"
+              min="10"
+              max="1800"
+              step="5"
+              value={draft.unreadWizzDelaySeconds}
+              disabled={!draft.unreadWizzEnabled}
+              onChange={(event) => update("unreadWizzDelaySeconds", normalizeWizzDelaySeconds(event.target.value))}
+            />
+          </label>
+          <label className="settings-row">
+            <span>Quand je ferme la fenetre principale</span>
+            <select value={draft.closeBehavior} onChange={(event) => update("closeBehavior", event.target.value)}>
+              <option value="ask">Demander</option>
+              <option value="hide">Reduire dans la zone de notification</option>
+              <option value="close">Fermer la fenetre</option>
+            </select>
+          </label>
+        </section>
+        {error ? <p className="settings-error">{error}</p> : null}
+        <footer>
+          <button type="button" onClick={onClose}>Annuler</button>
+          <button type="submit" disabled={saving}>{saving ? "Enregistrement..." : "Appliquer"}</button>
+        </footer>
+      </form>
+    </div>
+  );
+}
+
+function UpdateDialog({ updateState, checking, appVersion, userAgent, onCheck, onOpen, onClose }) {
+  const front = updateState?.front ?? { currentVersion: appVersion };
+  const codex = updateState?.codex ?? {};
+  const checkedAt = updateState?.checkedAt ? new Date(updateState.checkedAt).toLocaleString() : "jamais";
+
+  return (
+    <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="settings-dialog update-dialog" role="dialog" aria-modal="true" aria-label="A propos de Codex Messenger">
+        <header>
+          <strong>A propos de Codex Messenger</strong>
+          <button type="button" aria-label="Fermer" onClick={onClose}>x</button>
+        </header>
+        <section>
+          <div className="about-product">
+            <Logo />
+            <div>
+              <h2>Codex Messenger</h2>
+              <p>Developpe par Anis AYARI et Codex.</p>
+              <p>Client Electron local inspire de MSN Messenger 7, connecte a codex app-server.</p>
+            </div>
+          </div>
+          <div className="update-grid">
+            <article className={front.updateAvailable ? "update-card available" : "update-card"}>
+              <strong>Codex Messenger front</strong>
+              <span>Version actuelle: {versionLabel(front.currentVersion || appVersion)}</span>
+              <span>Derniere version: {versionLabel(front.latestVersion)}</span>
+              <small>{updateLineState(front)}</small>
+              <button type="button" onClick={() => onOpen("front")}>
+                {front.updateAvailable ? "Update" : "Ouvrir les releases"}
+              </button>
+            </article>
+            <article className={codex.updateAvailable ? "update-card available" : "update-card"}>
+              <strong>Codex app-server</strong>
+              <span>Version locale: {versionLabel(codex.currentVersion || userAgent)}</span>
+              <span>Derniere version: {versionLabel(codex.latestVersion)}</span>
+              <small>{updateLineState(codex)}</small>
+              <button type="button" onClick={() => onOpen("codex")}>
+                {codex.updateAvailable ? "Update" : "Ouvrir npm"}
+              </button>
+            </article>
+          </div>
+          <p className="update-note">
+            Derniere verification: {checkedAt}. Codex Messenger ne stocke pas les conversations Codex:
+            l'application est seulement un front client local.
+          </p>
+        </section>
+        <footer>
+          <button type="button" onClick={() => onCheck()} disabled={checking}>
+            {checking ? "Verification..." : "Verifier mise a jour"}
+          </button>
+          <button type="button" onClick={onClose}>Fermer</button>
+        </footer>
+      </section>
+    </div>
   );
 }
 
@@ -943,11 +1320,17 @@ function RosterView({
   const [agentError, setAgentError] = useState("");
   const [projectSort, setProjectSort] = useState(() => normalizeProjectSort(bootstrap.settings?.projectSort));
   const [projectSortMenu, setProjectSortMenu] = useState(null);
+  const [addContactPressed, setAddContactPressed] = useState(false);
   const rosterRef = useRef(null);
+  const addContactPressTimerRef = useRef(null);
 
   useEffect(() => {
     api.listConversations().then(setConversations).catch(() => {});
   }, [refreshTick]);
+
+  useEffect(() => () => {
+    if (addContactPressTimerRef.current) window.clearTimeout(addContactPressTimerRef.current);
+  }, []);
 
   useEffect(() => {
     const closeMenu = () => setProjectSortMenu(null);
@@ -1090,6 +1473,17 @@ function RosterView({
     }
   }
 
+  function handleAddContactClick() {
+    if (bootstrap.settings?.demoMode) return;
+    if (addContactPressTimerRef.current) window.clearTimeout(addContactPressTimerRef.current);
+    setAddContactPressed(true);
+    addContactPressTimerRef.current = window.setTimeout(() => {
+      setAddContactPressed(false);
+      addContactPressTimerRef.current = null;
+    }, 180);
+    onAgentEditorOpenChange(true);
+  }
+
   async function saveProfile(nextProfile) {
     const result = await api.setSettings({
       language: nextProfile.language ?? profile.language,
@@ -1164,8 +1558,14 @@ function RosterView({
         />
       ) : null}
       <div className="msn-tabs">
-        <button type="button" onClick={() => api.openConversation("codex")}><Logo small /> Codex Today</button>
+        <button type="button" onClick={() => api.openConversation(bootstrap.contacts[0]?.id ?? "codex")}><Logo small /> Codex Today</button>
       </div>
+      {bootstrap.settings?.demoMode ? (
+        <div className="demo-mode-banner">
+          <strong>Demo mode</strong>
+          <span>conversations reelles masquees</span>
+        </div>
+      ) : null}
       <div className="search"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." /></div>
       <div className="groups">
         {groups.map((group) => {
@@ -1225,7 +1625,15 @@ function RosterView({
           ))}
         </div>
       ) : null}
-      <button className="add-contact" type="button" onClick={() => onAgentEditorOpenChange(true)}><span className="mini plus" /> Add a Contact</button>
+      <button
+        className={addContactPressed ? "add-contact pressed" : "add-contact"}
+        type="button"
+        disabled={bootstrap.settings?.demoMode}
+        onClick={handleAddContactClick}
+        title={bootstrap.settings?.demoMode ? "Desactive Demo mode pour creer un vrai agent." : undefined}
+      >
+        <span className="mini plus" /> {bootstrap.settings?.demoMode ? "Demo mode actif" : "Add a Contact"}
+      </button>
       <div className="wordmark"><span>Codex</span><Logo small /><strong>Messenger</strong></div>
       {finished ? <div className="toast"><Logo small /><span>{finished}</span></div> : null}
     </section>
@@ -1241,6 +1649,10 @@ function MainWindow() {
   const [refreshTick, setRefreshTick] = useState(0);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
   const [agentEditorOpen, setAgentEditorOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [updateState, setUpdateState] = useState(null);
+  const [checkingUpdates, setCheckingUpdates] = useState(false);
 
   useEffect(() => {
     api.bootstrap().then((data) => {
@@ -1250,6 +1662,30 @@ function MainWindow() {
       setSettings(data.settings);
       setCodexStatus(data.codexStatus);
     });
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    setCheckingUpdates(true);
+    api.checkUpdates({ force: false })
+      .then((result) => {
+        if (alive) setUpdateState(result);
+      })
+      .catch((error) => {
+        if (alive) {
+          setUpdateState({
+            checkedAt: new Date().toISOString(),
+            front: { currentVersion: "", latestVersion: "", updateAvailable: false, error: error.message },
+            codex: { currentVersion: "", latestVersion: "", updateAvailable: false, error: error.message }
+          });
+        }
+      })
+      .finally(() => {
+        if (alive) setCheckingUpdates(false);
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   if (!bootstrap || !profile) return <div className="loading">Connexion...</div>;
@@ -1279,18 +1715,70 @@ function MainWindow() {
     setBootstrap((current) => current ? { ...current, settings: result.settings } : current);
   }
 
+  async function saveMessengerSettings(patch) {
+    const result = await api.setSettings(patch);
+    setSettings(result.settings);
+    setBootstrap((current) => current ? { ...current, settings: result.settings } : current);
+  }
+
+  async function reloadMainBootstrap() {
+    const data = await api.bootstrap();
+    setBootstrap(data);
+    setProfile(data.profile);
+    setUserAgent(data.userAgent ?? "");
+    setSettings(data.settings);
+    setCodexStatus(data.codexStatus);
+    setRefreshTick((tick) => tick + 1);
+    return data;
+  }
+
+  async function checkForUpdates({ force = true, showDialog = true } = {}) {
+    setCheckingUpdates(true);
+    try {
+      const result = await api.checkUpdates({ force });
+      setUpdateState(result);
+      if (showDialog) setUpdateDialogOpen(true);
+      return result;
+    } catch (error) {
+      const failed = {
+        checkedAt: new Date().toISOString(),
+        front: { currentVersion: bootstrap.appVersion, latestVersion: "", updateAvailable: false, error: error.message },
+        codex: { currentVersion: userAgent, latestVersion: "", updateAvailable: false, error: error.message }
+      };
+      setUpdateState(failed);
+      if (showDialog) setUpdateDialogOpen(true);
+      return failed;
+    } finally {
+      setCheckingUpdates(false);
+    }
+  }
+
+  function openUpdateTarget(target) {
+    return api.openUpdateTarget(target);
+  }
+
+  async function toggleDemoMode() {
+    const nextDemoMode = !(settings?.demoMode === true);
+    await api.setSettings({ demoMode: nextDemoMode });
+    await reloadMainBootstrap();
+  }
+
   function openAgentCreator() {
     setAgentEditorOpen(true);
   }
 
   const uploadsPath = `${bootstrap.cwd}\\uploads`;
+  const primaryContactId = bootstrap.contacts[0]?.id ?? "codex";
   const mainMenus = [
     {
       label: "Fichier",
       entries: [
-        { label: "Nouvelle conversation Codex", action: () => api.openConversation("codex") },
-        { label: "Ouvrir un projet...", action: () => api.openProjectPicker() },
+        { label: "Nouvelle conversation Codex", action: () => api.openConversation(primaryContactId) },
+        { label: settings?.demoMode ? "Ouvrir l'espace de presentation..." : "Ouvrir un projet...", action: () => api.openProjectPicker() },
         { label: "Modifier mon profil...", action: () => setProfileEditorOpen(true) },
+        { separator: true },
+        { label: "A propos de Codex Messenger...", action: () => setUpdateDialogOpen(true) },
+        { label: "Verifier mise a jour", action: () => checkForUpdates({ force: true }) },
         { separator: true },
         { label: "Ouvrir le dossier de l'app", action: () => api.app.openPath(bootstrap.cwd) },
         { label: "Quitter", shortcut: "Alt+F4", action: () => api.app.quit() }
@@ -1304,13 +1792,13 @@ function MainWindow() {
           action: () => api.openConversation(contact.id)
         })),
         { separator: true },
-        { label: "Add a Contact", action: openAgentCreator }
+        { label: settings?.demoMode ? "Add a Contact (desactive en Demo mode)" : "Add a Contact", disabled: settings?.demoMode, action: openAgentCreator }
       ]
     },
     {
       label: "Actions",
       entries: [
-        { label: "Codex Today", action: () => api.openConversation("codex") },
+        { label: "Codex Today", action: () => api.openConversation(primaryContactId) },
         { label: "Rafraichir la liste", shortcut: "F5", action: () => setRefreshTick((tick) => tick + 1) },
         { separator: true },
         ...statusOptions.map(([status, label]) => ({
@@ -1321,8 +1809,8 @@ function MainWindow() {
         {
           label: "Wizz Codex",
           action: async () => {
-            await api.openConversation("codex");
-            window.setTimeout(() => api.wizz("codex"), 250);
+            await api.openConversation(primaryContactId);
+            window.setTimeout(() => api.wizz(primaryContactId), 250);
           }
         }
       ]
@@ -1332,19 +1820,44 @@ function MainWindow() {
       entries: [
         { label: "Dossier uploads", action: () => api.app.openPath(uploadsPath) },
         { label: "Relancer cette fenetre", shortcut: "Ctrl+R", action: () => api.app.reload() },
-        { label: "Delai Wizz rappel...", action: changeWizzDelay },
         { separator: true },
         { label: "Minimiser", action: () => api.window.minimize() },
         { label: "Maximiser / restaurer", action: () => api.window.maximize() }
       ]
     },
     {
+      label: "Parametres",
+      entries: [
+        { label: "Ouvrir les parametres...", action: () => setSettingsDialogOpen(true) },
+        { separator: true },
+        { label: "Delai Wizz rappel...", action: changeWizzDelay },
+        {
+          label: `Notifications: ${settings?.notificationsEnabled === false ? "desactivees" : "activees"}`,
+          action: () => saveMessengerSettings({ notificationsEnabled: settings?.notificationsEnabled === false })
+        },
+        {
+          label: `Son nouveau message: ${settings?.newMessageSoundEnabled === false ? "desactive" : "active"}`,
+          action: () => saveMessengerSettings({ newMessageSoundEnabled: settings?.newMessageSoundEnabled === false })
+        },
+        {
+          label: `Wizz de rappel: ${settings?.unreadWizzEnabled === false ? "desactive" : "active"}`,
+          action: () => saveMessengerSettings({ unreadWizzEnabled: settings?.unreadWizzEnabled === false })
+        }
+      ]
+    },
+    {
       label: "Aide",
       entries: [
         {
-          label: "A propos de Codex Messenger",
-          action: () => window.alert("Codex Messenger\n\nClient Electron local inspire de MSN Messenger 7, connecte a codex app-server.\n\nDeveloppe par Anis AYARI et Codex.")
+          label: `Demo mode: ${settings?.demoMode ? "active" : "desactive"}`,
+          action: toggleDemoMode
         },
+        { separator: true },
+        {
+          label: "A propos de Codex Messenger",
+          action: () => setUpdateDialogOpen(true)
+        },
+        { label: "Verifier mise a jour", action: () => checkForUpdates({ force: true }) },
         { label: "Serveur Codex", action: () => window.alert(userAgent || "Serveur Codex non connecte.") }
       ]
     }
@@ -1354,6 +1867,27 @@ function MainWindow() {
     <main className="msn-window">
       <Titlebar title="Codex Messenger" />
       <Menu items={mainMenus} />
+      {hasAvailableUpdates(updateState) ? (
+        <button className="top-update-button" type="button" onClick={() => setUpdateDialogOpen(true)}>Update</button>
+      ) : null}
+      {settingsDialogOpen ? (
+        <SettingsDialog
+          settings={settings}
+          onSave={saveMessengerSettings}
+          onClose={() => setSettingsDialogOpen(false)}
+        />
+      ) : null}
+      {updateDialogOpen ? (
+        <UpdateDialog
+          updateState={updateState}
+          checking={checkingUpdates}
+          appVersion={bootstrap.appVersion}
+          userAgent={userAgent}
+          onCheck={() => checkForUpdates({ force: true })}
+          onOpen={openUpdateTarget}
+          onClose={() => setUpdateDialogOpen(false)}
+        />
+      ) : null}
       {userAgent ? (
         <RosterView
           bootstrap={bootstrap}
@@ -1567,7 +2101,11 @@ function ThreadTabs({ project, contact, activeThreadId, onOpenProject, onOpenThr
       <div className="thread-tab-strip" aria-label="Fils Codex">
         {threads.length ? threads.map((thread) => (
           <div
-            className={dragThreadId === thread.id ? "thread-tab-wrap dragging" : "thread-tab-wrap"}
+            className={[
+              "thread-tab-wrap",
+              activeThreadId === thread.id ? "active" : "",
+              dragThreadId === thread.id ? "dragging" : ""
+            ].filter(Boolean).join(" ")}
             draggable
             key={thread.id}
             onDragStart={(event) => {
@@ -1907,21 +2445,15 @@ function WizzReflexGame() {
 function ChatWindow({ bootstrap }) {
   const contact = bootstrap.contact ?? bootstrap.contacts.find((item) => item.id === bootstrap.contactId) ?? bootstrap.contacts[0];
   const conversationAgentName = contact.kind === "project" || contact.kind === "thread" ? "Codex" : contact.name;
-  const selfContact = {
-    id: "self",
-    name: bootstrap.profile.displayName,
-    status: bootstrap.profile.status,
-    displayPicturePath: bootstrap.profile.displayPicturePath,
-    displayPictureAsset: bootstrap.profile.displayPictureAsset,
-    personalMessage: bootstrap.profile.personalMessage,
-    color: "#6e8799",
-    avatar: "butterfly"
-  };
+  const [profile, setProfile] = useState(bootstrap.profile);
   const [messages, setMessages] = useState(bootstrap.historyMessages ?? []);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
   const [conversations, setConversations] = useState(bootstrap.conversations);
   const [chatSettings, setChatSettings] = useState(bootstrap.settings ?? {});
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [updateState, setUpdateState] = useState(null);
+  const [checkingUpdates, setCheckingUpdates] = useState(false);
   const [textStyle, setTextStyle] = useState(() => textStyleForContact(bootstrap.settings, contact.id));
   const [openFlyout, setOpenFlyout] = useState("");
   const [flyoutPosition, setFlyoutPosition] = useState({ left: 8, top: 88, arrowX: 24, placement: "below" });
@@ -1930,6 +2462,7 @@ function ChatWindow({ bootstrap }) {
   const [recording, setRecording] = useState(false);
   const [mediaError, setMediaError] = useState("");
   const [activeThreadId, setActiveThreadId] = useState(contact.threadId ?? "");
+  const [activeWinkAnimation, setActiveWinkAnimation] = useState(null);
   const scrollRef = useRef(null);
   const stickToBottomRef = useRef(true);
   const videoRef = useRef(null);
@@ -1938,6 +2471,17 @@ function ChatWindow({ bootstrap }) {
   const audioChunksRef = useRef([]);
   const flyoutRef = useRef(null);
   const chatWindowRef = useRef(null);
+  const winkAnimationTimerRef = useRef(null);
+  const selfContact = {
+    id: "self",
+    name: profile.displayName,
+    status: profile.status,
+    displayPicturePath: profile.displayPicturePath,
+    displayPictureAsset: profile.displayPictureAsset,
+    personalMessage: profile.personalMessage,
+    color: "#6e8799",
+    avatar: "butterfly"
+  };
   const currentProject = useMemo(() => {
     const projects = conversations?.projects ?? [];
     if (contact.cwd) return projects.find((project) => project.cwd === contact.cwd) ?? null;
@@ -1947,6 +2491,10 @@ function ChatWindow({ bootstrap }) {
   useEffect(() => {
     setActiveThreadId(contact.threadId ?? "");
   }, [contact.id, contact.threadId]);
+
+  useEffect(() => {
+    setProfile(bootstrap.profile);
+  }, [bootstrap.profile]);
 
   useEffect(() => {
     const projectName = contact.cwd ? (currentProject?.name ?? contact.name) : "";
@@ -1983,10 +2531,38 @@ function ChatWindow({ bootstrap }) {
     if (videoRef.current && cameraStream) videoRef.current.srcObject = cameraStream;
   }, [cameraStream, openFlyout]);
 
+  useEffect(() => {
+    let alive = true;
+    setCheckingUpdates(true);
+    api.checkUpdates({ force: false })
+      .then((result) => {
+        if (alive) setUpdateState(result);
+      })
+      .catch((error) => {
+        if (alive) {
+          setUpdateState({
+            checkedAt: new Date().toISOString(),
+            front: { currentVersion: bootstrap.appVersion, latestVersion: "", updateAvailable: false, error: error.message },
+            codex: { currentVersion: bootstrap.userAgent ?? "", latestVersion: "", updateAvailable: false, error: error.message }
+          });
+        }
+      })
+      .finally(() => {
+        if (alive) setCheckingUpdates(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [bootstrap.appVersion, bootstrap.userAgent]);
+
   useEffect(() => () => {
     cameraStream?.getTracks().forEach((track) => track.stop());
     recorderRef.current?.stream?.getTracks?.().forEach((track) => track.stop());
   }, [cameraStream]);
+
+  useEffect(() => () => {
+    if (winkAnimationTimerRef.current) window.clearTimeout(winkAnimationTimerRef.current);
+  }, []);
 
   useEffect(() => {
     const close = (event) => {
@@ -2008,17 +2584,20 @@ function ChatWindow({ bootstrap }) {
       if (contactId !== contact.id) return;
       setTyping(false);
       setMessages((current) => {
-        if (!current[current.length - 1]?.streaming) playNewMessage();
+        if (!current[current.length - 1]?.streaming) playNewMessageIfEnabled();
         return appendAgentDelta(current, conversationAgentName, delta);
       });
     });
     const offCompleted = api.on("codex:completed-item", ({ contactId, text }) => {
       if (contactId !== contact.id || !text) return;
       const incomingWink = extractWinkFromText(text).wink;
-      if (incomingWink) playWink(incomingWink);
+      if (incomingWink) {
+        playWink(incomingWink);
+        triggerWinkAnimation(incomingWink, "incoming");
+      }
       setTyping(false);
       setMessages((current) => {
-        if (!current[current.length - 1]?.streaming && !incomingWink) playNewMessage();
+        if (!current[current.length - 1]?.streaming && !incomingWink) playNewMessageIfEnabled();
         return finishAgentMessage(current, conversationAgentName, text);
       });
     });
@@ -2063,7 +2642,7 @@ function ChatWindow({ bootstrap }) {
     const cleanText = String(displayText ?? "").trim();
     if (!items.length || !cleanText) return;
     stickToBottomRef.current = true;
-    setMessages((current) => [...current, makeMessage("me", bootstrap.profile.displayName, cleanText, options)]);
+    setMessages((current) => [...current, makeMessage("me", profile.displayName, cleanText, options)]);
     setTyping(true);
     api.markRead(contact.id);
     try {
@@ -2132,7 +2711,15 @@ function ChatWindow({ bootstrap }) {
   }
 
   function flyoutSize(name) {
-    if (name === "emoticons") return { width: 344, height: 278 };
+    if (name === "emoticons") {
+      const root = chatWindowRef.current?.getBoundingClientRect();
+      const rootWidth = root?.width ?? window.innerWidth;
+      const rootHeight = root?.height ?? window.innerHeight;
+      return {
+        width: Math.min(560, Math.max(344, rootWidth - 34)),
+        height: Math.min(520, Math.max(278, rootHeight - 118))
+      };
+    }
     if (name === "text") return { width: 284, height: 318 };
     if (name === "activities") return { width: 318, height: 360 };
     if (name === "games") return { width: 288, height: 322 };
@@ -2142,10 +2729,19 @@ function ChatWindow({ bootstrap }) {
     return { width: 246, height: 146 };
   }
 
+  function clampFlyoutHeight(name, desiredHeight, targetTop, targetBottom, rootHeight) {
+    const margin = 8;
+    const availableAbove = Math.max(96, targetTop - margin);
+    const availableBelow = Math.max(96, rootHeight - targetBottom - margin);
+    if (name === "emoticons") return Math.min(desiredHeight, Math.max(availableAbove, availableBelow));
+    return Math.min(desiredHeight, availableAbove, availableBelow) || Math.min(desiredHeight, Math.max(availableAbove, availableBelow));
+  }
+
   function placeFlyout(name, event) {
     const root = chatWindowRef.current?.getBoundingClientRect();
     const target = event?.currentTarget?.getBoundingClientRect?.();
-    const { width, height } = flyoutSize(name);
+    const desired = flyoutSize(name);
+    const { width } = desired;
     const rootWidth = root?.width ?? window.innerWidth;
     const rootHeight = root?.height ?? window.innerHeight;
     const center = target
@@ -2155,16 +2751,19 @@ function ChatWindow({ bootstrap }) {
     const left = Math.max(8, Math.min(rawLeft, rootWidth - width - 8));
     const targetTop = target ? target.top - (root?.top ?? 0) : 82;
     const targetBottom = target ? target.bottom - (root?.top ?? 0) : 118;
-    const hasRoomAbove = targetTop > height + 12;
+    const height = clampFlyoutHeight(name, desired.height, targetTop, targetBottom, rootHeight);
+    const hasRoomAbove = targetTop >= Math.min(desired.height, height) + 8;
     const placement = hasRoomAbove && targetTop > rootHeight * 0.42 ? "above" : "below";
     const top = placement === "above"
-      ? Math.max(8, targetTop - height - 6)
-      : Math.min(rootHeight - height - 8, targetBottom - 1);
+      ? targetTop - height - 4
+      : targetBottom - 1;
     setFlyoutPosition({
       left,
       top: Math.max(8, top),
       arrowX: Math.max(12, Math.min(width - 12, center - left)),
-      placement
+      placement,
+      width,
+      maxHeight: height
     });
   }
 
@@ -2308,8 +2907,36 @@ function ChatWindow({ bootstrap }) {
     sendItems([{ type: "text", text: prompt }], prompt);
   }
 
+  function playNewMessageIfEnabled() {
+    api.getSettings()
+      .then((result) => {
+        if (result?.settings) setChatSettings(result.settings);
+        if (result?.settings?.newMessageSoundEnabled !== false) playNewMessage();
+      })
+      .catch(() => {
+        if (chatSettings?.newMessageSoundEnabled !== false) playNewMessage();
+      });
+  }
+
+  function triggerWinkAnimation(wink, direction = "incoming") {
+    if (!wink) return;
+    if (winkAnimationTimerRef.current) window.clearTimeout(winkAnimationTimerRef.current);
+    const nextAnimation = {
+      key: `${wink.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      wink,
+      direction
+    };
+    setActiveWinkAnimation(null);
+    window.requestAnimationFrame(() => setActiveWinkAnimation(nextAnimation));
+    winkAnimationTimerRef.current = window.setTimeout(() => {
+      setActiveWinkAnimation((current) => current?.key === nextAnimation.key ? null : current);
+      winkAnimationTimerRef.current = null;
+    }, 4200);
+  }
+
   function sendWink(wink) {
     playWink(wink);
+    triggerWinkAnimation(wink, "outgoing");
     setOpenFlyout("");
     const text = `Clin d'oeil envoye: ${wink.label}`;
     sendItems(
@@ -2382,6 +3009,95 @@ function ChatWindow({ bootstrap }) {
     }
   }
 
+  function showContactInfo() {
+    const lines = [
+      contact.name,
+      contact.email,
+      `Statut: ${statusLabels[contact.status] ?? contact.status}`,
+      contact.kind ? `Type: ${contact.kind}` : "",
+      contact.cwd ? `Projet: ${contact.cwd}` : "",
+      contact.instructions ? `Instructions: ${contact.instructions}` : ""
+    ].filter(Boolean);
+    window.alert(lines.join("\n"));
+  }
+
+  function showSelfInfo() {
+    const lines = [
+      profile.displayName || profile.email,
+      profile.email,
+      `Statut: ${statusLabels[profile.status] ?? profile.status}`,
+      profile.personalMessage ? `Message: ${profile.personalMessage}` : ""
+    ].filter(Boolean);
+    window.alert(lines.join("\n"));
+  }
+
+  async function chooseSelfPicture() {
+    const result = await api.chooseProfilePicture();
+    if (result?.canceled) return;
+    setProfile(result.profile);
+    if (result.settings) setChatSettings(result.settings);
+  }
+
+  async function clearSelfPicture() {
+    const result = await api.clearProfilePicture();
+    setProfile(result.profile);
+    if (result.settings) setChatSettings(result.settings);
+  }
+
+  async function changeSelfStatus(status) {
+    const result = await api.setSettings({
+      language: profile.language,
+      profile: { ...profile, status }
+    });
+    setProfile(result.settings.profile);
+    setChatSettings(result.settings);
+  }
+
+  async function checkForUpdates({ force = true } = {}) {
+    setCheckingUpdates(true);
+    try {
+      const result = await api.checkUpdates({ force });
+      setUpdateState(result);
+      setUpdateDialogOpen(true);
+      return result;
+    } catch (error) {
+      const failed = {
+        checkedAt: new Date().toISOString(),
+        front: { currentVersion: bootstrap.appVersion, latestVersion: "", updateAvailable: false, error: error.message },
+        codex: { currentVersion: bootstrap.userAgent ?? "", latestVersion: "", updateAvailable: false, error: error.message }
+      };
+      setUpdateState(failed);
+      setUpdateDialogOpen(true);
+      return failed;
+    } finally {
+      setCheckingUpdates(false);
+    }
+  }
+
+  async function toggleDemoModeFromChat() {
+    await api.setSettings({ demoMode: !(chatSettings?.demoMode === true) });
+  }
+
+  const contactFrameMenu = [
+    { label: "Infos du contact", action: showContactInfo },
+    contact.cwd ? { label: "Ouvrir le projet", action: () => api.app.openPath(contact.cwd) } : null,
+    {
+      label: "Demander le contexte a Codex",
+      action: () => sendQuickPrompt(`Resume le contexte de cette conversation avec ${contact.name}.`)
+    }
+  ].filter(Boolean);
+  const selfFrameMenu = [
+    { label: "Mon profil", action: showSelfInfo },
+    { label: "Changer mon image...", action: chooseSelfPicture },
+    { label: "Image par defaut", action: clearSelfPicture },
+    { separator: true },
+    ...statusOptions.map(([status, label]) => ({
+      label: `Statut: ${label}`,
+      disabled: profile.status === status,
+      action: () => changeSelfStatus(status)
+    }))
+  ];
+
   const chatMenus = [
     {
       label: "File",
@@ -2389,6 +3105,9 @@ function ChatWindow({ bootstrap }) {
         { label: "Send Files...", action: handleSendFile },
         { label: "Open Project...", action: () => api.openProjectPicker() },
         { label: "Save Conversation...", action: saveTranscript },
+        { separator: true },
+        { label: "About Codex Messenger...", action: () => setUpdateDialogOpen(true) },
+        { label: "Check for updates", action: () => checkForUpdates({ force: true }) },
         { separator: true },
         { label: "Close", shortcut: "Alt+F4", action: () => api.window.close() }
       ]
@@ -2450,9 +3169,15 @@ function ChatWindow({ bootstrap }) {
       label: "Help",
       entries: [
         {
-          label: "About Codex Messenger",
-          action: () => window.alert("Codex Messenger\n\nFenetre de conversation MSN 7 reliee a codex app-server.\n\nDeveloppe par Anis AYARI et Codex.")
+          label: `Demo mode: ${chatSettings?.demoMode ? "on" : "off"}`,
+          action: toggleDemoModeFromChat
         },
+        { separator: true },
+        {
+          label: "About Codex Messenger",
+          action: () => setUpdateDialogOpen(true)
+        },
+        { label: "Check for updates", action: () => checkForUpdates({ force: true }) },
         {
           label: "Keyboard Shortcuts",
           action: () => window.alert("Enter: envoyer\nShift+Enter: nouvelle ligne\nCtrl+A/C/X/V: edition du message\nWizz: secoue la fenetre et joue le son.")
@@ -2465,6 +3190,20 @@ function ChatWindow({ bootstrap }) {
     <main className="msn-window chat" ref={chatWindowRef}>
       <Titlebar title={`${contact.name} - Conversation`} />
       <Menu items={chatMenus} />
+      {hasAvailableUpdates(updateState) ? (
+        <button className="top-update-button" type="button" onClick={() => setUpdateDialogOpen(true)}>Update</button>
+      ) : null}
+      {updateDialogOpen ? (
+        <UpdateDialog
+          updateState={updateState}
+          checking={checkingUpdates}
+          appVersion={bootstrap.appVersion}
+          userAgent={bootstrap.userAgent ?? ""}
+          onCheck={() => checkForUpdates({ force: true })}
+          onOpen={(target) => api.openUpdateTarget(target)}
+          onClose={() => setUpdateDialogOpen(false)}
+        />
+      ) : null}
       <div className="toolbar-shell">
         <div className="toolbar">
           <Tool icon="invite" label="Invite" active={openFlyout === "invite"} onClick={(event) => toggleFlyout("invite", event)} />
@@ -2480,7 +3219,13 @@ function ChatWindow({ bootstrap }) {
         <div
           ref={flyoutRef}
           className={`toolbar-flyout ${openFlyout} ${flyoutPosition.placement}`}
-          style={{ left: flyoutPosition.left, top: flyoutPosition.top, "--arrow-x": `${flyoutPosition.arrowX}px` }}
+          style={{
+            left: flyoutPosition.left,
+            top: flyoutPosition.top,
+            width: flyoutPosition.width,
+            maxHeight: flyoutPosition.maxHeight,
+            "--arrow-x": `${flyoutPosition.arrowX}px`
+          }}
         >
           {openFlyout === "invite" ? (
             <InvitePanel
@@ -2543,6 +3288,7 @@ function ChatWindow({ bootstrap }) {
         </div>
       ) : null}
       <section className="chat-body">
+        <WinkAnimationOverlay animation={activeWinkAnimation} />
         <div className="chat-main">
           <ThreadTabs
             project={currentProject}
@@ -2575,7 +3321,6 @@ function ChatWindow({ bootstrap }) {
             <FormatButton icon="image" title="Image" active={openFlyout === "files"} onClick={(event) => toggleFlyout("files", event)} />
             <FormatButton icon="gift" title="Activites" active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
             <FormatButton icon="wizz" title="Wizz" onClick={() => api.wizz(contact.id)} />
-            <FormatButton icon="laugh" title="Rire" onClick={() => insertDraft(" :D")} />
             {recording ? <span className="format-status recording">Recording...</span> : null}
             {!recording && mediaError && !openFlyout ? <span className="format-status error">{mediaError}</span> : null}
           </div>
@@ -2587,8 +3332,8 @@ function ChatWindow({ bootstrap }) {
           </form>
         </div>
         <aside className="chat-side">
-          <div className="display-frame top"><Avatar contact={contact} large /></div>
-          <div className="display-frame bottom"><Avatar contact={selfContact} large /></div>
+          <DisplayFrame contact={contact} position="top" menuItems={contactFrameMenu} />
+          <DisplayFrame contact={selfContact} position="bottom" menuItems={selfFrameMenu} />
         </aside>
       </section>
       <footer className="chat-ad" aria-hidden="true">Codex App Server active</footer>
@@ -2650,7 +3395,7 @@ function Message({ message }) {
   return (
     <article className={message.from === "me" ? "message me-message" : "message"}>
       <header><strong>{message.author}</strong><time>{message.time}</time></header>
-      <p>{renderTextWithEmoticons(parsed.text)}</p>
+      <div className="message-content">{renderFormattedMessageText(parsed.text)}</div>
       {wink ? (
         <div className="message-wink">
           <img src={wink.src} alt="" draggable="false" />

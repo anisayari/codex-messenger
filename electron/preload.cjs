@@ -30,6 +30,8 @@ contextBridge.exposeInMainWorld("codexMsn", {
       contactId: search.get("contactId")
     });
   },
+  checkUpdates: (options) => ipcRenderer.invoke("updates:check", options),
+  openUpdateTarget: (target) => ipcRenderer.invoke("updates:open", target),
   signIn: (profile) => ipcRenderer.invoke("auth:sign-in", profile),
   openConversation: (contactId) => ipcRenderer.invoke("conversation:open", contactId),
   openThread: (threadId) => ipcRenderer.invoke("conversation:open-thread", threadId),
