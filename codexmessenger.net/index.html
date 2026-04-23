@@ -182,8 +182,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 6px;
-        padding: 8px 12px;
+        gap: 10px;
+        padding: 8px 10px;
         color: #fff;
         background: linear-gradient(#2a5dff, #001ea8 54%, #000b69);
         box-shadow: 0 5px 0 #000548, 0 2px 0 rgba(255, 255, 255, .45) inset;
@@ -192,9 +192,10 @@
       .mobile-brand {
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: 6px;
         min-width: 0;
-        font-size: clamp(18px, 5.4vw, 24px);
+        max-width: calc(100vw - 82px);
+        font-size: clamp(16px, 4.4vw, 21px);
         font-weight: 900;
         -webkit-text-stroke: .35px #00127d;
         text-shadow:
@@ -211,8 +212,8 @@
       }
 
       .mobile-buddies {
-        width: 42px;
-        height: 34px;
+        width: 37px;
+        height: 31px;
         flex: 0 0 auto;
         background:
           radial-gradient(circle at 62% 22%, #c9f8ff 0 16%, #55bdf6 17% 38%, transparent 39%),
@@ -646,7 +647,7 @@
       <g transform="translate(28 18) scale(.82)" filter="url(#iconShadow)">
         <use href="#smallBuddies"/>
       </g>
-      <text x="101" y="50" fill="#fff" font-family="Trebuchet MS, Arial" font-size="34" font-weight="900" font-style="italic" stroke="#00127d" stroke-width="1.1" filter="url(#whiteTextRelief)">codex messenger</text>
+      <text x="101" y="50" fill="#fff" font-family="Trebuchet MS, Arial" font-size="31" font-weight="900" font-style="italic" stroke="#00127d" stroke-width="1" filter="url(#whiteTextRelief)">codex messenger</text>
 
       <a class="lang-link pressable is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-label="English language">
         <rect class="focus-ring" x="1306" y="16" width="151" height="43" rx="4"/>
@@ -721,8 +722,12 @@
           <g clip-path="url(#downloadClip)">
             <path class="gloss-pass" d="M-85 -12 L-20 -12 L132 96 L67 96 Z" fill="#fff" opacity=".45"/>
           </g>
-          <use href="#downloadArrow" x="29" y="16"/>
-          <use href="#downloadArrow" x="380" y="16"/>
+          <g transform="translate(22 18) scale(.8)">
+            <use href="#downloadArrow"/>
+          </g>
+          <g transform="translate(384 18) scale(.8)">
+            <use href="#downloadArrow"/>
+          </g>
           <text class="download-label" x="229" y="58" text-anchor="middle" font-family="Arial Black, Arial" font-size="52" font-style="italic" fill="#1e26de" stroke="#b9a5ff" stroke-width="1.1" filter="url(#downloadTextRelief)">DOWNLOAD</text>
         </g>
       </a>
@@ -742,13 +747,13 @@
         <a class="source-link pressable" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" data-action="source" data-feedback="Opening source code..." aria-label="View source code on GitHub">
           <rect class="focus-ring" x="593" y="0" width="149" height="148"/>
           <rect class="source-panel" x="593" y="0" width="149" height="148" fill="#f4faee"/>
-          <image href="./assets/icons/github.svg" x="617" y="43" width="54" height="54" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
-          <text x="670" y="70" fill="#071fd0" font-size="17" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">View Source</text>
-          <text x="670" y="96" fill="#071fd0" font-size="17" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">on GitHub</text>
+          <image href="./assets/icons/github.svg" x="610" y="47" width="39" height="39" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+          <text x="655" y="70" fill="#071fd0" font-size="15" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">View Source</text>
+          <text x="655" y="94" fill="#071fd0" font-size="15" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">on GitHub</text>
         </a>
       </g>
 
-      <g transform="translate(850 670)">
+      <g transform="translate(888 694) scale(.86)">
         <rect width="755" height="182" rx="7" fill="url(#socialFill)" stroke="#95b2d8" stroke-width="2"/>
         <rect x="3" y="3" width="749" height="22" rx="6" fill="#fff" opacity=".52"/>
         <text x="378" y="39" text-anchor="middle" fill="#06158f" font-size="22" font-weight="700" font-style="italic" filter="url(#copyTextRelief)">Developed with fun by Anis Ayari and Codex</text>
@@ -790,7 +795,7 @@
 
       <rect x="4" y="872" width="1664" height="65" fill="url(#footerBlue)" stroke="#0529b4" stroke-width="3"/>
       <rect x="8" y="876" width="1656" height="12" fill="#fff" opacity=".16"/>
-      <text x="341" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">&#169; 2000-2025 Codex Messenger Project. All rights reserved.</text>
+      <text x="341" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">&#169; 2000-2026 Codex Messenger Project. All rights reserved.</text>
       <line x1="894" y1="892" x2="894" y2="918" stroke="#fff" stroke-width="2" opacity=".9"/>
       <text x="930" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">Bringing back the vibes. Powered by </text>
       <text x="1247" y="912" fill="#fff" font-size="18" font-style="italic" text-decoration="underline" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">Codex</text>
@@ -848,7 +853,7 @@
     </nav>
 
     <footer class="mobile-footer">
-      &copy; 2000-2025 Codex Messenger Project. All rights reserved.<br>
+      &copy; 2000-2026 Codex Messenger Project. All rights reserved.<br>
       Bringing back the vibes. Powered by Codex.
     </footer>
   </main>
