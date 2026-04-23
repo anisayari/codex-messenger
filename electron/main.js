@@ -27,6 +27,7 @@ const contacts = [
     mood: "agent principal",
     color: "#11a77a",
     avatar: "butterfly",
+    kind: "agent",
     instructions:
       "Tu es Codex dans une interface Codex Messenger inspiree Windows XP. Reponds en francais, directement, comme un agent de developpement pragmatique. Quand la tache est terminee, ne mets pas de marqueur special: l'application declenche le wizz."
   },
@@ -39,6 +40,7 @@ const contacts = [
     mood: "revue bugs/tests",
     color: "#315fd0",
     avatar: "lens",
+    kind: "agent",
     instructions:
       "Tu es Codex en mode revue. Priorise bugs, regressions, risques et tests manquants. Reponds en francais, structure par findings si necessaire."
   },
@@ -51,6 +53,7 @@ const contacts = [
     mood: "interface Codex",
     color: "#d88721",
     avatar: "brush",
+    kind: "agent",
     instructions:
       "Tu es Codex specialise UI desktop. Donne des choix concrets sur structure, composants, et interactions, sans marketing."
   },
@@ -63,6 +66,7 @@ const contacts = [
     mood: "execution locale",
     color: "#167c83",
     avatar: "terminal",
+    kind: "agent",
     instructions:
       "Tu es Codex oriente commandes et integration locale. Explique clairement les commandes et leurs effets avant les risques."
   }
@@ -164,6 +168,7 @@ function normalizeCustomAgent(agent = {}, existing = []) {
     mood,
     color: normalizeAgentColor(agent.color),
     avatar: agentAvatars.has(agent.avatar) ? agent.avatar : "lens",
+    kind: "agent",
     custom: true,
     instructions
   };
@@ -560,6 +565,7 @@ function contactFromProject(cwd) {
     mood: cwd,
     color: "#1f8fcf",
     avatar: "terminal",
+    kind: "project",
     cwd,
     instructions:
       `Tu es Codex dans Codex Messenger. Cette conversation correspond au projet local "${name}" dans ${cwd}. ` +
@@ -581,6 +587,7 @@ function contactFromThread(threadId) {
     mood: cwd,
     color: "#2874d9",
     avatar: "terminal",
+    kind: "thread",
     cwd,
     threadId,
     instructions:

@@ -1,6 +1,6 @@
 {
   "name": "codex-messenger",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Client desktop Electron inspire de MSN Messenger pour piloter Codex en local.",
   "author": "Anis AYARI",
   "license": "MIT",

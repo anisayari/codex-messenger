@@ -76,6 +76,8 @@ Deux raccourcis PowerShell sont aussi fournis:
 - Contacts Codex: agent principal, reviewer, designer, projets locaux et fils récents.
 - Création d'agents personnalisés depuis `Add a Contact`, avec nom, groupe, statut, icône, couleur et instructions dédiées.
 - Liste de contacts groupée façon Messenger.
+- Agents, projets et conversations récentes affichés comme de vrais contacts MSN avec avatars générés.
+- Fenêtre de discussion centrée sur le contact: plus de navigateur de fils dans la conversation.
 - Une fenêtre par conversation.
 - Streaming des réponses Codex sans doublons.
 - Sons MSN pour nouveau message et Wizz.

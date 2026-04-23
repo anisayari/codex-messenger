@@ -107,6 +107,14 @@ const agentAvatarOptions = [
   ["butterfly", "Codex"]
 ];
 const agentColorOptions = ["#315fd0", "#11a77a", "#d88721", "#167c83", "#8b5bc7", "#c54545"];
+const generatedAvatarPalettes = [
+  ["#0e9fbd", "#88e4f5", "#185ac4", "#f7fcff"],
+  ["#24a36a", "#b7f1c7", "#047050", "#f9fffb"],
+  ["#e18b21", "#ffd58f", "#c44f1f", "#fffaf2"],
+  ["#5166d8", "#c7d4ff", "#6b46ad", "#fbfbff"],
+  ["#c64b65", "#ffd1dc", "#842849", "#fff8fb"],
+  ["#22827f", "#afeae6", "#2157a5", "#f8ffff"]
+];
 const ticLines = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -244,6 +252,78 @@ function localFileUrl(filePath) {
   return `file:///${String(filePath).replace(/\\/g, "/")}`;
 }
 
+function hashString(value = "") {
+  let hash = 2166136261;
+  const input = String(value);
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function safeColor(value, fallback) {
+  const color = String(value ?? "").trim();
+  return /^#[0-9a-f]{6}$/i.test(color) ? color : fallback;
+}
+
+function initialsFor(name) {
+  const words = String(name || "CM").trim().split(/\s+/).filter(Boolean);
+  const raw = words.length > 1 ? `${words[0][0]}${words[1][0]}` : (words[0] || "CM").slice(0, 2);
+  return raw.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 2) || "CM";
+}
+
+function generatedAvatarKind(contact = {}) {
+  if (contact.kind === "thread" || contact.threadId) return "thread";
+  if (contact.kind === "project" || contact.cwd) return "project";
+  if (["lens", "brush", "terminal"].includes(contact.avatar)) return contact.avatar;
+  if (contact.custom || contact.kind === "agent") return "agent";
+  return "buddy";
+}
+
+const avatarCache = new Map();
+
+function generatedAvatarUrl(contact = {}) {
+  const seed = `${contact.id ?? ""}|${contact.name ?? ""}|${contact.mail ?? ""}|${contact.cwd ?? ""}|${contact.threadId ?? ""}`;
+  const hash = hashString(seed);
+  const [base, bright, accent, paper] = generatedAvatarPalettes[hash % generatedAvatarPalettes.length];
+  const primary = safeColor(contact.color, base);
+  const initials = initialsFor(contact.name || contact.mail);
+  const kind = generatedAvatarKind(contact);
+  const key = `${kind}|${initials}|${primary}|${bright}|${accent}|${paper}|${hash % 19}`;
+  if (avatarCache.has(key)) return avatarCache.get(key);
+
+  const sharedPerson = `
+    <circle cx="56" cy="63" r="21" fill="${bright}" stroke="${accent}" stroke-width="5"/>
+    <path d="M22 125c3-28 17-45 37-45 18 0 32 16 36 45v14H22z" fill="${bright}" stroke="${accent}" stroke-width="5"/>
+    <circle cx="94" cy="54" r="29" fill="url(#shine)" stroke="${primary}" stroke-width="6"/>
+    <path d="M48 137c4-42 22-65 51-65 28 0 46 23 51 65v12H48z" fill="url(#body)" stroke="${primary}" stroke-width="6"/>
+  `;
+  const glyphs = {
+    agent: `${sharedPerson}<path d="M73 94l16 22-16 22" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M102 133h27" stroke="#fff" stroke-width="9" stroke-linecap="round"/>`,
+    buddy: sharedPerson,
+    project: `<path d="M18 58h44l12 14h68c7 0 11 4 11 11v48c0 7-4 11-11 11H18z" fill="url(#body)" stroke="${primary}" stroke-width="6"/><path d="M18 58h48l10 14H18z" fill="${bright}" opacity=".95"/><circle cx="115" cy="105" r="18" fill="#fff" opacity=".9"/><path d="M102 106h28M116 92v28" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`,
+    thread: `<rect x="22" y="34" width="116" height="78" rx="18" fill="url(#body)" stroke="${primary}" stroke-width="6"/><path d="M55 111l-20 27 38-19" fill="url(#body)" stroke="${primary}" stroke-width="6" stroke-linejoin="round"/><circle cx="56" cy="74" r="8" fill="#fff"/><circle cx="81" cy="74" r="8" fill="#fff"/><circle cx="106" cy="74" r="8" fill="#fff"/><text x="80" y="143" text-anchor="middle" font-family="Tahoma,Arial" font-size="22" font-weight="700" fill="${accent}">${initials}</text>`,
+    terminal: `<rect x="22" y="35" width="116" height="88" rx="10" fill="#17324f" stroke="${primary}" stroke-width="6"/><rect x="30" y="43" width="100" height="15" rx="4" fill="${bright}" opacity=".45"/><path d="M43 78l18 16-18 16" fill="none" stroke="#dcfff4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M75 111h37" stroke="#dcfff4" stroke-width="8" stroke-linecap="round"/><text x="80" y="146" text-anchor="middle" font-family="Tahoma,Arial" font-size="22" font-weight="700" fill="${accent}">${initials}</text>`,
+    lens: `<circle cx="69" cy="71" r="38" fill="url(#shine)" stroke="${primary}" stroke-width="8"/><path d="M98 100l35 35" stroke="${accent}" stroke-width="14" stroke-linecap="round"/><circle cx="56" cy="57" r="13" fill="#fff" opacity=".8"/><text x="80" y="147" text-anchor="middle" font-family="Tahoma,Arial" font-size="22" font-weight="700" fill="${accent}">${initials}</text>`,
+    brush: `<path d="M102 24c14 9 21 23 14 35L77 126c-5 9-18 9-25 3s-8-18-1-26l51-79z" fill="url(#body)" stroke="${primary}" stroke-width="6"/><path d="M48 111c-17 4-27 13-30 28 14 2 28-1 38-13" fill="${accent}" opacity=".86"/><circle cx="94" cy="52" r="13" fill="#fff" opacity=".75"/><text x="83" y="148" text-anchor="middle" font-family="Tahoma,Arial" font-size="22" font-weight="700" fill="${accent}">${initials}</text>`
+  };
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${paper}"/><stop offset=".48" stop-color="${bright}"/><stop offset="1" stop-color="${primary}"/></linearGradient>
+    <radialGradient id="shine" cx=".34" cy=".22" r=".78"><stop offset="0" stop-color="#fff"/><stop offset=".42" stop-color="${bright}"/><stop offset="1" stop-color="${primary}"/></radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bright}"/><stop offset=".72" stop-color="${primary}"/></linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="11" fill="url(#bg)"/>
+  <path d="M13 17c32-15 82-10 118 13 20 13 20 36 4 42-36 13-78 6-116-14C4 50 1 25 13 17z" fill="#fff" opacity=".5"/>
+  ${glyphs[kind] ?? glyphs.buddy}
+  <path d="M0 150c42-10 86-10 160 0v10H0z" fill="#fff" opacity=".18"/>
+</svg>`;
+  const url = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  avatarCache.set(key, url);
+  return url;
+}
+
 function presenceClass(status) {
   if (status === "busy") return "busy";
   if (status === "offline") return "offline";
@@ -261,6 +341,7 @@ function Logo({ small = false }) {
 
 function Avatar({ contact, large = false }) {
   const picturePath = contact.displayPicturePath || contact.picturePath;
+  const generatedPicture = generatedAvatarUrl(contact);
   return (
     <div className={`${large ? "avatar large" : "avatar"} ${presenceClass(contact.status)}`} style={{ "--avatar": contact.color ?? "#11a77a" }}>
       {picturePath ? (
@@ -268,7 +349,7 @@ function Avatar({ contact, large = false }) {
       ) : contact.avatar === "butterfly" ? (
         <Logo small={!large} />
       ) : (
-        <span className={`glyph ${contact.avatar}`} />
+        <img className="avatar-generated" src={generatedPicture} alt="" draggable="false" />
       )}
     </div>
   );
@@ -634,33 +715,59 @@ function RosterView({
         mood: contact.mood,
         status: contact.status,
         statusText: statusLabels[contact.status] ?? contact.status,
+        contact,
         onOpen: () => api.openConversation(contact.id)
       }))
     });
 
-    const projectItems = (conversations?.projects ?? []).map((project) => ({
-      id: project.id,
-      name: project.name,
-      mood: project.cwd,
-      status: project.threads.length ? "online" : "offline",
-      statusText: project.threads.length ? `${project.threads.length} fil${project.threads.length > 1 ? "s" : ""}` : "nouveau",
-      onOpen: () => api.openProject(project.cwd)
-    }));
+    const projectItems = (conversations?.projects ?? []).map((project) => {
+      const contact = {
+        id: project.id,
+        name: project.name,
+        mail: `${project.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@project.local`,
+        group: "Projets",
+        mood: project.cwd,
+        status: project.threads.length ? "online" : "offline",
+        color: "#1f8fcf",
+        avatar: "terminal",
+        kind: "project",
+        cwd: project.cwd
+      };
+      return {
+        ...contact,
+        statusText: project.threads.length ? `${project.threads.length} conversation${project.threads.length > 1 ? "s" : ""}` : "nouveau",
+        contact,
+        onOpen: () => api.openProject(project.cwd)
+      };
+    });
     if (projectItems.length) byGroup.push({ id: "projects", title: "Projects", items: projectItems });
 
     const threadItems = (conversations?.projects ?? [])
-      .flatMap((project) => project.threads.map((thread) => ({ ...thread, projectName: project.name })))
+      .flatMap((project) => project.threads.map((thread) => ({ ...thread, projectName: project.name, cwd: project.cwd })))
       .sort((a, b) => String(b.timestamp ?? "").localeCompare(String(a.timestamp ?? "")))
       .slice(0, 28)
-      .map((thread) => ({
-        id: thread.contactId,
-        name: thread.preview,
-        mood: thread.projectName,
-        status: "away",
-        statusText: "fil",
-        onOpen: () => api.openThread(thread.id)
-      }));
-    if (threadItems.length) byGroup.push({ id: "threads", title: "Recent Codex Threads", items: threadItems });
+      .map((thread) => {
+        const contact = {
+          id: thread.contactId,
+          name: thread.preview || thread.projectName,
+          mail: `${thread.projectName.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@thread.local`,
+          group: thread.projectName,
+          mood: thread.cwd,
+          status: "online",
+          color: "#2874d9",
+          avatar: "terminal",
+          kind: "thread",
+          cwd: thread.cwd,
+          threadId: thread.id
+        };
+        return {
+          ...contact,
+          statusText: thread.projectName,
+          contact,
+          onOpen: () => api.openThread(thread.id)
+        };
+      });
+    if (threadItems.length) byGroup.push({ id: "threads", title: "Conversations recentes", items: threadItems });
 
     return byGroup.map((group) => ({
       ...group,
@@ -762,6 +869,7 @@ function RosterView({
             {!collapsed[group.id] ? group.items.map((item) => (
               <button className="contact-line" type="button" key={item.id} onClick={item.onOpen}>
                 <span className={`msn-presence ${item.status}`} />
+                <span className="contact-mini-avatar"><Avatar contact={item.contact ?? item} /></span>
                 <span className="contact-line-copy">
                   <span className="contact-name">{item.name}</span>
                   <span className="contact-state">({item.statusText})</span>
@@ -937,25 +1045,41 @@ function FormatButton({ icon, title, onClick, label }) {
   );
 }
 
-function ConversationBrowser({ conversations, activeContactId, onOpenProject, onOpenThread }) {
-  if (!conversations?.projects?.length) return <div className="side-empty">Aucun fil Codex trouve.</div>;
+function ContactPanel({ contact, onWizz, onSendFile, onCamera, onVoice, onActivities, onOpenProject, onRun }) {
+  const statusText = statusLabels[contact.status] ?? contact.status ?? "En ligne";
+  const projectPrompt = contact.cwd
+    ? `Resume le contexte utile de ${contact.name}, puis propose la prochaine action concrete dans ${contact.cwd}.`
+    : `Resume ton role de ${contact.name}, puis propose la prochaine action concrete.`;
+  const inspectPrompt = contact.cwd
+    ? `Inspecte rapidement le projet ${contact.cwd} et donne-moi les risques ou taches prioritaires.`
+    : `Passe en mode ${contact.name}: donne-moi les trois actions les plus utiles maintenant.`;
   return (
-    <div className="conversation-browser">
-      {conversations.projects.map((project) => (
-        <section key={project.cwd} className="project-group">
-          <button className={activeContactId === project.id ? "project-title active" : "project-title"} type="button" onClick={() => onOpenProject(project.cwd)}>
-            <span className="presence online" />
-            <span><strong>{project.name}</strong><small>{project.cwd}</small></span>
-          </button>
-          <div className="thread-tabs">
-            {project.threads.length ? project.threads.slice(0, 8).map((thread) => (
-              <button className={activeContactId === thread.contactId ? "thread-tab active" : "thread-tab"} type="button" key={thread.id} onClick={() => onOpenThread(thread.id)}>
-                <span>{thread.preview}</span>
-              </button>
-            )) : <span className="no-thread">Nouveau fil au premier message</span>}
-          </div>
-        </section>
-      ))}
+    <div className="contact-panel">
+      <div className="contact-card-head">
+        <Avatar contact={contact} />
+        <div>
+          <strong>{contact.name}</strong>
+          <span>{contact.mail || "codex@codex.local"}</span>
+        </div>
+      </div>
+      <p className="contact-personal">{contact.mood || "Disponible pour Codex"}</p>
+      <dl className="contact-facts">
+        <div><dt>Statut</dt><dd>{statusText}</dd></div>
+        <div><dt>Groupe</dt><dd>{contact.group || "Codex"}</dd></div>
+        {contact.cwd ? <div><dt>Projet</dt><dd>{contact.cwd}</dd></div> : null}
+      </dl>
+      <div className="contact-actions">
+        <button type="button" onClick={onWizz}>Wizz</button>
+        <button type="button" onClick={onActivities}>Clin d'oeil</button>
+        <button type="button" onClick={onSendFile}>Fichier</button>
+        <button type="button" onClick={onCamera}>Camera</button>
+        <button type="button" onClick={onVoice}>Voice Clip</button>
+        <button type="button" onClick={onOpenProject} disabled={!contact.cwd}>Projet</button>
+      </div>
+      <div className="contact-prompts">
+        <button type="button" onClick={() => onRun(projectPrompt)}>Resume</button>
+        <button type="button" onClick={() => onRun(inspectPrompt)}>Inspecter</button>
+      </div>
     </div>
   );
 }
@@ -1244,8 +1368,7 @@ function ChatWindow({ bootstrap }) {
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
   const [wizzing, setWizzing] = useState(false);
-  const [conversations, setConversations] = useState(bootstrap.conversations);
-  const [sideMode, setSideMode] = useState("conversations");
+  const [sideMode, setSideMode] = useState("contact");
   const [activeGame, setActiveGame] = useState("morpion");
   const [cameraStream, setCameraStream] = useState(null);
   const [recording, setRecording] = useState(false);
@@ -1255,14 +1378,6 @@ function ChatWindow({ bootstrap }) {
   const textareaRef = useRef(null);
   const recorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-
-  async function refreshConversations() {
-    try {
-      setConversations(await api.listConversations());
-    } catch {
-      setConversations((current) => current);
-    }
-  }
 
   useEffect(() => {
     const markRead = () => {
@@ -1276,10 +1391,6 @@ function ChatWindow({ bootstrap }) {
       document.removeEventListener("visibilitychange", markRead);
     };
   }, [contact.id]);
-
-  useEffect(() => {
-    refreshConversations();
-  }, []);
 
   useEffect(() => {
     if (videoRef.current && cameraStream) videoRef.current.srcObject = cameraStream;
@@ -1340,7 +1451,7 @@ function ChatWindow({ bootstrap }) {
     setMessages((current) => [...current, makeMessage("me", bootstrap.profile.displayName, cleanText, options)]);
     setTyping(true);
     api.markRead(contact.id);
-    api.sendItems(contact.id, items).then(refreshConversations);
+    api.sendItems(contact.id, items);
   }
 
   function submit(event) {
@@ -1549,7 +1660,7 @@ function ChatWindow({ bootstrap }) {
     {
       label: "Actions",
       entries: [
-        { label: "Invite", action: () => setSideMode("conversations") },
+        { label: "Invite", action: () => setSideMode("contact") },
         { label: "Wizz", action: () => api.wizz(contact.id) },
         { label: "Send Wink", action: () => setSideMode("activities") },
         { label: "Search Transcript...", action: handleSearch },
@@ -1593,7 +1704,7 @@ function ChatWindow({ bootstrap }) {
       <Titlebar title={`${contact.name} - Conversation`} />
       <Menu items={chatMenus} />
       <div className="toolbar">
-        <Tool icon="invite" label="Invite" onClick={() => setSideMode("conversations")} />
+        <Tool icon="invite" label="Invite" onClick={() => setSideMode("contact")} />
         <Tool icon="files" label="Send Files" onClick={handleSendFile} />
         <Tool icon="video" label="Video" onClick={startCamera} />
         <Tool icon="voice" label="Voice" onClick={toggleVoiceClip} />
@@ -1628,19 +1739,23 @@ function ChatWindow({ bootstrap }) {
         <aside className="chat-side">
           <div className="display-frame top"><Avatar contact={contact} large /></div>
           <div className="side-switcher">
-            <button className={sideMode === "conversations" ? "active" : ""} type="button" onClick={() => setSideMode("conversations")}>Fils</button>
+            <button className={sideMode === "contact" ? "active" : ""} type="button" onClick={() => setSideMode("contact")}>Info</button>
             <button className={sideMode === "camera" ? "active" : ""} type="button" onClick={startCamera}>Cam</button>
             <button className={sideMode === "voice" ? "active" : ""} type="button" onClick={() => setSideMode("voice")}>Voix</button>
             <button className={sideMode === "activities" ? "active" : ""} type="button" onClick={() => setSideMode("activities")}>Act</button>
             <button className={sideMode === "games" ? "active" : ""} type="button" onClick={() => setSideMode("games")}>Jeux</button>
           </div>
           <div className="side-fill">
-            {sideMode === "conversations" ? (
-              <ConversationBrowser
-                conversations={conversations}
-                activeContactId={contact.id}
-                onOpenProject={(cwd) => api.openProject(cwd)}
-                onOpenThread={(threadId) => api.openThread(threadId)}
+            {sideMode === "contact" ? (
+              <ContactPanel
+                contact={contact}
+                onWizz={() => api.wizz(contact.id)}
+                onSendFile={handleSendFile}
+                onCamera={startCamera}
+                onVoice={toggleVoiceClip}
+                onActivities={() => setSideMode("activities")}
+                onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
+                onRun={sendQuickPrompt}
               />
             ) : null}
             {sideMode === "camera" ? (
