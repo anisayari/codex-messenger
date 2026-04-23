@@ -1,0 +1,192 @@
+name: Deploy codexmessenger.net
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/deploy-codexmessenger-net.yml"
+      - "codexmessenger.net/**"
+  release:
+    types:
+      - published
+      - edited
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codexmessenger-net-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy static showcase
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deploy tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync openssh-client jq
+
+      - name: Resolve latest GitHub release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          release_json="$RUNNER_TEMP/latest-release.json"
+          gh api "repos/$GH_REPO/releases/latest" > "$release_json"
+
+          tag="$(jq -r '.tag_name // empty' "$release_json")"
+          if [[ -z "$tag" ]]; then
+            echo "::error::No published GitHub release found for $GH_REPO."
+            exit 1
+          fi
+
+          asset_name="$(
+            jq -r '
+              (
+                [.assets[]
+                  | select((.name | test("\\.exe$"; "i")) and ((.name | test("\\.blockmap$"; "i")) | not))
+                  | select(.name | test("Setup"; "i"))
+                ][0]
+                //
+                [.assets[]
+                  | select((.name | test("\\.exe$"; "i")) and ((.name | test("\\.blockmap$"; "i")) | not))
+                ][0]
+              ).name // empty
+            ' "$release_json"
+          )"
+
+          if [[ -z "$asset_name" ]]; then
+            echo "::error::Latest release $tag does not contain a Windows .exe asset."
+            exit 1
+          fi
+
+          asset_digest="$(jq -r --arg name "$asset_name" '.assets[] | select(.name == $name) | .digest // empty' "$release_json")"
+
+          {
+            echo "tag=$tag"
+            echo "asset_name=$asset_name"
+            echo "asset_digest=$asset_digest"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build static deployment bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_ASSET_NAME: ${{ steps.release.outputs.asset_name }}
+          RELEASE_ASSET_DIGEST: ${{ steps.release.outputs.asset_digest }}
+        run: |
+          set -euo pipefail
+
+          site_dir="$RUNNER_TEMP/codexmessenger.net"
+          mkdir -p "$site_dir"
+          rsync -a --delete \
+            --exclude "README-deploy.md" \
+            --exclude "nginx.codexmessenger.net.conf" \
+            "codexmessenger.net/" "$site_dir/"
+
+          mkdir -p "$RUNNER_TEMP/release" "$site_dir/downloads"
+          rm -f "$site_dir/downloads/.gitkeep"
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "$RELEASE_ASSET_NAME" \
+            --dir "$RUNNER_TEMP/release"
+
+          cp "$RUNNER_TEMP/release/$RELEASE_ASSET_NAME" "$site_dir/downloads/CodexMessenger.exe"
+          sha256sum "$site_dir/downloads/CodexMessenger.exe" > "$site_dir/downloads/CodexMessenger.exe.sha256"
+
+          actual_sha="$(cut -d ' ' -f1 "$site_dir/downloads/CodexMessenger.exe.sha256")"
+          if [[ "$RELEASE_ASSET_DIGEST" == sha256:* ]]; then
+            expected_sha="${RELEASE_ASSET_DIGEST#sha256:}"
+            if [[ "${actual_sha,,}" != "${expected_sha,,}" ]]; then
+              echo "::error::Downloaded release asset checksum does not match GitHub release digest."
+              exit 1
+            fi
+          fi
+
+          SITE_DIR="$site_dir" python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          tag = os.environ["RELEASE_TAG"]
+          safe_tag = re.sub(r"[^0-9A-Za-z._-]", "-", tag)
+          index_path = Path(os.environ["SITE_DIR"]) / "index.html"
+          html = index_path.read_text(encoding="utf-8")
+          html, count = re.subn(
+              r"(\./downloads/CodexMessenger\.exe\?v=)[^\"]+",
+              rf"\g<1>{safe_tag}",
+              html,
+          )
+          if count == 0:
+              raise SystemExit("download link cache-buster not found in index.html")
+          index_path.write_text(html, encoding="utf-8")
+          PY
+
+          echo "SITE_DIR=$site_dir" >> "$GITHUB_ENV"
+          {
+            echo "### codexmessenger.net deployment"
+            echo ""
+            echo "- Release: $RELEASE_TAG"
+            echo "- Asset: $RELEASE_ASSET_NAME"
+            echo "- SHA256: $actual_sha"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy to VPS
+        env:
+          SSH_HOST: ${{ secrets.CODEXMESSENGER_DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.CODEXMESSENGER_DEPLOY_PORT }}
+          SSH_USER: ${{ secrets.CODEXMESSENGER_DEPLOY_USER }}
+          SSH_KEY: ${{ secrets.CODEXMESSENGER_DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.CODEXMESSENGER_DEPLOY_KNOWN_HOSTS }}
+          SSH_WEBROOT: ${{ secrets.CODEXMESSENGER_DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+
+          for required in SSH_HOST SSH_PORT SSH_USER SSH_KEY SSH_KNOWN_HOSTS SSH_WEBROOT; do
+            if [[ -z "${!required:-}" ]]; then
+              echo "::error::Missing GitHub secret for $required."
+              exit 1
+            fi
+          done
+
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/codexmessenger_deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/codexmessenger_deploy_key ~/.ssh/known_hosts
+
+          ssh_args=(
+            -i ~/.ssh/codexmessenger_deploy_key
+            -p "$SSH_PORT"
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+          )
+          remote="$SSH_USER@$SSH_HOST"
+          remote_tmp="/tmp/codexmessenger-net-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          ssh "${ssh_args[@]}" "$remote" "mkdir -p '$remote_tmp'"
+          rsync -az --delete -e "ssh -i ~/.ssh/codexmessenger_deploy_key -p $SSH_PORT -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
+            "$SITE_DIR/" "$remote:$remote_tmp/"
+
+          ssh "${ssh_args[@]}" "$remote" "
+            set -euo pipefail
+            mkdir -p '$SSH_WEBROOT'
+            rsync -a --delete '$remote_tmp/' '$SSH_WEBROOT/'
+            chown -R www-data:www-data '$SSH_WEBROOT'
+            find '$SSH_WEBROOT' -type d -exec chmod 755 {} +
+            find '$SSH_WEBROOT' -type f -exec chmod 644 {} +
+            nginx -t
+            systemctl reload nginx
+            rm -rf '$remote_tmp'
+          "

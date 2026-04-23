@@ -6,6 +6,7 @@ tmp/
 uploads/
 release/
 public/reference/
+codexmessenger.net/downloads/*.exe
 *.log
 chat-*.png
 roster-*.png
