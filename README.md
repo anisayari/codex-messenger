@@ -79,12 +79,15 @@ Deux raccourcis PowerShell sont aussi fournis:
 - Une fenêtre par conversation.
 - Streaming des réponses Codex sans doublons.
 - Sons MSN pour nouveau message et Wizz.
+- Pack sons MSN 7 extrait localement: nouveau message, e-mail, Wizz/Nudge, présence en ligne, sonnerie, téléphone, saisie et invite terminée.
+- Clins d'oeil animés depuis l'archive MSN, envoyables depuis le panneau `Act`; Codex peut aussi en envoyer avec les marqueurs `[wink:...]`.
 - Wizz quand Codex termine ou quand un message reste non lu trop longtemps.
 - Envoi de fichiers et images à Codex.
 - Capture caméra locale avant envoi.
 - Enregistrement de messages vocaux.
 - Image de profil, statut et message personnel.
 - Mini-jeux locaux: Morpion, Memory et Wizz Reflex.
+- Mini-jeux habillés avec des assets MSN extraits.
 - Packaging Windows avec installateur NSIS et exécutable portable.
 
 ## Détection De Codex

@@ -332,7 +332,8 @@ function localizedInstructions(contact) {
   const languageInstruction = profile.language === "en"
     ? "Answer in English by default unless the user explicitly asks for another language."
     : "Reponds en francais par defaut sauf demande explicite de l'utilisateur.";
-  return `${contact.instructions}\n\n${languageInstruction}`;
+  const winkInstruction = "Tu peux envoyer un clin d'oeil anime dans Codex Messenger en ecrivant exactement un marqueur comme [wink:butterfly], [wink:butterfly-small], [wink:surprise], [wink:nudge], [wink:flash] ou [wink:msn-flow]. Utilise ce marqueur seulement quand un clin d'oeil est pertinent.";
+  return `${contact.instructions}\n\n${languageInstruction}\n\n${winkInstruction}`;
 }
 
 class CodexAppServer extends EventEmitter {

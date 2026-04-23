@@ -1004,9 +1004,37 @@ button { cursor: default; }
   color: #516985;
   font-size: 10px;
 }
+.message-wink {
+  display: grid;
+  width: min(210px, 88%);
+  min-height: 74px;
+  margin-top: 5px;
+  place-items: center;
+  padding: 6px;
+  border: 1px solid #9fb5d1;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255,255,255,.95), rgba(255,255,255,0) 36%),
+    linear-gradient(#ffffff, #e4f0ff);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -8px 18px rgba(157,181,211,.22);
+}
+.message-wink img {
+  display: block;
+  max-width: 180px;
+  max-height: 120px;
+  object-fit: contain;
+}
+.message-wink span {
+  margin-top: 3px;
+  color: #33516f;
+  font-size: 10px;
+}
 .me-message { margin-left: auto; text-align: right; }
 .me-message header { justify-content: flex-end; color: #0b7747; }
 .me-message p { border-color: #bfdfc9; background: linear-gradient(#fbfffb, #eefaf1); }
+.me-message .message-wink { margin-left: auto; }
 .system { margin: 0 0 12px; color: #627083; font-size: 12px; text-align: center; }
 .system span { color: #8a97a7; }
 .typing { display: flex; align-items: center; gap: 5px; color: #627083; font-size: 12px; }
@@ -1315,6 +1343,66 @@ button { cursor: default; }
   margin: 5px 0;
   font-size: 10px;
 }
+.activities-panel {
+  padding: 6px;
+  color: #2b405d;
+  font-size: 10px;
+}
+.activity-section {
+  margin-bottom: 7px;
+}
+.activity-section h3 {
+  margin: 2px 0 5px;
+  color: #173d72;
+  font-size: 10px;
+}
+.wink-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.wink-grid button {
+  display: grid;
+  min-height: 68px;
+  place-items: center;
+  padding: 4px;
+  border: 1px solid #93add0;
+  border-radius: 3px;
+  color: #173d72;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255,255,255,.95), rgba(255,255,255,0) 38%),
+    linear-gradient(#fff, #dcecff);
+  box-shadow: inset 0 1px 0 white;
+  font-size: 10px;
+}
+.wink-grid img {
+  display: block;
+  max-width: 70px;
+  max-height: 48px;
+  object-fit: contain;
+}
+.wink-grid span {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sound-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+}
+.sound-grid button,
+.activity-command {
+  width: 100%;
+  min-height: 23px;
+  margin-top: 3px;
+  border: 1px solid #93add0;
+  border-radius: 3px;
+  color: #173d72;
+  background: linear-gradient(#fff, #dcecff);
+  font-size: 10px;
+}
 .games-panel {
   padding: 5px;
   color: #243b5c;
@@ -1423,6 +1511,19 @@ button { cursor: default; }
     inset 0 -1px 3px rgba(105,132,168,.24);
   font-size: 17px;
   font-weight: 700;
+}
+.tic-cell img,
+.memory-card img,
+.reflex-cell img {
+  display: block;
+  max-width: 24px;
+  max-height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.65));
+}
+.reflex-cell.target img {
+  max-width: 28px;
+  max-height: 28px;
 }
 .tic-cell.x {
   color: #0a7b53;

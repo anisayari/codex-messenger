@@ -22,8 +22,14 @@ const statusOptions = [
   ["offline", "Apparaitre hors ligne"]
 ];
 const audioFiles = {
-  wizz: "./audio/msn_wizz.mp3",
-  message: "./audio/msn_nouveau_message.mp3"
+  wizz: "./msn-assets/sounds/nudge.wav",
+  message: "./msn-assets/sounds/newalert.wav",
+  newEmail: "./msn-assets/sounds/newemail.wav",
+  online: "./msn-assets/sounds/online.wav",
+  phone: "./msn-assets/sounds/phone.wav",
+  ring: "./msn-assets/sounds/ring.wav",
+  type: "./msn-assets/sounds/type.wav",
+  done: "./msn-assets/sounds/vimdone.wav"
 };
 const brandPeopleLogo = new URL("./icons/codex-messenger-people.png", window.location.href).href;
 const toolbarIcons = {
@@ -60,6 +66,39 @@ const gameCatalog = [
   { id: "morpion", label: "Morpion" },
   { id: "memory", label: "Memory" },
   { id: "wizz", label: "Wizz" }
+];
+const soundCatalog = [
+  ["message", "Nouveau message", audioFiles.message],
+  ["wizz", "Wizz / Nudge", audioFiles.wizz],
+  ["newEmail", "Nouvel e-mail", audioFiles.newEmail],
+  ["online", "Contact en ligne", audioFiles.online],
+  ["ring", "Sonnerie", audioFiles.ring],
+  ["phone", "Telephone", audioFiles.phone],
+  ["type", "Saisie", audioFiles.type],
+  ["done", "Invite terminee", audioFiles.done]
+];
+const winkCatalog = [
+  { id: "butterfly", label: "Papillon", src: "./msn-assets/winks/butterfly.gif", sound: "wizz" },
+  { id: "butterfly-small", label: "Mini papillon", src: "./msn-assets/winks/butterfly-small.gif", sound: "online" },
+  { id: "surprise", label: "Surprise", src: "./msn-assets/winks/surprise.gif", sound: "ring" },
+  { id: "nudge", label: "Secousse", src: "./msn-assets/winks/nudge-burst.gif", sound: "wizz" },
+  { id: "flash", label: "Flash", src: "./msn-assets/winks/flash.gif", sound: "type" },
+  { id: "msn-flow", label: "MSN", src: "./msn-assets/winks/msn-flow.gif", sound: "done" }
+];
+const winkById = Object.fromEntries(winkCatalog.map((wink) => [wink.id, wink]));
+const gameAssets = {
+  x: "./msn-assets/games/piece-x.png",
+  o: "./msn-assets/games/piece-o.png",
+  bell: "./msn-assets/games/bell.png",
+  play: "./msn-assets/games/play.png"
+};
+const memorySymbols = [
+  { id: "smile", label: "Smile", src: "./msn-assets/games/smile.png" },
+  { id: "gift", label: "Gift", src: "./msn-assets/games/gift.png" },
+  { id: "butterfly", label: "Butterfly", src: "./msn-assets/games/butterfly.png" },
+  { id: "bell", label: "Wizz", src: "./msn-assets/games/bell.png" },
+  { id: "person", label: "Buddy", src: "./msn-assets/games/person.png" },
+  { id: "group", label: "Group", src: "./msn-assets/games/group.png" }
 ];
 const agentAvatarOptions = [
   ["lens", "Loupe"],
@@ -172,6 +211,24 @@ function playSyntheticWizz() {
 
 function playWizz() {
   playAudio(audioFiles.wizz, playSyntheticWizz);
+}
+
+function playSoundKey(soundKey) {
+  playAudio(audioFiles[soundKey] ?? audioFiles.message);
+}
+
+function playWink(wink) {
+  playSoundKey(wink?.sound ?? "wizz");
+}
+
+function extractWinkFromText(text) {
+  const source = String(text ?? "");
+  const match = source.match(/\[(?:wink|clin|clin-doeil|nudge):([a-z0-9-]+)\]/i);
+  if (!match) return { text: source, wink: null };
+  const wink = winkById[match[1]] ?? null;
+  if (!wink) return { text: source, wink: null };
+  const cleanText = source.replace(match[0], "").replace(/\n{3,}/g, "\n\n").trim();
+  return { text: cleanText || `Clin d'oeil: ${wink.label}`, wink };
 }
 
 function blobToDataUrl(blob) {
@@ -914,6 +971,41 @@ function ActionPanel({ title, options, onRun }) {
   );
 }
 
+function ActivitiesPanel({ onRun, onSendWink, onAskWink, onPreviewSound }) {
+  return (
+    <div className="activities-panel">
+      <section className="activity-section">
+        <h3>Clins d'oeil</h3>
+        <div className="wink-grid">
+          {winkCatalog.map((wink) => (
+            <button type="button" key={wink.id} onClick={() => onSendWink(wink)}>
+              <img src={wink.src} alt="" draggable="false" />
+              <span>{wink.label}</span>
+            </button>
+          ))}
+        </div>
+        <button className="activity-command" type="button" onClick={() => onAskWink(winkCatalog[Math.floor(Math.random() * winkCatalog.length)])}>
+          Demander a Codex
+        </button>
+      </section>
+      <section className="activity-section">
+        <h3>Sons MSN</h3>
+        <div className="sound-grid">
+          {soundCatalog.map(([id, label]) => (
+            <button type="button" key={id} onClick={() => onPreviewSound(id)}>{label}</button>
+          ))}
+        </div>
+      </section>
+      <section className="activity-section">
+        <h3>Actions</h3>
+        {activityPrompts.map(([label, prompt]) => (
+          <button className="activity-command" type="button" key={label} onClick={() => onRun(prompt)}>{label}</button>
+        ))}
+      </section>
+    </div>
+  );
+}
+
 function gameWinner(board) {
   for (const [a, b, c] of ticLines) {
     if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
@@ -933,10 +1025,10 @@ function chooseCodexMove(board) {
 }
 
 function createMemoryDeck() {
-  return ["C", ">", "_", "7", "W", "X"]
-    .flatMap((value) => [value, value])
+  return memorySymbols
+    .flatMap((symbol) => [symbol, symbol])
     .sort(() => Math.random() - 0.5)
-    .map((value, index) => ({ id: `${value}-${index}-${Math.random()}`, value, matched: false }));
+    .map((symbol, index) => ({ id: `${symbol.id}-${index}-${Math.random()}`, symbol, matched: false }));
 }
 
 function nextReflexTarget(current = -1) {
@@ -1016,7 +1108,8 @@ function TicTacToeGame() {
       <div className="tic-grid">
         {board.map((cell, index) => (
           <button className={cell ? `tic-cell ${cell.toLowerCase()}` : "tic-cell"} type="button" key={index} onClick={() => play(index)} disabled={Boolean(cell) || Boolean(winner) || codexThinking}>
-            {cell}
+            {cell === "X" ? <img src={gameAssets.x} alt="X" /> : null}
+            {cell === "O" ? <img src={gameAssets.o} alt="O" /> : null}
           </button>
         ))}
       </div>
@@ -1045,7 +1138,7 @@ function MemoryGame() {
     if (nextOpen.length !== 2) return;
     setMoves((current) => current + 1);
     const [first, second] = nextOpen;
-    if (deck[first].value === deck[second].value) {
+    if (deck[first].symbol.id === deck[second].symbol.id) {
       const nextDeck = deck.map((card, cardIndex) => cardIndex === first || cardIndex === second ? { ...card, matched: true } : card);
       setDeck(nextDeck);
       setOpen([]);
@@ -1064,7 +1157,7 @@ function MemoryGame() {
           const visible = card.matched || open.includes(index);
           return (
             <button className={visible ? "memory-card visible" : "memory-card"} type="button" key={card.id} onClick={() => flip(index)}>
-              {visible ? card.value : "?"}
+              {visible ? <img src={card.symbol.src} alt={card.symbol.label} /> : <img src="./msn-assets/games/game-card.png" alt="?" />}
             </button>
           );
         })}
@@ -1127,7 +1220,7 @@ function WizzReflexGame() {
       <div className="reflex-grid">
         {Array.from({ length: 9 }).map((_, index) => (
           <button className={index === target && running ? "reflex-cell target" : "reflex-cell"} type="button" key={index} onClick={() => hit(index)}>
-            {index === target && running ? "W" : ""}
+            {index === target && running ? <img src={gameAssets.bell} alt="Wizz" /> : null}
           </button>
         ))}
       </div>
@@ -1208,9 +1301,11 @@ function ChatWindow({ bootstrap }) {
     });
     const offCompleted = api.on("codex:completed-item", ({ contactId, text }) => {
       if (contactId !== contact.id || !text) return;
+      const incomingWink = extractWinkFromText(text).wink;
+      if (incomingWink) playWink(incomingWink);
       setTyping(false);
       setMessages((current) => {
-        if (!current[current.length - 1]?.streaming) playNewMessage();
+        if (!current[current.length - 1]?.streaming && !incomingWink) playNewMessage();
         return finishAgentMessage(current, contact.name, text);
       });
     });
@@ -1397,6 +1492,21 @@ function ChatWindow({ bootstrap }) {
     sendItems([{ type: "text", text: prompt }], prompt);
   }
 
+  function sendWink(wink) {
+    playWink(wink);
+    const text = `Clin d'oeil envoye: ${wink.label}`;
+    sendItems(
+      [{ type: "text", text: `[wink:${wink.id}] ${text}` }],
+      text,
+      { wink }
+    );
+  }
+
+  function askCodexWink(wink) {
+    const prompt = `Envoie-moi un clin d'oeil ${wink.label}. Utilise exactement le marqueur [wink:${wink.id}] dans ta reponse.`;
+    sendQuickPrompt(prompt);
+  }
+
   async function saveTranscript() {
     const safeName = contact.name.replace(/[^a-zA-Z0-9._-]+/g, "-").toLowerCase() || "conversation";
     const text = messages
@@ -1441,6 +1551,7 @@ function ChatWindow({ bootstrap }) {
       entries: [
         { label: "Invite", action: () => setSideMode("conversations") },
         { label: "Wizz", action: () => api.wizz(contact.id) },
+        { label: "Send Wink", action: () => setSideMode("activities") },
         { label: "Search Transcript...", action: handleSearch },
         { separator: true },
         { label: "Activities", action: () => setSideMode("activities") },
@@ -1502,7 +1613,7 @@ function ChatWindow({ bootstrap }) {
             <FormatButton icon="font" title="Police" onClick={() => wrapDraft("**", "**")} />
             <FormatButton icon="smile" title="Sourire" onClick={() => insertDraft(":)")} />
             <FormatButton icon="voice" title="Voice Clip" label="Voice Clip" onClick={toggleVoiceClip} />
-            <FormatButton icon="wink" title="Clin d'oeil" onClick={() => insertDraft(" ;)")} />
+            <FormatButton icon="wink" title="Clin d'oeil" onClick={() => setSideMode("activities")} />
             <FormatButton icon="image" title="Image" onClick={handleSendFile} />
             <FormatButton icon="gift" title="Activites" onClick={() => setSideMode("activities")} />
             <FormatButton icon="laugh" title="Rire" onClick={() => insertDraft(" :D")} />
@@ -1549,7 +1660,14 @@ function ChatWindow({ bootstrap }) {
                 {mediaError ? <p>{mediaError}</p> : null}
               </div>
             ) : null}
-            {sideMode === "activities" ? <ActionPanel title="Activities" options={activityPrompts} onRun={sendQuickPrompt} /> : null}
+            {sideMode === "activities" ? (
+              <ActivitiesPanel
+                onRun={sendQuickPrompt}
+                onSendWink={sendWink}
+                onAskWink={askCodexWink}
+                onPreviewSound={playSoundKey}
+              />
+            ) : null}
             {sideMode === "games" ? (
               <GamesPanel
                 activeGame={activeGame}
@@ -1578,11 +1696,12 @@ function appendAgentDelta(messages, author, delta) {
 }
 
 function finishAgentMessage(messages, author, text) {
-  const cleanText = String(text ?? "").trim();
+  const parsed = extractWinkFromText(text);
+  const cleanText = parsed.text.trim();
   if (!cleanText) return messages;
   const last = messages[messages.length - 1];
   if (last?.streaming) {
-    return [...messages.slice(0, -1), { ...last, text: cleanText, streaming: false }];
+    return [...messages.slice(0, -1), { ...last, text: cleanText, streaming: false, wink: parsed.wink ?? last.wink }];
   }
   if (last?.from === "them" && normalizeMessageText(last.text) === normalizeMessageText(cleanText)) {
     return messages;
@@ -1591,7 +1710,7 @@ function finishAgentMessage(messages, author, text) {
   if (last?.from === "them" && previous?.from === "them" && normalizeMessageText(previous.text) === normalizeMessageText(cleanText)) {
     return messages.slice(0, -1);
   }
-  return [...messages, makeMessage("them", author, cleanText)];
+  return [...messages, makeMessage("them", author, cleanText, parsed.wink ? { wink: parsed.wink } : {})];
 }
 
 function mergeStreamText(current, incoming) {
@@ -1615,10 +1734,18 @@ function normalizeMessageText(text) {
 
 function Message({ message }) {
   if (message.from === "system") return <p className="system"><span>{message.time}</span> {message.text}</p>;
+  const parsed = message.wink ? { text: message.text, wink: message.wink } : extractWinkFromText(message.text);
+  const wink = message.wink ?? parsed.wink;
   return (
     <article className={message.from === "me" ? "message me-message" : "message"}>
       <header><strong>{message.author}</strong><time>{message.time}</time></header>
-      <p>{message.text}</p>
+      <p>{parsed.text}</p>
+      {wink ? (
+        <div className="message-wink">
+          <img src={wink.src} alt="" draggable="false" />
+          <span>{wink.label}</span>
+        </div>
+      ) : null}
       {message.attachment?.type === "image" ? <img className="message-attachment" src={message.attachment.src} alt={message.attachment.name ?? ""} /> : null}
       {message.attachment?.type === "audio" ? <audio className="message-audio" controls src={message.attachment.src} /> : null}
       {message.attachment?.type === "file" ? <small className="message-file">{message.attachment.name}</small> : null}
