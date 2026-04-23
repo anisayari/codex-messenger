@@ -1,71 +1,21 @@
-import { execFile } from "node:child_process";
-import { spawn } from "node:child_process";
-import path from "node:path";
-import { promisify } from "node:util";
-import { resolveExecutableCandidate } from "../shared/codexExecutable.js";
-
-const execFileAsync = promisify(execFile);
-const lookupCommand = process.platform === "win32" ? "where.exe" : "which";
-
-async function findCodex() {
-  const explicit = process.env.CODEX_MESSENGER_CODEX_PATH?.trim();
-  if (explicit) return { command: await resolveExecutableCandidate(explicit), source: "CODEX_MESSENGER_CODEX_PATH" };
-
-  const { stdout } = await execFileAsync(lookupCommand, ["codex"], { windowsHide: true });
-  const matches = stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  const command = process.platform === "win32"
-    ? matches.find((line) => [".cmd", ".bat"].includes(path.extname(line).toLowerCase()))
-      || matches.find((line) => path.extname(line).toLowerCase() === ".exe")
-      || matches[0]
-    : matches[0];
-  if (!command) throw new Error("codex was not found in PATH");
-  return { command: await resolveExecutableCandidate(command), source: "PATH" };
-}
-
-function shouldUseShell(command) {
-  if (process.platform !== "win32") return false;
-  const ext = path.extname(command).toLowerCase();
-  return !path.isAbsolute(command) && ext !== ".cmd" && ext !== ".bat";
-}
-
-function quoteWindowsArg(value) {
-  return `"${String(value).replace(/"/g, '""')}"`;
-}
-
-function runVersion(command) {
-  return new Promise((resolve, reject) => {
-    const ext = path.extname(command).toLowerCase();
-    const child = process.platform === "win32" && (ext === ".cmd" || ext === ".bat")
-      ? spawn(quoteWindowsArg(command), ["--version"], {
-        shell: true,
-        windowsHide: true,
-        stdio: ["ignore", "pipe", "pipe"]
-      })
-      : spawn(command, ["--version"], {
-        shell: shouldUseShell(command),
-        windowsHide: true,
-        stdio: ["ignore", "pipe", "pipe"]
-      });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (chunk) => { stdout += chunk.toString(); });
-    child.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
-    child.on("error", reject);
-    child.on("exit", (code) => {
-      if (code === 0) resolve((stdout || stderr).trim());
-      else reject(new Error((stderr || stdout || `codex exited with ${code}`).trim()));
-    });
-  });
-}
+import { codexLoginStatus, codexVersion, findCodexCommand, findNpmCommand } from "../shared/codexSetup.js";
 
 try {
-  const found = await findCodex();
-  const version = await runVersion(found.command);
+  const npm = await findNpmCommand();
+  console.log(`npm: ${npm.ok ? npm.command : "missing"}`);
+
+  const found = await findCodexCommand(process.env.CODEX_MESSENGER_CODEX_PATH?.trim() || "");
+  const version = await codexVersion(found.command);
+  const login = await codexLoginStatus(found.command);
+
   console.log(`Codex detected (${found.source}): ${found.command}`);
   console.log(version);
+  console.log(login.ok ? login.text : `Codex login required: ${login.text}`);
+  if (!login.ok) process.exitCode = 1;
 } catch (error) {
-  console.error("Codex CLI was not detected.");
-  console.error("Install Codex CLI, add it to PATH, or set CODEX_MESSENGER_CODEX_PATH.");
+  console.error("Codex CLI was not detected or is not ready.");
+  console.error("Install Node.js/npm if needed, then run: npm install -g @openai/codex && codex login");
+  console.error("You can also run: npm run setup:codex");
   console.error(error.message);
   process.exitCode = 1;
 }

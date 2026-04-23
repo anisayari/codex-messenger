@@ -34,6 +34,15 @@ const statusOptions = [
   ["lunch", "Parti manger"],
   ["offline", "Apparaitre hors ligne"]
 ];
+function localizedStatusLabel(status, text = {}) {
+  const labels = {
+    online: text.online || statusLabels.online,
+    busy: text.busy || statusLabels.busy,
+    away: text.away || statusLabels.away,
+    offline: text.offline || statusLabels.offline
+  };
+  return labels[status] || statusLabels[status] || status;
+}
 const audioFiles = {
   wizz: "./msn-assets/sounds/nudge.wav",
   message: "./msn-assets/sounds/type.wav",
@@ -323,6 +332,34 @@ function now() {
 
 function makeMessage(from, author, text, options = {}) {
   return { id: crypto.randomUUID(), from, author, text, time: now(), ...options };
+}
+
+function codexConnectionNotice(text) {
+  const clean = normalizeMessageText(text);
+  if (!clean) return null;
+  const reconnectMatch = clean.match(/^Reconnecting\.{3}\s*(\d+\s*\/\s*\d+)?$/i);
+  if (reconnectMatch) {
+    return {
+      kind: "reconnecting",
+      text: `Reconnexion Codex${reconnectMatch[1] ? ` ${reconnectMatch[1].replace(/\s+/g, "")}` : ""}`
+    };
+  }
+  if (/^(codex app-server exited|codex app-server stopped|disconnected|connection lost|offline|hors ligne)/i.test(clean)) {
+    return { kind: "offline", text: `Codex offline: ${clean}` };
+  }
+  if (/^(connected|reconnected|codex app-server active|online)$/i.test(clean)) {
+    return { kind: "online", text: "Codex online" };
+  }
+  return null;
+}
+
+function appendSystemNotice(messages, notice) {
+  if (!notice?.text) return messages;
+  const last = messages[messages.length - 1];
+  if (last?.from === "system" && last.noticeKind === notice.kind) {
+    return [...messages.slice(0, -1), { ...last, text: notice.text, time: now() }];
+  }
+  return [...messages, makeMessage("system", "system", notice.text, { noticeKind: notice.kind })];
 }
 
 function playAudio(src, fallback) {
@@ -928,6 +965,88 @@ function Titlebar({ title }) {
   );
 }
 
+function ResizeGrip() {
+  const dragRef = useRef(null);
+
+  function startResize(event) {
+    if (event.button !== 0 || !api.window?.getBounds || !api.window?.resizeTo) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const target = event.currentTarget;
+    const state = {
+      active: true,
+      startX: event.screenX,
+      startY: event.screenY,
+      bounds: null,
+      frame: 0,
+      latest: null,
+      pendingEvent: null
+    };
+    dragRef.current = state;
+    target.classList.add("resizing");
+    try {
+      target.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture can fail on older embedded Chromium builds; resize still works inside the window.
+    }
+
+    const flush = () => {
+      state.frame = 0;
+      if (!state.active || !state.latest) return;
+      api.window.resizeTo(state.latest).catch?.(() => {});
+    };
+
+    const scheduleResize = (moveEvent) => {
+      if (!state.bounds) {
+        state.pendingEvent = moveEvent;
+        return;
+      }
+      state.latest = {
+        width: state.bounds.width + moveEvent.screenX - state.startX,
+        height: state.bounds.height + moveEvent.screenY - state.startY
+      };
+      if (!state.frame) state.frame = window.requestAnimationFrame(flush);
+    };
+
+    const cleanup = (moveEvent) => {
+      if (!state.active) return;
+      if (moveEvent?.screenX !== undefined) scheduleResize(moveEvent);
+      state.active = false;
+      if (state.frame) window.cancelAnimationFrame(state.frame);
+      if (state.latest) api.window.resizeTo(state.latest).catch?.(() => {});
+      target.classList.remove("resizing");
+      target.removeEventListener("pointermove", scheduleResize);
+      target.removeEventListener("pointerup", cleanup);
+      target.removeEventListener("pointercancel", cleanup);
+      target.removeEventListener("lostpointercapture", cleanup);
+      if (dragRef.current === state) dragRef.current = null;
+    };
+
+    target.addEventListener("pointermove", scheduleResize);
+    target.addEventListener("pointerup", cleanup, { once: true });
+    target.addEventListener("pointercancel", cleanup, { once: true });
+    target.addEventListener("lostpointercapture", cleanup, { once: true });
+
+    api.window.getBounds()
+      .then((bounds) => {
+        if (!state.active || !bounds) return;
+        state.bounds = bounds;
+        if (state.pendingEvent) scheduleResize(state.pendingEvent);
+      })
+      .catch(cleanup);
+  }
+
+  return (
+    <button
+      type="button"
+      className="resize-grip"
+      aria-label="Redimensionner la fenetre"
+      onPointerDown={startResize}
+    />
+  );
+}
+
 function Menu({ items }) {
   const [open, setOpen] = useState(null);
   const ref = useRef(null);
@@ -995,18 +1114,36 @@ function Menu({ items }) {
   );
 }
 
+function displayNameFromEmail(email) {
+  const localPart = String(email || "").split("@")[0] || "user";
+  return String(localPart)
+    .trim()
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .slice(0, 80) || "user";
+}
+
 function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSignedIn }) {
-  const [email, setEmail] = useState(initialProfile.email);
-  const [displayName, setDisplayName] = useState(initialProfile.displayName ?? initialProfile.email.split("@")[0]);
+  const initialEmail = initialProfile.email || "";
+  const initialDisplayName = initialProfile.displayName || displayNameFromEmail(initialEmail);
+  const [email, setEmail] = useState(initialEmail);
+  const [displayName, setDisplayName] = useState(initialDisplayName);
   const [status, setStatus] = useState(initialProfile.status);
   const [language, setLanguage] = useState(normalizeLanguage(initialProfile.language ?? initialSettings?.language ?? "fr"));
   const [codexPath, setCodexPath] = useState(initialSettings?.codexPath ?? "");
   const [codexStatus, setCodexStatus] = useState(initialCodexStatus);
   const [state, setState] = useState("idle");
+  const [setupState, setSetupState] = useState("idle");
   const [error, setError] = useState("");
+  const [setupMessage, setSetupMessage] = useState("");
   const [pressedPathAction, setPressedPathAction] = useState("");
   const pathActionTimer = useRef(null);
+  const displayNameEdited = useRef(initialDisplayName !== displayNameFromEmail(initialEmail));
   const text = loginCopyFor(language);
+  const npmMissing = codexStatus?.npm && !codexStatus.npm.ok;
+  const codexMissing = !codexStatus?.ok;
+  const loginMissing = Boolean(codexStatus?.ok && codexStatus?.login && !codexStatus.login.ok);
+  const canConnect = Boolean(codexStatus?.ok && (!codexStatus.login || codexStatus.login.ok));
 
   useEffect(() => () => {
     if (pathActionTimer.current) window.clearTimeout(pathActionTimer.current);
@@ -1029,11 +1166,15 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   async function submit(event) {
     event.preventDefault();
     setError("");
+    if (!canConnect) {
+      setError(codexMissing ? text.missing : text.loginMissing);
+      return;
+    }
     setState("connecting");
     try {
       const result = await api.signIn({
-        email,
-        displayName,
+        email: email.trim(),
+        displayName: displayName.trim() || displayNameFromEmail(email),
         personalMessage: initialProfile.personalMessage ?? "",
         status,
         language,
@@ -1049,6 +1190,18 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
     }
   }
 
+  function changeEmail(value) {
+    setEmail(value);
+    if (!displayNameEdited.current) {
+      setDisplayName(displayNameFromEmail(value));
+    }
+  }
+
+  function changeDisplayName(value) {
+    displayNameEdited.current = true;
+    setDisplayName(value);
+  }
+
   async function chooseCodex() {
     setError("");
     pulsePathAction("browse");
@@ -1061,6 +1214,7 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
 
   async function testCodex() {
     setError("");
+    setSetupMessage("");
     pulsePathAction("test");
     await waitForButtonPaint();
     try {
@@ -1072,49 +1226,156 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
     }
   }
 
+  async function installCodexCli() {
+    setError("");
+    setSetupMessage("");
+    setSetupState("installing");
+    try {
+      const result = await api.installCodex();
+      setCodexStatus(result.codexStatus);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSetupState("idle");
+    }
+  }
+
+  async function loginCodexCli() {
+    setError("");
+    setSetupMessage("");
+    setSetupState("login");
+    try {
+      const result = await api.loginCodex(codexPath || null);
+      setCodexStatus(result.codexStatus);
+      setSetupMessage(text.loginStarted);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSetupState("idle");
+    }
+  }
+
+  async function openNodeDownload() {
+    setError("");
+    setSetupMessage(text.npmMissing);
+    await api.openNodeDownload();
+  }
+
+  function codexStatusText() {
+    if (codexStatus?.ok && codexStatus?.login?.ok) return `${text.found}: ${codexStatus.command}. ${codexStatus.login.text}`;
+    if (codexStatus?.ok && codexStatus?.login && !codexStatus.login.ok) return `${text.found}: ${codexStatus.command}. ${text.loginMissing}: ${codexStatus.login.text}`;
+    if (npmMissing) return `${text.missing} ${text.npmMissing}`;
+    return codexStatus?.error ?? text.missing;
+  }
+
+  const loginPresence = !canConnect || status === "offline"
+    ? "offline"
+    : state === "connecting" || setupState !== "idle"
+      ? "away"
+      : status;
+  const sessionText = loginMissing || !canConnect ? text.sessionRequired : text.sessionReady;
+  const statusText = state === "connecting" ? text.reconnecting : localizedStatusLabel(status, text);
+
   return (
-    <form className="login-panel" onSubmit={submit}>
-      <div className="identity">
-        <Logo />
-        <div>
-          <h1>Codex Messenger</h1>
-          <p>{text.subtitle}</p>
+    <form className="login-panel msn-login-panel" onSubmit={submit}>
+      <section className="msn-login-card" aria-label="Codex Messenger sign in">
+        <img className="msn-login-watermark" src={brandPeopleLogo} alt="" aria-hidden="true" draggable="false" />
+        <header className="msn-login-brand">
+          <Logo small />
+          <strong>msn</strong>
+          <span>Messenger</span>
+        </header>
+
+        <div className="msn-login-picture">
+          <div className={`msn-login-avatar ${presenceClass(loginPresence)}`}>
+            <Logo />
+          </div>
         </div>
-      </div>
-      <label className="field">
-        <span>{text.language}</span>
-        <select value={language} onChange={(event) => setLanguage(normalizeLanguage(event.target.value))}>
-          {supportedLanguages.map((item) => <option value={item.code} key={item.code}>{item.label}</option>)}
-        </select>
-      </label>
-      <label className="field">
-        <span>{text.email}</span>
-        <input value={email} onChange={(event) => setEmail(event.target.value)} />
-      </label>
-      <label className="field">
-        <span>{text.displayName}</span>
-        <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
-      </label>
-      <label className="field">
-        <span>{text.status}</span>
-        <select value={status} onChange={(event) => setStatus(event.target.value)}>
-          {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
-        </select>
-      </label>
-      <label className="field">
-        <span>{text.codexPath}</span>
-        <input value={codexPath} onChange={(event) => setCodexPath(event.target.value)} placeholder={text.autoPath} />
-      </label>
-      <div className="codex-path-actions">
-        <button className={pressedPathAction === "browse" ? "pressed" : ""} type="button" onClick={chooseCodex}>{text.browse}</button>
-        <button className={pressedPathAction === "test" ? "pressed" : ""} type="button" onClick={testCodex}>{text.test}</button>
-      </div>
-      <p className={codexStatus?.ok ? "codex-status ok" : "codex-status"}>
-        {codexStatus?.ok ? `${text.found}: ${codexStatus.command}` : (codexStatus?.error ?? text.missing)}
-      </p>
-      <label className="remember"><input type="checkbox" defaultChecked /> {text.remember}</label>
-      <button className="primary" disabled={state !== "idle"}>{state === "idle" ? text.connect : text.connecting}</button>
-      <div className={state === "idle" ? "progress" : "progress active"}><span /></div>
+
+        <label className="msn-login-field">
+          <span>{text.language}:</span>
+          <select value={language} onChange={(event) => setLanguage(normalizeLanguage(event.target.value))}>
+            {supportedLanguages.map((item) => <option value={item.code} key={item.code}>{item.label}</option>)}
+          </select>
+        </label>
+
+        <label className="msn-login-field">
+          <span>{text.email}:</span>
+          <div className="msn-combo-input">
+            <input value={email} onChange={(event) => changeEmail(event.target.value)} autoComplete="email" />
+            <button type="button" tabIndex={-1} aria-hidden="true">⌄</button>
+          </div>
+        </label>
+
+        <label className="msn-login-field">
+          <span>{text.displayName}:</span>
+          <input value={displayName} onChange={(event) => changeDisplayName(event.target.value)} autoComplete="name" />
+        </label>
+
+        <label className="msn-login-field">
+          <span>{text.openAiSession}:</span>
+          <input value={sessionText} readOnly disabled />
+        </label>
+
+        <label className="msn-login-status-row">
+          <span>{text.status}: <strong>{statusText}</strong></span>
+          <i className={`msn-login-dot ${presenceClass(loginPresence)}`} aria-hidden="true" />
+          <select value={status} onChange={(event) => setStatus(event.target.value)} aria-label={text.status}>
+            {statusOptions.map(([value]) => <option value={value} key={value}>{localizedStatusLabel(value, text)}</option>)}
+          </select>
+        </label>
+
+        <fieldset className="msn-login-options">
+          <label><input type="checkbox" defaultChecked /> {text.remember}</label>
+          <label><input type="checkbox" defaultChecked /> {text.rememberPassword}</label>
+          <label><input type="checkbox" /> {text.signAutomatically}</label>
+        </fieldset>
+
+        <button className="msn-signin-button" disabled={state !== "idle" || !canConnect}>
+          {state === "idle" ? text.connect : text.connecting}
+        </button>
+        <div className={state === "idle" ? "progress msn-login-progress" : "progress msn-login-progress active"}><span /></div>
+
+        <section className="msn-service-panel" aria-label={text.serviceStatus}>
+          <div className="msn-service-title">
+            <span>{text.serviceStatus}</span>
+            <strong className={canConnect ? "online" : "offline"}>{canConnect ? text.online : text.offline}</strong>
+          </div>
+          <label className="msn-login-field compact">
+            <span>{text.codexPath}</span>
+            <input value={codexPath} onChange={(event) => setCodexPath(event.target.value)} placeholder={text.autoPath} />
+          </label>
+          <div className="codex-path-actions">
+            <button className={pressedPathAction === "browse" ? "pressed" : ""} type="button" onClick={chooseCodex}>{text.browse}</button>
+            <button className={pressedPathAction === "test" ? "pressed" : ""} type="button" onClick={testCodex}>{text.test}</button>
+          </div>
+          <p className={canConnect ? "codex-status ok" : "codex-status"}>
+            {codexStatusText()}
+          </p>
+          <div className="codex-setup-actions">
+            {npmMissing ? (
+              <button type="button" onClick={openNodeDownload}>{text.openNode}</button>
+            ) : null}
+            {!npmMissing && codexMissing ? (
+              <button type="button" onClick={installCodexCli} disabled={setupState !== "idle"}>
+                {setupState === "installing" ? text.installingCodex : text.installCodex}
+              </button>
+            ) : null}
+            {loginMissing ? (
+              <button type="button" onClick={loginCodexCli} disabled={setupState !== "idle"}>
+                {text.loginCodex}
+              </button>
+            ) : null}
+          </div>
+        </section>
+
+        <nav className="msn-login-links" aria-label="Login help">
+          <button type="button" onClick={loginCodexCli} disabled={setupState !== "idle"}>{text.loginCodex}</button>
+          <button type="button" onClick={testCodex}>{text.test}</button>
+        </nav>
+      </section>
+
+      {setupMessage ? <p className="setup-box">{setupMessage}</p> : null}
       {error ? <p className="error-box">{error}</p> : null}
       <p className="server-hint">{text.hint}</p>
     </form>
@@ -1351,7 +1612,7 @@ function SettingsDialog({ settings, onSave, onClose }) {
             <span>Quand je ferme la fenetre principale</span>
             <select value={draft.closeBehavior} onChange={(event) => update("closeBehavior", event.target.value)}>
               <option value="ask">Demander</option>
-              <option value="hide">Reduire dans la zone de notification</option>
+              <option value="hide">Masquer l'application</option>
               <option value="close">Fermer la fenetre</option>
             </select>
           </label>
@@ -2207,6 +2468,7 @@ function MainWindow() {
     <main className="msn-window">
       <Titlebar title="Codex Messenger" />
       <Menu items={mainMenus} />
+      <ResizeGrip />
       {hasAvailableUpdates(updateState) ? (
         <button className="top-update-button" type="button" onClick={() => setUpdateDialogOpen(true)}>Update</button>
       ) : null}
@@ -2978,12 +3240,20 @@ function ChatWindow({ bootstrap }) {
       if (contactId !== contact.id) return;
       setTyping(false);
       setMessages((current) => {
+        const notice = codexConnectionNotice(delta);
+        if (notice) return appendSystemNotice(current, notice);
         if (!current[current.length - 1]?.streaming) playNewMessageIfEnabled();
         return appendAgentDelta(current, conversationAgentName, delta);
       });
     });
     const offCompleted = api.on("codex:completed-item", ({ contactId, text }) => {
       if (contactId !== contact.id || !text) return;
+      const notice = codexConnectionNotice(text);
+      if (notice) {
+        setTyping(false);
+        setMessages((current) => appendSystemNotice(current, notice));
+        return;
+      }
       const incomingWink = extractWinkFromText(text).wink;
       if (incomingWink) {
         playWink(incomingWink);
@@ -3004,7 +3274,13 @@ function ChatWindow({ bootstrap }) {
     const offError = api.on("codex:error", ({ contactId, text }) => {
       if (contactId !== contact.id) return;
       setTyping(false);
-      setMessages((current) => [...current, makeMessage("system", "system", text)]);
+      setMessages((current) => appendSystemNotice(current, codexConnectionNotice(text) || { kind: "offline", text }));
+    });
+    const offStatus = api.on("codex:status", (status) => {
+      const notice = codexConnectionNotice(status?.text);
+      if (!notice) return;
+      setTyping(false);
+      setMessages((current) => appendSystemNotice(current, notice));
     });
     const offApprovalRequest = api.on("codex:approval-request", (request) => {
       if (!request?.approvalId) return;
@@ -3021,7 +3297,7 @@ function ChatWindow({ bootstrap }) {
       playWizz();
     });
     return () => {
-      offDelta(); offCompleted(); offTyping(); offDone(); offError(); offApprovalRequest(); offApprovalResolved(); offWizz();
+      offDelta(); offCompleted(); offTyping(); offDone(); offError(); offStatus(); offApprovalRequest(); offApprovalResolved(); offWizz();
     };
   }, [contact.id, conversationAgentName]);
 
@@ -3740,6 +4016,7 @@ function ChatWindow({ bootstrap }) {
     <main className="msn-window chat" ref={chatWindowRef}>
       <Titlebar title={`${contact.name} - Conversation`} />
       <Menu items={chatMenus} />
+      <ResizeGrip />
       {hasAvailableUpdates(updateState) ? (
         <button className="top-update-button" type="button" onClick={() => setUpdateDialogOpen(true)}>Update</button>
       ) : null}
@@ -3989,7 +4266,9 @@ function ApprovalRequestsPanel({ requests, onRespond }) {
 }
 
 function Message({ message }) {
-  if (message.from === "system") return <p className="system"><span>{message.time}</span> {message.text}</p>;
+  if (message.from === "system") {
+    return <p className={message.noticeKind ? `system notice-${message.noticeKind}` : "system"}><span>{message.time}</span> {message.text}</p>;
+  }
   const parsed = message.wink ? { text: message.text, wink: message.wink } : extractWinkFromText(message.text);
   const wink = message.wink ?? parsed.wink;
   return (

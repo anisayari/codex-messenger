@@ -3,6 +3,8 @@ import { spawn } from "node:child_process";
 
 const port = 5174;
 const url = `http://127.0.0.1:${port}/`;
+const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
 
 function waitForVite(target, timeoutMs = 30000) {
   const started = Date.now();
@@ -27,14 +29,14 @@ function waitForVite(target, timeoutMs = 30000) {
   });
 }
 
-const vite = spawn("npm.cmd", ["run", "dev", "--", "--strictPort"], {
+const vite = spawn(npmCommand, ["run", "dev", "--", "--strictPort"], {
   stdio: "inherit",
   shell: false
 });
 
 try {
   await waitForVite(url);
-  const electron = spawn("npx.cmd", ["electron", "."], {
+  const electron = spawn(npxCommand, ["electron", "."], {
     stdio: "inherit",
     shell: false,
     env: {

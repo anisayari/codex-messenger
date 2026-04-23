@@ -3,9 +3,38 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Codex Messenger - all Codex functionality with your childhood memories and AI friends.">
-  <link rel="preload" href="./assets/codex-messenger-people.png" as="image">
-  <title>codex messenger</title>
+  <title>Codex Messenger - MSN-style desktop client for Codex</title>
+  <meta name="description" content="Codex Messenger brings Codex into a retro MSN Messenger-inspired desktop client, with private AI conversations, classic emoticons, winks and a lightweight open source app.">
+  <meta name="application-name" content="Codex Messenger">
+  <meta name="author" content="Anis Ayari">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://codexmessenger.net/">
+  <link rel="alternate" hreflang="en" href="https://codexmessenger.net/?lang=en">
+  <link rel="alternate" hreflang="fr" href="https://codexmessenger.net/?lang=fr">
+  <link rel="alternate" hreflang="x-default" href="https://codexmessenger.net/">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0735d8">
+  <meta property="og:site_name" content="Codex Messenger">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="fr_FR">
+  <meta property="og:url" content="https://codexmessenger.net/">
+  <meta property="og:title" content="Codex Messenger">
+  <meta property="og:description" content="All Codex functionality with your childhood memories: an MSN Messenger-inspired desktop client for talking with AI friends.">
+  <meta property="og:image" content="https://codexmessenger.net/assets/og-image.jpg">
+  <meta property="og:image:secure_url" content="https://codexmessenger.net/assets/og-image.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Codex Messenger retro MSN-inspired landing page with AI friends and download button.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Codex Messenger">
+  <meta name="twitter:description" content="A retro MSN Messenger-inspired desktop client for Codex, private AI conversations and open source nostalgia.">
+  <meta name="twitter:image" content="https://codexmessenger.net/assets/og-image.jpg">
+  <meta name="twitter:image:alt" content="Codex Messenger retro MSN-inspired landing page with AI friends and download button.">
+  <link rel="preload" href="./assets/codex-messenger-people.webp" as="image" type="image/webp">
   <style>
     html,
     body {
@@ -99,7 +128,7 @@
 
     .download-link:hover .download-button,
     .source-link:hover .source-panel,
-    .social-link:hover .social-hit {
+    .social-link:hover .social-button {
       filter: brightness(1.06);
     }
 
@@ -117,7 +146,8 @@
       transition: transform .1s ease, filter .1s ease;
     }
 
-    .pressable.is-pressed {
+    .pressable.is-pressed,
+    .pressable:active {
       transform: translateY(4px) scale(.992);
       filter: brightness(.94) saturate(1.12);
     }
@@ -126,9 +156,18 @@
       transition: transform .1s ease, filter .1s ease;
     }
 
-    .pressable-ui.is-pressed {
+    .pressable-ui.is-pressed,
+    .pressable-ui:active {
       transform: translateY(3px) scale(.992);
       filter: brightness(.94) saturate(1.12);
+    }
+
+    .social-button {
+      transition: filter .12s ease;
+    }
+
+    .social-label {
+      text-decoration: none;
     }
 
     .lang-link.is-active .lang-frame {
@@ -189,6 +228,164 @@
       }
     }
 
+    .download-modal[hidden] {
+      display: none;
+    }
+
+    .download-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255, 255, 255, .64), rgba(255, 255, 255, 0) 34%),
+        rgba(8, 26, 98, .46);
+    }
+
+    .download-modal-panel {
+      width: min(460px, calc(100vw - 34px));
+      overflow: hidden;
+      color: #142857;
+      border: 2px solid #0a35d7;
+      border-radius: 7px;
+      background:
+        radial-gradient(170px 115px at 87% 91%, rgba(175, 205, 238, .66), rgba(255, 255, 255, 0) 72%),
+        linear-gradient(#fbfdff, #dfedff 54%, #cfe4ff);
+      box-shadow:
+        0 16px 34px rgba(0, 12, 84, .36),
+        inset 0 0 0 1px rgba(255, 255, 255, .94);
+      font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+
+    .download-modal-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 30px;
+      padding: 4px 5px 4px 10px;
+      color: #fff;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .62), rgba(255, 255, 255, 0) 38%),
+        linear-gradient(90deg, #5aaeff, #1d7be8 44%, #073a98);
+      text-shadow: 0 1px 0 rgba(0, 30, 100, .72);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .download-modal-close {
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .82);
+      border-radius: 3px;
+      background:
+        radial-gradient(circle at 32% 22%, rgba(255, 255, 255, .84), rgba(255, 255, 255, 0) 36%),
+        linear-gradient(#ff9b7b, #e8522d 52%, #b0180d);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 1px 2px rgba(0, 0, 0, .22);
+      font: 700 16px/18px Tahoma, Verdana, sans-serif;
+    }
+
+    .download-modal-body {
+      padding: 18px 20px 20px;
+    }
+
+    .download-modal-body h2 {
+      margin: 0 0 5px;
+      color: #0735d8;
+      font-size: 24px;
+      line-height: 1.08;
+    }
+
+    .download-modal-body p {
+      margin: 0 0 16px;
+      color: #385171;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .download-options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .download-option {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 68px;
+      padding: 9px 12px;
+      color: #10296d;
+      text-decoration: none;
+      border: 1px solid #91afd7;
+      border-radius: 5px;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255, 255, 255, .98), rgba(255, 255, 255, 0) 38%),
+        linear-gradient(#ffffff, #e9f4ff 52%, #cfe4ff);
+      box-shadow: inset 0 1px 0 #fff, 0 2px 4px rgba(0, 38, 120, .12);
+    }
+
+    .download-option:hover,
+    .download-option:focus-visible {
+      outline: 0;
+      border-color: #4d86db;
+      filter: brightness(1.04);
+    }
+
+    .download-option:active {
+      transform: translateY(2px);
+      filter: brightness(.96);
+    }
+
+    .download-option-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      color: #fff;
+      border: 1px solid #2d6db8;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 34% 22%, rgba(255, 255, 255, .84), rgba(255, 255, 255, 0) 35%),
+        linear-gradient(#50c5ff, #126fd3 56%, #0a3e9f);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 1px 2px rgba(0, 0, 0, .2);
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .download-option-copy {
+      min-width: 0;
+    }
+
+    .download-option-copy strong,
+    .download-option-copy span {
+      display: block;
+    }
+
+    .download-option-copy strong {
+      font-size: 15px;
+    }
+
+    .download-option-copy span {
+      margin-top: 3px;
+      color: #4d617b;
+      font-size: 12px;
+    }
+
+    .download-version {
+      padding: 3px 7px;
+      color: #0735d8;
+      border: 1px solid #a7bce0;
+      border-radius: 10px;
+      background: linear-gradient(#fffef0, #fff3a5);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .gloss-pass,
       .feedback-ripple.is-on {
@@ -216,7 +413,7 @@
         display: flex;
         flex-direction: column;
         background:
-          url("./assets/codex-messenger-people.png") center 86px / min(78vw, 300px) auto no-repeat,
+          url("./assets/codex-messenger-people.webp") center 86px / min(78vw, 300px) auto no-repeat,
           repeating-linear-gradient(0deg, rgba(8, 55, 150, .06), rgba(8, 55, 150, .06) 1px, transparent 1px, transparent 5px),
           #fff;
         box-shadow: 0 0 0 2px #0d2dbb inset;
@@ -406,6 +603,28 @@
           3px 4px 0 rgba(43, 20, 150, .42);
       }
 
+      .download-modal {
+        align-items: end;
+        padding: 12px;
+      }
+
+      .download-modal-panel {
+        width: min(100%, 430px);
+      }
+
+      .download-modal-body {
+        padding: 16px 14px 17px;
+      }
+
+      .download-option {
+        grid-template-columns: 39px minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      .download-version {
+        width: max-content;
+      }
+
       .mobile-download:active,
       .mobile-source:active,
       .mobile-socials a:active,
@@ -518,27 +737,33 @@
       .mobile-socials {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px;
+        gap: 9px;
         margin: 0 16px 14px;
       }
 
       .mobile-socials a {
-        min-height: 44px;
+        min-height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        color: #071fd0;
+        gap: 7px;
+        color: #0620a8;
         font-weight: 900;
-        text-decoration: underline;
-        border: 1px solid #95b2d8;
+        text-decoration: none;
+        border: 2px solid #6d9bd0;
         border-radius: 5px;
-        background: linear-gradient(#fbfdff, #edf6ff);
+        background:
+          linear-gradient(rgba(255, 255, 255, .78), rgba(255, 255, 255, 0) 45%),
+          linear-gradient(#ffffff, #dfeeff 48%, #b9d9ff);
+        box-shadow:
+          0 2px 0 #668fbd,
+          0 1px 0 rgba(255, 255, 255, .9) inset,
+          0 -2px 0 rgba(55, 96, 150, .14) inset;
       }
 
       .mobile-socials img {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
         flex: 0 0 auto;
         filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .2));
       }
@@ -579,7 +804,7 @@
       }
     }
   </style>
-  <script src="./assets/site.js?v=buttons-20260423" defer></script>
+  <script src="./assets/site.js?v=download-modal-20260423-1" defer></script>
 </head>
 <body>
   <main class="site" aria-label="Codex Messenger landing page">
@@ -646,6 +871,16 @@
         <linearGradient id="socialFill" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stop-color="#fbfdff"/>
           <stop offset="1" stop-color="#edf6ff"/>
+        </linearGradient>
+        <linearGradient id="socialButton" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset=".46" stop-color="#dfeeff"/>
+          <stop offset="1" stop-color="#b9d9ff"/>
+        </linearGradient>
+        <linearGradient id="socialButtonStroke" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset=".42" stop-color="#8ab5e6"/>
+          <stop offset="1" stop-color="#4f7fb8"/>
         </linearGradient>
         <radialGradient id="openGreen" cx=".5" cy=".34" r=".74">
           <stop offset="0" stop-color="#4dcb48"/>
@@ -768,7 +1003,7 @@
       <rect x="4" y="3" width="1664" height="72" rx="2" fill="url(#topBlue)" stroke="#0629b2" stroke-width="3"/>
       <rect x="8" y="7" width="1656" height="19" rx="2" fill="url(#topBlueGloss)" opacity=".9"/>
       <rect x="7" y="68" width="1658" height="5" fill="#000548" opacity=".6"/>
-      <image href="./assets/codex-messenger-people.png" x="12" y="1" width="76" height="76" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+      <image href="./assets/codex-messenger-people.webp" x="12" y="1" width="76" height="76" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
       <text x="94" y="50" fill="#fff" font-family="Trebuchet MS, Arial" font-size="31" font-weight="900" font-style="italic" stroke="#00127d" stroke-width="1" filter="url(#whiteTextRelief)">codex messenger</text>
 
       <a class="lang-link pressable is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-label="English language">
@@ -814,7 +1049,7 @@
         <text id="desktopAiLine" x="87" y="456" fill="#0d2ad1" font-size="20" font-weight="900">you have lost your old friends, but now you can talk with your AI friends !</text>
       </g>
 
-      <image href="./assets/codex-messenger-people.png" x="935" y="82" width="711" height="574" preserveAspectRatio="none" filter="url(#softBlueShadow)"/>
+      <image href="./assets/codex-messenger-people.webp" x="935" y="82" width="711" height="574" preserveAspectRatio="none" filter="url(#softBlueShadow)"/>
 
       <g font-size="22" font-style="italic" fill="#111" filter="url(#copyTextRelief)">
         <use href="#starIcon" x="90" y="477" filter="url(#iconShadow)"/>
@@ -835,7 +1070,7 @@
         <text id="desktopFeatureFive" x="136" y="662">Secure, modern and Open Source</text>
       </g>
 
-      <a class="download-link pressable" href="./downloads/CodexMessenger.exe?v=v0.0.2" download="CodexMessenger.exe" data-action="download" data-feedback="Download starting..." aria-label="Download Codex Messenger for Windows">
+      <a class="download-link pressable" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal" aria-label="Choose Codex Messenger download">
         <rect class="focus-ring" x="542" y="468" width="458" height="82" rx="9"/>
         <g transform="translate(542 468)" filter="url(#buttonShadow)">
           <rect class="download-button" width="458" height="82" rx="9" fill="url(#downloadYellow)" stroke="url(#downloadStroke)" stroke-width="3"/>
@@ -854,8 +1089,8 @@
         </g>
       </a>
       <text id="desktopDownloadNote" x="772" y="606" text-anchor="middle" fill="#0861ff" font-size="24" font-style="italic" filter="url(#copyTextRelief)">Get Codex Messenger Now !</text>
-      <a class="download-version-link pressable" href="./downloads/CodexMessenger.exe?v=v0.0.2" download="CodexMessenger.exe" data-action="download" data-feedback="Download starting..." aria-label="Download Codex Messenger version v0.0.2">
-        <text x="772" y="635" text-anchor="middle" fill="#071fd0" font-size="20" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">download version v0.0.2</text>
+      <a class="download-version-link pressable" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal" aria-label="Choose Codex Messenger version v0.0.2.1 download">
+        <text x="772" y="635" text-anchor="middle" fill="#071fd0" font-size="20" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">download version v0.0.2.1</text>
       </a>
 
       <g transform="translate(81 679)" filter="url(#panelShadow)">
@@ -882,39 +1117,50 @@
         <rect width="755" height="182" rx="7" fill="url(#socialFill)" stroke="#95b2d8" stroke-width="2"/>
         <rect x="3" y="3" width="749" height="22" rx="6" fill="#fff" opacity=".52"/>
         <text id="desktopSocialTitle" x="378" y="39" text-anchor="middle" fill="#06158f" font-size="22" font-weight="700" font-style="italic" filter="url(#copyTextRelief)">Developed with fun by Anis Ayari and Codex</text>
-        <line x1="147" y1="62" x2="147" y2="158" stroke="#c5c5c5"/>
-        <line x1="303" y1="62" x2="303" y2="158" stroke="#c5c5c5"/>
-        <line x1="459" y1="62" x2="459" y2="158" stroke="#c5c5c5"/>
-        <line x1="615" y1="62" x2="615" y2="158" stroke="#c5c5c5"/>
 
         <a class="social-link pressable" href="https://x.com/DFintelligence" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening X..." aria-label="X Twitter">
-          <rect class="social-hit" x="0" y="54" width="147" height="111" fill="#fff" fill-opacity="0"/>
-          <image href="./assets/icons/x.svg" x="42" y="73" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
-          <text x="67" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">X (Twitter)</text>
+          <rect class="focus-ring" x="14" y="58" width="136" height="102" rx="7"/>
+          <rect class="social-button" x="14" y="58" width="136" height="102" rx="7" fill="url(#socialButton)" stroke="url(#socialButtonStroke)" stroke-width="2"/>
+          <rect x="19" y="63" width="126" height="22" rx="6" fill="#fff" opacity=".72"/>
+          <rect x="18" y="139" width="128" height="13" rx="5" fill="#5e89bc" opacity=".16"/>
+          <image href="./assets/icons/x.svg" x="57" y="75" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+          <text class="social-label" x="82" y="148" text-anchor="middle" fill="#071fd0" font-size="17" font-weight="900" font-style="italic" filter="url(#copyTextRelief)">X</text>
         </a>
 
         <a class="social-link pressable" href="https://www.linkedin.com/in/anis-ayari/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening LinkedIn..." aria-label="LinkedIn">
-          <rect class="social-hit" x="147" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
-          <image href="./assets/icons/linkedin.svg" x="196" y="74" width="49" height="49" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
-          <text x="221" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">LinkedIn</text>
+          <rect class="focus-ring" x="160" y="58" width="136" height="102" rx="7"/>
+          <rect class="social-button" x="160" y="58" width="136" height="102" rx="7" fill="url(#socialButton)" stroke="url(#socialButtonStroke)" stroke-width="2"/>
+          <rect x="165" y="63" width="126" height="22" rx="6" fill="#fff" opacity=".72"/>
+          <rect x="164" y="139" width="128" height="13" rx="5" fill="#5e89bc" opacity=".16"/>
+          <image href="./assets/icons/linkedin.svg" x="203" y="76" width="48" height="48" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+          <text class="social-label" x="228" y="148" text-anchor="middle" fill="#071fd0" font-size="17" font-weight="900" font-style="italic" filter="url(#copyTextRelief)">LinkedIn</text>
         </a>
 
         <a class="social-link pressable" href="https://github.com/anisayari" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening GitHub..." aria-label="GitHub">
-          <rect class="social-hit" x="303" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
-          <image href="./assets/icons/github.svg" x="351" y="74" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
-          <text x="376" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">GitHub</text>
+          <rect class="focus-ring" x="306" y="58" width="136" height="102" rx="7"/>
+          <rect class="social-button" x="306" y="58" width="136" height="102" rx="7" fill="url(#socialButton)" stroke="url(#socialButtonStroke)" stroke-width="2"/>
+          <rect x="311" y="63" width="126" height="22" rx="6" fill="#fff" opacity=".72"/>
+          <rect x="310" y="139" width="128" height="13" rx="5" fill="#5e89bc" opacity=".16"/>
+          <image href="./assets/icons/github.svg" x="349" y="76" width="48" height="48" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+          <text class="social-label" x="374" y="148" text-anchor="middle" fill="#071fd0" font-size="17" font-weight="900" font-style="italic" filter="url(#copyTextRelief)">GitHub</text>
         </a>
 
         <a class="social-link pressable" href="https://www.youtube.com/@DefendIntelligence" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening YouTube..." aria-label="YouTube">
-          <rect class="social-hit" x="459" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
-          <image href="./assets/icons/youtube.svg" x="507" y="70" width="60" height="60" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
-          <text x="537" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">YouTube</text>
+          <rect class="focus-ring" x="452" y="58" width="136" height="102" rx="7"/>
+          <rect class="social-button" x="452" y="58" width="136" height="102" rx="7" fill="url(#socialButton)" stroke="url(#socialButtonStroke)" stroke-width="2"/>
+          <rect x="457" y="63" width="126" height="22" rx="6" fill="#fff" opacity=".72"/>
+          <rect x="456" y="139" width="128" height="13" rx="5" fill="#5e89bc" opacity=".16"/>
+          <image href="./assets/icons/youtube.svg" x="496" y="73" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+          <text class="social-label" x="520" y="148" text-anchor="middle" fill="#071fd0" font-size="17" font-weight="900" font-style="italic" filter="url(#copyTextRelief)">YouTube</text>
         </a>
 
         <a class="social-link pressable" href="https://www.instagram.com/defend.intelligence/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening Instagram..." aria-label="Instagram">
-          <rect class="social-hit" x="615" y="54" width="140" height="111" fill="#fff" fill-opacity="0"/>
-          <image href="./assets/icons/instagram.svg" x="664" y="73" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
-          <text x="689" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">Instagram</text>
+          <rect class="focus-ring" x="598" y="58" width="143" height="102" rx="7"/>
+          <rect class="social-button" x="598" y="58" width="143" height="102" rx="7" fill="url(#socialButton)" stroke="url(#socialButtonStroke)" stroke-width="2"/>
+          <rect x="603" y="63" width="133" height="22" rx="6" fill="#fff" opacity=".72"/>
+          <rect x="602" y="139" width="135" height="13" rx="5" fill="#5e89bc" opacity=".16"/>
+          <image href="./assets/icons/instagram.svg" x="645" y="75" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+          <text class="social-label" x="669" y="148" text-anchor="middle" fill="#071fd0" font-size="17" font-weight="900" font-style="italic" filter="url(#copyTextRelief)">Instagram</text>
         </a>
       </g>
 
@@ -937,9 +1183,41 @@
       <img class="roster-shot" src="./assets/screenshots/roster-demo.png" alt="Codex Messenger contact list">
     </div>
   </main>
+
+  <div id="downloadModal" class="download-modal" role="dialog" aria-modal="true" aria-labelledby="downloadModalTitle" aria-describedby="downloadModalSubtitle" hidden>
+    <section class="download-modal-panel" role="document">
+      <header class="download-modal-titlebar">
+        <span>Codex Messenger Setup</span>
+        <button id="downloadModalClose" class="download-modal-close" type="button" aria-label="Close download chooser">x</button>
+      </header>
+      <div class="download-modal-body">
+        <h2 id="downloadModalTitle">Download Codex Messenger</h2>
+        <p id="downloadModalSubtitle">Choose the installer for your computer.</p>
+        <div id="download-options" class="download-options">
+          <a class="download-option" href="./downloads/CodexMessenger-mac-arm64.dmg?v=v0.0.2.1" download="CodexMessenger-mac-arm64.dmg" data-download-link aria-label="Download Codex Messenger for macOS version v0.0.2.1">
+            <span class="download-option-icon" aria-hidden="true">Mac</span>
+            <span class="download-option-copy">
+              <strong id="downloadMacLabel">Download for macOS</strong>
+              <span id="downloadMacNote">Apple Silicon DMG</span>
+            </span>
+            <span class="download-version">v0.0.2.1</span>
+          </a>
+          <a class="download-option" href="./downloads/CodexMessenger.exe?v=v0.0.2.1" download="CodexMessenger.exe" data-download-link aria-label="Download Codex Messenger for Windows version v0.0.2.1">
+            <span class="download-option-icon" aria-hidden="true">Win</span>
+            <span class="download-option-copy">
+              <strong id="downloadWindowsLabel">Download for Windows</strong>
+              <span id="downloadWindowsNote">Windows installer</span>
+            </span>
+            <span class="download-version">v0.0.2.1</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <main class="mobile-site" aria-label="Codex Messenger mobile landing page">
     <header class="mobile-top">
-      <div class="mobile-brand"><img class="mobile-brand-logo" src="./assets/codex-messenger-people.png" alt="" aria-hidden="true"><span>codex messenger</span></div>
+      <div class="mobile-brand"><img class="mobile-brand-logo" src="./assets/codex-messenger-people.webp" alt="" aria-hidden="true"><span>codex messenger</span></div>
       <nav class="mobile-lang" aria-label="Language">
         <a class="mobile-lang-link pressable-ui is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-pressed="true">EN</a>
         <a class="mobile-lang-link pressable-ui" href="?lang=fr" data-action="language" data-lang="fr" data-feedback="Mode francais selectionne" aria-pressed="false">FR</a>
@@ -954,9 +1232,9 @@
       <p id="mobileAiLine" class="mobile-ai">you have lost your old friends, but now you can talk with your AI friends !</p>
     </section>
 
-    <a class="mobile-download pressable-ui" href="./downloads/CodexMessenger.exe?v=v0.0.2" download="CodexMessenger.exe" data-action="download" data-feedback="Download starting...">DOWNLOAD</a>
+    <a class="mobile-download pressable-ui" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">DOWNLOAD</a>
     <p id="mobileDownloadNote" class="mobile-download-note">Get Codex Messenger Now !</p>
-    <a class="mobile-version-link pressable-ui" href="./downloads/CodexMessenger.exe?v=v0.0.2" download="CodexMessenger.exe" data-action="download" data-feedback="Download starting...">download version v0.0.2</a>
+    <a class="mobile-version-link pressable-ui" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">download version v0.0.2.1</a>
 
     <ul class="mobile-features">
       <li id="mobileFeatureOne">Classic look &amp; feel from the 2000s</li>

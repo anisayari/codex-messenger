@@ -62,6 +62,9 @@ contextBridge.exposeInMainWorld("codexMsn", {
   chooseDirectory: (options) => ipcRenderer.invoke("app:choose-directory", options),
   chooseCodex: () => ipcRenderer.invoke("settings:choose-codex"),
   testCodex: (candidatePath) => ipcRenderer.invoke("settings:test-codex", candidatePath),
+  installCodex: () => ipcRenderer.invoke("setup:install-codex"),
+  loginCodex: (candidatePath) => ipcRenderer.invoke("setup:login-codex", candidatePath),
+  openNodeDownload: () => ipcRenderer.invoke("setup:open-node-download"),
   chooseProfilePicture: (options) => ipcRenderer.invoke("profile:choose-picture", options),
   clearProfilePicture: () => ipcRenderer.invoke("profile:clear-picture"),
   app: {
@@ -73,6 +76,8 @@ contextBridge.exposeInMainWorld("codexMsn", {
   window: {
     minimize: () => ipcRenderer.invoke("window:minimize"),
     maximize: () => ipcRenderer.invoke("window:maximize"),
+    getBounds: () => ipcRenderer.invoke("window:get-bounds"),
+    resizeTo: (bounds) => ipcRenderer.invoke("window:resize-to", bounds),
     setZoomFactor: (factor) => ipcRenderer.invoke("window:set-zoom-factor", factor),
     close: () => ipcRenderer.invoke("window:close")
   },

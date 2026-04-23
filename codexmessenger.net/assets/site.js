@@ -4,13 +4,23 @@
   const mobileFeedback = document.getElementById("mobileFeedback");
   const feedbackText = document.getElementById("feedbackText");
   const feedbackRipple = document.getElementById("feedbackRipple");
-  const actionElements = document.querySelectorAll(".pressable, .pressable-ui");
   const langLinks = document.querySelectorAll('[data-action="language"]');
+  const downloadTriggers = document.querySelectorAll("[data-download-modal]");
+  const downloadModal = document.getElementById("downloadModal");
+  const downloadModalClose = document.getElementById("downloadModalClose");
+  const actionElements = langLinks;
 
   const copy = {
     en: {
       selected: "English mode selected",
       download: "Download starting...",
+      downloadMenu: "Choose your download...",
+      downloadTitle: "Download Codex Messenger",
+      downloadSubtitle: "Choose the installer for your computer.",
+      downloadMac: "Download for macOS",
+      downloadMacNote: "Apple Silicon DMG",
+      downloadWindows: "Download for Windows",
+      downloadWindowsNote: "Windows installer",
       source: "Opening source code...",
       taglineOne: "All Codex functionality...",
       taglineTwo: "but with your childhood memories !",
@@ -34,6 +44,13 @@
     fr: {
       selected: "Mode francais selectionne",
       download: "Telechargement lance...",
+      downloadMenu: "Choisis ton telechargement...",
+      downloadTitle: "Telecharger Codex Messenger",
+      downloadSubtitle: "Choisis l'installeur pour ton ordinateur.",
+      downloadMac: "Telecharger pour macOS",
+      downloadMacNote: "DMG Apple Silicon",
+      downloadWindows: "Telecharger pour Windows",
+      downloadWindowsNote: "Installeur Windows",
       source: "Ouverture du code source...",
       taglineOne: "Toute la puissance de Codex...",
       taglineTwo: "avec tes souvenirs d'enfance !",
@@ -93,6 +110,12 @@
     setText("desktopSourceLinkTwo", text.sourceLinkTwo);
     setText("desktopSocialTitle", text.socialTitle);
     setText("desktopFooterTagline", text.footerTagline);
+    setText("downloadModalTitle", text.downloadTitle);
+    setText("downloadModalSubtitle", text.downloadSubtitle);
+    setText("downloadMacLabel", text.downloadMac);
+    setText("downloadMacNote", text.downloadMacNote);
+    setText("downloadWindowsLabel", text.downloadWindows);
+    setText("downloadWindowsNote", text.downloadWindowsNote);
 
     setText("mobileTaglineOne", text.taglineOne);
     setText("mobileTaglineTwo", text.taglineTwo);
@@ -109,6 +132,10 @@
 
     setFeedbackMessage("download", lang);
     setFeedbackMessage("source", lang);
+
+    downloadTriggers.forEach((element) => {
+      element.dataset.feedback = text.downloadMenu;
+    });
   };
 
   const isMobileVisible = () => {
@@ -182,20 +209,29 @@
     window.setTimeout(() => element.classList.remove("is-pressed"), 170);
   };
 
-  const triggerDownload = (link) => {
-    window.setTimeout(() => {
-      const temporaryLink = document.createElement("a");
-      temporaryLink.href = link.href;
-      temporaryLink.download = link.getAttribute("download") || "";
-      temporaryLink.rel = "noopener";
-      document.body.appendChild(temporaryLink);
-      temporaryLink.click();
-      temporaryLink.remove();
-    }, 220);
+  let lastDownloadTrigger = null;
+
+  const openDownloadModal = (event, element) => {
+    if (!downloadModal) {
+      return;
+    }
+
+    lastDownloadTrigger = element;
+    downloadModal.hidden = false;
+    document.body.classList.add("download-modal-open");
+    showFeedback(element.dataset.feedback || "Choose your download...", event, element);
+    window.setTimeout(() => downloadModalClose?.focus(), 0);
   };
 
-  const openExternal = (link) => {
-    window.open(link.href, "_blank", "noopener,noreferrer");
+  const closeDownloadModal = () => {
+    if (!downloadModal || downloadModal.hidden) {
+      return;
+    }
+
+    downloadModal.hidden = true;
+    document.body.classList.remove("download-modal-open");
+    lastDownloadTrigger?.focus?.();
+    lastDownloadTrigger = null;
   };
 
   const setLanguage = (lang, persist = true) => {
@@ -254,17 +290,33 @@
         return;
       }
 
-      if (action === "download") {
-        event.preventDefault();
-        triggerDownload(element);
-        return;
-      }
-
-      if (action === "source" || action === "social") {
-        event.preventDefault();
-        openExternal(element);
-      }
+      return;
     });
+  });
+
+  downloadTriggers.forEach((element) => {
+    element.addEventListener("pointerdown", () => press(element));
+    element.addEventListener("click", (event) => {
+      event.preventDefault();
+      openDownloadModal(event, element);
+    });
+  });
+
+  downloadModalClose?.addEventListener("click", closeDownloadModal);
+  downloadModal?.addEventListener("click", (event) => {
+    if (event.target === downloadModal) {
+      closeDownloadModal();
+      return;
+    }
+
+    if (event.target.closest("[data-download-link]")) {
+      window.setTimeout(closeDownloadModal, 80);
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeDownloadModal();
+    }
   });
 
   setLanguage(initialLanguage(), false);

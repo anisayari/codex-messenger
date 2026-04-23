@@ -23,9 +23,9 @@ export const codexCwdOptions = [
 ];
 
 export const codexSandboxOptions = [
-  { value: "readOnly", label: "Lecture seule" },
-  { value: "workspaceWrite", label: "Ecriture workspace" },
-  { value: "dangerFullAccess", label: "Acces complet" }
+  { value: "read-only", label: "Lecture seule" },
+  { value: "workspace-write", label: "Ecriture workspace" },
+  { value: "danger-full-access", label: "Acces complet" }
 ];
 
 export const codexApprovalOptions = [
@@ -39,7 +39,7 @@ export const defaultCodexOptions = {
   model: "",
   reasoningEffort: "",
   cwdMode: "contact",
-  sandbox: "workspaceWrite",
+  sandbox: "workspace-write",
   approvalPolicy: "never"
 };
 
@@ -48,12 +48,28 @@ function normalizeChoice(value, options, fallback) {
   return options.some((option) => option.value === clean) ? clean : fallback;
 }
 
+function normalizeSandboxChoice(value) {
+  const clean = String(value ?? "");
+  const aliases = {
+    readOnly: "read-only",
+    read_only: "read-only",
+    "read-only": "read-only",
+    workspaceWrite: "workspace-write",
+    workspace_write: "workspace-write",
+    "workspace-write": "workspace-write",
+    dangerFullAccess: "danger-full-access",
+    danger_full_access: "danger-full-access",
+    "danger-full-access": "danger-full-access"
+  };
+  return normalizeChoice(aliases[clean] ?? clean, codexSandboxOptions, defaultCodexOptions.sandbox);
+}
+
 export function normalizeCodexOptions(options = {}) {
   return {
     model: normalizeChoice(options.model, codexModelOptions, defaultCodexOptions.model),
     reasoningEffort: normalizeChoice(options.reasoningEffort, codexReasoningOptions, defaultCodexOptions.reasoningEffort),
     cwdMode: normalizeChoice(options.cwdMode, codexCwdOptions, defaultCodexOptions.cwdMode),
-    sandbox: normalizeChoice(options.sandbox, codexSandboxOptions, defaultCodexOptions.sandbox),
+    sandbox: normalizeSandboxChoice(options.sandbox),
     approvalPolicy: normalizeChoice(options.approvalPolicy, codexApprovalOptions, defaultCodexOptions.approvalPolicy)
   };
 }
@@ -63,11 +79,11 @@ export function optionLabel(options, value) {
 }
 
 export function sandboxPolicyForMode(mode) {
-  const sandbox = normalizeChoice(mode, codexSandboxOptions, defaultCodexOptions.sandbox);
-  if (sandbox === "readOnly") return { type: "readOnly" };
-  if (sandbox === "dangerFullAccess") return { type: "dangerFullAccess" };
+  const sandbox = normalizeSandboxChoice(mode);
+  if (sandbox === "read-only") return { type: "read-only" };
+  if (sandbox === "danger-full-access") return { type: "danger-full-access" };
   return {
-    type: "workspaceWrite",
+    type: "workspace-write",
     writableRoots: [],
     networkAccess: true,
     excludeTmpdirEnvVar: false,

@@ -4,11 +4,13 @@ import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import https from "node:https";
+import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveExecutableCandidate } from "../shared/codexExecutable.js";
 import { defaultCodexOptions, normalizeCodexOptions, sandboxPolicyForMode } from "../shared/codexOptions.js";
+import { codexLoginStatus, findNpmCommand, installCodexCli, nodeDownloadUrl } from "../shared/codexSetup.js";
 import { codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -17,7 +19,12 @@ const execFileAsync = promisify(execFile);
 const isDev = Boolean(process.env.VITE_DEV_SERVER_URL);
 const devUrl = process.env.VITE_DEV_SERVER_URL ?? "http://127.0.0.1:5174/";
 const smokeTest = process.argv.includes("--smoke-test");
-const appIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people.ico");
+const appIconPath = path.join(
+  rootDir,
+  "public",
+  "icons",
+  process.platform === "win32" ? "codex-messenger-people.ico" : "codex-messenger-people-256.png"
+);
 const toastIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people-256.png");
 const repositoryUrl = "https://github.com/anisayari/codex-messenger";
 const frontPackageUrl = "https://raw.githubusercontent.com/anisayari/codex-messenger/main/package.json";
@@ -108,14 +115,62 @@ const demoSeedThreadIds = new Set([
   "demo-seed-xp-polish",
   "demo-seed-release-check"
 ]);
+const legacyDefaultEmail = "anis@codex.local";
+const legacyDefaultDisplayName = "anis";
+
+function cleanLocalIdentityPart(value) {
+  const clean = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, ".")
+    .replace(/^[._-]+|[._-]+$/g, "");
+  return clean || "user";
+}
+
+function displayNameForEmail(email) {
+  const localPart = String(email || "").split("@")[0] || "user";
+  return String(localPart)
+    .trim()
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .slice(0, 80) || "user";
+}
+
+function defaultUserEmail() {
+  const explicit = String(
+    process.env.CODEX_MESSENGER_DEFAULT_EMAIL ||
+    process.env.GIT_AUTHOR_EMAIL ||
+    process.env.GIT_COMMITTER_EMAIL ||
+    process.env.EMAIL ||
+    ""
+  ).trim();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(explicit)) return explicit;
+
+  let username = "user";
+  try {
+    username = os.userInfo().username;
+  } catch {
+    username = process.env.USER || process.env.USERNAME || "user";
+  }
+  username = cleanLocalIdentityPart(username);
+  return `${username}@codex.local`;
+}
+
+function createDefaultProfile() {
+  const email = defaultUserEmail();
+  return {
+    email,
+    status: "online",
+    displayName: displayNameForEmail(email),
+    language: "fr",
+    personalMessage: "Codex Messenger",
+    displayPicturePath: "",
+    displayPictureAsset: ""
+  };
+}
+
 const defaultProfile = {
-  email: "anis@codex.local",
-  status: "online",
-  displayName: "anis",
-  language: "fr",
-  personalMessage: "Codex Messenger",
-  displayPicturePath: "",
-  displayPictureAsset: ""
+  ...createDefaultProfile()
 };
 const profile = { ...defaultProfile };
 
@@ -193,10 +248,21 @@ function settingsFilePath() {
   return path.join(app.getPath("userData"), "settings.json");
 }
 
+function migrateLegacyDefaultProfile(nextProfile = {}) {
+  const email = String(nextProfile.email || "").trim().toLowerCase();
+  const displayName = String(nextProfile.displayName || "").trim().toLowerCase();
+  if (email !== legacyDefaultEmail || (displayName && displayName !== legacyDefaultDisplayName)) return nextProfile;
+  return {
+    ...nextProfile,
+    email: defaultProfile.email,
+    displayName: defaultProfile.displayName
+  };
+}
+
 function normalizeProfile(nextProfile = {}) {
-  const merged = { ...defaultProfile, ...nextProfile };
+  const merged = { ...defaultProfile, ...migrateLegacyDefaultProfile(nextProfile) };
   merged.email = String(merged.email || defaultProfile.email).trim();
-  merged.displayName = String(merged.displayName || merged.email.split("@")[0] || defaultProfile.displayName).trim();
+  merged.displayName = String(merged.displayName || displayNameForEmail(merged.email) || defaultProfile.displayName).trim();
   merged.status = String(merged.status || defaultProfile.status).trim();
   merged.language = normalizeLanguage(merged.language);
   merged.personalMessage = String(merged.personalMessage ?? "").slice(0, 140);
@@ -676,8 +742,32 @@ async function findCodexOnPath() {
     }
     return matches[0] || "";
   } catch {
-    return "";
+    return firstExistingCodexFallback();
   }
+}
+
+async function firstExistingCodexFallback() {
+  const npm = await findNpmCommand();
+  const npmBinDir = npm.ok && npm.command ? path.dirname(npm.command) : "";
+  const candidates = process.platform === "win32"
+    ? [
+      process.env.APPDATA ? path.join(process.env.APPDATA, "npm", "codex.cmd") : "",
+      process.env.APPDATA ? path.join(process.env.APPDATA, "npm", "codex.exe") : "",
+      npmBinDir ? path.join(npmBinDir, "codex.cmd") : "",
+      npmBinDir ? path.join(npmBinDir, "codex.exe") : "",
+      npmBinDir ? path.join(npmBinDir, "codex") : ""
+    ]
+    : [
+      "/Applications/Codex.app/Contents/Resources/codex",
+      "/opt/homebrew/bin/codex",
+      "/usr/local/bin/codex",
+      path.join(os.homedir(), ".nvm", "current", "bin", "codex"),
+      npmBinDir ? path.join(npmBinDir, "codex") : ""
+    ];
+  for (const candidate of candidates) {
+    if (await fileExists(candidate)) return candidate;
+  }
+  return "";
 }
 
 function shouldUseShell(command) {
@@ -720,7 +810,7 @@ async function resolveCodexCommand(candidatePath = null) {
     if (!path.isAbsolute(command) || await fileExists(command)) return { ...candidate, command };
   }
 
-  throw new Error("Codex CLI introuvable. Installez Codex puis relancez l'app, ou indiquez le chemin vers codex.exe/codex.cmd dans l'ecran de connexion.");
+  throw new Error("Codex CLI introuvable. Installez Codex puis relancez l'app, ou indiquez le chemin vers le binaire codex dans l'ecran de connexion.");
 }
 
 function runCodexCommand(command, args = []) {
@@ -788,13 +878,15 @@ function fetchJson(url, timeoutMs = 6500) {
 }
 
 function parseVersion(value) {
-  const match = String(value ?? "").match(/v?(\d+)\.(\d+)\.(\d+)(?:[-+][0-9A-Za-z.-]+)?/);
+  const match = String(value ?? "").match(/v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+)|-(\d+))?(?:[-+][0-9A-Za-z.-]+)?/);
   if (!match) return null;
+  const revision = Number(match[4] ?? match[5] ?? 0);
   return {
     major: Number(match[1]),
     minor: Number(match[2]),
     patch: Number(match[3]),
-    raw: `${match[1]}.${match[2]}.${match[3]}`
+    revision,
+    raw: revision > 0 ? `${match[1]}.${match[2]}.${match[3]}.${revision}` : `${match[1]}.${match[2]}.${match[3]}`
   };
 }
 
@@ -806,7 +898,7 @@ function compareVersions(left, right) {
   const a = parseVersion(left);
   const b = parseVersion(right);
   if (!a || !b) return 0;
-  for (const key of ["major", "minor", "patch"]) {
+  for (const key of ["major", "minor", "patch", "revision"]) {
     if (a[key] > b[key]) return 1;
     if (a[key] < b[key]) return -1;
   }
@@ -997,12 +1089,61 @@ async function checkUpdates({ force = false } = {}) {
 
 async function codexStatus(candidatePath = null) {
   const settings = await loadSettings();
+  const npm = await findNpmCommand();
   try {
     const resolved = await resolveCodexCommand(candidatePath);
-    return { ok: true, ...resolved, configured: Boolean(settings.codexPath) };
+    const login = await codexLoginStatus(resolved.command);
+    return { ok: true, ...resolved, configured: Boolean(settings.codexPath), npm, login, ready: login.ok };
   } catch (error) {
-    return { ok: false, command: "", source: "missing", configured: Boolean(settings.codexPath), error: error.message };
+    return {
+      ok: false,
+      command: "",
+      source: "missing",
+      configured: Boolean(settings.codexPath),
+      npm,
+      login: { ok: false, text: "Codex CLI not available" },
+      ready: false,
+      error: error.message
+    };
   }
+}
+
+function quotePosixArg(value) {
+  return `'${String(value).replace(/'/g, "'\\''")}'`;
+}
+
+function quotePowerShellArg(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function openCodexLoginTerminal(command) {
+  if (process.platform === "darwin") {
+    const shellCommand = `${quotePosixArg(command)} login; echo; echo "Codex login finished. You can close this window."`;
+    return execFileAsync("osascript", [
+      "-e",
+      "tell application \"Terminal\" to activate",
+      "-e",
+      `tell application "Terminal" to do script ${JSON.stringify(shellCommand)}`
+    ]);
+  }
+
+  if (process.platform === "win32") {
+    const script = `& ${quotePowerShellArg(command)} login; Write-Host ""; Read-Host "Codex login finished. Press Enter to close"`;
+    const child = spawn("powershell.exe", ["-NoExit", "-ExecutionPolicy", "Bypass", "-Command", script], {
+      detached: true,
+      windowsHide: false,
+      stdio: "ignore"
+    });
+    child.unref();
+    return Promise.resolve();
+  }
+
+  const child = spawn(command, ["login"], {
+    detached: true,
+    stdio: "ignore"
+  });
+  child.unref();
+  return Promise.resolve();
 }
 
 function localizedInstructions(contact) {
@@ -1588,12 +1729,16 @@ async function handleMainWindowClose(event, win) {
   let behavior = normalizeCloseBehavior(settings.closeBehavior);
 
   if (behavior === "ask") {
+    const hideLabel = process.platform === "darwin" ? "Masquer" : "Reduire";
+    const hideDetail = process.platform === "darwin"
+      ? "Tu peux masquer la fenetre principale et garder Codex Messenger ouvert dans le Dock, ou fermer seulement cette fenetre."
+      : "Tu peux fermer seulement cette fenetre et garder les conversations ouvertes, ou reduire Codex Messenger dans la zone de notification.";
     const result = await dialog.showMessageBox(win, {
       type: "question",
       title: "Codex Messenger",
       message: "Fermer Codex Messenger ?",
-      detail: "Tu peux fermer seulement cette fenetre et garder les conversations ouvertes, ou reduire Codex Messenger dans la zone de notification.",
-      buttons: ["Reduire", "Fermer la fenetre"],
+      detail: hideDetail,
+      buttons: [hideLabel, "Fermer la fenetre"],
       defaultId: 0,
       cancelId: 0,
       checkboxLabel: "Memoriser mon choix",
@@ -1725,6 +1870,13 @@ function sendToChat(contactId, channel, payload) {
   const win = windows.get(`chat:${contactId}`);
   if (!win || win.isDestroyed()) return;
   win.webContents.send(channel, payload);
+}
+
+function sendToOpenChats(channel, payload) {
+  for (const [key, win] of windows) {
+    if (!key.startsWith("chat:") || !win || win.isDestroyed()) continue;
+    win.webContents.send(channel, payload);
+  }
 }
 
 function sendToMain(channel, payload) {
@@ -2302,6 +2454,7 @@ codex.on("notification", (message) => {
 codex.on("status", (status) => {
   if (status.kind === "exit" || status.kind === "error") clearApprovalRequests(status.text);
   sendToMain("codex:status", status);
+  sendToOpenChats("codex:status", status);
 });
 
 ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
@@ -2380,6 +2533,13 @@ ipcMain.handle("updates:install", async (_event, target = "codex") => {
 });
 
 ipcMain.handle("auth:sign-in", async (_event, nextProfile) => {
+  const status = await codexStatus(nextProfile.codexPath);
+  if (!status.ok) {
+    throw new Error(status.error || "Codex CLI introuvable.");
+  }
+  if (status.login && !status.login.ok) {
+    throw new Error("Connexion OpenAI requise. Lancez le login Codex/OpenAI puis reconnectez Codex Messenger.");
+  }
   const settings = await saveSettings({
     language: nextProfile.language,
     codexPath: nextProfile.codexPath,
@@ -2464,11 +2624,31 @@ ipcMain.handle("settings:choose-codex", async (event) => {
 ipcMain.handle("settings:test-codex", async (_event, candidatePath = null) => {
   const resolved = await resolveCodexCommand(candidatePath);
   const version = await runCodexCommand(resolved.command, ["--version"]);
+  const login = await codexLoginStatus(resolved.command);
   return {
     ok: true,
     ...resolved,
-    version: (version.stdout || version.stderr).trim()
+    version: (version.stdout || version.stderr).trim(),
+    npm: await findNpmCommand(),
+    login,
+    ready: login.ok
   };
+});
+
+ipcMain.handle("setup:install-codex", async () => {
+  await installCodexCli({ cwd: defaultCwd() });
+  return { ok: true, codexStatus: await codexStatus() };
+});
+
+ipcMain.handle("setup:login-codex", async (_event, candidatePath = null) => {
+  const resolved = await resolveCodexCommand(candidatePath);
+  await openCodexLoginTerminal(resolved.command);
+  return { ok: true, command: resolved.command, codexStatus: await codexStatus(candidatePath) };
+});
+
+ipcMain.handle("setup:open-node-download", () => {
+  shell.openExternal(nodeDownloadUrl);
+  return { ok: true, url: nodeDownloadUrl };
 });
 
 ipcMain.handle("profile:choose-picture", async (event, options = {}) => {
@@ -2795,6 +2975,23 @@ ipcMain.handle("window:maximize", (event) => {
 
 ipcMain.handle("window:close", (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();
+});
+
+ipcMain.handle("window:get-bounds", (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || win.isDestroyed()) return null;
+  return win.getBounds();
+});
+
+ipcMain.handle("window:resize-to", (event, nextBounds = {}) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || win.isDestroyed() || win.isMaximized() || win.isFullScreen()) return { ok: false };
+  const current = win.getBounds();
+  const [minWidth, minHeight] = win.getMinimumSize();
+  const width = Math.max(minWidth || 320, Math.round(Number(nextBounds.width) || current.width));
+  const height = Math.max(minHeight || 320, Math.round(Number(nextBounds.height) || current.height));
+  win.setBounds({ ...current, width, height }, false);
+  return { ok: true, bounds: win.getBounds() };
 });
 
 ipcMain.handle("window:set-zoom-factor", (event, factor = 1) => {
