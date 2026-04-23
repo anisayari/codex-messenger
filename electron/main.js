@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell, Tray } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, screen, shell, Tray } from "electron";
 import { execFile, spawn } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
@@ -272,7 +272,9 @@ function normalizeProfile(nextProfile = {}) {
 }
 
 function normalizeCloseBehavior(value) {
-  return ["ask", "hide", "close"].includes(value) ? value : "ask";
+  const clean = String(value || "");
+  if (clean === "close") return "quit";
+  return ["ask", "hide", "quit"].includes(clean) ? clean : "ask";
 }
 
 function normalizeProjectSort(value) {
@@ -1693,6 +1695,7 @@ function createBaseWindow(key, options) {
     win.setTitle(win.codexMessengerTitle);
   });
   win.once("ready-to-show", () => {
+    showDockIcon();
     win.show();
     if (smokeTest) setTimeout(() => app.quit(), 500);
   });
@@ -1707,6 +1710,7 @@ function createBaseWindow(key, options) {
 }
 
 function showMainWindow() {
+  showDockIcon();
   const existing = windows.get("main");
   if (existing && !existing.isDestroyed()) {
     existing.show();
@@ -1719,7 +1723,19 @@ function showMainWindow() {
 function hideMainWindow() {
   const win = windows.get("main");
   if (!win || win.isDestroyed()) return;
+  createTray();
   win.hide();
+  hideDockIconIfNoVisibleWindows();
+}
+
+function showDockIcon() {
+  if (process.platform === "darwin") app.dock?.show();
+}
+
+function hideDockIconIfNoVisibleWindows() {
+  if (process.platform !== "darwin" || !app.dock) return;
+  const hasVisibleWindow = BrowserWindow.getAllWindows().some((item) => !item.isDestroyed() && item.isVisible());
+  if (!hasVisibleWindow) app.dock.hide();
 }
 
 async function handleMainWindowClose(event, win) {
@@ -1729,30 +1745,28 @@ async function handleMainWindowClose(event, win) {
   let behavior = normalizeCloseBehavior(settings.closeBehavior);
 
   if (behavior === "ask") {
-    const hideLabel = process.platform === "darwin" ? "Masquer" : "Reduire";
+    const hideLabel = process.platform === "darwin" ? "Laisser dans la barre de menu" : "Reduire dans la zone de notification";
     const hideDetail = process.platform === "darwin"
-      ? "Tu peux masquer la fenetre principale et garder Codex Messenger ouvert dans le Dock, ou fermer seulement cette fenetre."
-      : "Tu peux fermer seulement cette fenetre et garder les conversations ouvertes, ou reduire Codex Messenger dans la zone de notification.";
+      ? "Codex Messenger restera ouvert en fond avec une icone dans la barre de menu macOS. Tu peux aussi quitter completement l'application."
+      : "Codex Messenger restera ouvert en fond dans la zone de notification. Tu peux aussi quitter completement l'application.";
     const result = await dialog.showMessageBox(win, {
       type: "question",
       title: "Codex Messenger",
       message: "Fermer Codex Messenger ?",
       detail: hideDetail,
-      buttons: [hideLabel, "Fermer la fenetre"],
+      buttons: [hideLabel, "Fermer definitivement", "Annuler"],
       defaultId: 0,
-      cancelId: 0,
+      cancelId: 2,
       checkboxLabel: "Memoriser mon choix",
       checkboxChecked: false
     });
-    behavior = result.response === 1 ? "close" : "hide";
+    if (result.response === 2) return;
+    behavior = result.response === 1 ? "quit" : "hide";
     if (result.checkboxChecked) await saveSettings({ closeBehavior: behavior });
   }
 
-  if (behavior === "close") {
-    win.destroy();
-  } else {
-    hideMainWindow();
-  }
+  if (behavior === "quit") quitApplication();
+  else hideMainWindow();
 }
 
 function createMainWindow() {
@@ -1809,12 +1823,12 @@ function createChatWindow(contactId) {
 }
 
 function createTray() {
-  if (tray || process.platform === "darwin") return tray;
-  tray = new Tray(appIconPath);
+  if (tray) return tray;
+  tray = new Tray(trayIcon());
   tray.setToolTip("Codex Messenger");
   const updateMenu = () => {
     tray.setContextMenu(Menu.buildFromTemplate([
-      { label: "Ouvrir Codex Messenger", click: showMainWindow },
+      { label: "Afficher Codex Messenger", click: showMainWindow },
       { label: "Ouvrir Codex", click: () => createChatWindow("codex") },
       { type: "separator" },
       { label: "Fermer definitivement", click: quitApplication }
@@ -1825,6 +1839,12 @@ function createTray() {
   updateMenu();
   updateTrayTitle();
   return tray;
+}
+
+function trayIcon() {
+  const image = nativeImage.createFromPath(appIconPath);
+  if (process.platform !== "darwin" || image.isEmpty()) return image;
+  return image.resize({ width: 18, height: 18 });
 }
 
 function quitApplication() {

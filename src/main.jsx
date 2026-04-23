@@ -507,13 +507,14 @@ function normalizeWizzDelaySeconds(value) {
 
 function normalizeMessengerSettings(settings = {}) {
   const source = settings ?? {};
+  const closeBehavior = source.closeBehavior === "close" ? "quit" : source.closeBehavior;
   return {
     notificationsEnabled: source.notificationsEnabled !== false,
     newMessageSoundEnabled: source.newMessageSoundEnabled !== false,
     unreadWizzEnabled: source.unreadWizzEnabled !== false,
     demoMode: source.demoMode === true,
     unreadWizzDelaySeconds: normalizeWizzDelaySeconds((source.unreadWizzDelayMs ?? 60_000) / 1000),
-    closeBehavior: ["ask", "hide", "close"].includes(source.closeBehavior) ? source.closeBehavior : "ask"
+    closeBehavior: ["ask", "hide", "quit"].includes(closeBehavior) ? closeBehavior : "ask"
   };
 }
 
@@ -1612,8 +1613,8 @@ function SettingsDialog({ settings, onSave, onClose }) {
             <span>Quand je ferme la fenetre principale</span>
             <select value={draft.closeBehavior} onChange={(event) => update("closeBehavior", event.target.value)}>
               <option value="ask">Demander</option>
-              <option value="hide">Masquer l'application</option>
-              <option value="close">Fermer la fenetre</option>
+              <option value="hide">Laisser en arriere-plan</option>
+              <option value="quit">Fermer definitivement</option>
             </select>
           </label>
         </section>
