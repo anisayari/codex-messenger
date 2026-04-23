@@ -31,7 +31,8 @@ button { cursor: default; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 25px;
+  height: 27px;
+  min-height: 27px;
   padding: 2px 3px 2px 7px;
   user-select: none;
   color: white;
@@ -46,6 +47,8 @@ button { cursor: default; }
 .title-left {
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
+  height: 22px;
   min-width: 0;
   gap: 6px;
   font-weight: 700;
@@ -56,11 +59,23 @@ button { cursor: default; }
 }
 
 .title-left span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.window-buttons { -webkit-app-region: no-drag; display: flex; gap: 3px; margin-left: 8px; }
+.window-buttons {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-self: flex-start;
+  align-items: flex-start;
+  flex: 0 0 auto;
+  gap: 2px;
+  height: 22px;
+  margin-left: 8px;
+}
 .window-buttons button {
+  -webkit-app-region: no-drag;
   display: grid;
-  width: 19px;
-  height: 18px;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 21px;
+  padding: 0;
   place-items: center;
   border: 1px solid rgba(255,255,255,.75);
   border-radius: 4px;
@@ -76,7 +91,7 @@ button { cursor: default; }
     radial-gradient(circle at 32% 22%, rgba(255,255,255,.88), rgba(255,255,255,0) 34%),
     linear-gradient(#ffb08e, #e75a32 48%, #bd2a16);
 }
-.window-buttons span { position: relative; display: block; width: 10px; height: 10px; }
+.window-buttons span { position: relative; display: block; width: 11px; height: 11px; }
 .window-buttons button:first-child span::before { content: ""; position: absolute; right: 0; bottom: 1px; left: 0; height: 2px; background: white; }
 .window-buttons button:nth-child(2) span { border: 2px solid white; border-top-width: 3px; }
 .window-buttons button:nth-child(3) span::before,
