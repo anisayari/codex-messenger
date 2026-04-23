@@ -290,7 +290,7 @@ button { cursor: default; }
   display: grid;
   align-content: start;
   justify-items: center;
-  padding: 18px 18px 12px;
+  padding: 22px 24px 14px;
   background:
     radial-gradient(190px 150px at 78% 86%, rgba(182,196,218,.42), rgba(255,255,255,0) 72%),
     linear-gradient(#ffffff 0%, #eef6ff 38%, #dcecff 100%);
@@ -298,27 +298,22 @@ button { cursor: default; }
 .msn-login-card {
   position: relative;
   align-self: start;
-  width: min(326px, calc(100vw - 44px));
+  width: min(326px, calc(100vw - 64px));
   min-height: auto;
-  padding: 8px 34px 18px;
-  border: 1px solid #b4c6df;
-  border-radius: 5px;
-  background:
-    radial-gradient(118px 104px at 86% 82%, rgba(153,166,188,.28), rgba(255,255,255,0) 70%),
-    linear-gradient(#ffffff 0%, #f4f9ff 22%, #dcecff 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.96),
-    inset 0 -1px 0 rgba(119,145,177,.22),
-    0 3px 10px rgba(53,81,120,.16);
+  padding: 6px 0 18px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .msn-login-watermark {
   position: absolute;
-  right: 16px;
-  bottom: 56px;
+  right: -12px;
+  bottom: 72px;
   width: 126px;
   height: 106px;
   object-fit: contain;
-  opacity: .12;
+  opacity: .1;
   pointer-events: none;
   user-select: none;
 }
@@ -329,7 +324,7 @@ button { cursor: default; }
   align-items: center;
   gap: 4px;
   height: 24px;
-  margin: 0 -18px 14px;
+  margin: 0 0 14px;
   color: #2353a2;
   font-size: 13px;
   font-weight: 700;
@@ -519,11 +514,12 @@ button { cursor: default; }
 .msn-service-panel {
   position: relative;
   z-index: 1;
-  margin: 15px -14px 0;
-  padding: 8px;
-  border: 1px solid #c0d2e8;
-  border-radius: 3px;
-  background: rgba(255,255,255,.62);
+  margin: 15px 0 0;
+  padding: 11px 0 0;
+  border: 0;
+  border-top: 1px solid rgba(148,173,207,.62);
+  border-radius: 0;
+  background: transparent;
 }
 .msn-service-title {
   display: flex;
@@ -551,6 +547,11 @@ button { cursor: default; }
   text-align: left;
   text-decoration: underline;
   font-size: 11px;
+}
+.msn-login-panel > .setup-box,
+.msn-login-panel > .error-box,
+.msn-login-panel > .server-hint {
+  width: min(326px, calc(100vw - 64px));
 }
 .identity { display: grid; grid-template-columns: auto 1fr; gap: 15px; align-items: center; margin-bottom: 20px; }
 .identity .logo { width: 86px; height: 74px; margin-left: -5px; }
