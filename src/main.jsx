@@ -23,12 +23,12 @@ const statusOptions = [
 ];
 const audioFiles = {
   wizz: "./msn-assets/sounds/nudge.wav",
-  message: "./msn-assets/sounds/newalert.wav",
+  message: "./msn-assets/sounds/type.wav",
   newEmail: "./msn-assets/sounds/newemail.wav",
   online: "./msn-assets/sounds/online.wav",
   phone: "./msn-assets/sounds/phone.wav",
   ring: "./msn-assets/sounds/ring.wav",
-  type: "./msn-assets/sounds/type.wav",
+  type: "./msn-assets/sounds/newalert.wav",
   done: "./msn-assets/sounds/vimdone.wav"
 };
 const brandPeopleLogo = new URL("./icons/codex-messenger-people.png", window.location.href).href;
@@ -48,6 +48,7 @@ const formatIcons = {
   wink: "./icons/format/wink.png",
   image: "./icons/format/image.png",
   gift: "./icons/format/gift.png",
+  wizz: "./icons/toolbar/wizz.png",
   laugh: "./icons/format/laugh.png"
 };
 const activityPrompts = [
@@ -74,7 +75,7 @@ const soundCatalog = [
   ["online", "Contact en ligne", audioFiles.online],
   ["ring", "Sonnerie", audioFiles.ring],
   ["phone", "Telephone", audioFiles.phone],
-  ["type", "Saisie", audioFiles.type],
+  ["type", "Alerte", audioFiles.type],
   ["done", "Invite terminee", audioFiles.done]
 ];
 const winkCatalog = [
@@ -987,7 +988,7 @@ function MainWindow() {
       entries: [
         {
           label: "A propos de Codex Messenger",
-          action: () => window.alert("Codex Messenger\n\nClient Electron local inspire de MSN Messenger 7, connecte a codex app-server.")
+          action: () => window.alert("Codex Messenger\n\nClient Electron local inspire de MSN Messenger 7, connecte a codex app-server.\n\nDeveloppe par Anis AYARI et Codex.")
         },
         { label: "Serveur Codex", action: () => window.alert(userAgent || "Serveur Codex non connecte.") }
       ]
@@ -1027,18 +1028,18 @@ function MainWindow() {
   );
 }
 
-function Tool({ icon, label, onClick }) {
+function Tool({ icon, label, onClick, active = false }) {
   return (
-    <button className={`tool ${icon}`} type="button" onClick={onClick}>
+    <button className={active ? `tool ${icon} active` : `tool ${icon}`} type="button" onClick={onClick}>
       <span className={`tool-icon ${icon}`}><img src={toolbarIcons[icon]} alt="" draggable="false" /></span>
       <span>{label}</span>
     </button>
   );
 }
 
-function FormatButton({ icon, title, onClick, label }) {
+function FormatButton({ icon, title, onClick, label, active = false }) {
   return (
-    <button className={label ? "format-button wide" : "format-button"} type="button" title={title} onClick={onClick}>
+    <button className={`${label ? "format-button wide" : "format-button"}${active ? " active" : ""}`} type="button" title={title} onClick={onClick}>
       <img src={formatIcons[icon]} alt="" draggable="false" />
       {label ? <span>{label}</span> : null}
     </button>
@@ -1084,13 +1085,15 @@ function ContactPanel({ contact, onWizz, onSendFile, onCamera, onVoice, onActivi
   );
 }
 
-function ActionPanel({ title, options, onRun }) {
+function CameraPanel({ videoRef, cameraStream, mediaError, onSnapshot, onStop }) {
   return (
-    <div className="side-action-panel">
-      <h3>{title}</h3>
-      {options.map(([label, prompt]) => (
-        <button type="button" key={label} onClick={() => onRun(prompt)}>{label}</button>
-      ))}
+    <div className="media-panel camera-panel">
+      <video ref={videoRef} autoPlay muted playsInline />
+      <div className="media-actions">
+        <button type="button" onClick={onSnapshot} disabled={!cameraStream}>Snapshot</button>
+        <button type="button" onClick={onStop} disabled={!cameraStream}>Stop</button>
+      </div>
+      {mediaError ? <p>{mediaError}</p> : null}
     </div>
   );
 }
@@ -1368,7 +1371,7 @@ function ChatWindow({ bootstrap }) {
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
   const [wizzing, setWizzing] = useState(false);
-  const [sideMode, setSideMode] = useState("contact");
+  const [openFlyout, setOpenFlyout] = useState("");
   const [activeGame, setActiveGame] = useState("morpion");
   const [cameraStream, setCameraStream] = useState(null);
   const [recording, setRecording] = useState(false);
@@ -1378,6 +1381,7 @@ function ChatWindow({ bootstrap }) {
   const textareaRef = useRef(null);
   const recorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const flyoutRef = useRef(null);
 
   useEffect(() => {
     const markRead = () => {
@@ -1394,12 +1398,27 @@ function ChatWindow({ bootstrap }) {
 
   useEffect(() => {
     if (videoRef.current && cameraStream) videoRef.current.srcObject = cameraStream;
-  }, [cameraStream, sideMode]);
+  }, [cameraStream, openFlyout]);
 
   useEffect(() => () => {
     cameraStream?.getTracks().forEach((track) => track.stop());
     recorderRef.current?.stream?.getTracks?.().forEach((track) => track.stop());
   }, [cameraStream]);
+
+  useEffect(() => {
+    const close = (event) => {
+      if (!flyoutRef.current?.contains(event.target)) setOpenFlyout("");
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpenFlyout("");
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     const offDelta = api.on("codex:delta", ({ contactId, delta }) => {
@@ -1531,8 +1550,12 @@ function ChatWindow({ bootstrap }) {
     sendItems(items, text, file.isImage ? { attachment: { type: "image", src: localFileUrl(file.path), name: file.name } } : { attachment: { type: "file", name: file.name } });
   }
 
+  function toggleFlyout(name) {
+    setOpenFlyout((current) => current === name ? "" : name);
+  }
+
   async function startCamera() {
-    setSideMode("camera");
+    setOpenFlyout("camera");
     setMediaError("");
     if (cameraStream) return;
     try {
@@ -1565,7 +1588,7 @@ function ChatWindow({ bootstrap }) {
   }
 
   async function toggleVoiceClip() {
-    setSideMode("voice");
+    setOpenFlyout("");
     setMediaError("");
     if (recording && recorderRef.current) {
       recorderRef.current.stop();
@@ -1605,6 +1628,7 @@ function ChatWindow({ bootstrap }) {
 
   function sendWink(wink) {
     playWink(wink);
+    setOpenFlyout("");
     const text = `Clin d'oeil envoye: ${wink.label}`;
     sendItems(
       [{ type: "text", text: `[wink:${wink.id}] ${text}` }],
@@ -1614,6 +1638,7 @@ function ChatWindow({ bootstrap }) {
   }
 
   function askCodexWink(wink) {
+    setOpenFlyout("");
     const prompt = `Envoie-moi un clin d'oeil ${wink.label}. Utilise exactement le marqueur [wink:${wink.id}] dans ta reponse.`;
     sendQuickPrompt(prompt);
   }
@@ -1660,16 +1685,16 @@ function ChatWindow({ bootstrap }) {
     {
       label: "Actions",
       entries: [
-        { label: "Invite", action: () => setSideMode("contact") },
+        { label: "Invite", action: () => toggleFlyout("invite") },
         { label: "Wizz", action: () => api.wizz(contact.id) },
-        { label: "Send Wink", action: () => setSideMode("activities") },
+        { label: "Send Wink", action: () => toggleFlyout("activities") },
         { label: "Search Transcript...", action: handleSearch },
         { separator: true },
-        { label: "Activities", action: () => setSideMode("activities") },
-        { label: "Games", action: () => setSideMode("games") },
-        { label: "Play Morpion", action: () => { setActiveGame("morpion"); setSideMode("games"); } },
-        { label: "Play Memory", action: () => { setActiveGame("memory"); setSideMode("games"); } },
-        { label: "Play Wizz Reflex", action: () => { setActiveGame("wizz"); setSideMode("games"); } }
+        { label: "Activities", action: () => toggleFlyout("activities") },
+        { label: "Games", action: () => toggleFlyout("games") },
+        { label: "Play Morpion", action: () => { setActiveGame("morpion"); setOpenFlyout("games"); } },
+        { label: "Play Memory", action: () => { setActiveGame("memory"); setOpenFlyout("games"); } },
+        { label: "Play Wizz Reflex", action: () => { setActiveGame("wizz"); setOpenFlyout("games"); } }
       ]
     },
     {
@@ -1689,7 +1714,7 @@ function ChatWindow({ bootstrap }) {
       entries: [
         {
           label: "About Codex Messenger",
-          action: () => window.alert("Codex Messenger\n\nFenetre de conversation MSN 7 reliee a codex app-server.")
+          action: () => window.alert("Codex Messenger\n\nFenetre de conversation MSN 7 reliee a codex app-server.\n\nDeveloppe par Anis AYARI et Codex.")
         },
         {
           label: "Keyboard Shortcuts",
@@ -1703,15 +1728,57 @@ function ChatWindow({ bootstrap }) {
     <main className={wizzing ? "msn-window chat wizzing" : "msn-window chat"}>
       <Titlebar title={`${contact.name} - Conversation`} />
       <Menu items={chatMenus} />
-      <div className="toolbar">
-        <Tool icon="invite" label="Invite" onClick={() => setSideMode("contact")} />
-        <Tool icon="files" label="Send Files" onClick={handleSendFile} />
-        <Tool icon="video" label="Video" onClick={startCamera} />
-        <Tool icon="voice" label="Voice" onClick={toggleVoiceClip} />
-        <Tool icon="activities" label="Activities" onClick={() => setSideMode("activities")} />
-        <Tool icon="games" label="Games" onClick={() => setSideMode("games")} />
-        <Tool icon="wizz" label="Wizz" onClick={() => api.wizz(contact.id)} />
-        <div className="toolbar-brand"><span>Codex</span><Logo small /></div>
+      <div className="toolbar-shell" ref={flyoutRef}>
+        <div className="toolbar">
+          <Tool icon="invite" label="Invite" active={openFlyout === "invite"} onClick={() => toggleFlyout("invite")} />
+          <Tool icon="files" label="Send Files" onClick={handleSendFile} />
+          <Tool icon="video" label="Video" active={openFlyout === "camera"} onClick={startCamera} />
+          <Tool icon="voice" label={recording ? "Stop" : "Voice"} active={recording} onClick={toggleVoiceClip} />
+          <Tool icon="activities" label="Activities" active={openFlyout === "activities"} onClick={() => toggleFlyout("activities")} />
+          <Tool icon="games" label="Games" active={openFlyout === "games"} onClick={() => toggleFlyout("games")} />
+          <div className="toolbar-brand"><span>Codex</span><Logo small /></div>
+        </div>
+        {openFlyout ? (
+          <div className={`toolbar-flyout ${openFlyout}`}>
+            {openFlyout === "invite" ? (
+              <ContactPanel
+                contact={contact}
+                onWizz={() => api.wizz(contact.id)}
+                onSendFile={handleSendFile}
+                onCamera={startCamera}
+                onVoice={toggleVoiceClip}
+                onActivities={() => setOpenFlyout("activities")}
+                onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
+                onRun={sendQuickPrompt}
+              />
+            ) : null}
+            {openFlyout === "camera" ? (
+              <CameraPanel
+                videoRef={videoRef}
+                cameraStream={cameraStream}
+                mediaError={mediaError}
+                onSnapshot={sendCameraSnapshot}
+                onStop={stopCamera}
+              />
+            ) : null}
+            {openFlyout === "activities" ? (
+              <ActivitiesPanel
+                onRun={sendQuickPrompt}
+                onSendWink={sendWink}
+                onAskWink={askCodexWink}
+                onPreviewSound={playSoundKey}
+              />
+            ) : null}
+            {openFlyout === "games" ? (
+              <GamesPanel
+                activeGame={activeGame}
+                onSelectGame={setActiveGame}
+                onRun={sendQuickPrompt}
+                waiting={typing}
+              />
+            ) : null}
+          </div>
+        ) : null}
       </div>
       <section className="chat-body">
         <div className="chat-main">
@@ -1723,11 +1790,14 @@ function ChatWindow({ bootstrap }) {
           <div className="format-strip">
             <FormatButton icon="font" title="Police" onClick={() => wrapDraft("**", "**")} />
             <FormatButton icon="smile" title="Sourire" onClick={() => insertDraft(":)")} />
-            <FormatButton icon="voice" title="Voice Clip" label="Voice Clip" onClick={toggleVoiceClip} />
-            <FormatButton icon="wink" title="Clin d'oeil" onClick={() => setSideMode("activities")} />
+            <FormatButton icon="voice" title="Voice Clip" label={recording ? "Stop" : "Voice Clip"} active={recording} onClick={toggleVoiceClip} />
+            <FormatButton icon="wink" title="Clin d'oeil" onClick={() => setOpenFlyout("activities")} />
             <FormatButton icon="image" title="Image" onClick={handleSendFile} />
-            <FormatButton icon="gift" title="Activites" onClick={() => setSideMode("activities")} />
+            <FormatButton icon="gift" title="Activites" onClick={() => setOpenFlyout("activities")} />
+            <FormatButton icon="wizz" title="Wizz" onClick={() => api.wizz(contact.id)} />
             <FormatButton icon="laugh" title="Rire" onClick={() => insertDraft(" :D")} />
+            {recording ? <span className="format-status recording">Recording...</span> : null}
+            {!recording && mediaError && !openFlyout ? <span className="format-status error">{mediaError}</span> : null}
           </div>
           <form className="composer" onSubmit={submit}>
             <textarea ref={textareaRef} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => {
@@ -1738,60 +1808,6 @@ function ChatWindow({ bootstrap }) {
         </div>
         <aside className="chat-side">
           <div className="display-frame top"><Avatar contact={contact} large /></div>
-          <div className="side-switcher">
-            <button className={sideMode === "contact" ? "active" : ""} type="button" onClick={() => setSideMode("contact")}>Info</button>
-            <button className={sideMode === "camera" ? "active" : ""} type="button" onClick={startCamera}>Cam</button>
-            <button className={sideMode === "voice" ? "active" : ""} type="button" onClick={() => setSideMode("voice")}>Voix</button>
-            <button className={sideMode === "activities" ? "active" : ""} type="button" onClick={() => setSideMode("activities")}>Act</button>
-            <button className={sideMode === "games" ? "active" : ""} type="button" onClick={() => setSideMode("games")}>Jeux</button>
-          </div>
-          <div className="side-fill">
-            {sideMode === "contact" ? (
-              <ContactPanel
-                contact={contact}
-                onWizz={() => api.wizz(contact.id)}
-                onSendFile={handleSendFile}
-                onCamera={startCamera}
-                onVoice={toggleVoiceClip}
-                onActivities={() => setSideMode("activities")}
-                onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
-                onRun={sendQuickPrompt}
-              />
-            ) : null}
-            {sideMode === "camera" ? (
-              <div className="media-panel">
-                <video ref={videoRef} autoPlay muted playsInline />
-                <div className="media-actions">
-                  <button type="button" onClick={sendCameraSnapshot} disabled={!cameraStream}>Snapshot</button>
-                  <button type="button" onClick={stopCamera} disabled={!cameraStream}>Stop</button>
-                </div>
-                {mediaError ? <p>{mediaError}</p> : null}
-              </div>
-            ) : null}
-            {sideMode === "voice" ? (
-              <div className="media-panel voice-panel">
-                <button type="button" className={recording ? "recording" : ""} onClick={toggleVoiceClip}>{recording ? "Stop Voice Clip" : "Voice Clip"}</button>
-                <p>{recording ? "Enregistrement en cours..." : "Le clip sera sauvegarde puis envoye a Codex comme fichier local."}</p>
-                {mediaError ? <p>{mediaError}</p> : null}
-              </div>
-            ) : null}
-            {sideMode === "activities" ? (
-              <ActivitiesPanel
-                onRun={sendQuickPrompt}
-                onSendWink={sendWink}
-                onAskWink={askCodexWink}
-                onPreviewSound={playSoundKey}
-              />
-            ) : null}
-            {sideMode === "games" ? (
-              <GamesPanel
-                activeGame={activeGame}
-                onSelectGame={setActiveGame}
-                onRun={sendQuickPrompt}
-                waiting={typing}
-              />
-            ) : null}
-          </div>
           <div className="display-frame bottom"><Avatar contact={selfContact} large /></div>
         </aside>
       </section>

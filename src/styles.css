@@ -801,6 +801,7 @@ button { cursor: default; }
 }
 
 .chat {
+  position: relative;
   display: flex;
   flex-direction: column;
   background:
@@ -812,6 +813,10 @@ button { cursor: default; }
 }
 .chat .menu {
   min-height: 19px;
+}
+.toolbar-shell {
+  position: relative;
+  z-index: 10;
 }
 .toolbar {
   position: relative;
@@ -873,7 +878,14 @@ button { cursor: default; }
 }
 .tool.files { min-width: 56px; }
 .tool.activities { min-width: 58px; }
-.tool:hover { border-radius: 4px; background: #dcecff; }
+.tool:hover,
+.tool.active {
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255,255,255,.95), rgba(255,255,255,0) 42%),
+    linear-gradient(#fff7cf, #dcecff);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95);
+}
 .tool-icon {
   position: relative;
   display: grid;
@@ -904,11 +916,57 @@ button { cursor: default; }
   font-weight: 700;
   text-shadow: 0 1px 0 white;
 }
+.toolbar-flyout {
+  position: absolute;
+  top: calc(100% - 1px);
+  z-index: 30;
+  max-width: calc(100vw - 22px);
+  max-height: calc(100vh - 122px);
+  overflow: hidden auto;
+  border: 1px solid #8fa3bf;
+  border-radius: 0 0 5px 5px;
+  color: #233b5b;
+  background:
+    radial-gradient(circle at 22% 0%, rgba(255,255,255,.98), rgba(255,255,255,0) 42%),
+    linear-gradient(180deg, #ffffff 0%, #eef6ff 52%, #dbe9fb 100%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,.92),
+    inset -1px -1px 0 rgba(154,177,207,.45),
+    0 10px 28px rgba(32,59,94,.28);
+}
+.toolbar-flyout::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  width: 52px;
+  height: 2px;
+  background: #fff7cf;
+}
+.toolbar-flyout.invite {
+  left: 8px;
+  width: 266px;
+}
+.toolbar-flyout.invite::before { left: 0; }
+.toolbar-flyout.camera {
+  left: 112px;
+  width: 250px;
+}
+.toolbar-flyout.camera::before { left: 42px; }
+.toolbar-flyout.activities {
+  left: 212px;
+  width: 318px;
+}
+.toolbar-flyout.activities::before { left: 34px; }
+.toolbar-flyout.games {
+  left: 280px;
+  width: 288px;
+}
+.toolbar-flyout.games::before { left: 18px; }
 .chat-body {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 190px;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 146px;
+  gap: 10px;
   min-height: 0;
   flex: 1;
   padding: 7px 9px 7px;
@@ -1107,10 +1165,33 @@ button { cursor: default; }
   line-height: 16px;
   white-space: nowrap;
 }
-.format-strip .format-button:hover { border-color: #9ab8e2; background: white; }
+.format-strip .format-button:hover,
+.format-strip .format-button.active {
+  border-color: #9ab8e2;
+  background:
+    radial-gradient(circle at 35% 16%, rgba(255,255,255,.98), rgba(255,255,255,0) 42%),
+    linear-gradient(#fff8cf, #ffffff);
+}
+.format-status {
+  min-width: 0;
+  max-width: 130px;
+  margin-left: auto;
+  overflow: hidden;
+  color: #334d70;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+}
+.format-status.recording {
+  color: #a8281b;
+  font-weight: 700;
+}
+.format-status.error {
+  color: #8e2d20;
+}
 .composer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 42px;
+  grid-template-columns: minmax(0, 1fr) 58px;
   gap: 4px;
   min-height: 75px;
   margin-top: 6px;
@@ -1166,8 +1247,8 @@ button { cursor: default; }
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  gap: 6px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
   min-width: 0;
   padding-top: 0;
 }
@@ -1229,7 +1310,7 @@ button { cursor: default; }
 }
 .chat-side .display-frame {
   justify-self: end;
-  width: 92px;
+  width: 132px;
 }
 .side-switcher {
   display: grid;
