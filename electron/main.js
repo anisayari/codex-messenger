@@ -68,12 +68,15 @@ const contacts = [
   }
 ];
 
-const profile = {
+const defaultProfile = {
   email: "anis@codex.local",
   status: "online",
   displayName: "anis",
-  language: "fr"
+  language: "fr",
+  personalMessage: "Codex Messenger",
+  displayPicturePath: ""
 };
+const profile = { ...defaultProfile };
 
 const windows = new Map();
 const threadByContact = new Map();
@@ -81,7 +84,7 @@ const contactByThread = new Map();
 const unreadReminderByContact = new Map();
 const knownThreads = new Map();
 const unreadWizzDelayMs = Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 5 * 60 * 1000;
-const defaultSettings = { language: "fr", codexPath: "" };
+const defaultSettings = { language: "fr", codexPath: "", profile: defaultProfile };
 let settingsCache = null;
 
 function defaultCwd() {
@@ -104,6 +107,17 @@ function normalizeLanguage(language) {
   return language === "en" ? "en" : "fr";
 }
 
+function normalizeProfile(nextProfile = {}) {
+  const merged = { ...defaultProfile, ...nextProfile };
+  merged.email = String(merged.email || defaultProfile.email).trim();
+  merged.displayName = String(merged.displayName || merged.email.split("@")[0] || defaultProfile.displayName).trim();
+  merged.status = String(merged.status || defaultProfile.status).trim();
+  merged.language = normalizeLanguage(merged.language);
+  merged.personalMessage = String(merged.personalMessage ?? "").slice(0, 140);
+  merged.displayPicturePath = String(merged.displayPicturePath ?? "");
+  return merged;
+}
+
 async function loadSettings() {
   if (settingsCache) return settingsCache;
   try {
@@ -113,21 +127,32 @@ async function loadSettings() {
     settingsCache = { ...defaultSettings };
   }
   settingsCache.language = normalizeLanguage(settingsCache.language);
-  profile.language = settingsCache.language;
+  settingsCache.profile = normalizeProfile({
+    ...settingsCache.profile,
+    language: settingsCache.language
+  });
+  Object.assign(profile, settingsCache.profile);
   return settingsCache;
 }
 
 async function saveSettings(nextSettings = {}) {
   const current = await loadSettings();
+  const nextLanguage = normalizeLanguage(nextSettings.language ?? nextSettings.profile?.language ?? current.language);
+  const nextProfile = normalizeProfile({
+    ...current.profile,
+    ...nextSettings.profile,
+    language: nextLanguage
+  });
   settingsCache = {
     ...current,
     ...nextSettings,
-    language: normalizeLanguage(nextSettings.language ?? current.language),
-    codexPath: String(nextSettings.codexPath ?? current.codexPath ?? "").trim()
+    language: nextLanguage,
+    codexPath: String(nextSettings.codexPath ?? current.codexPath ?? "").trim(),
+    profile: nextProfile
   };
   await fs.mkdir(path.dirname(settingsFilePath()), { recursive: true });
   await fs.writeFile(settingsFilePath(), JSON.stringify(settingsCache, null, 2), "utf8");
-  profile.language = settingsCache.language;
+  Object.assign(profile, settingsCache.profile);
   return settingsCache;
 }
 
@@ -862,9 +887,10 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
 ipcMain.handle("auth:sign-in", async (_event, nextProfile) => {
   const settings = await saveSettings({
     language: nextProfile.language,
-    codexPath: nextProfile.codexPath
+    codexPath: nextProfile.codexPath,
+    profile: nextProfile
   });
-  Object.assign(profile, nextProfile, { language: settings.language });
+  Object.assign(profile, settings.profile);
   const init = await codex.ensureReady();
   return { ok: true, userAgent: init.userAgent, profile, settings, codexStatus: await codexStatus() };
 });
@@ -901,6 +927,42 @@ ipcMain.handle("settings:test-codex", async (_event, candidatePath = null) => {
     ...resolved,
     version: (version.stdout || version.stderr).trim()
   };
+});
+
+ipcMain.handle("profile:choose-picture", async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win, {
+    title: "Change Display Picture",
+    properties: ["openFile"],
+    filters: [
+      { name: "Images", extensions: ["png", "jpg", "jpeg", "gif", "webp", "avif", "bmp"] },
+      { name: "All files", extensions: ["*"] }
+    ]
+  });
+  if (result.canceled || !result.filePaths?.[0]) return { canceled: true };
+
+  const sourcePath = result.filePaths[0];
+  const profileDir = path.join(app.getPath("userData"), "profile");
+  await fs.mkdir(profileDir, { recursive: true });
+  const targetPath = path.join(profileDir, safeFileName(path.basename(sourcePath)));
+  await fs.copyFile(sourcePath, targetPath);
+  const settings = await saveSettings({
+    profile: {
+      ...profile,
+      displayPicturePath: targetPath
+    }
+  });
+  return { canceled: false, path: targetPath, profile, settings };
+});
+
+ipcMain.handle("profile:clear-picture", async () => {
+  const settings = await saveSettings({
+    profile: {
+      ...profile,
+      displayPicturePath: ""
+    }
+  });
+  return { ok: true, profile, settings };
 });
 
 ipcMain.handle("conversation:open", (_event, contactId) => {

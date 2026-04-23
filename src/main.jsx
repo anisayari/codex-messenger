@@ -3,7 +3,24 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const api = window.codexMsn;
-const statusLabels = { online: "En ligne", busy: "Occupe", away: "Absent", offline: "Hors ligne" };
+const statusLabels = {
+  online: "En ligne",
+  busy: "Occupe",
+  brb: "De retour bientot",
+  away: "Absent",
+  phone: "Au telephone",
+  lunch: "Parti manger",
+  offline: "Hors ligne"
+};
+const statusOptions = [
+  ["online", "En ligne"],
+  ["busy", "Occupe"],
+  ["brb", "De retour bientot"],
+  ["away", "Absent"],
+  ["phone", "Au telephone"],
+  ["lunch", "Parti manger"],
+  ["offline", "Apparaitre hors ligne"]
+];
 const audioFiles = {
   wizz: "./audio/msn_wizz.mp3",
   message: "./audio/msn_nouveau_message.mp3"
@@ -154,6 +171,13 @@ function localFileUrl(filePath) {
   return `file:///${String(filePath).replace(/\\/g, "/")}`;
 }
 
+function presenceClass(status) {
+  if (status === "busy") return "busy";
+  if (status === "offline") return "offline";
+  if (["away", "brb", "phone", "lunch"].includes(status)) return "away";
+  return "online";
+}
+
 function Logo({ small = false }) {
   return (
     <span className={small ? "logo small" : "logo"} aria-hidden="true">
@@ -163,9 +187,16 @@ function Logo({ small = false }) {
 }
 
 function Avatar({ contact, large = false }) {
+  const picturePath = contact.displayPicturePath || contact.picturePath;
   return (
-    <div className={large ? "avatar large" : "avatar"} style={{ "--avatar": contact.color }}>
-      {contact.avatar === "butterfly" ? <Logo small={!large} /> : <span className={`glyph ${contact.avatar}`} />}
+    <div className={`${large ? "avatar large" : "avatar"} ${presenceClass(contact.status)}`} style={{ "--avatar": contact.color ?? "#11a77a" }}>
+      {picturePath ? (
+        <img className="avatar-picture" src={localFileUrl(picturePath)} alt="" draggable="false" />
+      ) : contact.avatar === "butterfly" ? (
+        <Logo small={!large} />
+      ) : (
+        <span className={`glyph ${contact.avatar}`} />
+      )}
     </div>
   );
 }
@@ -255,6 +286,8 @@ function Menu({ items }) {
 
 function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSignedIn }) {
   const [email, setEmail] = useState(initialProfile.email);
+  const [displayName, setDisplayName] = useState(initialProfile.displayName ?? initialProfile.email.split("@")[0]);
+  const [personalMessage, setPersonalMessage] = useState(initialProfile.personalMessage ?? "");
   const [status, setStatus] = useState(initialProfile.status);
   const [language, setLanguage] = useState(initialProfile.language ?? initialSettings?.language ?? "fr");
   const [codexPath, setCodexPath] = useState(initialSettings?.codexPath ?? "");
@@ -268,7 +301,7 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
     setError("");
     setState("connecting");
     try {
-      const result = await api.signIn({ email, status, language, codexPath, displayName: email.split("@")[0] });
+      const result = await api.signIn({ email, displayName, personalMessage, status, language, codexPath, displayPicturePath: initialProfile.displayPicturePath ?? "" });
       onSignedIn(result.profile, result.userAgent, result.settings, result.codexStatus);
     } catch (err) {
       setError(err.message);
@@ -309,12 +342,17 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         <input value={email} onChange={(event) => setEmail(event.target.value)} />
       </label>
       <label className="field">
+        <span>Nom affiche</span>
+        <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
+      </label>
+      <label className="field">
+        <span>Message personnel</span>
+        <input value={personalMessage} onChange={(event) => setPersonalMessage(event.target.value)} maxLength={140} />
+      </label>
+      <label className="field">
         <span>{text.status}</span>
         <select value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="online">{text.online}</option>
-          <option value="away">{text.away}</option>
-          <option value="busy">{text.busy}</option>
-          <option value="offline">{text.offline}</option>
+          {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
         </select>
       </label>
       <label className="field">
@@ -344,7 +382,54 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   );
 }
 
-function RosterView({ bootstrap, profile, userAgent, refreshTick, onProfileChange }) {
+function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onClose }) {
+  const [draft, setDraft] = useState(profile);
+
+  useEffect(() => {
+    setDraft(profile);
+  }, [profile]);
+
+  function update(field, value) {
+    setDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function submit(event) {
+    event.preventDefault();
+    onChange(draft);
+  }
+
+  return (
+    <form className="profile-editor" onSubmit={submit}>
+      <div className="profile-editor-picture">
+        <Avatar contact={{ ...draft, avatar: "butterfly", color: "#11a77a" }} />
+        <div className="profile-picture-tools">
+          <button type="button" onClick={onChoosePicture}>Changer</button>
+          <button type="button" onClick={onClearPicture}>Defaut</button>
+        </div>
+      </div>
+      <label>
+        <span>Nom affiche</span>
+        <input value={draft.displayName ?? ""} onChange={(event) => update("displayName", event.target.value)} />
+      </label>
+      <label>
+        <span>Message personnel</span>
+        <input value={draft.personalMessage ?? ""} onChange={(event) => update("personalMessage", event.target.value)} maxLength={140} />
+      </label>
+      <label>
+        <span>Statut</span>
+        <select value={draft.status ?? "online"} onChange={(event) => update("status", event.target.value)}>
+          {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+        </select>
+      </label>
+      <div className="profile-editor-actions">
+        <button type="submit">Appliquer</button>
+        <button type="button" onClick={onClose}>Fermer</button>
+      </div>
+    </form>
+  );
+}
+
+function RosterView({ bootstrap, profile, userAgent, refreshTick, profileEditorOpen, onProfileEditorOpenChange, onProfileChange }) {
   const [finished, setFinished] = useState(null);
   const [conversations, setConversations] = useState(bootstrap.conversations);
   const [collapsed, setCollapsed] = useState({});
@@ -413,28 +498,55 @@ function RosterView({ bootstrap, profile, userAgent, refreshTick, onProfileChang
     setCollapsed((current) => ({ ...current, [groupId]: !current[groupId] }));
   }
 
-  async function changeStatus(status) {
-    const result = await api.signIn({ ...profile, status });
-    onProfileChange(result.profile, result.userAgent);
+  async function saveProfile(nextProfile) {
+    const result = await api.setSettings({
+      language: nextProfile.language ?? profile.language,
+      profile: nextProfile
+    });
+    onProfileChange(result.settings.profile, userAgent, result.settings);
+  }
+
+  function changeStatus(status) {
+    saveProfile({ ...profile, status });
+  }
+
+  async function chooseProfilePicture() {
+    const result = await api.chooseProfilePicture();
+    if (result?.canceled) return;
+    onProfileChange(result.profile, userAgent, result.settings);
+  }
+
+  async function clearProfilePicture() {
+    const result = await api.clearProfilePicture();
+    onProfileChange(result.profile, userAgent, result.settings);
   }
 
   return (
     <section className="roster">
       <div className="me">
-        <Avatar contact={bootstrap.contacts[0]} />
+        <button className="display-picture-button" type="button" onClick={() => onProfileEditorOpenChange(!profileEditorOpen)}>
+          <Avatar contact={{ ...profile, avatar: "butterfly", color: "#11a77a" }} />
+        </button>
         <div>
           <div className="me-line">
-            <strong>{profile.email}</strong>
+            <strong>{profile.displayName || profile.email}</strong>
             <select value={profile.status} onChange={(event) => changeStatus(event.target.value)}>
-              <option value="online">En ligne</option>
-              <option value="away">Absent</option>
-              <option value="busy">Occupe</option>
-              <option value="offline">Hors ligne</option>
+              {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
             </select>
           </div>
-          <p>{userAgent || "Codex local connecte"}</p>
+          <small className="me-email">{profile.email}</small>
+          <p>{profile.personalMessage || userAgent || "Codex local connecte"}</p>
         </div>
       </div>
+      {profileEditorOpen ? (
+        <ProfileEditor
+          profile={profile}
+          onChange={saveProfile}
+          onChoosePicture={chooseProfilePicture}
+          onClearPicture={clearProfilePicture}
+          onClose={() => onProfileEditorOpenChange(false)}
+        />
+      ) : null}
       <div className="msn-tabs">
         <button type="button" onClick={() => window.alert("Aucune boite e-mail locale n'est connectee pour le moment.")}><span className="mini mail" /> E-mail</button>
         <button type="button" onClick={() => api.openConversation("codex")}><Logo small /> Codex Today</button>
@@ -476,6 +588,7 @@ function MainWindow() {
   const [settings, setSettings] = useState(null);
   const [codexStatus, setCodexStatus] = useState(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [profileEditorOpen, setProfileEditorOpen] = useState(false);
 
   useEffect(() => {
     api.bootstrap().then((data) => {
@@ -489,6 +602,16 @@ function MainWindow() {
 
   if (!bootstrap || !profile) return <div className="loading">Connexion...</div>;
 
+  async function saveProfilePatch(patch) {
+    const nextProfile = { ...profile, ...patch };
+    const result = await api.setSettings({
+      language: nextProfile.language ?? profile.language,
+      profile: nextProfile
+    });
+    setProfile(result.settings.profile);
+    setSettings(result.settings);
+  }
+
   const uploadsPath = `${bootstrap.cwd}\\uploads`;
   const mainMenus = [
     {
@@ -496,6 +619,7 @@ function MainWindow() {
       entries: [
         { label: "Nouvelle conversation Codex", action: () => api.openConversation("codex") },
         { label: "Ouvrir un projet...", action: () => api.openProjectPicker() },
+        { label: "Modifier mon profil...", action: () => setProfileEditorOpen(true) },
         { separator: true },
         { label: "Ouvrir le dossier de l'app", action: () => api.app.openPath(bootstrap.cwd) },
         { label: "Quitter", shortcut: "Alt+F4", action: () => api.app.quit() }
@@ -517,6 +641,12 @@ function MainWindow() {
       entries: [
         { label: "Codex Today", action: () => api.openConversation("codex") },
         { label: "Rafraichir la liste", shortcut: "F5", action: () => setRefreshTick((tick) => tick + 1) },
+        { separator: true },
+        ...statusOptions.map(([status, label]) => ({
+          label: `Statut: ${label}`,
+          action: () => saveProfilePatch({ status })
+        })),
+        { separator: true },
         {
           label: "Wizz Codex",
           action: async () => {
@@ -558,9 +688,12 @@ function MainWindow() {
           profile={profile}
           userAgent={userAgent}
           refreshTick={refreshTick}
-          onProfileChange={(nextProfile, nextUserAgent) => {
+          profileEditorOpen={profileEditorOpen}
+          onProfileEditorOpenChange={setProfileEditorOpen}
+          onProfileChange={(nextProfile, nextUserAgent, nextSettings) => {
             setProfile(nextProfile);
             setUserAgent(nextUserAgent);
+            if (nextSettings) setSettings(nextSettings);
           }}
         />
       ) : (
@@ -845,6 +978,9 @@ function ChatWindow({ bootstrap }) {
   const selfContact = {
     id: "self",
     name: bootstrap.profile.displayName,
+    status: bootstrap.profile.status,
+    displayPicturePath: bootstrap.profile.displayPicturePath,
+    personalMessage: bootstrap.profile.personalMessage,
     color: "#6e8799",
     avatar: "butterfly"
   };

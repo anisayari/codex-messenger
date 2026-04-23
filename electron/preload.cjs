@@ -45,6 +45,8 @@ contextBridge.exposeInMainWorld("codexMsn", {
   setSettings: (settings) => ipcRenderer.invoke("settings:set", settings),
   chooseCodex: () => ipcRenderer.invoke("settings:choose-codex"),
   testCodex: (candidatePath) => ipcRenderer.invoke("settings:test-codex", candidatePath),
+  chooseProfilePicture: () => ipcRenderer.invoke("profile:choose-picture"),
+  clearProfilePicture: () => ipcRenderer.invoke("profile:clear-picture"),
   app: {
     openPath: (targetPath) => ipcRenderer.invoke("app:open-path", targetPath),
     showItem: (targetPath) => ipcRenderer.invoke("app:show-item", targetPath),
