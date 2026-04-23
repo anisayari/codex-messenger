@@ -234,8 +234,10 @@ jobs:
             mac_sha=\$(sha256sum '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg' | cut -d ' ' -f1)
             windows_hashed_name=\"CodexMessenger-\${windows_sha:0:8}.exe\"
             mac_hashed_name=\"CodexMessenger-mac-arm64-\${mac_sha:0:8}.dmg\"
-            cp '$remote_tmp/downloads/CodexMessenger.exe' \"'$remote_tmp/downloads/'\$windows_hashed_name\"
-            cp '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg' \"'$remote_tmp/downloads/'\$mac_hashed_name\"
+            windows_hashed_path='$remote_tmp/downloads/'\"\$windows_hashed_name\"
+            mac_hashed_path='$remote_tmp/downloads/'\"\$mac_hashed_name\"
+            cp '$remote_tmp/downloads/CodexMessenger.exe' \"\$windows_hashed_path\"
+            cp '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg' \"\$mac_hashed_path\"
             printf '%s  CodexMessenger.exe\n' \"\$windows_sha\" > '$remote_tmp/downloads/CodexMessenger.exe.sha256'
             printf '%s  CodexMessenger-mac-arm64.dmg\n' \"\$mac_sha\" > '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg.sha256'
             if [ -n '$expected_windows_sha' ] && [ \"\$windows_sha\" != '$expected_windows_sha' ]; then
