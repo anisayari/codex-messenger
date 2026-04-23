@@ -5,6 +5,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolveExecutableCandidate } from "../shared/codexExecutable.js";
+import { codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -107,10 +109,6 @@ function uploadsDir() {
 
 function settingsFilePath() {
   return path.join(app.getPath("userData"), "settings.json");
-}
-
-function normalizeLanguage(language) {
-  return language === "en" ? "en" : "fr";
 }
 
 function normalizeProfile(nextProfile = {}) {
@@ -309,7 +307,8 @@ async function resolveCodexCommand(candidatePath = null) {
   ].filter(Boolean);
 
   for (const candidate of candidates) {
-    if (!path.isAbsolute(candidate.command) || await fileExists(candidate.command)) return candidate;
+    const command = await resolveExecutableCandidate(candidate.command);
+    if (!path.isAbsolute(command) || await fileExists(command)) return { ...candidate, command };
   }
 
   throw new Error("Codex CLI introuvable. Installez Codex puis relancez l'app, ou indiquez le chemin vers codex.exe/codex.cmd dans l'ecran de connexion.");
@@ -353,9 +352,7 @@ async function codexStatus(candidatePath = null) {
 }
 
 function localizedInstructions(contact) {
-  const languageInstruction = profile.language === "en"
-    ? "Answer in English by default unless the user explicitly asks for another language."
-    : "Reponds en francais par defaut sauf demande explicite de l'utilisateur.";
+  const languageInstruction = codexLanguageInstruction(profile.language);
   const winkInstruction = "Tu peux envoyer un clin d'oeil anime dans Codex Messenger en ecrivant exactement un marqueur comme [wink:butterfly], [wink:butterfly-small], [wink:surprise], [wink:nudge], [wink:flash] ou [wink:msn-flow]. Utilise ce marqueur seulement quand un clin d'oeil est pertinent.";
   return `${contact.instructions}\n\n${languageInstruction}\n\n${winkInstruction}`;
 }

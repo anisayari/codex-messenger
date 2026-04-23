@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { loginCopyFor, normalizeLanguage, supportedLanguages } from "../shared/languages.js";
 import "./styles.css";
 
 const api = window.codexMsn;
@@ -121,57 +122,6 @@ const ticLines = [
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6]
 ];
-const loginCopy = {
-  fr: {
-    subtitle: "Connexion au serveur local Codex",
-    email: "Adresse de messagerie",
-    status: "Statut",
-    language: "Langue",
-    codexPath: "Chemin vers Codex CLI",
-    autoPath: "Detection automatique via PATH",
-    browse: "Parcourir",
-    test: "Tester",
-    online: "En ligne",
-    away: "Absent",
-    busy: "Occupe",
-    offline: "Apparaitre hors ligne",
-    remember: "Memoriser mon adresse",
-    connect: "Connexion",
-    connecting: "Connexion Codex...",
-    hint: "Utilise `codex app-server` via le main process Electron. Aucune cle API n'est exposee au renderer.",
-    found: "Codex detecte",
-    missing: "Codex non detecte. Installez Codex, ajoutez-le au PATH, ou indiquez codex.exe/codex.cmd.",
-    testOk: "Test OK",
-    testFail: "Test impossible"
-  },
-  en: {
-    subtitle: "Connect to the local Codex server",
-    email: "Messaging address",
-    status: "Status",
-    language: "Language",
-    codexPath: "Codex CLI path",
-    autoPath: "Auto-detect from PATH",
-    browse: "Browse",
-    test: "Test",
-    online: "Online",
-    away: "Away",
-    busy: "Busy",
-    offline: "Appear offline",
-    remember: "Remember my address",
-    connect: "Sign in",
-    connecting: "Connecting Codex...",
-    hint: "Uses `codex app-server` through the Electron main process. No API key is exposed to the renderer.",
-    found: "Codex detected",
-    missing: "Codex was not detected. Install Codex, add it to PATH, or select codex.exe/codex.cmd.",
-    testOk: "Test OK",
-    testFail: "Test failed"
-  }
-};
-
-function copyFor(language) {
-  return loginCopy[language === "en" ? "en" : "fr"];
-}
-
 function now() {
   return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
 }
@@ -444,12 +394,12 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   const [displayName, setDisplayName] = useState(initialProfile.displayName ?? initialProfile.email.split("@")[0]);
   const [personalMessage, setPersonalMessage] = useState(initialProfile.personalMessage ?? "");
   const [status, setStatus] = useState(initialProfile.status);
-  const [language, setLanguage] = useState(initialProfile.language ?? initialSettings?.language ?? "fr");
+  const [language, setLanguage] = useState(normalizeLanguage(initialProfile.language ?? initialSettings?.language ?? "fr"));
   const [codexPath, setCodexPath] = useState(initialSettings?.codexPath ?? "");
   const [codexStatus, setCodexStatus] = useState(initialCodexStatus);
   const [state, setState] = useState("idle");
   const [error, setError] = useState("");
-  const text = copyFor(language);
+  const text = loginCopyFor(language);
 
   async function submit(event) {
     event.preventDefault();
@@ -493,28 +443,27 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         </div>
       </div>
       <label className="field">
+        <span>{text.language}</span>
+        <select value={language} onChange={(event) => setLanguage(normalizeLanguage(event.target.value))}>
+          {supportedLanguages.map((item) => <option value={item.code} key={item.code}>{item.label}</option>)}
+        </select>
+      </label>
+      <label className="field">
         <span>{text.email}</span>
         <input value={email} onChange={(event) => setEmail(event.target.value)} />
       </label>
       <label className="field">
-        <span>Nom affiche</span>
+        <span>{text.displayName}</span>
         <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
       </label>
       <label className="field">
-        <span>Message personnel</span>
+        <span>{text.personalMessage}</span>
         <input value={personalMessage} onChange={(event) => setPersonalMessage(event.target.value)} maxLength={140} />
       </label>
       <label className="field">
         <span>{text.status}</span>
         <select value={status} onChange={(event) => setStatus(event.target.value)}>
           {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
-        </select>
-      </label>
-      <label className="field">
-        <span>{text.language}</span>
-        <select value={language} onChange={(event) => setLanguage(event.target.value)}>
-          <option value="fr">Francais</option>
-          <option value="en">English</option>
         </select>
       </label>
       <label className="field">

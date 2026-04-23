@@ -2,13 +2,14 @@ import { execFile } from "node:child_process";
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
+import { resolveExecutableCandidate } from "../shared/codexExecutable.js";
 
 const execFileAsync = promisify(execFile);
 const lookupCommand = process.platform === "win32" ? "where.exe" : "which";
 
 async function findCodex() {
   const explicit = process.env.CODEX_MESSENGER_CODEX_PATH?.trim();
-  if (explicit) return { command: explicit, source: "CODEX_MESSENGER_CODEX_PATH" };
+  if (explicit) return { command: await resolveExecutableCandidate(explicit), source: "CODEX_MESSENGER_CODEX_PATH" };
 
   const { stdout } = await execFileAsync(lookupCommand, ["codex"], { windowsHide: true });
   const matches = stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -18,7 +19,7 @@ async function findCodex() {
       || matches[0]
     : matches[0];
   if (!command) throw new Error("codex introuvable dans le PATH");
-  return { command, source: "PATH" };
+  return { command: await resolveExecutableCandidate(command), source: "PATH" };
 }
 
 function shouldUseShell(command) {

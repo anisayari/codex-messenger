@@ -4,7 +4,7 @@
 
 Codex Messenger est une application desktop Electron inspirée de MSN Messenger 7. Elle sert de wrapper local pour Codex: chaque agent, projet ou fil Codex devient une conversation, avec fenêtre de chat, sons MSN, Wizz, envoi d'images/fichiers, caméra, messages vocaux et mini-jeux pendant que Codex travaille.
 
-Pour l'instant, Codex Messenger est uniquement supporté sur Windows. Le français est la langue par défaut; l'anglais est disponible depuis l'écran de connexion.
+Pour l'instant, Codex Messenger est uniquement supporté sur Windows. Le français est la langue par défaut; l'anglais, l'espagnol et le japonais sont disponibles depuis l'écran de connexion.
 
 ## Installation Rapide
 
@@ -13,7 +13,7 @@ Pour l'instant, Codex Messenger est uniquement supporté sur Windows. Le frança
 1. Ouvrir la page [Releases](https://github.com/anisayari/codex-messenger/releases).
 2. Télécharger `Codex.Messenger.Setup.x.y.z.exe`.
 3. Lancer l'installateur.
-4. Au premier lancement, vérifier que Codex est détecté ou choisir manuellement le chemin vers `codex.cmd` / `codex.exe`.
+4. Au premier lancement, vérifier que Codex est détecté ou choisir manuellement le chemin vers `codex`, `codex.cmd` ou `codex.exe`.
 
 Si Windows SmartScreen affiche un avertissement, c'est attendu pour une application non signée. Continuer uniquement si le fichier vient bien de la release GitHub officielle.
 
@@ -73,6 +73,7 @@ Deux raccourcis PowerShell sont aussi fournis:
 - Interface Windows XP / MSN Messenger 7 avec fenêtres de conversation.
 - Connexion à `codex app-server` depuis le process principal Electron.
 - Aucune clé API exposée au renderer.
+- Langues de réponse Codex: français par défaut, anglais, espagnol et japonais. Les langues sont centralisées dans `shared/languages.js` pour en ajouter rapidement.
 - Contacts Codex: agent principal, reviewer, designer, projets locaux et fils récents.
 - Création d'agents personnalisés depuis `Add a Contact`, avec nom, groupe, statut, icône, couleur et instructions dédiées.
 - Liste de contacts groupée façon Messenger.
@@ -101,6 +102,8 @@ Codex Messenger cherche Codex dans cet ordre:
 2. La variable `CODEX_MESSENGER_CODEX_PATH`.
 3. Le `PATH` système (`where codex` sur Windows).
 
+Sur Windows, si npm retourne un shim sans extension comme `C:\Users\vous\AppData\Roaming\npm\codex`, l'application teste automatiquement `codex.cmd`, `codex.exe` puis `codex.bat`.
+
 Fallback manuel PowerShell:
 
 ```powershell
@@ -111,7 +114,7 @@ npm run electron:start
 Si la détection échoue dans l'application:
 
 - cliquer sur `Parcourir`;
-- sélectionner `codex.cmd`, `codex.exe` ou le binaire équivalent;
+- sélectionner `codex`, `codex.cmd`, `codex.exe` ou le binaire équivalent;
 - cliquer sur `Tester`;
 - relancer la connexion.
 
