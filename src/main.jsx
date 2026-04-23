@@ -1405,22 +1405,49 @@ function ChatWindow({ bootstrap }) {
 }
 
 function appendAgentDelta(messages, author, delta) {
+  const cleanDelta = String(delta ?? "");
+  if (!cleanDelta) return messages;
   const last = messages[messages.length - 1];
   if (last?.streaming) {
-    return [...messages.slice(0, -1), { ...last, text: last.text + delta }];
+    return [...messages.slice(0, -1), { ...last, text: mergeStreamText(last.text, cleanDelta) }];
   }
-  return [...messages, makeMessage("them", author, delta, { streaming: true })];
+  return [...messages, makeMessage("them", author, cleanDelta, { streaming: true })];
 }
 
 function finishAgentMessage(messages, author, text) {
+  const cleanText = String(text ?? "").trim();
+  if (!cleanText) return messages;
   const last = messages[messages.length - 1];
   if (last?.streaming) {
-    if (last.text.trim() && text.startsWith(last.text.trim())) {
-      return [...messages.slice(0, -1), { ...last, text, streaming: false }];
-    }
-    return [...messages.slice(0, -1), { ...last, streaming: false }];
+    return [...messages.slice(0, -1), { ...last, text: cleanText, streaming: false }];
   }
-  return [...messages, makeMessage("them", author, text)];
+  if (last?.from === "them" && normalizeMessageText(last.text) === normalizeMessageText(cleanText)) {
+    return messages;
+  }
+  const previous = messages[messages.length - 2];
+  if (last?.from === "them" && previous?.from === "them" && normalizeMessageText(previous.text) === normalizeMessageText(cleanText)) {
+    return messages.slice(0, -1);
+  }
+  return [...messages, makeMessage("them", author, cleanText)];
+}
+
+function mergeStreamText(current, incoming) {
+  const left = String(current ?? "");
+  const right = String(incoming ?? "");
+  if (!left || right.startsWith(left)) return right;
+  if (!right || left.endsWith(right)) return left;
+
+  const maxOverlap = Math.min(left.length, right.length);
+  for (let size = maxOverlap; size > 0; size -= 1) {
+    if (left.slice(-size) === right.slice(0, size)) {
+      return left + right.slice(size);
+    }
+  }
+  return left + right;
+}
+
+function normalizeMessageText(text) {
+  return String(text ?? "").replace(/\s+/g, " ").trim();
 }
 
 function Message({ message }) {
