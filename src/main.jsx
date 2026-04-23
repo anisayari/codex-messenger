@@ -35,6 +35,15 @@ const toolbarIcons = {
   games: "./icons/toolbar/games.png",
   wizz: "./icons/toolbar/wizz.png"
 };
+const formatIcons = {
+  font: "./icons/format/font.png",
+  smile: "./icons/format/smile.png",
+  voice: "./icons/format/voice.png",
+  wink: "./icons/format/wink.png",
+  image: "./icons/format/image.png",
+  gift: "./icons/format/gift.png",
+  laugh: "./icons/format/laugh.png"
+};
 const activityPrompts = [
   ["Plan", "Fais un plan de travail court pour ce projet, puis propose la premiere action concrete."],
   ["Review", "Fais une revue pragmatique du projet courant: bugs probables, risques, tests manquants, priorites."],
@@ -717,6 +726,15 @@ function Tool({ icon, label, onClick }) {
   );
 }
 
+function FormatButton({ icon, title, onClick, label }) {
+  return (
+    <button className={label ? "format-button wide" : "format-button"} type="button" title={title} onClick={onClick}>
+      <img src={formatIcons[icon]} alt="" draggable="false" />
+      {label ? <span>{label}</span> : null}
+    </button>
+  );
+}
+
 function ConversationBrowser({ conversations, activeContactId, onOpenProject, onOpenThread }) {
   if (!conversations?.projects?.length) return <div className="side-empty">Aucun fil Codex trouve.</div>;
   return (
@@ -1336,13 +1354,13 @@ function ChatWindow({ bootstrap }) {
             {typing ? <div className="typing"><i /><i /><i />{contact.name} ecrit...</div> : null}
           </div>
           <div className="format-strip">
-            <button type="button" title="Gras" onClick={() => wrapDraft("**", "**")}>A</button>
-            <button type="button" title="Sourire" onClick={() => insertDraft(":)")}>:)</button>
-            <button type="button" onClick={toggleVoiceClip}>Voice Clip</button>
-            <button type="button" title="Clin d'oeil" onClick={() => insertDraft(" ;)")}>:)</button>
-            <button type="button" onClick={handleSendFile}>Img</button>
-            <button type="button" onClick={() => setSideMode("activities")}>*</button>
-            <button type="button" title="Rire" onClick={() => insertDraft(" :D")}>:)</button>
+            <FormatButton icon="font" title="Police" onClick={() => wrapDraft("**", "**")} />
+            <FormatButton icon="smile" title="Sourire" onClick={() => insertDraft(":)")} />
+            <FormatButton icon="voice" title="Voice Clip" label="Voice Clip" onClick={toggleVoiceClip} />
+            <FormatButton icon="wink" title="Clin d'oeil" onClick={() => insertDraft(" ;)")} />
+            <FormatButton icon="image" title="Image" onClick={handleSendFile} />
+            <FormatButton icon="gift" title="Activites" onClick={() => setSideMode("activities")} />
+            <FormatButton icon="laugh" title="Rire" onClick={() => insertDraft(" :D")} />
           </div>
           <form className="composer" onSubmit={submit}>
             <textarea ref={textareaRef} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => {
