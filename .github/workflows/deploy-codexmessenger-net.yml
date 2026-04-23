@@ -179,8 +179,8 @@ jobs:
             command -v curl >/dev/null
             mkdir -p '$remote_tmp/downloads'
             curl -fL --retry 5 --retry-delay 3 --connect-timeout 20 '$RELEASE_ASSET_URL' -o '$remote_tmp/downloads/CodexMessenger.exe'
-            sha256sum '$remote_tmp/downloads/CodexMessenger.exe' > '$remote_tmp/downloads/CodexMessenger.exe.sha256'
-            actual_sha=\$(cut -d ' ' -f1 '$remote_tmp/downloads/CodexMessenger.exe.sha256')
+            actual_sha=\$(sha256sum '$remote_tmp/downloads/CodexMessenger.exe' | cut -d ' ' -f1)
+            printf '%s  CodexMessenger.exe\n' \"\$actual_sha\" > '$remote_tmp/downloads/CodexMessenger.exe.sha256'
             if [ -n '$expected_sha' ] && [ \"\$actual_sha\" != '$expected_sha' ]; then
               echo 'Downloaded release asset checksum does not match GitHub release digest.'
               exit 1
