@@ -78,6 +78,7 @@ Deux raccourcis PowerShell sont aussi fournis:
 - Liste de contacts groupée façon Messenger.
 - Agents, projets et conversations récentes affichés comme de vrais contacts MSN avec avatars générés.
 - Fenêtre de discussion centrée sur le contact: plus de navigateur de fils dans la conversation.
+- Fils d'un même projet affichés comme onglets MSN au-dessus de la conversation, réorganisables par glisser-déposer et masquables.
 - Une fenêtre par conversation.
 - Streaming des réponses Codex sans doublons.
 - Sons MSN pour nouveau message et Wizz.

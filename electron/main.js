@@ -89,7 +89,8 @@ const contactByThread = new Map();
 const unreadReminderByContact = new Map();
 const knownThreads = new Map();
 const unreadWizzDelayMs = Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 5 * 60 * 1000;
-const defaultSettings = { language: "fr", codexPath: "", profile: defaultProfile, customAgents: [] };
+const defaultThreadTabs = { orderByCwd: {}, hiddenIds: [] };
+const defaultSettings = { language: "fr", codexPath: "", profile: defaultProfile, customAgents: [], threadTabs: defaultThreadTabs };
 let settingsCache = null;
 
 function defaultCwd() {
@@ -183,6 +184,22 @@ function normalizeCustomAgents(value = []) {
   return agents.slice(0, 50);
 }
 
+function normalizeThreadTabs(value = {}) {
+  const orderByCwd = {};
+  const sourceOrder = value && typeof value.orderByCwd === "object" ? value.orderByCwd : {};
+  for (const [cwd, ids] of Object.entries(sourceOrder)) {
+    const cleanCwd = String(cwd || "").trim();
+    if (!cleanCwd || !Array.isArray(ids)) continue;
+    orderByCwd[cleanCwd] = Array.from(new Set(ids.map((id) => String(id || "").trim()).filter(Boolean))).slice(0, 200);
+  }
+  const hiddenIds = Array.from(new Set(
+    (Array.isArray(value?.hiddenIds) ? value.hiddenIds : [])
+      .map((id) => String(id || "").trim())
+      .filter(Boolean)
+  )).slice(0, 1000);
+  return { orderByCwd, hiddenIds };
+}
+
 function contactsForSettings(settings = settingsCache) {
   return [...contacts, ...normalizeCustomAgents(settings?.customAgents ?? [])];
 }
@@ -201,6 +218,7 @@ async function loadSettings() {
     language: settingsCache.language
   });
   settingsCache.customAgents = normalizeCustomAgents(settingsCache.customAgents);
+  settingsCache.threadTabs = normalizeThreadTabs(settingsCache.threadTabs);
   Object.assign(profile, settingsCache.profile);
   return settingsCache;
 }
@@ -219,7 +237,8 @@ async function saveSettings(nextSettings = {}) {
     language: nextLanguage,
     codexPath: String(nextSettings.codexPath ?? current.codexPath ?? "").trim(),
     profile: nextProfile,
-    customAgents: normalizeCustomAgents(nextSettings.customAgents ?? current.customAgents)
+    customAgents: normalizeCustomAgents(nextSettings.customAgents ?? current.customAgents),
+    threadTabs: normalizeThreadTabs(nextSettings.threadTabs ?? current.threadTabs)
   };
   await fs.mkdir(path.dirname(settingsFilePath()), { recursive: true });
   await fs.writeFile(settingsFilePath(), JSON.stringify(settingsCache, null, 2), "utf8");
@@ -634,10 +653,23 @@ function normalizeThread(thread) {
   };
 }
 
+function sortThreadsForCwd(threads, cwd, threadTabs) {
+  const order = threadTabs?.orderByCwd?.[cwd] ?? [];
+  const rank = new Map(order.map((id, index) => [id, index]));
+  return [...threads].sort((a, b) => {
+    const aRank = rank.has(a.id) ? rank.get(a.id) : Number.MAX_SAFE_INTEGER;
+    const bRank = rank.has(b.id) ? rank.get(b.id) : Number.MAX_SAFE_INTEGER;
+    if (aRank !== bRank) return aRank - bRank;
+    return String(b.timestamp ?? "").localeCompare(String(a.timestamp ?? ""));
+  });
+}
+
 async function conversationBrowser() {
   let threads = [];
+  const settings = await loadSettings();
+  const hiddenIds = new Set(settings.threadTabs.hiddenIds);
   try {
-    threads = (await codex.listThreads()).map(normalizeThread);
+    threads = (await codex.listThreads()).map(normalizeThread).filter((thread) => !hiddenIds.has(thread.id));
   } catch {
     threads = [];
   }
@@ -653,9 +685,11 @@ async function conversationBrowser() {
         id: encodeProjectId(cwd),
         cwd,
         name: projectNameFor(cwd),
-        threads: threads
-          .filter((thread) => thread.cwd === cwd)
-          .sort((a, b) => String(b.timestamp ?? "").localeCompare(String(a.timestamp ?? "")))
+        threads: sortThreadsForCwd(
+          threads.filter((thread) => thread.cwd === cwd),
+          cwd,
+          settings.threadTabs
+        )
       }))
       .sort((a, b) => a.name.localeCompare(b.name))
   };
@@ -763,6 +797,29 @@ function createChatWindow(contactId) {
   win.on("closed", () => clearUnreadReminder(contactId));
   win.loadURL(rendererUrl({ view: "chat", contactId }));
   return win;
+}
+
+function switchChatWindow(event, contactId) {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || win.isDestroyed()) {
+    createChatWindow(contactId);
+    return { ok: true };
+  }
+
+  const targetKey = `chat:${contactId}`;
+  const existing = windows.get(targetKey);
+  if (existing && existing !== win && !existing.isDestroyed()) existing.close();
+
+  for (const [key, value] of windows) {
+    if (value === win && key.startsWith("chat:")) {
+      clearUnreadReminder(key.slice("chat:".length));
+      windows.delete(key);
+      break;
+    }
+  }
+  windows.set(targetKey, win);
+  win.loadURL(rendererUrl({ view: "chat", contactId }));
+  return { ok: true };
 }
 
 function sendToChat(contactId, channel, payload) {
@@ -1070,6 +1127,14 @@ ipcMain.handle("conversation:open-project", (_event, cwd) => {
   return { ok: true };
 });
 
+ipcMain.handle("conversation:switch-thread", (event, threadId) => {
+  return switchChatWindow(event, `thread:${threadId}`);
+});
+
+ipcMain.handle("conversation:switch-project", (event, cwd) => {
+  return switchChatWindow(event, encodeProjectId(cwd));
+});
+
 ipcMain.handle("conversation:open-project-picker", async (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = await dialog.showOpenDialog(win, {
@@ -1083,6 +1148,36 @@ ipcMain.handle("conversation:open-project-picker", async (event) => {
 });
 
 ipcMain.handle("conversation:list", async () => conversationBrowser());
+
+ipcMain.handle("conversation:reorder-threads", async (_event, { cwd, threadIds } = {}) => {
+  const cleanCwd = String(cwd || "").trim();
+  if (!cleanCwd) return { ok: false, error: "Projet invalide" };
+  const settings = await loadSettings();
+  const nextThreadTabs = normalizeThreadTabs({
+    ...settings.threadTabs,
+    orderByCwd: {
+      ...settings.threadTabs.orderByCwd,
+      [cleanCwd]: Array.isArray(threadIds) ? threadIds : []
+    }
+  });
+  await saveSettings({ threadTabs: nextThreadTabs });
+  return { ok: true, conversations: await conversationBrowser() };
+});
+
+ipcMain.handle("conversation:delete-thread", async (_event, threadId) => {
+  const cleanThreadId = String(threadId || "").trim();
+  if (!cleanThreadId) return { ok: false, error: "Fil invalide" };
+  const settings = await loadSettings();
+  const hiddenIds = Array.from(new Set([...settings.threadTabs.hiddenIds, cleanThreadId]));
+  const orderByCwd = {};
+  for (const [cwd, ids] of Object.entries(settings.threadTabs.orderByCwd)) {
+    orderByCwd[cwd] = ids.filter((id) => id !== cleanThreadId);
+  }
+  await saveSettings({ threadTabs: { orderByCwd, hiddenIds } });
+  const win = windows.get(`chat:thread:${cleanThreadId}`);
+  if (win && !win.isDestroyed()) win.flashFrame(false);
+  return { ok: true, conversations: await conversationBrowser() };
+});
 
 ipcMain.handle("conversation:send", async (_event, { contactId, text }) => {
   const clean = String(text ?? "").trim();

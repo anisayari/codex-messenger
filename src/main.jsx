@@ -1098,6 +1098,85 @@ function CameraPanel({ videoRef, cameraStream, mediaError, onSnapshot, onStop })
   );
 }
 
+function ThreadTabs({ project, contact, activeThreadId, onOpenProject, onOpenThread, onDeleteThread, onReorderThreads }) {
+  const [dragThreadId, setDragThreadId] = useState("");
+  const threads = project?.threads ?? [];
+  if (!project) {
+    return <div className="to-line">A: {contact.name}</div>;
+  }
+
+  function reorder(targetThreadId) {
+    if (!dragThreadId || dragThreadId === targetThreadId) return;
+    const ids = threads.map((thread) => thread.id);
+    const from = ids.indexOf(dragThreadId);
+    const to = ids.indexOf(targetThreadId);
+    if (from < 0 || to < 0) return;
+    const next = [...ids];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    onReorderThreads(next);
+  }
+
+  return (
+    <div className="thread-tab-bar">
+      <span className="thread-to-label">A:</span>
+      <button
+        className={activeThreadId ? "thread-project-tab" : "thread-project-tab active"}
+        type="button"
+        title={project.cwd}
+        onClick={() => onOpenProject(project.cwd)}
+      >
+        {project.name}
+      </button>
+      <div className="thread-tab-strip" aria-label="Fils Codex">
+        {threads.length ? threads.map((thread) => (
+          <div
+            className={dragThreadId === thread.id ? "thread-tab-wrap dragging" : "thread-tab-wrap"}
+            draggable
+            key={thread.id}
+            onDragStart={(event) => {
+              setDragThreadId(thread.id);
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", thread.id);
+            }}
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              reorder(thread.id);
+              setDragThreadId("");
+            }}
+            onDragEnd={() => setDragThreadId("")}
+          >
+            <button
+              className={activeThreadId === thread.id ? "thread-tab active" : "thread-tab"}
+              type="button"
+              title={thread.preview}
+              onClick={() => onOpenThread(thread.id)}
+            >
+              <span>{thread.preview}</span>
+            </button>
+            <button
+              className="thread-tab-close"
+              type="button"
+              title="Supprimer ce fil"
+              aria-label={`Supprimer ${thread.preview}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDeleteThread(thread);
+              }}
+            >
+              x
+            </button>
+          </div>
+        )) : <span className="thread-tab-empty">Nouveau fil au premier message</span>}
+      </div>
+    </div>
+  );
+}
+
 function ActivitiesPanel({ onRun, onSendWink, onAskWink, onPreviewSound }) {
   return (
     <div className="activities-panel">
@@ -1371,6 +1450,7 @@ function ChatWindow({ bootstrap }) {
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
   const [wizzing, setWizzing] = useState(false);
+  const [conversations, setConversations] = useState(bootstrap.conversations);
   const [openFlyout, setOpenFlyout] = useState("");
   const [activeGame, setActiveGame] = useState("morpion");
   const [cameraStream, setCameraStream] = useState(null);
@@ -1382,6 +1462,12 @@ function ChatWindow({ bootstrap }) {
   const recorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const flyoutRef = useRef(null);
+  const activeThreadId = contact.threadId ?? "";
+  const currentProject = useMemo(() => {
+    const projects = conversations?.projects ?? [];
+    if (contact.cwd) return projects.find((project) => project.cwd === contact.cwd) ?? null;
+    return null;
+  }, [contact.cwd, conversations]);
 
   useEffect(() => {
     const markRead = () => {
@@ -1394,6 +1480,10 @@ function ChatWindow({ bootstrap }) {
       window.removeEventListener("focus", markRead);
       document.removeEventListener("visibilitychange", markRead);
     };
+  }, [contact.id]);
+
+  useEffect(() => {
+    api.listConversations().then(setConversations).catch(() => {});
   }, [contact.id]);
 
   useEffect(() => {
@@ -1658,6 +1748,37 @@ function ChatWindow({ bootstrap }) {
     }
   }
 
+  async function openThreadTab(threadId) {
+    if (!threadId || threadId === activeThreadId) return;
+    await api.switchThread(threadId);
+  }
+
+  async function openProjectTab(cwd) {
+    if (!cwd || (!activeThreadId && contact.cwd === cwd)) return;
+    await api.switchProject(cwd);
+  }
+
+  async function reorderThreadTabs(threadIds) {
+    if (!currentProject) return;
+    const result = await api.reorderThreads({ cwd: currentProject.cwd, threadIds });
+    if (result?.conversations) setConversations(result.conversations);
+  }
+
+  async function deleteThreadTab(thread) {
+    if (!thread?.id || !currentProject) return;
+    const ok = window.confirm(`Supprimer ce fil de Codex Messenger ?\n\n${thread.preview}`);
+    if (!ok) return;
+    const result = await api.deleteThread(thread.id);
+    const nextConversations = result?.conversations ?? conversations;
+    setConversations(nextConversations);
+    if (activeThreadId === thread.id) {
+      const nextProject = nextConversations?.projects?.find((project) => project.cwd === currentProject.cwd);
+      const nextThread = nextProject?.threads?.find((item) => item.id !== thread.id);
+      if (nextThread) await api.switchThread(nextThread.id);
+      else await api.switchProject(currentProject.cwd);
+    }
+  }
+
   const chatMenus = [
     {
       label: "File",
@@ -1782,7 +1903,15 @@ function ChatWindow({ bootstrap }) {
       </div>
       <section className="chat-body">
         <div className="chat-main">
-          <div className="to-line">A: {contact.name}</div>
+          <ThreadTabs
+            project={currentProject}
+            contact={contact}
+            activeThreadId={activeThreadId}
+            onOpenProject={openProjectTab}
+            onOpenThread={openThreadTab}
+            onDeleteThread={deleteThreadTab}
+            onReorderThreads={reorderThreadTabs}
+          />
           <div className="transcript" ref={scrollRef}>
             {messages.map((message) => <Message key={message.id} message={message} />)}
             {typing ? <div className="typing"><i /><i /><i />{contact.name} ecrit...</div> : null}
