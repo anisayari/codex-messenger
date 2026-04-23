@@ -1,0 +1,5 @@
+Contact: https://github.com/anisayari/codex-messenger/issues
+Expires: 2027-04-23T00:00:00Z
+Preferred-Languages: fr, en
+Canonical: https://codexmessenger.net/.well-known/security.txt
+Policy: https://github.com/anisayari/codex-messenger/security/policy
