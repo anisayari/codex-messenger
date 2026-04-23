@@ -23,11 +23,48 @@
     }
 
     .site {
+      position: relative;
       width: min(100vw, calc(100svh * 1672 / 941));
       max-width: 1672px;
       aspect-ratio: 1672 / 941;
+      overflow: hidden;
       background: #fff;
       box-shadow: 0 0 0 2px #0d2dbb, 0 9px 26px rgba(0, 31, 130, .22);
+    }
+
+    .desktop-screenshots {
+      position: absolute;
+      top: 62.2%;
+      right: 24px;
+      z-index: 3;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 7px;
+      border: 2px solid #79a4d8;
+      border-radius: 7px;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(255, 255, 255, .94), rgba(255, 255, 255, 0) 36%),
+        linear-gradient(#fafdff, #e9f4ff);
+      box-shadow: 0 5px 10px rgba(0, 35, 120, .22), inset 0 1px 0 rgba(255, 255, 255, .94);
+      transform: rotate(-1deg);
+    }
+
+    .desktop-screenshots img {
+      display: block;
+      width: 196px;
+      height: 78px;
+      object-fit: cover;
+      object-position: top left;
+      border: 1px solid #aac3e2;
+      border-radius: 4px;
+      background: #eaf4ff;
+      box-shadow: 0 2px 3px rgba(12, 38, 83, .18);
+    }
+
+    .desktop-screenshots .roster-shot {
+      width: 48px;
+      object-position: top center;
     }
 
     svg {
@@ -417,6 +454,34 @@
 
       .mobile-features li::marker {
         color: #ffd321;
+      }
+
+      .mobile-screenshots {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 108px;
+        gap: 8px;
+        align-items: start;
+        margin: 0 16px 14px;
+        padding: 9px;
+        border: 2px solid #79a4d8;
+        border-radius: 7px;
+        background: linear-gradient(#fafdff, #e9f4ff);
+        box-shadow: 0 2px 5px rgba(0, 35, 120, .16), inset 0 1px 0 rgba(255, 255, 255, .94);
+      }
+
+      .mobile-screenshots img {
+        display: block;
+        width: 100%;
+        height: 96px;
+        object-fit: cover;
+        object-position: top left;
+        border: 1px solid #aac3e2;
+        border-radius: 5px;
+        background: #eaf4ff;
+      }
+
+      .mobile-screenshots .roster-shot {
+        object-position: top center;
       }
 
       .mobile-source {
@@ -867,6 +932,10 @@
         <text id="feedbackText" class="feedback-text" x="772" y="640" text-anchor="middle" fill="#001ea8" font-size="18" font-weight="900" font-style="italic">Ready</text>
       </g>
     </svg>
+    <div class="desktop-screenshots" aria-label="Codex Messenger interface previews">
+      <img src="./assets/screenshots/conversation-demo.png" alt="Codex Messenger conversation window">
+      <img class="roster-shot" src="./assets/screenshots/roster-demo.png" alt="Codex Messenger contact list">
+    </div>
   </main>
   <main class="mobile-site" aria-label="Codex Messenger mobile landing page">
     <header class="mobile-top">
@@ -896,6 +965,11 @@
       <li id="mobileFeatureFour">Lightweight and blazing fast</li>
       <li id="mobileFeatureFive">Secure, modern and Open Source</li>
     </ul>
+
+    <section class="mobile-screenshots" aria-label="Interface previews">
+      <img src="./assets/screenshots/conversation-demo.png" alt="Codex Messenger conversation window">
+      <img class="roster-shot" src="./assets/screenshots/roster-demo.png" alt="Codex Messenger contact list">
+    </section>
 
     <a class="mobile-source pressable-ui" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" data-action="source" data-feedback="Opening source code...">
       <img class="mobile-source-icon" src="./assets/icons/open-source.svg" alt="" aria-hidden="true">

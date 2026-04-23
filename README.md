@@ -10,6 +10,13 @@ Codex Messenger is currently supported on Windows only. French is the default la
 
 Important: Codex Messenger is only a local front-end client for `codex app-server`. It is not Codex itself, does not own your Codex conversations, and should not be treated as a backup or storage layer for Codex data. Use it at your own risk.
 
+## Interface Preview
+
+<p>
+  <img src="public/screenshots/conversation-demo.png" width="420" alt="Codex Messenger conversation window">
+  <img src="public/screenshots/roster-demo.png" width="210" alt="Codex Messenger contact list and demo mode">
+</p>
+
 ## Quick Install
 
 ### Option 1: Windows installer
