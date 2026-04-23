@@ -4,7 +4,7 @@
 
 Codex Messenger est une application desktop Electron inspirée de MSN Messenger 7. Elle sert de wrapper local pour Codex: chaque agent, projet ou fil Codex devient une conversation, avec fenêtre de chat, sons MSN, Wizz, envoi d'images/fichiers, caméra, messages vocaux et mini-jeux pendant que Codex travaille.
 
-L'application est pensée d'abord pour Windows. Le français est la langue par défaut; l'anglais est disponible depuis l'écran de connexion.
+Pour l'instant, Codex Messenger est uniquement supporté sur Windows. Le français est la langue par défaut; l'anglais est disponible depuis l'écran de connexion.
 
 ## Installation Rapide
 
