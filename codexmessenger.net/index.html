@@ -18,19 +18,26 @@
     body {
       min-height: 100svh;
       display: grid;
-      place-items: start;
+      place-items: center;
+      overflow-x: hidden;
     }
 
     .site {
-      width: 100vw;
+      width: min(100vw, calc(100svh * 1672 / 941));
+      max-width: 1672px;
+      aspect-ratio: 1672 / 941;
       background: #fff;
       box-shadow: 0 0 0 2px #0d2dbb, 0 9px 26px rgba(0, 31, 130, .22);
     }
 
     svg {
       width: 100%;
-      height: 56.2799vw;
+      height: 100%;
       display: block;
+    }
+
+    .mobile-site {
+      display: none;
     }
 
     text {
@@ -140,6 +147,265 @@
       .gloss-pass,
       .feedback-ripple.is-on {
         animation: none;
+      }
+    }
+
+    @media (max-width: 760px), (max-aspect-ratio: 3 / 4) {
+      body {
+        display: block;
+        min-height: 100%;
+        overflow-x: hidden;
+        background:
+          repeating-linear-gradient(0deg, rgba(8, 55, 150, .06), rgba(8, 55, 150, .06) 1px, transparent 1px, transparent 5px),
+          #fff;
+      }
+
+      .site {
+        display: none;
+      }
+
+      .mobile-site {
+        width: 100%;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        background:
+          url("./assets/codex-messenger-people.png") center 86px / min(78vw, 300px) auto no-repeat,
+          repeating-linear-gradient(0deg, rgba(8, 55, 150, .06), rgba(8, 55, 150, .06) 1px, transparent 1px, transparent 5px),
+          #fff;
+        box-shadow: 0 0 0 2px #0d2dbb inset;
+        font-style: italic;
+      }
+
+      .mobile-top {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        padding: 8px 12px;
+        color: #fff;
+        background: linear-gradient(#2a5dff, #001ea8 54%, #000b69);
+        box-shadow: 0 5px 0 #000548, 0 2px 0 rgba(255, 255, 255, .45) inset;
+      }
+
+      .mobile-brand {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-width: 0;
+        font-size: clamp(18px, 5.4vw, 24px);
+        font-weight: 900;
+        text-shadow: 1px 2px 0 #00127d;
+        white-space: nowrap;
+      }
+
+      .mobile-brand span:last-child {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .mobile-buddies {
+        width: 42px;
+        height: 34px;
+        flex: 0 0 auto;
+        background:
+          radial-gradient(circle at 62% 22%, #c9f8ff 0 16%, #55bdf6 17% 38%, transparent 39%),
+          radial-gradient(circle at 36% 28%, #b4f28f 0 14%, #55c62c 15% 34%, transparent 35%),
+          radial-gradient(ellipse at 67% 78%, #55bdf6 0 32%, transparent 33%),
+          radial-gradient(ellipse at 35% 82%, #55c62c 0 27%, transparent 28%);
+        filter: drop-shadow(0 2px 1px rgba(0, 20, 120, .45));
+      }
+
+      .mobile-lang {
+        display: flex;
+        gap: 6px;
+      }
+
+      .mobile-lang a {
+        min-width: 36px;
+        padding: 7px 7px;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 900;
+        border: 1px solid rgba(255, 255, 255, .45);
+        border-radius: 4px;
+        background: linear-gradient(#2e73ff, #0735d8 52%, #00177c);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset;
+      }
+
+      .mobile-lang a:last-child {
+        background: linear-gradient(#ff766a, #e71616 52%, #a90000);
+      }
+
+      .mobile-hero {
+        padding: clamp(320px, 88vw, 390px) 20px 18px;
+        overflow: hidden;
+      }
+
+      .mobile-logo {
+        margin: 0;
+        color: #0637c9;
+        font-family: "Arial Black", Arial, sans-serif;
+        font-size: clamp(38px, 12vw, 62px);
+        line-height: .8;
+        letter-spacing: 0;
+        text-shadow: 2px 4px 0 rgba(0, 18, 83, .42);
+      }
+
+      .mobile-logo span {
+        display: block;
+      }
+
+      .mobile-rule {
+        width: 100%;
+        height: 5px;
+        margin: 18px 0 18px;
+        background: linear-gradient(#a8caff, #0e43d6 45%, #a8caff);
+      }
+
+      .mobile-equation {
+        margin: 0 0 14px;
+        color: #111;
+        font-size: 21px;
+        font-weight: 900;
+        line-height: 1.18;
+      }
+
+      .mobile-equation b:first-child {
+        color: #0734d1;
+      }
+
+      .mobile-equation b:nth-child(2) {
+        color: #098b12;
+      }
+
+      .mobile-equation b:last-child {
+        color: #7d24bf;
+      }
+
+      .mobile-copy {
+        margin: 0 0 8px;
+        color: #e31cc8;
+        font-size: 24px;
+        font-weight: 900;
+        line-height: 1.15;
+      }
+
+      .mobile-ai {
+        margin: 0;
+        color: #0d2ad1;
+        font-size: 16px;
+        font-weight: 900;
+        line-height: 1.25;
+      }
+
+      .mobile-download {
+        width: min(86vw, 430px);
+        min-height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        margin: 20px auto 7px;
+        color: #1e26de;
+        text-decoration: none;
+        font-family: "Arial Black", Arial, sans-serif;
+        font-size: clamp(30px, 9vw, 48px);
+        font-weight: 900;
+        border: 3px solid #a87400;
+        border-radius: 10px;
+        background: linear-gradient(#fff986, #ffe318 50%, #f2aa00);
+        box-shadow: 0 4px 8px rgba(143, 101, 0, .55), 0 14px 0 rgba(255, 255, 255, .38) inset;
+        text-shadow: 1px 1px 0 #b9a5ff;
+      }
+
+      .mobile-download:active,
+      .mobile-source:active,
+      .mobile-socials a:active,
+      .mobile-lang a:active {
+        transform: translateY(3px);
+        filter: brightness(.94) saturate(1.12);
+      }
+
+      .mobile-download::before,
+      .mobile-download::after {
+        content: "";
+        width: 28px;
+        height: 40px;
+        background: linear-gradient(#78ff43, #19d414 42%, #079500);
+        clip-path: polygon(30% 0, 70% 0, 70% 48%, 100% 48%, 50% 100%, 0 48%, 30% 48%);
+        -webkit-text-stroke: 0;
+        filter: drop-shadow(0 1px 0 #0d7e04);
+      }
+
+      .mobile-download-note {
+        margin: 0 0 14px;
+        color: #0861ff;
+        text-align: center;
+        font-size: 19px;
+      }
+
+      .mobile-features {
+        margin: 0;
+        padding: 0 24px 18px 46px;
+        color: #111;
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .mobile-features li::marker {
+        color: #ffd321;
+      }
+
+      .mobile-source {
+        margin: 0 16px 14px;
+        padding: 14px 16px;
+        color: #111;
+        text-decoration: none;
+        border: 2px solid #4f8a59;
+        border-radius: 7px;
+        background: linear-gradient(#fbfff7, #eef7e6);
+        box-shadow: 0 2px 3px rgba(80, 130, 80, .25);
+      }
+
+      .mobile-source strong {
+        display: block;
+        color: #0a8614;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .mobile-socials {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: 0 16px 14px;
+      }
+
+      .mobile-socials a {
+        min-height: 44px;
+        display: grid;
+        place-items: center;
+        color: #071fd0;
+        font-weight: 900;
+        text-decoration: underline;
+        border: 1px solid #95b2d8;
+        border-radius: 5px;
+        background: linear-gradient(#fbfdff, #edf6ff);
+      }
+
+      .mobile-footer {
+        margin-top: auto;
+        padding: 16px;
+        color: #fff;
+        text-align: center;
+        background: linear-gradient(#123fe1, #001574 70%, #000a4f);
+        box-shadow: 0 2px 0 rgba(255, 255, 255, .16) inset;
+        font-size: 14px;
       }
     }
   </style>
@@ -482,6 +748,52 @@
         <text id="feedbackText" class="feedback-text" x="772" y="640" text-anchor="middle" fill="#001ea8" font-size="18" font-weight="900" font-style="italic">Ready</text>
       </g>
     </svg>
+  </main>
+  <main class="mobile-site" aria-label="Codex Messenger mobile landing page">
+    <header class="mobile-top">
+      <div class="mobile-brand"><span class="mobile-buddies" aria-hidden="true"></span><span>codex messenger</span></div>
+      <nav class="mobile-lang" aria-label="Language">
+        <a href="?lang=en">EN</a>
+        <a href="?lang=fr">FR</a>
+      </nav>
+    </header>
+
+    <section class="mobile-hero">
+      <h1 class="mobile-logo"><span>codex</span><span>messenger</span></h1>
+      <div class="mobile-rule" aria-hidden="true"></div>
+      <p class="mobile-equation"><b>Codex</b> + <b>MSN Messenger</b> = <b>Codex Messenger !</b></p>
+      <p class="mobile-copy">All Codex functionality...<br>but with your childhood memories !</p>
+      <p class="mobile-ai">you have lost your old friends, but now you can talk with your AI friends !</p>
+    </section>
+
+    <a class="mobile-download" href="./downloads/CodexMessenger.exe?v=0.1.4" download="CodexMessenger.exe">DOWNLOAD</a>
+    <p class="mobile-download-note">Get Codex Messenger Now !</p>
+
+    <ul class="mobile-features">
+      <li>Classic look &amp; feel from the 2000s</li>
+      <li>Private messaging like MSN</li>
+      <li>Emoticons, winks and more!</li>
+      <li>Lightweight and blazing fast</li>
+      <li>Secure, modern and Open Source</li>
+    </ul>
+
+    <a class="mobile-source" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer">
+      <strong>Open Source Project</strong>
+      Codex Messenger is 100% Open Source. View Source on GitHub.
+    </a>
+
+    <nav class="mobile-socials" aria-label="Social links">
+      <a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
+      <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YouTube</a>
+      <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+    </nav>
+
+    <footer class="mobile-footer">
+      &copy; 2000-2025 Codex Messenger Project. All rights reserved.<br>
+      Bringing back the vibes. Powered by Codex.
+    </footer>
   </main>
 </body>
 </html>
