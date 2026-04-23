@@ -385,6 +385,9 @@
       }
 
       .mobile-source {
+        display: flex;
+        align-items: center;
+        gap: 14px;
         margin: 0 16px 14px;
         padding: 14px 16px;
         color: #111;
@@ -405,6 +408,13 @@
           1px 2px 0 rgba(0, 95, 10, .25);
       }
 
+      .mobile-source-icon {
+        width: 56px;
+        height: 56px;
+        flex: 0 0 auto;
+        filter: drop-shadow(0 2px 1px rgba(0, 80, 10, .25));
+      }
+
       .mobile-socials {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -414,14 +424,23 @@
 
       .mobile-socials a {
         min-height: 44px;
-        display: grid;
-        place-items: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
         color: #071fd0;
         font-weight: 900;
         text-decoration: underline;
         border: 1px solid #95b2d8;
         border-radius: 5px;
         background: linear-gradient(#fbfdff, #edf6ff);
+      }
+
+      .mobile-socials img {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 auto;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .2));
       }
 
       .mobile-footer {
@@ -714,13 +733,8 @@
         <rect x="3" y="3" width="736" height="20" rx="6" fill="#fff" opacity=".42"/>
         <line x1="193" y1="0" x2="193" y2="148" stroke="#c7d6c1"/>
         <line x1="593" y1="0" x2="593" y2="148" stroke="#c7d6c1"/>
-        <g transform="translate(40 26)">
-          <circle cx="47" cy="45" r="42" fill="url(#openGreen)" stroke="#0d6617" stroke-width="2"/>
-          <circle cx="47" cy="45" r="13" fill="#fff"/>
-          <path d="M42 60 H53 L59 96 H36 Z" fill="#fff"/>
-          <text x="-6" y="104" font-family="Arial" font-size="27" fill="#111" filter="url(#copyTextRelief)"><tspan font-size="34">open</tspan> source</text>
-          <text x="124" y="74" font-size="12" fill="#0d6617">TM</text>
-        </g>
+        <image href="./assets/icons/open-source.svg" x="61" y="23" width="68" height="68" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
+        <text x="42" y="124" font-family="Arial" font-size="24" fill="#111" filter="url(#copyTextRelief)"><tspan font-size="30">open</tspan> source</text>
         <text x="251" y="48" fill="#0a8614" font-size="29" font-weight="900" font-style="italic" filter="url(#greenTextRelief)">Open Source Project</text>
         <text x="251" y="80" font-size="19" font-style="italic" filter="url(#copyTextRelief)">Codex Messenger is 100% Open Source.</text>
         <text x="251" y="106" font-size="19" font-style="italic" filter="url(#copyTextRelief)">Check out the code, contribute and</text>
@@ -728,7 +742,7 @@
         <a class="source-link pressable" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" data-action="source" data-feedback="Opening source code..." aria-label="View source code on GitHub">
           <rect class="focus-ring" x="593" y="0" width="149" height="148"/>
           <rect class="source-panel" x="593" y="0" width="149" height="148" fill="#f4faee"/>
-          <use href="#sourceDoc" x="617" y="43"/>
+          <image href="./assets/icons/github.svg" x="617" y="43" width="54" height="54" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
           <text x="670" y="70" fill="#071fd0" font-size="17" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">View Source</text>
           <text x="670" y="96" fill="#071fd0" font-size="17" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">on GitHub</text>
         </a>
@@ -745,41 +759,31 @@
 
         <a class="social-link pressable" href="https://x.com/DFintelligence" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening X..." aria-label="X Twitter">
           <rect class="social-hit" x="0" y="54" width="147" height="111" fill="#fff" fill-opacity="0"/>
-          <rect x="42" y="73" width="50" height="50" rx="6" fill="#000" filter="url(#iconShadow)"/>
-          <text x="67" y="111" text-anchor="middle" fill="#fff" font-size="38">X</text>
+          <image href="./assets/icons/x.svg" x="42" y="73" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
           <text x="67" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">X (Twitter)</text>
         </a>
 
         <a class="social-link pressable" href="https://www.linkedin.com/in/anis-ayari/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening LinkedIn..." aria-label="LinkedIn">
           <rect class="social-hit" x="147" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
-          <rect x="196" y="74" width="49" height="49" rx="5" fill="#0a76b7" filter="url(#iconShadow)"/>
-          <text x="221" y="110" text-anchor="middle" fill="#fff" font-family="Arial" font-size="34" font-weight="800">in</text>
+          <image href="./assets/icons/linkedin.svg" x="196" y="74" width="49" height="49" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
           <text x="221" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">LinkedIn</text>
         </a>
 
         <a class="social-link pressable" href="https://github.com/anisayari" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening GitHub..." aria-label="GitHub">
           <rect class="social-hit" x="303" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
-          <rect x="351" y="74" width="50" height="50" rx="6" fill="#111" filter="url(#iconShadow)"/>
-          <circle cx="376" cy="98" r="14" fill="#fff"/>
-          <rect x="363" y="97" width="26" height="19" rx="7" fill="#fff"/>
-          <circle cx="368" cy="93" r="5" fill="#111"/>
-          <circle cx="384" cy="93" r="5" fill="#111"/>
-          <path d="M363 82 L366 72 L372 82 M389 82 L386 72 L380 82" fill="#fff"/>
+          <image href="./assets/icons/github.svg" x="351" y="74" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
           <text x="376" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">GitHub</text>
         </a>
 
         <a class="social-link pressable" href="https://www.youtube.com/@DefendIntelligence" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening YouTube..." aria-label="YouTube">
           <rect class="social-hit" x="459" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
-          <rect x="507" y="78" width="60" height="42" rx="9" fill="#fb1111" filter="url(#iconShadow)"/>
-          <path d="M531 88 L531 111 L550 100 Z" fill="#fff"/>
+          <image href="./assets/icons/youtube.svg" x="507" y="70" width="60" height="60" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
           <text x="537" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">YouTube</text>
         </a>
 
         <a class="social-link pressable" href="https://www.instagram.com/defend.intelligence/" target="_blank" rel="noopener noreferrer" data-action="social" data-feedback="Opening Instagram..." aria-label="Instagram">
           <rect class="social-hit" x="615" y="54" width="140" height="111" fill="#fff" fill-opacity="0"/>
-          <rect x="664" y="73" width="50" height="50" rx="12" fill="url(#igGrad)" filter="url(#iconShadow)"/>
-          <circle cx="689" cy="98" r="13" fill="none" stroke="#fff" stroke-width="4"/>
-          <circle cx="704" cy="83" r="4" fill="#fff"/>
+          <image href="./assets/icons/instagram.svg" x="664" y="73" width="50" height="50" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
           <text x="689" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">Instagram</text>
         </a>
       </g>
@@ -828,16 +832,19 @@
     </ul>
 
     <a class="mobile-source" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer">
-      <strong>Open Source Project</strong>
-      Codex Messenger is 100% Open Source. View Source on GitHub.
+      <img class="mobile-source-icon" src="./assets/icons/open-source.svg" alt="" aria-hidden="true">
+      <span>
+        <strong>Open Source Project</strong>
+        Codex Messenger is 100% Open Source. View Source on GitHub.
+      </span>
     </a>
 
     <nav class="mobile-socials" aria-label="Social links">
-      <a href="https://x.com/DFintelligence" target="_blank" rel="noopener noreferrer">X</a>
-      <a href="https://www.linkedin.com/in/anis-ayari/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a href="https://github.com/anisayari" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://www.youtube.com/@DefendIntelligence" target="_blank" rel="noopener noreferrer">YouTube</a>
-      <a href="https://www.instagram.com/defend.intelligence/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <a href="https://x.com/DFintelligence" target="_blank" rel="noopener noreferrer"><img src="./assets/icons/x.svg" alt="" aria-hidden="true"><span>X</span></a>
+      <a href="https://www.linkedin.com/in/anis-ayari/" target="_blank" rel="noopener noreferrer"><img src="./assets/icons/linkedin.svg" alt="" aria-hidden="true"><span>LinkedIn</span></a>
+      <a href="https://github.com/anisayari" target="_blank" rel="noopener noreferrer"><img src="./assets/icons/github.svg" alt="" aria-hidden="true"><span>GitHub</span></a>
+      <a href="https://www.youtube.com/@DefendIntelligence" target="_blank" rel="noopener noreferrer"><img src="./assets/icons/youtube.svg" alt="" aria-hidden="true"><span>YouTube</span></a>
+      <a href="https://www.instagram.com/defend.intelligence/" target="_blank" rel="noopener noreferrer"><img src="./assets/icons/instagram.svg" alt="" aria-hidden="true"><span>Instagram</span></a>
     </nav>
 
     <footer class="mobile-footer">
