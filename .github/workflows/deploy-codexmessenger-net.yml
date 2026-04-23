@@ -141,13 +141,25 @@ jobs:
 
           tag = os.environ["RELEASE_TAG"]
           safe_tag = re.sub(r"[^0-9A-Za-z._-]", "-", tag)
+          windows_digest = os.environ.get("WINDOWS_RELEASE_ASSET_DIGEST", "")
+          mac_digest = os.environ.get("MAC_RELEASE_ASSET_DIGEST", "")
+          windows_sha = windows_digest.removeprefix("sha256:") if windows_digest.startswith("sha256:") else ""
+          mac_sha = mac_digest.removeprefix("sha256:") if mac_digest.startswith("sha256:") else ""
+          windows_name = f"CodexMessenger-{windows_sha[:8]}.exe" if windows_sha else "CodexMessenger.exe"
+          mac_name = f"CodexMessenger-mac-arm64-{mac_sha[:8]}.dmg" if mac_sha else "CodexMessenger-mac-arm64.dmg"
           index_path = Path(os.environ["SITE_DIR"]) / "index.html"
           html = index_path.read_text(encoding="utf-8")
-          html, count = re.subn(
-              r"(\./downloads/(?:CodexMessenger\.exe|CodexMessenger-mac-arm64\.dmg)\?v=)[^\"]+",
-              rf"\g<1>{safe_tag}",
+          html = re.sub(
+              r"\./downloads/CodexMessenger\.exe\?v=[^\"]+",
+              f"./downloads/{windows_name}?v={safe_tag}",
               html,
           )
+          html = re.sub(
+              r"\./downloads/CodexMessenger-mac-arm64\.dmg\?v=[^\"]+",
+              f"./downloads/{mac_name}?v={safe_tag}",
+              html,
+          )
+          count = html.count(f"./downloads/{windows_name}?v={safe_tag}") + html.count(f"./downloads/{mac_name}?v={safe_tag}")
           if count < 2:
               raise SystemExit("download link cache-buster not found in index.html")
           index_path.write_text(html, encoding="utf-8")
@@ -220,6 +232,10 @@ jobs:
             curl -fL --retry 5 --retry-delay 3 --connect-timeout 20 '$MAC_RELEASE_ASSET_URL' -o '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg'
             windows_sha=\$(sha256sum '$remote_tmp/downloads/CodexMessenger.exe' | cut -d ' ' -f1)
             mac_sha=\$(sha256sum '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg' | cut -d ' ' -f1)
+            windows_hashed_name=\"CodexMessenger-\${windows_sha:0:8}.exe\"
+            mac_hashed_name=\"CodexMessenger-mac-arm64-\${mac_sha:0:8}.dmg\"
+            cp '$remote_tmp/downloads/CodexMessenger.exe' \"'$remote_tmp/downloads/'\$windows_hashed_name\"
+            cp '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg' \"'$remote_tmp/downloads/'\$mac_hashed_name\"
             printf '%s  CodexMessenger.exe\n' \"\$windows_sha\" > '$remote_tmp/downloads/CodexMessenger.exe.sha256'
             printf '%s  CodexMessenger-mac-arm64.dmg\n' \"\$mac_sha\" > '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg.sha256'
             if [ -n '$expected_windows_sha' ] && [ \"\$windows_sha\" != '$expected_windows_sha' ]; then
