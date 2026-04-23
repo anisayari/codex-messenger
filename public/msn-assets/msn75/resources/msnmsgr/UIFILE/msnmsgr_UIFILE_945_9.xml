@@ -1,0 +1,419 @@
+<style resid=wpdropdownss>
+element
+{
+fontface:ifhc(sysmetricstr(2),rcstr(2016));
+fontsize:ifhc(sysmetric(-4),rcint(2015)pt);
+fontweight:ifhc(sysmetric(-5),Normal);
+fontstyle:ifhc(sysmetric(-6),None);
+background:argb(0,0,0,0);
+bordercolor:ifhc(menu,window);
+foreground:ifhc(menutext,black);
+borderthickness:rect(0,0,0,0);
+}
+element[class="MenuSeparator"]
+{
+borderthickness:rect(0,0,0,0);
+background:ifhc(menutext,rgb(222,222,222));
+height:1;
+padding:rect(1,0,1,0);
+colorize:enabled;
+}
+element[class="WallpaperSeparator"]
+{
+borderthickness:rect(0,0,0,1);
+bordercolor:ifhc(menutext,rgb(222,222,222));
+height:5;
+layoutpos:bottom;
+}
+menubutton[class="MenuItem"]
+{
+background:argb(0,0,0,0);
+foreground:ifhc(menutext,black);
+borderthickness:rect(0,0,0,0);
+padding:rect(17,3,17,4);
+Accessible:true;
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+menubutton[class="MenuItem"][enabled=false]
+{
+foreground:graytext;
+}
+menubutton[class="MenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+foreground:ifhc(highlighttext,black);
+borderthickness:rect(1,1,1,1);
+padding:rect(16,2,16,3);
+}
+element[class="MenuItem"]
+{
+background:argb(0,0,0,0);
+foreground:ifhc(menutext,black);
+}
+element[class="MenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+foreground:ifhc(highlighttext,black);
+}
+menubutton[class="EmoticonMenuItem"]
+{
+background:ifhc(menu,window);
+foreground:ifhc(menutext,windowtext);
+borderthickness:rect(0,0,0,0);
+padding:rect(5,3,5,4);
+Accessible:true;
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+menubutton[class="EmoticonMenuItem"][enabled=false]
+{
+foreground:graytext;
+}
+menubutton[class="EmoticonMenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+foreground:ifhc(highlighttext,windowtext);
+borderthickness:rect(1,1,1,1);
+padding:rect(4,2,4,3);
+}
+png[class="EmoticonImage"]
+{
+padding:rect(0,0,0,0);
+}
+png
+{
+padding:rect(-8,-2,16,-3);
+}
+menubutton[class="MenuItemInkColor"]
+{
+background:argb(0,0,0,0);
+padding:rect(3,3,3,3);
+borderthickness:rect(0,0,0,0);
+Accessible:true;
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+menubutton[class="MenuItemInkColor"][keyfocused]
+{
+borderthickness:rect(1,1,1,1);
+padding:rect(2,2,2,2);
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+background:ifhc(highlight,argb(48,49,106,197));
+}
+element[class="ColorSwatch"]
+{
+padding:rect(0,0,0,0);
+bordercolor:threedshadow;
+height:20;
+width:20;
+borderthickness:rect(1,1,1,1);
+tooltip:true;
+}
+element[class="ColorizerSwatch"]
+{
+padding:rect(0,0,0,0);
+bordercolor:black;
+height:20;
+width:20;
+borderthickness:rect(1,1,1,1);
+tooltip:true;
+}
+element[id=atom(wpdropdown)]
+{
+bordercolor:graytext;
+borderthickness:rect(1,1,1,1);
+padding:rect(1,1,1,1);
+}
+wallpaperview
+{
+background:window;
+bordercolor:window;
+borderthickness:rect(1,1,1,1);
+padding:rect(0,0,0,0);
+width:82;
+height:62;
+layoutpos:client;
+Accessible:true;
+AccName:rcstr(44058);
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+wallpaperview[keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+}
+element[class="WallpaperFrame"]
+{
+padding:rect(4,4,4,4);
+}
+element[class="MenuNav"]
+{
+background:ifhc(menu,window);
+foreground:ifhc(menutext,windowtext);
+borderthickness:rect(0,0,0,0);
+padding:rect(17,2,17,2);
+contentalign:middlecenter;
+}
+cmdbutton[class="MenuNav"]
+{
+background:ifhc(menu,window);
+foreground:ifhc(menutext,windowtext);
+borderthickness:rect(0,0,0,0);
+padding:rect(1,1,1,1);
+fontsize:13;
+contentalign:middlecenter;
+Accessible:true;
+AccName:rcstr(44057);
+AccRole:43;
+AccDefAction:rcstr(60047);
+AccDesc:rcstr(44054);
+tooltip:true;
+buttonstyle:customborder|syncmousekeyfocus;
+}
+cmdbutton[class="MenuNav"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+foreground:ifhc(highlighttext,windowtext);
+}
+cmdbutton[class="MenuNav"][enabled=false]
+{
+foreground:graytext;
+}
+element[id=atom(defaultswatch)]
+{
+background:rgb(207,221,244);
+}
+cmdbutton[class="Link"]
+{
+foreground:argb(255,0,0,255);
+Accessible:true;
+AccRole:43;
+AccState:256;
+contentalign:wrapcenter;
+}
+cmdbutton[class="Link"][mousefocused]
+{
+fontstyle:rcint(2000);
+cursor:hand;
+}
+</style>
+<element resid=inkcolordropdown id=atom(inkcolordropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) layout=filllayout()>
+<element bordercolor=ifhc(menu,white) borderthickness=rect(2,2,2,2) layout=filllayout()>
+<element layout=gridlayout(4,4) padding=rect(6,6,6,6)>
+<menubutton cmdid=40650 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57001) AccDesc=rcstr(57001)>
+<element class="ColorSwatch" background=RGB(0,0,0)/>
+</menubutton>
+<menubutton cmdid=40651 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57003) AccDesc=rcstr(57003)>
+<element class="ColorSwatch" background=RGB(64,64,64)/>
+</menubutton>
+<menubutton cmdid=40652 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57002) AccDesc=rcstr(57002)>
+<element class="ColorSwatch" background=RGB(128,128,128)/>
+</menubutton>
+<menubutton cmdid=40653 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57004) AccDesc=rcstr(57004)>
+<element class="ColorSwatch" background=RGB(255,255,255)/>
+</menubutton>
+<menubutton cmdid=40654 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57005) AccDesc=rcstr(57005)>
+<element class="ColorSwatch" background=RGB(0,0,128)/>
+</menubutton>
+<menubutton cmdid=40660 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57006) AccDesc=rcstr(57006)>
+<element class="ColorSwatch" background=RGB(0,0,255)/>
+</menubutton>
+<menubutton cmdid=40662 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57007) AccDesc=rcstr(57007)>
+<element class="ColorSwatch" background=RGB(0,255,255)/>
+</menubutton>
+<menubutton cmdid=40656 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57008) AccDesc=rcstr(57008)>
+<element class="ColorSwatch" background=RGB(0,128,128)/>
+</menubutton>
+<menubutton cmdid=40657 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57009) AccDesc=rcstr(57009)>
+<element class="ColorSwatch" background=RGB(128,0,0)/>
+</menubutton>
+<menubutton cmdid=40663 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57010) AccDesc=rcstr(57010)>
+<element class="ColorSwatch" background=RGB(255,0,0)/>
+</menubutton>
+<menubutton cmdid=40664 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57011) AccDesc=rcstr(57011)>
+<element class="ColorSwatch" background=RGB(255,0,255)/>
+</menubutton>
+<menubutton cmdid=40658 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57012) AccDesc=rcstr(57012)>
+<element class="ColorSwatch" background=RGB(128,0,128)/>
+</menubutton>
+<menubutton cmdid=40655 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57013) AccDesc=rcstr(57013)>
+<element class="ColorSwatch" background=RGB(0,128,0)/>
+</menubutton>
+<menubutton cmdid=40661 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57014) AccDesc=rcstr(57014)>
+<element class="ColorSwatch" background=RGB(0,255,0)/>
+</menubutton>
+<menubutton cmdid=40659 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57015) AccDesc=rcstr(57015)>
+<element class="ColorSwatch" background=RGB(128,128,0)/>
+</menubutton>
+<menubutton cmdid=40665 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57016) AccDesc=rcstr(57016)>
+<element class="ColorSwatch" background=RGB(255,255,0)/>
+</menubutton>
+</element>
+</element>
+</element>
+<element resid=inkpensizedropdown id=atom(inkpensizedropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) padding=rect(1,1,1,1) layout=filllayout()>
+<element bordercolor=ifhc(menu,white) borderthickness=rect(2,2,2,2) layout=filllayout()>
+<element layout=verticalflowlayout(0,0,3,2) padding=rect(0,0,0,0) borderthickness=rect(0,0,0,0)>
+<menubutton cmdid=40620 id=atom(inkpenfinebtn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60007)>
+<png flip=false idres=1026/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60007)/>
+</menubutton>
+<menubutton cmdid=40621 id=atom(inkpennormbtn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60008)>
+<png flip=false idres=1027/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60008)/>
+</menubutton>
+<menubutton cmdid=40622 id=atom(inkpenboldbtn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60009)>
+<png flip=false idres=1028/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60009)/>
+</menubutton>
+</element>
+</element>
+</element>
+<element resid=inkerasersizedropdown id=atom(inkerasersizedropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) padding=rect(1,1,1,1) layout=filllayout()>
+<element layout=verticalflowlayout(0,0,3,2) padding=rect(0,0,0,0) borderthickness=rect(0,0,0,0)>
+<menubutton cmdid=40623 id=atom(inkeraserfinebtn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60010)>
+<png flip=false idres=1029/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60010)/>
+</menubutton>
+<menubutton cmdid=40624 id=atom(inkeraserboldbtn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60011)>
+<png flip=false idres=1030/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60011)/>
+</menubutton>
+<menubutton cmdid=40625 id=atom(inkeraserstrokebtn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60030)>
+<png flip=false idres=1031/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60030)/>
+</menubutton>
+<element height=1/>
+<element class="MenuSeparator"/>
+<element height=1/>
+<menubutton cmdid=40626 id=atom(inkeraserclearbtn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60031)>
+<png flip=false idres=1032/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60031)/>
+</menubutton>
+</element>
+</element>
+<element resid=inkbgnddropdown id=atom(inkbgnddropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) layout=filllayout()>
+<element bordercolor=ifhc(menu,white) borderthickness=rect(2,2,2,2) layout=filllayout()>
+<element layout=verticalflowlayout(0,0,3,2) padding=rect(0,0,0,0) borderthickness=rect(0,0,0,0)>
+<menubutton cmdid=40724 id=atom(inkbgndg3btn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60099) AccDesc=rcstr(60099)>
+<png flip=false idres=1080/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60099)/>
+</menubutton>
+<menubutton cmdid=40721 id=atom(inkbgndg1btn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60097) AccDesc=rcstr(60097)>
+<png flip=false idres=1078/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60097)/>
+</menubutton>
+<menubutton cmdid=40722 id=atom(inkbgndg2btn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60098) AccDesc=rcstr(60098)>
+<png flip=false idres=1079/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60098)/>
+</menubutton>
+<menubutton cmdid=40723 id=atom(inkbgndg3btn) class="MenuItem" layout=flowlayout(0,2,0,2) AccName=rcstr(60118) AccDesc=rcstr(60118)>
+<png flip=false idres=1100/>
+<element padding=rect(2,0,0,0) background=argb(0,0,0,0) content=rcstr(60118)/>
+</menubutton>
+</element>
+</element>
+</element>
+<element resid=colorizedropdown id=atom(colorizedropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) layout=filllayout() colorize=enabled>
+<element bordercolor=ifhc(menu,white) borderthickness=rect(2,2,2,2) layout=filllayout()>
+<element layout=verticalflowlayout(0,0,3,2) padding=rect(0,0,0,0) borderthickness=rect(0,0,0,0) background=argb(0,0,0,0)>
+<menubutton cmdid=35119 class="MenuItem" layout=borderlayout() AccName=rcstr(60080) AccDesc=rcstr(60081) ShortcutString=rcstr(60080)>
+<element layoutpos=left id=atom(defaultswatch) class="ColorizerSwatch" background=rccolor(5001)/>
+<element class="MenuItem" layoutpos=client content=rcstr(60080) padding=rect(8,0,0,0) contentalign=middlecenter background=argb(0,0,0,0)/>
+</menubutton>
+<element height=1/>
+<element class="MenuSeparator"/>
+<element height=1/>
+<element layout=flowlayout(0,2,2,2)>
+<element layout=gridlayout(4,4) padding=rect(6,6,6,6)>
+<menubutton cmdid=35116 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(60086) AccDesc=rcstr(60086)>
+<element class="ColorizerSwatch" background=rgb(207,221,244)/>
+</menubutton>
+<menubutton cmdid=35112 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57113) AccDesc=rcstr(57113)>
+<element class="ColorizerSwatch" background=RGB(41,141,194)/>
+</menubutton>
+<menubutton cmdid=35113 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57114) AccDesc=rcstr(57114)>
+<element class="ColorizerSwatch" background=RGB(17,131,147)/>
+</menubutton>
+<menubutton cmdid=35115 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57012) AccDesc=rcstr(57012)>
+<element class="ColorizerSwatch" background=RGB(79,55,187)/>
+</menubutton>
+<menubutton cmdid=35114 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57116) AccDesc=rcstr(57116)>
+<element class="ColorizerSwatch" background=RGB(164,28,164)/>
+</menubutton>
+<menubutton cmdid=35101 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57102) AccDesc=rcstr(57102)>
+<element class="ColorizerSwatch" background=RGB(109,55,123)/>
+</menubutton>
+<menubutton cmdid=35100 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57101) AccDesc=rcstr(57101)>
+<element class="ColorizerSwatch" background=RGB(0,0,1133)/>
+</menubutton>
+<menubutton cmdid=35108 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57109) AccDesc=rcstr(57109)>
+<element class="ColorizerSwatch" background=RGB(95,64,33)/>
+</menubutton>
+<menubutton cmdid=35109 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57110) AccDesc=rcstr(57110)>
+<element class="ColorizerSwatch" background=RGB(75,75,75)/>
+</menubutton>
+<menubutton cmdid=35110 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57111) AccDesc=rcstr(57111)>
+<element class="ColorizerSwatch" background=RGB(87,134,98)/>
+</menubutton>
+<menubutton cmdid=35111 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57112) AccDesc=rcstr(57112)>
+<element class="ColorizerSwatch" background=RGB(116,125,26)/>
+</menubutton>
+<menubutton cmdid=35107 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57108) AccDesc=rcstr(57108)>
+<element class="ColorizerSwatch" background=RGB(174,150,117)/>
+</menubutton>
+<menubutton cmdid=35103 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57104) AccDesc=rcstr(57104)>
+<element class="ColorizerSwatch" background=RGB(231,151,3)/>
+</menubutton>
+<menubutton cmdid=35104 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57105) AccDesc=rcstr(57105)>
+<element class="ColorizerSwatch" background=RGB(194,95,20)/>
+</menubutton>
+<menubutton cmdid=35105 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57106) AccDesc=rcstr(57106)>
+<element class="ColorizerSwatch" background=RGB(203,73,58)/>
+</menubutton>
+<menubutton cmdid=35106 class="MenuItemInkColor" layout=filllayout() AccName=rcstr(57107) AccDesc=rcstr(57107)>
+<element class="ColorizerSwatch" background=RGB(188,18,103)/>
+</menubutton>
+</element>
+</element>
+<menubutton cmdid=35117 class="MenuItem" contentalign=middlecenter content=rcstr(60082) AccName=rcstr(60082) AccDesc=rcstr(60083)/>
+<element height=1/>
+<element class="MenuSeparator"/>
+<element height=1/>
+<menubutton cmdid=35118 class="MenuItem" content=rcstr(60084) AccName=rcstr(60223) AccDesc=rcstr(60085)/>
+</element>
+</element>
+</element>
+<element resid=youvideodropdown id=atom(youvideodropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) padding=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) layout=filllayout()>
+<element bordercolor=ifhc(menu,white) borderthickness=rect(2,2,2,2) layout=filllayout()>
+<element layout=verticalflowlayout(0,0,3,2) padding=rect(0,0,0,0) borderthickness=rect(0,0,0,0)>
+<menubutton id=atom(youwebcammenuitem) cmdid=40316 class="MenuItem" contentalign=middleleft content=rcstr(2267) AccName=rcstr(2267)/>
+<menubutton id=atom(youvideocallmenuitem) cmdid=40298 class="MenuItem" contentalign=middleleft content=rcstr(2223) AccName=rcstr(2223)/>
+</element>
+</element>
+</element>
+<element resid=MeVideodropdown id=atom(MeVideodropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) padding=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) layout=filllayout()>
+<element bordercolor=ifhc(menu,white) borderthickness=rect(2,2,2,2) layout=filllayout()>
+<element layout=verticalflowlayout(0,0,3,2) padding=rect(0,0,0,0) borderthickness=rect(0,0,0,0)>
+<menubutton id=atom(webcammenuitem) cmdid=40297 class="MenuItem" contentalign=middleleft content=rcstr(2226) AccName=rcstr(2226)/>
+<menubutton id=atom(videocallmenuitem) cmdid=40298 class="MenuItem" contentalign=middleleft content=rcstr(2223) AccName=rcstr(2223)/>
+</element>
+</element>
+</element>
+<element resid=UsVideodropdown id=atom(UsVideodropdown) sheet=styleref(wpdropdownss) borderthickness=rect(1,1,1,1) padding=rect(1,1,1,1) bordercolor=ifhc(menutext,rgb(67,95,150)) background=ifhc(menu,ifhc(menu,rgb(238,243,250))) layout=filllayout()>
+<element bordercolor=ifhc(menu,white) borderthickness=rect(2,2,2,2) layout=filllayout()>
+<element layout=verticalflowlayout(0,0,3,2) padding=rect(0,0,0,0) borderthickness=rect(0,0,0,0)>
+<menubutton id=atom(UsStartWebcamMenuItem) cmdid=40297 class="MenuItem" contentalign=middleleft content=rcstr(2226) AccName=rcstr(2226)/>
+<menubutton id=atom(UsRequestWebcamMenuItem) cmdid=40316 class="MenuItem" contentalign=middleleft content=rcstr(2267) AccName=rcstr(2267)/>
+<menubutton id=atom(UsVideocallMenuItem) cmdid=40298 class="MenuItem" contentalign=middleleft content=rcstr(2223) AccName=rcstr(2223)/>
+</element>
+</element>
+</element>

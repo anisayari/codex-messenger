@@ -1,0 +1,9 @@
+<buddy resid=rosterbuddy id=atom(rosterbuddy) layout=borderlayout() active=mouseandkeyboard>
+<element layoutpos=left layout=verticalflowlayout(0,2,2,0)>
+<usertileview colorize=enabled layoutpos=left id=atom(rosterbuddytile) active=inactive/>
+</element>
+<element layoutpos=client padding=rect(3,0,0,0) layout=verticalflowlayout(0,0,3,2) active=inactive>
+<wledit id=atom(rosterbuddyname) padding=rect(0,0,0,0) maxvisiblelines=2 richeditstyle=RichText|HideSelection|DisableDrag|ReadOnly|WordWrap|MultiLine active=inactive/>
+<element id=atom(rosterbuddystate) padding=rect(0,0,0,0) active=inactive/>
+</element>
+</buddy>

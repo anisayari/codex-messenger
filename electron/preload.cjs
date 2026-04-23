@@ -8,6 +8,8 @@ const listeners = new Set([
   "codex:typing",
   "codex:status",
   "conversation:finished",
+  "conversation:notify",
+  "conversation:unread",
   "window:wizz"
 ]);
 
@@ -33,6 +35,7 @@ contextBridge.exposeInMainWorld("codexMsn", {
   openThread: (threadId) => ipcRenderer.invoke("conversation:open-thread", threadId),
   openProject: (cwd) => ipcRenderer.invoke("conversation:open-project", cwd),
   switchThread: (threadId) => ipcRenderer.invoke("conversation:switch-thread", threadId),
+  loadThread: (payload) => ipcRenderer.invoke("conversation:load-thread", payload),
   switchProject: (cwd) => ipcRenderer.invoke("conversation:switch-project", cwd),
   openProjectPicker: () => ipcRenderer.invoke("conversation:open-project-picker"),
   listConversations: () => ipcRenderer.invoke("conversation:list"),

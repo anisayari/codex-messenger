@@ -1,0 +1,70 @@
+    <html dir="%2">
+
+    <head>
+            <link href="%1/messenger.css" type="text/css" rel="stylesheet" />
+            <style>
+            %%s
+            </style>
+            <script language="javascript" src="%1/noinet.js"></script>
+    </head>
+
+    <body class="CTBody">
+
+    	<div class="CTTop">
+    		<table cellspacing="0" cellpadding="0" dir="ltr">
+    			<tr>
+    				<td height="50" valign="top" style="padding-top:8px;"><img src="%1/msn_logo.gif" /></td>
+    				<td height="30" valign="top" style="padding-top:20px;">
+                             	<span class="CTMsgr">%3</span>
+    				</td></tr>
+    			</table>		
+    			
+    	</div>
+    	<div class="CTHeader">
+    		<div class="CTMove20">
+    			<span class="bold">%4</span>
+    		</div>
+    	</div>
+    	<table cellpadding="0" cellspacing="0" class="CTTbl" width="100%%%%">
+    	<tr>
+    		<td width="20" bgcolor="white"><img src="%1/spacer.gif" width="20" /></td>
+    		<td width="100%%%%">
+    		
+    <div id="CheckingCxn" class="CTChk" style="display:none">
+    <br />
+    <div><img src="%1/signin_ani.gif" /></div><p/>
+    <span id="CheckingCxnTxt" class="bold">
+        %5
+    </span>
+    </div>
+
+    <div id="NoCxnFound" class="CTChk" style="display:none">
+    <span id="NoCxnTxt" style="display:block" class="bold">
+        %6
+    </span>
+    <p />      
+    <div id="NoCxnSubInfo" class="CTChk" style="display:none">
+          <span id="NoCxnAppsFoundTxt">
+            %7
+          </span>
+          <span id="NoCxnNoAppsFoundTxt">
+            %8
+          </span>          
+          <br />
+          <div id="AppsFound" style="display:none"></div>
+    </div>
+    </div>
+    <div class="CTChk">
+    <input type="button" id="btnFinish" style="display:none" class="ctbutton" onclick="Finish()" value="%9">
+    </div>
+          
+    	<div class="CTFooterSp"></div>
+    	</td>
+    </tr>
+    <tr><td colspan="2" height="1" style="padding-right:2px;"><img src="%1/pixel_lavendar.png" height="1" width="100%%%%" /></td></tr>	
+    </table>
+    <span class="CTFooter"></span>
+
+    </body>
+    </html>
+

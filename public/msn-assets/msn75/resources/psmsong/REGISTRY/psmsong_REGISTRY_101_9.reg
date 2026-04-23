@@ -1,0 +1,34 @@
+HKCR
+{
+	NoRemove CLSID
+	{
+		ForceRemove {0776F107-F5A6-404B-9A78-7027FA6EAADD} = s 'PSMSong Class'
+		{
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}
+HKEY_LOCAL_MACHINE
+{
+    NoRemove SOFTWARE
+    {
+        NoRemove Microsoft
+        {
+            NoRemove MediaPlayer
+            {
+                NoRemove UIPlugins
+                {
+                    ForceRemove {0776F107-F5A6-404B-9A78-7027FA6EAADD}
+                    {
+                        val FriendlyName = s 'res://psmsong.dll/RT_STRING/#102'
+                        val Description = s 'res://psmsong.dll/RT_STRING/#103'
+                        val Capabilities = d '1073741825'
+                    }
+                }
+            }
+        }
+    }
+}

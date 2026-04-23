@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://messenger.msn.com/messengercontent/1.0" version="1.0" type="wink" xmlns:wink="http://messenger.msn.com/winks/1.0" wink:version="1.0" contenttype="D">
+    <item type="animation" mimetype="application/x-shockwave-flash" file="silly_face.swf" wink:sizex="225" wink:sizey="400" />
+    <item type="thumbnail" mimetype="image/png" file="silly_face.png" />
+</package>

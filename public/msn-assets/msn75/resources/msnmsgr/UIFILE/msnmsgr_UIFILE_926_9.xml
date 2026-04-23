@@ -1,0 +1,28 @@
+<DialogHost resid=StdMB ID=atom(StdMB) Sheet=styleref(STDDLGSS) FrameTitle=rcstr(35520) Layout=borderlayout() background=buttonface>
+<element Layout=VerticalFlowLayout(1,2,2,2) colorize=enabled layoutpos=client>
+<element padding=rect(10,10,10,10) layout=borderlayout()>
+<png id=atom(mbIcon) layoutpos=none flip=false/>
+<HtmlView ID=atom(MBText) ContentAlign=0xD Background=argb(0,0,0,0) Margin=Rect(10,10,10,10) active=mouse yscrollable=false layoutpos=client Accessible=true AccRole=41 AccName=rcstr(130)/>
+</element>
+<element id=atom(DontShowMeSection) layout=flowlayout() visible=false enabled=false>
+<cmdcheckbox id=atom(DontShowMeAgainCheckbox) ShortCut=rcchar(121) layout=flowlayout() cmdid=2336 AccName=rcstr(78) Margin=Rect(10,10,10,10) active=mouseandkeyboard buttonstyle=FocusRectStd>
+<element ShortCut=rcchar(121) Content=rcstr(78) padding=rect(16,0,0,0)/>
+</cmdcheckbox>
+</element>
+</element>
+<element layoutpos=bottom layout=filllayout()>
+<element id=atom(btnContainer) Layout=FlowLayout(1,2,2,2) padding=rect(10,10,10,10)>
+<cmdbutton layoutpos=none id=atom(idok) cmdid=1 content=rcstr(35500) AccName=rcstr(35500)/>
+<cmdbutton layoutpos=none id=atom(idyes) cmdid=6 content=rcstr(35505) AccName=rcstr(35505)/>
+<cmdbutton layoutpos=none id=atom(idno) cmdid=7 content=rcstr(35506) AccName=rcstr(35506)/>
+<cmdbutton layoutpos=none id=atom(idabort) cmdid=3 content=rcstr(35502) AccName=rcstr(35502)/>
+<cmdbutton layoutpos=none id=atom(idretry) cmdid=4 content=rcstr(35503) AccName=rcstr(35503)/>
+<cmdbutton layoutpos=none id=atom(idignore) cmdid=5 content=rcstr(35504) AccName=rcstr(35504)/>
+<cmdbutton layoutpos=none id=atom(idtryagain) cmdid=10 content=rcstr(35509) AccName=rcstr(35509)/>
+<cmdbutton layoutpos=none id=atom(idcontinue) cmdid=11 content=rcstr(35510) AccName=rcstr(35510)/>
+<cmdbutton layoutpos=none id=atom(idhelp) cmdid=9 content=rcstr(35508) AccName=rcstr(35508)/>
+<cmdbutton layoutpos=none id=atom(idclose) cmdid=8 content=rcstr(35507) AccName=rcstr(35507)/>
+<cmdbutton layoutpos=none id=atom(idcancel) cmdid=2 content=rcstr(35501) AccName=rcstr(35501)/>
+</element>
+</element>
+</DialogHost>

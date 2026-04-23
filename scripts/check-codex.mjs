@@ -18,7 +18,7 @@ async function findCodex() {
       || matches.find((line) => path.extname(line).toLowerCase() === ".exe")
       || matches[0]
     : matches[0];
-  if (!command) throw new Error("codex introuvable dans le PATH");
+  if (!command) throw new Error("codex was not found in PATH");
   return { command: await resolveExecutableCandidate(command), source: "PATH" };
 }
 
@@ -61,11 +61,11 @@ function runVersion(command) {
 try {
   const found = await findCodex();
   const version = await runVersion(found.command);
-  console.log(`Codex detecte (${found.source}): ${found.command}`);
+  console.log(`Codex detected (${found.source}): ${found.command}`);
   console.log(version);
 } catch (error) {
-  console.error("Codex CLI non detecte.");
-  console.error("Installez Codex CLI, ajoutez-le au PATH, ou definissez CODEX_MESSENGER_CODEX_PATH.");
+  console.error("Codex CLI was not detected.");
+  console.error("Install Codex CLI, add it to PATH, or set CODEX_MESSENGER_CODEX_PATH.");
   console.error(error.message);
   process.exitCode = 1;
 }

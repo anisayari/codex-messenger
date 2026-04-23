@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { loginCopyFor, normalizeLanguage, supportedLanguages } from "../shared/languages.js";
+import msnDisplayPictures from "./msnDisplayPictures.js";
+import msnEmoticons from "./msnEmoticons.js";
 import "./styles.css";
 
 const api = window.codexMsn;
@@ -79,7 +81,133 @@ const soundCatalog = [
   ["type", "Alerte", audioFiles.type],
   ["done", "Invite terminee", audioFiles.done]
 ];
+const projectSortOptions = [
+  { id: "modified-desc", label: "Date de modification", detail: "recent d'abord", short: "modifie" },
+  { id: "modified-asc", label: "Date de modification", detail: "ancien d'abord", short: "modifie" },
+  { id: "created-desc", label: "Date de creation", detail: "recent d'abord", short: "cree" },
+  { id: "created-asc", label: "Date de creation", detail: "ancien d'abord", short: "cree" },
+  { id: "name-asc", label: "Alphabet montant", detail: "A a Z", short: "A-Z" },
+  { id: "name-desc", label: "Alphabet descendant", detail: "Z a A", short: "Z-A" },
+  { id: "threads-desc", label: "Nombre de fils", detail: "plus d'abord", short: "fils +" },
+  { id: "threads-asc", label: "Nombre de fils", detail: "moins d'abord", short: "fils -" }
+];
+const projectSortIds = new Set(projectSortOptions.map((option) => option.id));
+const defaultTextStyle = {
+  fontFamily: "Tahoma",
+  fontSize: 11,
+  color: "#182337",
+  bubble: "#f0f6ff",
+  meBubble: "#eefaf1"
+};
+const textFontOptions = ["Tahoma", "Verdana", "Arial", "Segoe UI", "Times New Roman", "Courier New", "Comic Sans MS"];
+const textColorOptions = ["#182337", "#123f82", "#0b7747", "#7a1c1c", "#4b347a", "#111111"];
+const bubbleColorOptions = ["#f0f6ff", "#fffbd0", "#eefaf1", "#fff0f0", "#f2edff", "#ffffff"];
 const winkCatalog = [
+  {
+    id: "water-balloon",
+    label: "Water Balloon",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/water_balloon.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/water_balloon.swf",
+    sound: "wizz"
+  },
+  {
+    id: "bouncy-ball",
+    label: "Bouncy Ball",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/bouncy_ball.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/bouncy_ball.swf",
+    sound: "online"
+  },
+  {
+    id: "lightbulb",
+    label: "Lightbulb",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.jpg",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.swf",
+    sound: "type"
+  },
+  {
+    id: "crying",
+    label: "Crying",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/crying.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/crying.swf",
+    sound: "ring"
+  },
+  {
+    id: "ufo",
+    label: "UFO",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/ufo.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/ufo.swf",
+    sound: "wizz"
+  },
+  {
+    id: "frog",
+    label: "Frog",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/frog.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/frog.swf",
+    sound: "online"
+  },
+  {
+    id: "dancer",
+    label: "Dancer",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/dancer.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/dancer.swf",
+    sound: "done"
+  },
+  {
+    id: "bow",
+    label: "Bow",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/bow.jpg",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/bow.swf",
+    sound: "done"
+  },
+  {
+    id: "heart",
+    label: "Heart",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.swf",
+    sound: "ring"
+  },
+  {
+    id: "silly-face",
+    label: "Silly Face",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/silly_face.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/silly_face.swf",
+    sound: "type"
+  },
+  {
+    id: "dancing-pig",
+    label: "Dancing Pig",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/dancing_pig.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/dancing_pig.swf",
+    sound: "done"
+  },
+  {
+    id: "kiss",
+    label: "Kiss",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/kiss.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/kiss.swf",
+    sound: "ring"
+  },
+  {
+    id: "guitar-smash",
+    label: "Guitar Smash",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/guitar_smash.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/guitar_smash.swf",
+    sound: "wizz"
+  },
+  {
+    id: "knock",
+    label: "Knock",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.swf",
+    sound: "wizz"
+  },
+  {
+    id: "laughing-girl",
+    label: "Laughing Girl",
+    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/laughing_girl.png",
+    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/laughing_girl.swf",
+    sound: "done"
+  },
   { id: "butterfly", label: "Papillon", src: "./msn-assets/winks/butterfly.gif", sound: "wizz" },
   { id: "butterfly-small", label: "Mini papillon", src: "./msn-assets/winks/butterfly-small.gif", sound: "online" },
   { id: "surprise", label: "Surprise", src: "./msn-assets/winks/surprise.gif", sound: "ring" },
@@ -88,6 +216,14 @@ const winkCatalog = [
   { id: "msn-flow", label: "MSN", src: "./msn-assets/winks/msn-flow.gif", sound: "done" }
 ];
 const winkById = Object.fromEntries(winkCatalog.map((wink) => [wink.id, wink]));
+const animatedInlineEmoticons = [
+  { id: "animated-butterfly", label: "Papillon animé", code: ":butterfly:", aliases: ["[emoji:butterfly]", "[emote:butterfly]"], src: "./msn-assets/winks/butterfly-small.gif" },
+  { id: "animated-surprise", label: "Surprise animée", code: ":surprise:", aliases: ["[emoji:surprise]", "[emote:surprise]"], src: "./msn-assets/winks/surprise.gif" },
+  { id: "animated-flash", label: "Flash animé", code: ":flash:", aliases: ["[emoji:flash]", "[emote:flash]"], src: "./msn-assets/winks/flash.gif" },
+  { id: "animated-wizz", label: "Wizz animé", code: ":wizz:", aliases: ["[emoji:wizz]", "[emote:wizz]"], src: "./msn-assets/winks/nudge-burst.gif" },
+  { id: "animated-flow", label: "MSN animé", code: ":msn-flow:", aliases: ["[emoji:msn-flow]", "[emote:msn-flow]"], src: "./msn-assets/winks/msn-flow.gif" }
+];
+const inlineEmoticons = [...msnEmoticons, ...animatedInlineEmoticons];
 const gameAssets = {
   x: "./msn-assets/games/piece-x.png",
   o: "./msn-assets/games/piece-o.png",
@@ -106,8 +242,10 @@ const agentAvatarOptions = [
   ["lens", "Loupe"],
   ["brush", "Design"],
   ["terminal", "Terminal"],
-  ["butterfly", "Codex"]
+  ["butterfly", "Codex"],
+  ...msnDisplayPictures.map((picture) => [picture.id, picture.label])
 ];
+const msnDisplayPictureById = Object.fromEntries(msnDisplayPictures.map((picture) => [picture.id, picture]));
 const agentColorOptions = ["#315fd0", "#11a77a", "#d88721", "#167c83", "#8b5bc7", "#c54545"];
 const generatedAvatarPalettes = [
   ["#0e9fbd", "#88e4f5", "#185ac4", "#f7fcff"],
@@ -188,6 +326,96 @@ function extractWinkFromText(text) {
   if (!wink) return { text: source, wink: null };
   const cleanText = source.replace(match[0], "").replace(/\n{3,}/g, "\n\n").trim();
   return { text: cleanText || `Clin d'oeil: ${wink.label}`, wink };
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeProjectSort(value) {
+  return projectSortIds.has(value) ? value : "name-asc";
+}
+
+function normalizeTextStyle(style = {}) {
+  const fontFamily = textFontOptions.includes(style.fontFamily) ? style.fontFamily : defaultTextStyle.fontFamily;
+  const fontSize = Math.max(9, Math.min(18, Math.round(Number(style.fontSize) || defaultTextStyle.fontSize)));
+  const color = textColorOptions.includes(style.color) ? style.color : defaultTextStyle.color;
+  const bubble = bubbleColorOptions.includes(style.bubble) ? style.bubble : defaultTextStyle.bubble;
+  const meBubble = bubbleColorOptions.includes(style.meBubble) ? style.meBubble : defaultTextStyle.meBubble;
+  return { fontFamily, fontSize, color, bubble, meBubble };
+}
+
+function textStyleForContact(settings, contactId) {
+  return normalizeTextStyle(settings?.textStyles?.[contactId]);
+}
+
+function normalizeWizzDelaySeconds(value) {
+  const seconds = Math.round(Number(value) || 60);
+  return Math.max(10, Math.min(1800, seconds));
+}
+
+function projectSortOption(sort) {
+  return projectSortOptions.find((option) => option.id === normalizeProjectSort(sort)) ?? projectSortOptions[4];
+}
+
+function projectDateMs(project, key) {
+  const value = Date.parse(project?.[key] ?? "");
+  return Number.isFinite(value) ? value : 0;
+}
+
+function projectThreadCount(project) {
+  return Number(project?.threadCount ?? project?.threads?.length ?? 0) || 0;
+}
+
+function compareProjectNames(left, right) {
+  return String(left?.name ?? "").localeCompare(String(right?.name ?? ""), undefined, {
+    numeric: true,
+    sensitivity: "base"
+  });
+}
+
+function sortProjects(projects, sort) {
+  const mode = normalizeProjectSort(sort);
+  return [...projects].sort((left, right) => {
+    let result = 0;
+    if (mode === "name-asc") result = compareProjectNames(left, right);
+    if (mode === "name-desc") result = compareProjectNames(right, left);
+    if (mode === "created-desc") result = projectDateMs(right, "createdAt") - projectDateMs(left, "createdAt");
+    if (mode === "created-asc") result = projectDateMs(left, "createdAt") - projectDateMs(right, "createdAt");
+    if (mode === "modified-desc") result = projectDateMs(right, "modifiedAt") - projectDateMs(left, "modifiedAt");
+    if (mode === "modified-asc") result = projectDateMs(left, "modifiedAt") - projectDateMs(right, "modifiedAt");
+    if (mode === "threads-desc") result = projectThreadCount(right) - projectThreadCount(left);
+    if (mode === "threads-asc") result = projectThreadCount(left) - projectThreadCount(right);
+    return result || compareProjectNames(left, right) || String(left?.cwd ?? "").localeCompare(String(right?.cwd ?? ""));
+  });
+}
+
+const emoticonTokens = inlineEmoticons
+  .flatMap((emoticon) => [emoticon.code, ...(emoticon.aliases ?? [])].map((code) => [code, emoticon]))
+  .filter(([code]) => code);
+const emoticonByToken = Object.fromEntries(emoticonTokens);
+const emoticonPattern = new RegExp(
+  `(${emoticonTokens.map(([code]) => code).sort((left, right) => right.length - left.length).map(escapeRegExp).join("|")})`,
+  "g"
+);
+
+function renderTextWithEmoticons(text) {
+  const source = String(text ?? "");
+  if (!source) return null;
+  return source.split(emoticonPattern).map((part, index) => {
+    const emoticon = emoticonByToken[part];
+    if (!emoticon) return part;
+    return (
+      <img
+        key={`${part}-${index}`}
+        className="message-emoticon"
+        src={emoticon.src}
+        alt={part}
+        title={`${emoticon.label} ${emoticon.code}`}
+        draggable="false"
+      />
+    );
+  });
 }
 
 function blobToDataUrl(blob) {
@@ -292,11 +520,17 @@ function Logo({ small = false }) {
 
 function Avatar({ contact, large = false }) {
   const picturePath = contact.displayPicturePath || contact.picturePath;
+  const pictureAsset = contact.displayPictureAsset || contact.pictureAsset;
+  const defaultPicture = msnDisplayPictureById[contact.avatar];
   const generatedPicture = generatedAvatarUrl(contact);
   return (
     <div className={`${large ? "avatar large" : "avatar"} ${presenceClass(contact.status)}`} style={{ "--avatar": contact.color ?? "#11a77a" }}>
       {picturePath ? (
         <img className="avatar-picture" src={localFileUrl(picturePath)} alt="" draggable="false" />
+      ) : pictureAsset ? (
+        <img className="avatar-picture" src={pictureAsset} alt="" draggable="false" />
+      ) : defaultPicture ? (
+        <img className="avatar-picture" src={defaultPicture.src} alt="" draggable="false" />
       ) : contact.avatar === "butterfly" ? (
         <Logo small={!large} />
       ) : (
@@ -396,17 +630,48 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   const [status, setStatus] = useState(initialProfile.status);
   const [language, setLanguage] = useState(normalizeLanguage(initialProfile.language ?? initialSettings?.language ?? "fr"));
   const [codexPath, setCodexPath] = useState(initialSettings?.codexPath ?? "");
+  const [unreadWizzDelaySeconds, setUnreadWizzDelaySeconds] = useState(() => normalizeWizzDelaySeconds((initialSettings?.unreadWizzDelayMs ?? 60_000) / 1000));
   const [codexStatus, setCodexStatus] = useState(initialCodexStatus);
   const [state, setState] = useState("idle");
   const [error, setError] = useState("");
+  const [pressedPathAction, setPressedPathAction] = useState("");
+  const pathActionTimer = useRef(null);
   const text = loginCopyFor(language);
+
+  useEffect(() => () => {
+    if (pathActionTimer.current) window.clearTimeout(pathActionTimer.current);
+  }, []);
+
+  function pulsePathAction(action) {
+    if (pathActionTimer.current) window.clearTimeout(pathActionTimer.current);
+    setPressedPathAction(action);
+    pathActionTimer.current = window.setTimeout(() => {
+      setPressedPathAction("");
+      pathActionTimer.current = null;
+    }, 180);
+  }
+
+  async function waitForButtonPaint() {
+    await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+    await new Promise((resolve) => window.setTimeout(resolve, 55));
+  }
 
   async function submit(event) {
     event.preventDefault();
     setError("");
     setState("connecting");
     try {
-      const result = await api.signIn({ email, displayName, personalMessage, status, language, codexPath, displayPicturePath: initialProfile.displayPicturePath ?? "" });
+      const result = await api.signIn({
+        email,
+        displayName,
+        personalMessage,
+        status,
+        language,
+        codexPath,
+        unreadWizzDelayMs: normalizeWizzDelaySeconds(unreadWizzDelaySeconds) * 1000,
+        displayPicturePath: initialProfile.displayPicturePath ?? "",
+        displayPictureAsset: initialProfile.displayPictureAsset ?? ""
+      });
       onSignedIn(result.profile, result.userAgent, result.settings, result.codexStatus);
     } catch (err) {
       setError(err.message);
@@ -416,6 +681,8 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
 
   async function chooseCodex() {
     setError("");
+    pulsePathAction("browse");
+    await waitForButtonPaint();
     const result = await api.chooseCodex();
     if (result?.canceled) return;
     setCodexPath(result.settings.codexPath ?? "");
@@ -424,6 +691,8 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
 
   async function testCodex() {
     setError("");
+    pulsePathAction("test");
+    await waitForButtonPaint();
     try {
       const result = await api.testCodex(codexPath || null);
       setCodexStatus(result);
@@ -470,9 +739,20 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         <span>{text.codexPath}</span>
         <input value={codexPath} onChange={(event) => setCodexPath(event.target.value)} placeholder={text.autoPath} />
       </label>
+      <label className="field">
+        <span>Delai Wizz rappel (secondes)</span>
+        <input
+          type="number"
+          min="10"
+          max="1800"
+          step="5"
+          value={unreadWizzDelaySeconds}
+          onChange={(event) => setUnreadWizzDelaySeconds(normalizeWizzDelaySeconds(event.target.value))}
+        />
+      </label>
       <div className="codex-path-actions">
-        <button type="button" onClick={chooseCodex}>{text.browse}</button>
-        <button type="button" onClick={testCodex}>{text.test}</button>
+        <button className={pressedPathAction === "browse" ? "pressed" : ""} type="button" onClick={chooseCodex}>{text.browse}</button>
+        <button className={pressedPathAction === "test" ? "pressed" : ""} type="button" onClick={testCodex}>{text.test}</button>
       </div>
       <p className={codexStatus?.ok ? "codex-status ok" : "codex-status"}>
         {codexStatus?.ok ? `${text.found}: ${codexStatus.command}` : (codexStatus?.error ?? text.missing)}
@@ -502,6 +782,14 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
     onChange(draft);
   }
 
+  function chooseDefaultPicture(picture) {
+    setDraft((current) => ({
+      ...current,
+      displayPictureAsset: picture.src,
+      displayPicturePath: ""
+    }));
+  }
+
   return (
     <form className="profile-editor" onSubmit={submit}>
       <div className="profile-editor-picture">
@@ -510,6 +798,19 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClearPicture, onC
           <button type="button" onClick={onChoosePicture}>Changer</button>
           <button type="button" onClick={onClearPicture}>Defaut</button>
         </div>
+      </div>
+      <div className="profile-picture-gallery" aria-label="Images MSN par defaut">
+        {msnDisplayPictures.map((picture) => (
+          <button
+            className={draft.displayPictureAsset === picture.src ? "active" : ""}
+            key={picture.id}
+            title={picture.label}
+            type="button"
+            onClick={() => chooseDefaultPicture(picture)}
+          >
+            <img src={picture.src} alt="" draggable="false" />
+          </button>
+        ))}
       </div>
       <label>
         <span>Nom affiche</span>
@@ -636,13 +937,32 @@ function RosterView({
 }) {
   const [finished, setFinished] = useState(null);
   const [conversations, setConversations] = useState(bootstrap.conversations);
+  const [unread, setUnread] = useState(bootstrap.unread ?? {});
   const [collapsed, setCollapsed] = useState({});
   const [query, setQuery] = useState("");
   const [agentError, setAgentError] = useState("");
+  const [projectSort, setProjectSort] = useState(() => normalizeProjectSort(bootstrap.settings?.projectSort));
+  const [projectSortMenu, setProjectSortMenu] = useState(null);
+  const rosterRef = useRef(null);
 
   useEffect(() => {
     api.listConversations().then(setConversations).catch(() => {});
   }, [refreshTick]);
+
+  useEffect(() => {
+    const closeMenu = () => setProjectSortMenu(null);
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") closeMenu();
+    };
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("blur", closeMenu);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("blur", closeMenu);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => api.on("conversation:finished", ({ contactId }) => {
     const contact = bootstrap.contacts.find((item) => item.id === contactId);
@@ -650,6 +970,19 @@ function RosterView({
     setFinished(`${contact.name} a termine.`);
     window.setTimeout(() => setFinished(null), 4200);
   }), [bootstrap.contacts]);
+
+  useEffect(() => {
+    const offUnread = api.on("conversation:unread", ({ unread: nextUnread }) => {
+      setUnread(nextUnread ?? {});
+    });
+    const offNotify = api.on("conversation:notify", () => {
+      playNewMessage();
+    });
+    return () => {
+      offUnread();
+      offNotify();
+    };
+  }, []);
 
   const groups = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -670,7 +1003,7 @@ function RosterView({
       }))
     });
 
-    const projectItems = (conversations?.projects ?? []).map((project) => {
+    const projectItems = sortProjects(conversations?.projects ?? [], projectSort).map((project) => {
       const contact = {
         id: project.id,
         name: project.name,
@@ -681,11 +1014,14 @@ function RosterView({
         color: "#1f8fcf",
         avatar: "terminal",
         kind: "project",
-        cwd: project.cwd
+        cwd: project.cwd,
+        createdAt: project.createdAt,
+        modifiedAt: project.modifiedAt,
+        threadCount: projectThreadCount(project)
       };
       return {
         ...contact,
-        statusText: project.threads.length ? `${project.threads.length} conversation${project.threads.length > 1 ? "s" : ""}` : "nouveau",
+        statusText: projectThreadCount(project) ? `${projectThreadCount(project)} conversation${projectThreadCount(project) > 1 ? "s" : ""}` : "nouveau",
         contact,
         onOpen: () => api.openProject(project.cwd)
       };
@@ -723,10 +1059,35 @@ function RosterView({
       ...group,
       items: search ? group.items.filter(match) : group.items
     })).filter((group) => group.items.length);
-  }, [bootstrap.contacts, conversations, query]);
+  }, [bootstrap.contacts, conversations, projectSort, query]);
 
   function toggleGroup(groupId) {
     setCollapsed((current) => ({ ...current, [groupId]: !current[groupId] }));
+  }
+
+  function openProjectSortMenu(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const bounds = rosterRef.current?.getBoundingClientRect();
+    const width = bounds?.width ?? window.innerWidth;
+    const height = bounds?.height ?? window.innerHeight;
+    const left = bounds ? event.clientX - bounds.left : event.clientX;
+    const top = bounds ? event.clientY - bounds.top : event.clientY;
+    setProjectSortMenu({
+      x: Math.max(4, Math.min(left, width - 214)),
+      y: Math.max(4, Math.min(top, height - 272))
+    });
+  }
+
+  async function changeProjectSort(sort) {
+    const nextSort = normalizeProjectSort(sort);
+    setProjectSort(nextSort);
+    setProjectSortMenu(null);
+    try {
+      await api.setSettings({ projectSort: nextSort });
+    } catch {
+      // Sorting still works for the current session if persistence fails.
+    }
   }
 
   async function saveProfile(nextProfile) {
@@ -767,7 +1128,7 @@ function RosterView({
   }
 
   return (
-    <section className="roster">
+    <section className="roster" ref={rosterRef}>
       <div className="me">
         <button className="display-picture-button" type="button" onClick={() => onProfileEditorOpenChange(!profileEditorOpen)}>
           <Avatar contact={{ ...profile, avatar: "butterfly", color: "#11a77a" }} />
@@ -803,7 +1164,6 @@ function RosterView({
         />
       ) : null}
       <div className="msn-tabs">
-        <button type="button" onClick={() => window.alert("Aucune boite e-mail locale n'est connectee pour le moment.")}><span className="mini mail" /> E-mail</button>
         <button type="button" onClick={() => api.openConversation("codex")}><Logo small /> Codex Today</button>
       </div>
       <div className="search"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." /></div>
@@ -812,24 +1172,59 @@ function RosterView({
           const online = group.items.filter((item) => item.status !== "offline").length;
           return (
           <section className="roster-group" key={group.id}>
-            <button className="group-heading" type="button" onClick={() => toggleGroup(group.id)}>
+            <button
+              className="group-heading"
+              type="button"
+              title={group.id === "projects" ? "Clic droit pour trier les projets" : undefined}
+              onClick={() => toggleGroup(group.id)}
+              onContextMenu={group.id === "projects" ? openProjectSortMenu : undefined}
+            >
               <span className={collapsed[group.id] ? "group-box collapsed" : "group-box"} />
               <strong>{group.title} ({online}/{group.items.length})</strong>
+              {group.id === "projects" ? <span className="group-sort-label">tri: {projectSortOption(projectSort).short}</span> : null}
             </button>
-            {!collapsed[group.id] ? group.items.map((item) => (
-              <button className="contact-line" type="button" key={item.id} onClick={item.onOpen}>
-                <span className={`msn-presence ${item.status}`} />
-                <span className="contact-mini-avatar"><Avatar contact={item.contact ?? item} /></span>
-                <span className="contact-line-copy">
-                  <span className="contact-name">{item.name}</span>
-                  <span className="contact-state">({item.statusText})</span>
-                  <span className="contact-mood">{item.mood}</span>
-                </span>
-              </button>
-            )) : null}
+            {!collapsed[group.id] ? group.items.map((item) => {
+              const pending = unread[item.id] ?? 0;
+              return (
+                <button className={pending ? "contact-line has-unread" : "contact-line"} type="button" key={item.id} onClick={item.onOpen}>
+                  <span className={`msn-presence ${item.status}`} />
+                  <span className="contact-mini-avatar"><Avatar contact={item.contact ?? item} /></span>
+                  <span className="contact-line-copy">
+                    <span className="contact-name">{item.name}</span>
+                    <span className="contact-state">({item.statusText})</span>
+                    <span className="contact-mood">{item.mood}</span>
+                  </span>
+                  {pending ? <span className="contact-unread-bubble" title={`${pending} message${pending > 1 ? "s" : ""} en attente`}>{pending > 9 ? "9+" : pending}</span> : <span className="contact-unread-spacer" />}
+                </button>
+              );
+            }) : null}
           </section>
         );})}
       </div>
+      {projectSortMenu ? (
+        <div
+          className="group-context-menu"
+          style={{ left: projectSortMenu.x, top: projectSortMenu.y }}
+          role="menu"
+          onClick={(event) => event.stopPropagation()}
+          onContextMenu={(event) => event.preventDefault()}
+        >
+          <div className="group-context-title">Trier Projects par</div>
+          {projectSortOptions.map((option) => (
+            <button
+              className={normalizeProjectSort(projectSort) === option.id ? "active" : ""}
+              key={option.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={normalizeProjectSort(projectSort) === option.id}
+              onClick={() => changeProjectSort(option.id)}
+            >
+              <span>{option.label}</span>
+              <small>{option.detail}</small>
+            </button>
+          ))}
+        </div>
+      ) : null}
       <button className="add-contact" type="button" onClick={() => onAgentEditorOpenChange(true)}><span className="mini plus" /> Add a Contact</button>
       <div className="wordmark"><span>Codex</span><Logo small /><strong>Messenger</strong></div>
       {finished ? <div className="toast"><Logo small /><span>{finished}</span></div> : null}
@@ -872,6 +1267,16 @@ function MainWindow() {
   function updateAgents(nextContacts, nextSettings) {
     setBootstrap((current) => ({ ...current, contacts: nextContacts, settings: nextSettings }));
     if (nextSettings) setSettings(nextSettings);
+  }
+
+  async function changeWizzDelay() {
+    const currentSeconds = normalizeWizzDelaySeconds((settings?.unreadWizzDelayMs ?? 60_000) / 1000);
+    const value = window.prompt("Delai Wizz de rappel (secondes)", String(currentSeconds));
+    if (value === null) return;
+    const seconds = normalizeWizzDelaySeconds(value);
+    const result = await api.setSettings({ unreadWizzDelayMs: seconds * 1000 });
+    setSettings(result.settings);
+    setBootstrap((current) => current ? { ...current, settings: result.settings } : current);
   }
 
   function openAgentCreator() {
@@ -927,6 +1332,7 @@ function MainWindow() {
       entries: [
         { label: "Dossier uploads", action: () => api.app.openPath(uploadsPath) },
         { label: "Relancer cette fenetre", shortcut: "Ctrl+R", action: () => api.app.reload() },
+        { label: "Delai Wizz rappel...", action: changeWizzDelay },
         { separator: true },
         { label: "Minimiser", action: () => api.window.minimize() },
         { label: "Maximiser / restaurer", action: () => api.window.maximize() }
@@ -979,7 +1385,7 @@ function MainWindow() {
 
 function Tool({ icon, label, onClick, active = false }) {
   return (
-    <button className={active ? `tool ${icon} active` : `tool ${icon}`} type="button" onClick={onClick}>
+    <button className={active ? `tool ${icon} active` : `tool ${icon}`} type="button" onClick={(event) => onClick?.(event)}>
       <span className={`tool-icon ${icon}`}><img src={toolbarIcons[icon]} alt="" draggable="false" /></span>
       <span>{label}</span>
     </button>
@@ -988,49 +1394,138 @@ function Tool({ icon, label, onClick, active = false }) {
 
 function FormatButton({ icon, title, onClick, label, active = false }) {
   return (
-    <button className={`${label ? "format-button wide" : "format-button"}${active ? " active" : ""}`} type="button" title={title} onClick={onClick}>
+    <button className={`${label ? "format-button wide" : "format-button"}${active ? " active" : ""}`} type="button" title={title} onClick={(event) => onClick?.(event)}>
       <img src={formatIcons[icon]} alt="" draggable="false" />
       {label ? <span>{label}</span> : null}
     </button>
   );
 }
 
-function ContactPanel({ contact, onWizz, onSendFile, onCamera, onVoice, onActivities, onOpenProject, onRun }) {
-  const statusText = statusLabels[contact.status] ?? contact.status ?? "En ligne";
-  const projectPrompt = contact.cwd
-    ? `Resume le contexte utile de ${contact.name}, puis propose la prochaine action concrete dans ${contact.cwd}.`
-    : `Resume ton role de ${contact.name}, puis propose la prochaine action concrete.`;
-  const inspectPrompt = contact.cwd
-    ? `Inspecte rapidement le projet ${contact.cwd} et donne-moi les risques ou taches prioritaires.`
-    : `Passe en mode ${contact.name}: donne-moi les trois actions les plus utiles maintenant.`;
+function PopupPanel({ title, children }) {
   return (
-    <div className="contact-panel">
-      <div className="contact-card-head">
+    <div className="popup-panel">
+      <h3>{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+function InvitePanel({ contact, onRun, onOpenProject }) {
+  const statusText = statusLabels[contact.status] ?? contact.status ?? "En ligne";
+  return (
+    <PopupPanel title="Invite">
+      <div className="popup-contact-row">
         <Avatar contact={contact} />
-        <div>
-          <strong>{contact.name}</strong>
-          <span>{contact.mail || "codex@codex.local"}</span>
+        <div><strong>{contact.name}</strong><span>{statusText}</span></div>
+      </div>
+      <div className="popup-command-list">
+        <button type="button" onClick={() => onRun(`Invite ${contact.name} dans cette conversation Codex et resume son role.`)}>Inviter dans la conversation</button>
+        <button type="button" onClick={() => onRun(`Resume le role de ${contact.name}, puis propose la prochaine action concrete.`)}>Resume le contact</button>
+        <button type="button" onClick={onOpenProject} disabled={!contact.cwd}>Ouvrir le projet</button>
+      </div>
+    </PopupPanel>
+  );
+}
+
+function FilesPanel({ onSendFile, onCamera, onOpenProject, canOpenProject }) {
+  return (
+    <PopupPanel title="Send Files">
+      <div className="popup-command-list">
+        <button type="button" onClick={onSendFile}>Envoyer un fichier ou une image...</button>
+        <button type="button" onClick={onCamera}>Capture webcam...</button>
+        <button type="button" onClick={onOpenProject} disabled={!canOpenProject}>Ouvrir le dossier projet</button>
+      </div>
+    </PopupPanel>
+  );
+}
+
+function VoicePanel({ recording, mediaError, onToggle }) {
+  return (
+    <PopupPanel title="Voice Clip">
+      <div className="popup-command-list">
+        <button className={recording ? "recording" : ""} type="button" onClick={onToggle}>
+          {recording ? "Arreter et envoyer" : "Demarrer l'enregistrement"}
+        </button>
+      </div>
+      {mediaError ? <p className="popup-error">{mediaError}</p> : null}
+    </PopupPanel>
+  );
+}
+
+function TextStylePanel({ textStyle, onChange, onReset }) {
+  const style = normalizeTextStyle(textStyle);
+  return (
+    <PopupPanel title="Rendu du texte">
+      <label className="text-style-field">
+        <span>Police</span>
+        <select value={style.fontFamily} onChange={(event) => onChange({ fontFamily: event.target.value })}>
+          {textFontOptions.map((font) => <option value={font} key={font}>{font}</option>)}
+        </select>
+      </label>
+      <label className="text-style-field">
+        <span>Taille</span>
+        <input type="number" min="9" max="18" value={style.fontSize} onChange={(event) => onChange({ fontSize: event.target.value })} />
+      </label>
+      <div className="text-style-field">
+        <span>Texte</span>
+        <div className="text-style-swatches">
+          {textColorOptions.map((color) => (
+            <button
+              className={style.color === color ? "active" : ""}
+              type="button"
+              key={color}
+              title={color}
+              style={{ backgroundColor: color }}
+              onClick={() => onChange({ color })}
+            />
+          ))}
         </div>
       </div>
-      <p className="contact-personal">{contact.mood || "Disponible pour Codex"}</p>
-      <dl className="contact-facts">
-        <div><dt>Statut</dt><dd>{statusText}</dd></div>
-        <div><dt>Groupe</dt><dd>{contact.group || "Codex"}</dd></div>
-        {contact.cwd ? <div><dt>Projet</dt><dd>{contact.cwd}</dd></div> : null}
-      </dl>
-      <div className="contact-actions">
-        <button type="button" onClick={onWizz}>Wizz</button>
-        <button type="button" onClick={onActivities}>Clin d'oeil</button>
-        <button type="button" onClick={onSendFile}>Fichier</button>
-        <button type="button" onClick={onCamera}>Camera</button>
-        <button type="button" onClick={onVoice}>Voice Clip</button>
-        <button type="button" onClick={onOpenProject} disabled={!contact.cwd}>Projet</button>
+      <div className="text-style-field">
+        <span>Bulle Codex</span>
+        <div className="text-style-swatches">
+          {bubbleColorOptions.map((color) => (
+            <button
+              className={style.bubble === color ? "active" : ""}
+              type="button"
+              key={color}
+              title={color}
+              style={{ backgroundColor: color }}
+              onClick={() => onChange({ bubble: color })}
+            />
+          ))}
+        </div>
       </div>
-      <div className="contact-prompts">
-        <button type="button" onClick={() => onRun(projectPrompt)}>Resume</button>
-        <button type="button" onClick={() => onRun(inspectPrompt)}>Inspecter</button>
+      <div className="text-style-field">
+        <span>Ma bulle</span>
+        <div className="text-style-swatches">
+          {bubbleColorOptions.map((color) => (
+            <button
+              className={style.meBubble === color ? "active" : ""}
+              type="button"
+              key={color}
+              title={color}
+              style={{ backgroundColor: color }}
+              onClick={() => onChange({ meBubble: color })}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+      <div
+        className="text-style-preview"
+        style={{
+          color: style.color,
+          fontFamily: style.fontFamily,
+          fontSize: `${style.fontSize}px`,
+          background: `linear-gradient(#ffffff, ${style.bubble})`
+        }}
+      >
+        Salut, je garde ce rendu pour cette conversation :)
+      </div>
+      <div className="popup-command-list">
+        <button type="button" onClick={onReset}>Revenir au rendu par defaut</button>
+      </div>
+    </PopupPanel>
   );
 }
 
@@ -1068,15 +1563,7 @@ function ThreadTabs({ project, contact, activeThreadId, onOpenProject, onOpenThr
 
   return (
     <div className="thread-tab-bar">
-      <span className="thread-to-label">A:</span>
-      <button
-        className={activeThreadId ? "thread-project-tab" : "thread-project-tab active"}
-        type="button"
-        title={project.cwd}
-        onClick={() => onOpenProject(project.cwd)}
-      >
-        {project.name}
-      </button>
+      <span className="thread-to-label" title={project.cwd}>A: {project.name}</span>
       <div className="thread-tab-strip" aria-label="Fils Codex">
         {threads.length ? threads.map((thread) => (
           <div
@@ -1120,7 +1607,11 @@ function ThreadTabs({ project, contact, activeThreadId, onOpenProject, onOpenThr
               x
             </button>
           </div>
-        )) : <span className="thread-tab-empty">Nouveau fil au premier message</span>}
+        )) : (
+          <button className="thread-tab active new-thread-tab" type="button" onClick={() => onOpenProject(project.cwd)}>
+            <span>Nouveau fil</span>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1156,6 +1647,35 @@ function ActivitiesPanel({ onRun, onSendWink, onAskWink, onPreviewSound }) {
         {activityPrompts.map(([label, prompt]) => (
           <button className="activity-command" type="button" key={label} onClick={() => onRun(prompt)}>{label}</button>
         ))}
+      </section>
+    </div>
+  );
+}
+
+function EmoticonsPanel({ onInsert }) {
+  return (
+    <div className="emoticons-panel">
+      <section className="activity-section">
+        <h3>Emoticones MSN 7.5</h3>
+        <div className="emoticon-grid">
+          {msnEmoticons.map((emoticon) => (
+            <button type="button" key={emoticon.id} title={`${emoticon.label} ${emoticon.code}`} onClick={() => onInsert(emoticon)}>
+              <img src={emoticon.src} alt="" draggable="false" />
+              <span>{emoticon.code}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="activity-section">
+        <h3>Emoticones animees</h3>
+        <div className="emoticon-grid animated">
+          {animatedInlineEmoticons.map((emoticon) => (
+            <button type="button" key={emoticon.id} title={`${emoticon.label} ${emoticon.code}`} onClick={() => onInsert(emoticon)}>
+              <img src={emoticon.src} alt="" draggable="false" />
+              <span>{emoticon.code}</span>
+            </button>
+          ))}
+        </div>
       </section>
     </div>
   );
@@ -1386,11 +1906,13 @@ function WizzReflexGame() {
 
 function ChatWindow({ bootstrap }) {
   const contact = bootstrap.contact ?? bootstrap.contacts.find((item) => item.id === bootstrap.contactId) ?? bootstrap.contacts[0];
+  const conversationAgentName = contact.kind === "project" || contact.kind === "thread" ? "Codex" : contact.name;
   const selfContact = {
     id: "self",
     name: bootstrap.profile.displayName,
     status: bootstrap.profile.status,
     displayPicturePath: bootstrap.profile.displayPicturePath,
+    displayPictureAsset: bootstrap.profile.displayPictureAsset,
     personalMessage: bootstrap.profile.personalMessage,
     color: "#6e8799",
     avatar: "butterfly"
@@ -1398,25 +1920,42 @@ function ChatWindow({ bootstrap }) {
   const [messages, setMessages] = useState(bootstrap.historyMessages ?? []);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
-  const [wizzing, setWizzing] = useState(false);
   const [conversations, setConversations] = useState(bootstrap.conversations);
+  const [chatSettings, setChatSettings] = useState(bootstrap.settings ?? {});
+  const [textStyle, setTextStyle] = useState(() => textStyleForContact(bootstrap.settings, contact.id));
   const [openFlyout, setOpenFlyout] = useState("");
+  const [flyoutPosition, setFlyoutPosition] = useState({ left: 8, top: 88, arrowX: 24, placement: "below" });
   const [activeGame, setActiveGame] = useState("morpion");
   const [cameraStream, setCameraStream] = useState(null);
   const [recording, setRecording] = useState(false);
   const [mediaError, setMediaError] = useState("");
+  const [activeThreadId, setActiveThreadId] = useState(contact.threadId ?? "");
   const scrollRef = useRef(null);
+  const stickToBottomRef = useRef(true);
   const videoRef = useRef(null);
   const textareaRef = useRef(null);
   const recorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const flyoutRef = useRef(null);
-  const activeThreadId = contact.threadId ?? "";
+  const chatWindowRef = useRef(null);
   const currentProject = useMemo(() => {
     const projects = conversations?.projects ?? [];
     if (contact.cwd) return projects.find((project) => project.cwd === contact.cwd) ?? null;
     return null;
   }, [contact.cwd, conversations]);
+
+  useEffect(() => {
+    setActiveThreadId(contact.threadId ?? "");
+  }, [contact.id, contact.threadId]);
+
+  useEffect(() => {
+    const projectName = contact.cwd ? (currentProject?.name ?? contact.name) : "";
+    document.title = contact.kind === "project"
+      ? `${contact.name} - Codex Messenger`
+      : contact.kind === "thread"
+        ? `${contact.name} - ${projectName || "Codex"}`
+        : `${contact.name} - Conversation`;
+  }, [contact.kind, contact.name, contact.cwd, currentProject?.name]);
 
   useEffect(() => {
     const markRead = () => {
@@ -1434,6 +1973,11 @@ function ChatWindow({ bootstrap }) {
   useEffect(() => {
     api.listConversations().then(setConversations).catch(() => {});
   }, [contact.id]);
+
+  useEffect(() => {
+    setChatSettings(bootstrap.settings ?? {});
+    setTextStyle(textStyleForContact(bootstrap.settings, contact.id));
+  }, [bootstrap.settings, contact.id]);
 
   useEffect(() => {
     if (videoRef.current && cameraStream) videoRef.current.srcObject = cameraStream;
@@ -1465,7 +2009,7 @@ function ChatWindow({ bootstrap }) {
       setTyping(false);
       setMessages((current) => {
         if (!current[current.length - 1]?.streaming) playNewMessage();
-        return appendAgentDelta(current, contact.name, delta);
+        return appendAgentDelta(current, conversationAgentName, delta);
       });
     });
     const offCompleted = api.on("codex:completed-item", ({ contactId, text }) => {
@@ -1475,7 +2019,7 @@ function ChatWindow({ bootstrap }) {
       setTyping(false);
       setMessages((current) => {
         if (!current[current.length - 1]?.streaming && !incomingWink) playNewMessage();
-        return finishAgentMessage(current, contact.name, text);
+        return finishAgentMessage(current, conversationAgentName, text);
       });
     });
     const offTyping = api.on("codex:typing", ({ contactId }) => {
@@ -1491,25 +2035,45 @@ function ChatWindow({ bootstrap }) {
     });
     const offWizz = api.on("window:wizz", () => {
       playWizz();
-      setWizzing(true);
-      window.setTimeout(() => setWizzing(false), 700);
     });
     return () => {
       offDelta(); offCompleted(); offTyping(); offDone(); offError(); offWizz();
     };
-  }, [contact.id, contact.name]);
+  }, [contact.id, conversationAgentName]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const element = scrollRef.current;
+    if (!element || !stickToBottomRef.current) return;
+    element.scrollTo({ top: element.scrollHeight, behavior: "auto" });
   }, [messages, typing]);
 
-  function sendItems(items, displayText, options = {}) {
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return undefined;
+    const updateStickiness = () => {
+      const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+      stickToBottomRef.current = distanceFromBottom < 48;
+    };
+    element.addEventListener("scroll", updateStickiness, { passive: true });
+    updateStickiness();
+    return () => element.removeEventListener("scroll", updateStickiness);
+  }, []);
+
+  async function sendItems(items, displayText, options = {}) {
     const cleanText = String(displayText ?? "").trim();
     if (!items.length || !cleanText) return;
+    stickToBottomRef.current = true;
     setMessages((current) => [...current, makeMessage("me", bootstrap.profile.displayName, cleanText, options)]);
     setTyping(true);
     api.markRead(contact.id);
-    api.sendItems(contact.id, items);
+    try {
+      const result = await api.sendItems(contact.id, items);
+      if (result?.threadId) setActiveThreadId(result.threadId);
+      if (result?.conversations) setConversations(result.conversations);
+    } catch (error) {
+      setTyping(false);
+      setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
+    }
   }
 
   function submit(event) {
@@ -1567,6 +2131,56 @@ function ChatWindow({ bootstrap }) {
     textareaRef.current?.select();
   }
 
+  function flyoutSize(name) {
+    if (name === "emoticons") return { width: 344, height: 278 };
+    if (name === "text") return { width: 284, height: 318 };
+    if (name === "activities") return { width: 318, height: 360 };
+    if (name === "games") return { width: 288, height: 322 };
+    if (name === "camera") return { width: 250, height: 240 };
+    if (name === "files") return { width: 254, height: 136 };
+    if (name === "voice") return { width: 246, height: 112 };
+    return { width: 246, height: 146 };
+  }
+
+  function placeFlyout(name, event) {
+    const root = chatWindowRef.current?.getBoundingClientRect();
+    const target = event?.currentTarget?.getBoundingClientRect?.();
+    const { width, height } = flyoutSize(name);
+    const rootWidth = root?.width ?? window.innerWidth;
+    const rootHeight = root?.height ?? window.innerHeight;
+    const center = target
+      ? target.left + target.width / 2 - (root?.left ?? 0)
+      : Math.min(rootWidth - 24, Math.max(24, rootWidth / 2));
+    const rawLeft = Math.round(center - width / 2);
+    const left = Math.max(8, Math.min(rawLeft, rootWidth - width - 8));
+    const targetTop = target ? target.top - (root?.top ?? 0) : 82;
+    const targetBottom = target ? target.bottom - (root?.top ?? 0) : 118;
+    const hasRoomAbove = targetTop > height + 12;
+    const placement = hasRoomAbove && targetTop > rootHeight * 0.42 ? "above" : "below";
+    const top = placement === "above"
+      ? Math.max(8, targetTop - height - 6)
+      : Math.min(rootHeight - height - 8, targetBottom - 1);
+    setFlyoutPosition({
+      left,
+      top: Math.max(8, top),
+      arrowX: Math.max(12, Math.min(width - 12, center - left)),
+      placement
+    });
+  }
+
+  function openPanel(name, event) {
+    placeFlyout(name, event);
+    setOpenFlyout(name);
+  }
+
+  function toggleFlyout(name, event) {
+    if (openFlyout === name) {
+      setOpenFlyout("");
+      return;
+    }
+    openPanel(name, event);
+  }
+
   function handleSearch() {
     const query = window.prompt("Search transcript", "");
     const clean = String(query ?? "").trim();
@@ -1576,6 +2190,40 @@ function ChatWindow({ bootstrap }) {
       ? `Recherche "${clean}": trouve dans un message de ${match.author}.`
       : `Recherche "${clean}": aucun resultat.`;
     setMessages((current) => [...current, makeMessage("system", "system", result)]);
+  }
+
+  async function saveConversationTextStyle(nextStyle) {
+    const cleanStyle = normalizeTextStyle(nextStyle);
+    const nextTextStyles = { ...(chatSettings?.textStyles ?? {}), [contact.id]: cleanStyle };
+    setTextStyle(cleanStyle);
+    setChatSettings((current) => ({ ...(current ?? {}), textStyles: nextTextStyles }));
+    try {
+      const result = await api.setSettings({ textStyles: nextTextStyles });
+      setChatSettings(result.settings);
+      setTextStyle(textStyleForContact(result.settings, contact.id));
+    } catch (error) {
+      setMessages((current) => [...current, makeMessage("system", "system", `Rendu texte non sauvegarde: ${error.message}`)]);
+    }
+  }
+
+  async function resetConversationTextStyle() {
+    const nextTextStyles = { ...(chatSettings?.textStyles ?? {}) };
+    delete nextTextStyles[contact.id];
+    setTextStyle(defaultTextStyle);
+    setChatSettings((current) => ({ ...(current ?? {}), textStyles: nextTextStyles }));
+    try {
+      const result = await api.setSettings({ textStyles: nextTextStyles });
+      setChatSettings(result.settings);
+      setTextStyle(textStyleForContact(result.settings, contact.id));
+    } catch (error) {
+      setMessages((current) => [...current, makeMessage("system", "system", `Rendu texte non sauvegarde: ${error.message}`)]);
+    }
+  }
+
+  function changeConversationFontSize() {
+    const value = window.prompt("Taille du texte (9-18)", String(textStyle.fontSize));
+    if (value === null) return;
+    saveConversationTextStyle({ ...textStyle, fontSize: value });
   }
 
   async function handleSendFile() {
@@ -1589,12 +2237,8 @@ function ChatWindow({ bootstrap }) {
     sendItems(items, text, file.isImage ? { attachment: { type: "image", src: localFileUrl(file.path), name: file.name } } : { attachment: { type: "file", name: file.name } });
   }
 
-  function toggleFlyout(name) {
-    setOpenFlyout((current) => current === name ? "" : name);
-  }
-
-  async function startCamera() {
-    setOpenFlyout("camera");
+  async function startCamera(event) {
+    openPanel("camera", event);
     setMediaError("");
     if (cameraStream) return;
     try {
@@ -1627,7 +2271,6 @@ function ChatWindow({ bootstrap }) {
   }
 
   async function toggleVoiceClip() {
-    setOpenFlyout("");
     setMediaError("");
     if (recording && recorderRef.current) {
       recorderRef.current.stop();
@@ -1699,6 +2342,17 @@ function ChatWindow({ bootstrap }) {
 
   async function openThreadTab(threadId) {
     if (!threadId || threadId === activeThreadId) return;
+    setActiveThreadId(threadId);
+    if (contact.kind === "project") {
+      const result = await api.loadThread({ contactId: contact.id, threadId });
+      if (result?.messages) {
+        stickToBottomRef.current = true;
+        setMessages(result.messages);
+        setTyping(false);
+      }
+      if (result?.conversations) setConversations(result.conversations);
+      return;
+    }
     await api.switchThread(threadId);
   }
 
@@ -1723,7 +2377,7 @@ function ChatWindow({ bootstrap }) {
     if (activeThreadId === thread.id) {
       const nextProject = nextConversations?.projects?.find((project) => project.cwd === currentProject.cwd);
       const nextThread = nextProject?.threads?.find((item) => item.id !== thread.id);
-      if (nextThread) await api.switchThread(nextThread.id);
+      if (nextThread) await openThreadTab(nextThread.id);
       else await api.switchProject(currentProject.cwd);
     }
   }
@@ -1753,18 +2407,31 @@ function ChatWindow({ bootstrap }) {
       ]
     },
     {
+      label: "Format",
+      entries: [
+        { label: "Text Appearance...", action: () => openPanel("text") },
+        { label: "Font: Tahoma", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Tahoma" }) },
+        { label: "Font: Verdana", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Verdana" }) },
+        { label: "Font: Comic Sans MS", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Comic Sans MS" }) },
+        { label: "Text Size...", action: changeConversationFontSize },
+        { separator: true },
+        { label: "Reset Conversation Text", action: resetConversationTextStyle }
+      ]
+    },
+    {
       label: "Actions",
       entries: [
         { label: "Invite", action: () => toggleFlyout("invite") },
         { label: "Wizz", action: () => api.wizz(contact.id) },
         { label: "Send Wink", action: () => toggleFlyout("activities") },
+        { label: "Emoticons", action: () => toggleFlyout("emoticons") },
         { label: "Search Transcript...", action: handleSearch },
         { separator: true },
         { label: "Activities", action: () => toggleFlyout("activities") },
         { label: "Games", action: () => toggleFlyout("games") },
-        { label: "Play Morpion", action: () => { setActiveGame("morpion"); setOpenFlyout("games"); } },
-        { label: "Play Memory", action: () => { setActiveGame("memory"); setOpenFlyout("games"); } },
-        { label: "Play Wizz Reflex", action: () => { setActiveGame("wizz"); setOpenFlyout("games"); } }
+        { label: "Play Morpion", action: () => { setActiveGame("morpion"); openPanel("games"); } },
+        { label: "Play Memory", action: () => { setActiveGame("memory"); openPanel("games"); } },
+        { label: "Play Wizz Reflex", action: () => { setActiveGame("wizz"); openPanel("games"); } }
       ]
     },
     {
@@ -1795,61 +2462,86 @@ function ChatWindow({ bootstrap }) {
   ];
 
   return (
-    <main className={wizzing ? "msn-window chat wizzing" : "msn-window chat"}>
+    <main className="msn-window chat" ref={chatWindowRef}>
       <Titlebar title={`${contact.name} - Conversation`} />
       <Menu items={chatMenus} />
-      <div className="toolbar-shell" ref={flyoutRef}>
+      <div className="toolbar-shell">
         <div className="toolbar">
-          <Tool icon="invite" label="Invite" active={openFlyout === "invite"} onClick={() => toggleFlyout("invite")} />
-          <Tool icon="files" label="Send Files" onClick={handleSendFile} />
+          <Tool icon="invite" label="Invite" active={openFlyout === "invite"} onClick={(event) => toggleFlyout("invite", event)} />
+          <Tool icon="files" label="Send Files" active={openFlyout === "files"} onClick={(event) => toggleFlyout("files", event)} />
           <Tool icon="video" label="Video" active={openFlyout === "camera"} onClick={startCamera} />
-          <Tool icon="voice" label={recording ? "Stop" : "Voice"} active={recording} onClick={toggleVoiceClip} />
-          <Tool icon="activities" label="Activities" active={openFlyout === "activities"} onClick={() => toggleFlyout("activities")} />
-          <Tool icon="games" label="Games" active={openFlyout === "games"} onClick={() => toggleFlyout("games")} />
+          <Tool icon="voice" label={recording ? "Stop" : "Voice"} active={openFlyout === "voice" || recording} onClick={(event) => toggleFlyout("voice", event)} />
+          <Tool icon="activities" label="Activities" active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
+          <Tool icon="games" label="Games" active={openFlyout === "games"} onClick={(event) => toggleFlyout("games", event)} />
           <div className="toolbar-brand"><span>Codex</span><Logo small /></div>
         </div>
-        {openFlyout ? (
-          <div className={`toolbar-flyout ${openFlyout}`}>
-            {openFlyout === "invite" ? (
-              <ContactPanel
-                contact={contact}
-                onWizz={() => api.wizz(contact.id)}
-                onSendFile={handleSendFile}
-                onCamera={startCamera}
-                onVoice={toggleVoiceClip}
-                onActivities={() => setOpenFlyout("activities")}
-                onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
-                onRun={sendQuickPrompt}
-              />
-            ) : null}
-            {openFlyout === "camera" ? (
-              <CameraPanel
-                videoRef={videoRef}
-                cameraStream={cameraStream}
-                mediaError={mediaError}
-                onSnapshot={sendCameraSnapshot}
-                onStop={stopCamera}
-              />
-            ) : null}
-            {openFlyout === "activities" ? (
-              <ActivitiesPanel
-                onRun={sendQuickPrompt}
-                onSendWink={sendWink}
-                onAskWink={askCodexWink}
-                onPreviewSound={playSoundKey}
-              />
-            ) : null}
-            {openFlyout === "games" ? (
-              <GamesPanel
-                activeGame={activeGame}
-                onSelectGame={setActiveGame}
-                onRun={sendQuickPrompt}
-                waiting={typing}
-              />
-            ) : null}
-          </div>
-        ) : null}
       </div>
+      {openFlyout ? (
+        <div
+          ref={flyoutRef}
+          className={`toolbar-flyout ${openFlyout} ${flyoutPosition.placement}`}
+          style={{ left: flyoutPosition.left, top: flyoutPosition.top, "--arrow-x": `${flyoutPosition.arrowX}px` }}
+        >
+          {openFlyout === "invite" ? (
+            <InvitePanel
+              contact={contact}
+              onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
+              onRun={sendQuickPrompt}
+            />
+          ) : null}
+          {openFlyout === "files" ? (
+            <FilesPanel
+              canOpenProject={Boolean(contact.cwd)}
+              onSendFile={handleSendFile}
+              onCamera={(event) => startCamera(event)}
+              onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
+            />
+          ) : null}
+          {openFlyout === "voice" ? (
+            <VoicePanel recording={recording} mediaError={mediaError} onToggle={toggleVoiceClip} />
+          ) : null}
+          {openFlyout === "text" ? (
+            <TextStylePanel
+              textStyle={textStyle}
+              onChange={(patch) => saveConversationTextStyle({ ...textStyle, ...patch })}
+              onReset={resetConversationTextStyle}
+            />
+          ) : null}
+          {openFlyout === "camera" ? (
+            <CameraPanel
+              videoRef={videoRef}
+              cameraStream={cameraStream}
+              mediaError={mediaError}
+              onSnapshot={sendCameraSnapshot}
+              onStop={stopCamera}
+            />
+          ) : null}
+          {openFlyout === "activities" ? (
+            <ActivitiesPanel
+              onRun={sendQuickPrompt}
+              onSendWink={sendWink}
+              onAskWink={askCodexWink}
+              onPreviewSound={playSoundKey}
+            />
+          ) : null}
+          {openFlyout === "emoticons" ? (
+            <EmoticonsPanel
+              onInsert={(emoticon) => {
+                insertDraft(`${emoticon.code} `);
+                setOpenFlyout("");
+              }}
+            />
+          ) : null}
+          {openFlyout === "games" ? (
+            <GamesPanel
+              activeGame={activeGame}
+              onSelectGame={setActiveGame}
+              onRun={sendQuickPrompt}
+              waiting={typing}
+            />
+          ) : null}
+        </div>
+      ) : null}
       <section className="chat-body">
         <div className="chat-main">
           <ThreadTabs
@@ -1861,17 +2553,27 @@ function ChatWindow({ bootstrap }) {
             onDeleteThread={deleteThreadTab}
             onReorderThreads={reorderThreadTabs}
           />
-          <div className="transcript" ref={scrollRef}>
+          <div
+            className="transcript"
+            ref={scrollRef}
+            style={{
+              "--message-font-family": textStyle.fontFamily,
+              "--message-font-size": `${textStyle.fontSize}px`,
+              "--message-color": textStyle.color,
+              "--message-bubble": textStyle.bubble,
+              "--message-me-bubble": textStyle.meBubble
+            }}
+          >
             {messages.map((message) => <Message key={message.id} message={message} />)}
-            {typing ? <div className="typing"><i /><i /><i />{contact.name} ecrit...</div> : null}
+            {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} ecrit...</div> : null}
           </div>
           <div className="format-strip">
-            <FormatButton icon="font" title="Police" onClick={() => wrapDraft("**", "**")} />
-            <FormatButton icon="smile" title="Sourire" onClick={() => insertDraft(":)")} />
-            <FormatButton icon="voice" title="Voice Clip" label={recording ? "Stop" : "Voice Clip"} active={recording} onClick={toggleVoiceClip} />
-            <FormatButton icon="wink" title="Clin d'oeil" onClick={() => setOpenFlyout("activities")} />
-            <FormatButton icon="image" title="Image" onClick={handleSendFile} />
-            <FormatButton icon="gift" title="Activites" onClick={() => setOpenFlyout("activities")} />
+            <FormatButton icon="font" title="Rendu texte" active={openFlyout === "text"} onClick={(event) => toggleFlyout("text", event)} />
+            <FormatButton icon="smile" title="Emoticones MSN" active={openFlyout === "emoticons"} onClick={(event) => toggleFlyout("emoticons", event)} />
+            <FormatButton icon="voice" title="Voice Clip" label={recording ? "Stop" : "Voice Clip"} active={openFlyout === "voice" || recording} onClick={(event) => toggleFlyout("voice", event)} />
+            <FormatButton icon="wink" title="Clin d'oeil" active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
+            <FormatButton icon="image" title="Image" active={openFlyout === "files"} onClick={(event) => toggleFlyout("files", event)} />
+            <FormatButton icon="gift" title="Activites" active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
             <FormatButton icon="wizz" title="Wizz" onClick={() => api.wizz(contact.id)} />
             <FormatButton icon="laugh" title="Rire" onClick={() => insertDraft(" :D")} />
             {recording ? <span className="format-status recording">Recording...</span> : null}
@@ -1948,7 +2650,7 @@ function Message({ message }) {
   return (
     <article className={message.from === "me" ? "message me-message" : "message"}>
       <header><strong>{message.author}</strong><time>{message.time}</time></header>
-      <p>{parsed.text}</p>
+      <p>{renderTextWithEmoticons(parsed.text)}</p>
       {wink ? (
         <div className="message-wink">
           <img src={wink.src} alt="" draggable="false" />

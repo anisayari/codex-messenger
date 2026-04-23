@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell, Tray } from "electron";
 import { execFile, spawn } from "node:child_process";
 import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
@@ -15,6 +15,7 @@ const isDev = Boolean(process.env.VITE_DEV_SERVER_URL);
 const devUrl = process.env.VITE_DEV_SERVER_URL ?? "http://127.0.0.1:5174/";
 const smokeTest = process.argv.includes("--smoke-test");
 const appIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people.ico");
+const toastIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people.png");
 
 app.setName("Codex Messenger");
 if (process.platform === "win32") app.setAppUserModelId("com.codex.messenger");
@@ -41,7 +42,7 @@ const contacts = [
     status: "busy",
     mood: "revue bugs/tests",
     color: "#315fd0",
-    avatar: "lens",
+    avatar: "msn-friendly-dog",
     kind: "agent",
     instructions:
       "Tu es Codex en mode revue. Priorise bugs, regressions, risques et tests manquants. Reponds en francais, structure par findings si necessaire."
@@ -54,7 +55,7 @@ const contacts = [
     status: "away",
     mood: "interface Codex",
     color: "#d88721",
-    avatar: "brush",
+    avatar: "msn-orange-daisy",
     kind: "agent",
     instructions:
       "Tu es Codex specialise UI desktop. Donne des choix concrets sur structure, composants, et interactions, sans marketing."
@@ -67,21 +68,37 @@ const contacts = [
     status: "online",
     mood: "execution locale",
     color: "#167c83",
-    avatar: "terminal",
+    avatar: "msn-rocket-launch",
     kind: "agent",
     instructions:
       "Tu es Codex oriente commandes et integration locale. Explique clairement les commandes et leurs effets avant les risques."
   }
 ];
 
-const agentAvatars = new Set(["butterfly", "lens", "brush", "terminal"]);
+const displayPictureAssets = [
+  ["msn-beach-chairs", "./msn-assets/msn75/display-pictures/beach-chairs.png"],
+  ["msn-chess-pieces", "./msn-assets/msn75/display-pictures/chess-pieces.png"],
+  ["msn-dirt-bike", "./msn-assets/msn75/display-pictures/dirt-bike.png"],
+  ["msn-friendly-dog", "./msn-assets/msn75/display-pictures/friendly-dog.png"],
+  ["msn-orange-daisy", "./msn-assets/msn75/display-pictures/orange-daisy.png"],
+  ["msn-palm-trees", "./msn-assets/msn75/display-pictures/palm-trees.png"],
+  ["msn-rocket-launch", "./msn-assets/msn75/display-pictures/rocket-launch.png"],
+  ["msn-rubber-ducky", "./msn-assets/msn75/display-pictures/rubber-ducky.png"],
+  ["msn-running-horses", "./msn-assets/msn75/display-pictures/running-horses.png"],
+  ["msn-skateboarder", "./msn-assets/msn75/display-pictures/skateboarder.png"],
+  ["msn-soccer-ball", "./msn-assets/msn75/display-pictures/soccer-ball.png"]
+];
+const displayPictureAssetByAvatar = new Map(displayPictureAssets);
+const displayPictureAssetSet = new Set(displayPictureAssets.map(([, asset]) => asset));
+const agentAvatars = new Set(["butterfly", "lens", "brush", "terminal", ...displayPictureAssetByAvatar.keys()]);
 const defaultProfile = {
   email: "anis@codex.local",
   status: "online",
   displayName: "anis",
   language: "fr",
   personalMessage: "Codex Messenger",
-  displayPicturePath: ""
+  displayPicturePath: "",
+  displayPictureAsset: ""
 };
 const profile = { ...defaultProfile };
 
@@ -89,10 +106,43 @@ const windows = new Map();
 const threadByContact = new Map();
 const contactByThread = new Map();
 const unreadReminderByContact = new Map();
+const unreadByContact = new Map();
+const recentIncomingByContact = new Map();
+const toastWindows = [];
 const knownThreads = new Map();
-const unreadWizzDelayMs = Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 5 * 60 * 1000;
+let tray = null;
+let isQuitting = false;
+const defaultUnreadWizzDelayMs = Math.max(10_000, Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 60_000);
 const defaultThreadTabs = { orderByCwd: {}, hiddenIds: [] };
-const defaultSettings = { language: "fr", codexPath: "", profile: defaultProfile, customAgents: [], threadTabs: defaultThreadTabs };
+const defaultProjectSort = "name-asc";
+const defaultTextStyle = {
+  fontFamily: "Tahoma",
+  fontSize: 11,
+  color: "#182337",
+  bubble: "#f0f6ff",
+  meBubble: "#eefaf1"
+};
+const projectSortModes = new Set([
+  "name-asc",
+  "name-desc",
+  "created-desc",
+  "created-asc",
+  "modified-desc",
+  "modified-asc",
+  "threads-desc",
+  "threads-asc"
+]);
+const defaultSettings = {
+  language: "fr",
+  codexPath: "",
+  profile: defaultProfile,
+  customAgents: [],
+  threadTabs: defaultThreadTabs,
+  projectSort: defaultProjectSort,
+  textStyles: {},
+  unreadWizzDelayMs: defaultUnreadWizzDelayMs,
+  closeBehavior: "ask"
+};
 let settingsCache = null;
 
 function defaultCwd() {
@@ -119,7 +169,46 @@ function normalizeProfile(nextProfile = {}) {
   merged.language = normalizeLanguage(merged.language);
   merged.personalMessage = String(merged.personalMessage ?? "").slice(0, 140);
   merged.displayPicturePath = String(merged.displayPicturePath ?? "");
+  merged.displayPictureAsset = displayPictureAssetSet.has(merged.displayPictureAsset) ? merged.displayPictureAsset : "";
   return merged;
+}
+
+function normalizeCloseBehavior(value) {
+  return ["ask", "hide", "close"].includes(value) ? value : "ask";
+}
+
+function normalizeProjectSort(value) {
+  return projectSortModes.has(value) ? value : defaultProjectSort;
+}
+
+function normalizeUnreadWizzDelayMs(value) {
+  const delay = Number(value);
+  if (!Number.isFinite(delay)) return defaultUnreadWizzDelayMs;
+  return Math.max(10_000, Math.min(30 * 60_000, Math.round(delay)));
+}
+
+function normalizeTextStyle(value = {}) {
+  const fontFamily = String(value.fontFamily || defaultTextStyle.fontFamily).trim().slice(0, 48) || defaultTextStyle.fontFamily;
+  const fontSize = Math.max(9, Math.min(18, Math.round(Number(value.fontSize) || defaultTextStyle.fontSize)));
+  const color = /^#[0-9a-f]{6}$/i.test(String(value.color || "")) ? String(value.color) : defaultTextStyle.color;
+  const bubble = /^#[0-9a-f]{6}$/i.test(String(value.bubble || "")) ? String(value.bubble) : defaultTextStyle.bubble;
+  const meBubble = /^#[0-9a-f]{6}$/i.test(String(value.meBubble || "")) ? String(value.meBubble) : defaultTextStyle.meBubble;
+  return { fontFamily, fontSize, color, bubble, meBubble };
+}
+
+function normalizeTextStyles(value = {}) {
+  const styles = {};
+  const source = value && typeof value === "object" ? value : {};
+  for (const [contactId, style] of Object.entries(source)) {
+    const cleanId = String(contactId || "").trim().slice(0, 180);
+    if (!cleanId) continue;
+    styles[cleanId] = normalizeTextStyle(style);
+  }
+  return styles;
+}
+
+function currentUnreadWizzDelayMs() {
+  return normalizeUnreadWizzDelayMs(settingsCache?.unreadWizzDelayMs ?? defaultUnreadWizzDelayMs);
 }
 
 function slugifyAgentName(name) {
@@ -217,6 +306,10 @@ async function loadSettings() {
   });
   settingsCache.customAgents = normalizeCustomAgents(settingsCache.customAgents);
   settingsCache.threadTabs = normalizeThreadTabs(settingsCache.threadTabs);
+  settingsCache.projectSort = normalizeProjectSort(settingsCache.projectSort);
+  settingsCache.textStyles = normalizeTextStyles(settingsCache.textStyles);
+  settingsCache.unreadWizzDelayMs = normalizeUnreadWizzDelayMs(settingsCache.unreadWizzDelayMs);
+  settingsCache.closeBehavior = normalizeCloseBehavior(settingsCache.closeBehavior);
   Object.assign(profile, settingsCache.profile);
   return settingsCache;
 }
@@ -236,7 +329,11 @@ async function saveSettings(nextSettings = {}) {
     codexPath: String(nextSettings.codexPath ?? current.codexPath ?? "").trim(),
     profile: nextProfile,
     customAgents: normalizeCustomAgents(nextSettings.customAgents ?? current.customAgents),
-    threadTabs: normalizeThreadTabs(nextSettings.threadTabs ?? current.threadTabs)
+    threadTabs: normalizeThreadTabs(nextSettings.threadTabs ?? current.threadTabs),
+    projectSort: normalizeProjectSort(nextSettings.projectSort ?? current.projectSort),
+    textStyles: normalizeTextStyles(nextSettings.textStyles ?? current.textStyles),
+    unreadWizzDelayMs: normalizeUnreadWizzDelayMs(nextSettings.unreadWizzDelayMs ?? current.unreadWizzDelayMs),
+    closeBehavior: normalizeCloseBehavior(nextSettings.closeBehavior ?? current.closeBehavior)
   };
   await fs.mkdir(path.dirname(settingsFilePath()), { recursive: true });
   await fs.writeFile(settingsFilePath(), JSON.stringify(settingsCache, null, 2), "utf8");
@@ -661,54 +758,132 @@ function sortThreadsForCwd(threads, cwd, threadTabs) {
   });
 }
 
-async function conversationBrowser() {
-  let threads = [];
-  const settings = await loadSettings();
-  const hiddenIds = new Set(settings.threadTabs.hiddenIds);
+function isoFromMs(value) {
+  return Number.isFinite(value) && value > 0 ? new Date(value).toISOString() : null;
+}
+
+function threadTimeMs(thread) {
+  const value = Date.parse(thread?.timestamp ?? "");
+  return Number.isFinite(value) ? value : 0;
+}
+
+async function projectMetadata(cwd, threads) {
+  const threadTimes = threads.map(threadTimeMs).filter((value) => value > 0);
+  const oldestThread = threadTimes.length ? Math.min(...threadTimes) : 0;
+  const newestThread = threadTimes.length ? Math.max(...threadTimes) : 0;
+  let createdMs = oldestThread;
+  let modifiedMs = newestThread;
+
   try {
-    threads = (await codex.listThreads()).map(normalizeThread).filter((thread) => !hiddenIds.has(thread.id));
+    const stat = await fs.stat(cwd);
+    createdMs = Number(stat.birthtimeMs || stat.ctimeMs || createdMs);
+    modifiedMs = Math.max(Number(stat.mtimeMs || 0), newestThread);
   } catch {
-    threads = [];
+    // Keep thread-derived dates when a historical thread points to a missing folder.
   }
+
+  return {
+    createdAt: isoFromMs(createdMs),
+    modifiedAt: isoFromMs(modifiedMs),
+    threadCount: threads.length
+  };
+}
+
+async function conversationBrowser() {
+  const settings = await loadSettings();
+  const threads = await listVisibleThreads(settings);
 
   const projectPaths = new Set(await listWorkspaceProjects());
   for (const thread of threads) projectPaths.add(thread.cwd);
 
+  const projects = await Promise.all(Array.from(projectPaths).map(async (cwd) => {
+    const projectThreads = sortThreadsForCwd(
+      threads.filter((thread) => thread.cwd === cwd),
+      cwd,
+      settings.threadTabs
+    );
+    return {
+      id: encodeProjectId(cwd),
+      cwd,
+      name: projectNameFor(cwd),
+      threads: projectThreads,
+      ...(await projectMetadata(cwd, projectThreads))
+    };
+  }));
+
   return {
     rootDir: defaultCwd(),
     projectsRoot: projectsRoot(),
-    projects: Array.from(projectPaths)
-      .map((cwd) => ({
-        id: encodeProjectId(cwd),
-        cwd,
-        name: projectNameFor(cwd),
-        threads: sortThreadsForCwd(
-          threads.filter((thread) => thread.cwd === cwd),
-          cwd,
-          settings.threadTabs
-        )
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name))
+    projects: projects.sort((a, b) => a.name.localeCompare(b.name))
   };
+}
+
+async function listVisibleThreads(settings = settingsCache) {
+  const currentSettings = settings ?? await loadSettings();
+  const hiddenIds = new Set(currentSettings.threadTabs.hiddenIds);
+  try {
+    return (await codex.listThreads()).map(normalizeThread).filter((thread) => !hiddenIds.has(thread.id));
+  } catch {
+    return [];
+  }
+}
+
+function firstThreadForProject(threads, cwd, settings = settingsCache) {
+  return sortThreadsForCwd(
+    threads.filter((thread) => thread.cwd === cwd),
+    cwd,
+    settings?.threadTabs ?? defaultThreadTabs
+  )[0] ?? null;
 }
 
 function textFromUserInput(input) {
   if (!input) return "";
+  if (typeof input === "string") return input;
   if (input.type === "text") return input.text ?? "";
+  if (input.type === "input_text") return input.text ?? "";
+  if (input.type === "output_text") return input.text ?? "";
   if (input.type === "localImage") return `[image] ${input.path}`;
+  if (input.type === "local_image") return `[image] ${input.path}`;
   if (input.type === "image") return `[image] ${input.url}`;
+  if (input.text) return input.text;
+  if (input.path) return `[image] ${input.path}`;
+  if (input.url) return `[image] ${input.url}`;
   return "";
+}
+
+function textFromItem(item) {
+  if (!item) return "";
+  if (typeof item.text === "string") return item.text;
+  if (typeof item.message === "string") return item.message;
+  if (typeof item.content === "string") return item.content;
+  if (Array.isArray(item.content)) return item.content.map(textFromUserInput).filter(Boolean).join("\n");
+  if (Array.isArray(item.input)) return item.input.map(textFromUserInput).filter(Boolean).join("\n");
+  return "";
+}
+
+function historyAuthorForContact(contact) {
+  return contact?.kind === "project" || contact?.kind === "thread" ? "Codex" : contact?.name || "Codex";
+}
+
+function timeFromHistoryItem(item) {
+  const value = item?.timestamp ?? item?.createdAt ?? item?.completedAt ?? item?.updatedAt;
+  const date = typeof value === "number" ? new Date(value > 10_000_000_000 ? value : value * 1000) : new Date(value ?? "");
+  if (!Number.isFinite(date.getTime())) return "--:--";
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function messagesFromThread(thread, contact) {
   const messages = [];
+  const author = historyAuthorForContact(contact);
   for (const turn of thread?.turns ?? []) {
     for (const item of turn.items ?? []) {
-      if (item.type === "userMessage") {
-        const text = (item.content ?? []).map(textFromUserInput).filter(Boolean).join("\n");
-        if (text) messages.push({ id: item.id, from: "me", author: profile.displayName, text, time: "--:--" });
-      } else if (item.type === "agentMessage" && item.text) {
-        messages.push({ id: item.id, from: "them", author: contact.name, text: item.text, time: "--:--" });
+      const type = String(item.type ?? "").toLowerCase();
+      if (["usermessage", "user_message", "user"].includes(type)) {
+        const text = textFromItem(item);
+        if (text) messages.push({ id: item.id ?? `user-${messages.length}`, from: "me", author: profile.displayName, text, time: timeFromHistoryItem(item) });
+      } else if (["agentmessage", "agent_message", "assistant", "assistant_message"].includes(type)) {
+        const text = textFromItem(item);
+        if (text) messages.push({ id: item.id ?? `agent-${messages.length}`, from: "them", author, text, time: timeFromHistoryItem(item) });
       }
     }
   }
@@ -722,7 +897,23 @@ function rendererUrl(params) {
   return `${index}?${query}`;
 }
 
+function chatWindowTitle(contact) {
+  if (contact?.kind === "project") return `${contact.name} - Codex Messenger`;
+  if (contact?.kind === "thread") {
+    const projectName = contact.cwd ? projectNameFor(contact.cwd) : "Codex";
+    return `${contact.name} - ${projectName}`;
+  }
+  return `${contact?.name || "Codex"} - Conversation`;
+}
+
+function setStableWindowTitle(win, title) {
+  if (!win || win.isDestroyed()) return;
+  win.codexMessengerTitle = title;
+  win.setTitle(title);
+}
+
 function createBaseWindow(key, options) {
+  const initialTitle = options.title ?? "Codex Messenger";
   const win = new BrowserWindow({
     frame: false,
     show: false,
@@ -738,8 +929,14 @@ function createBaseWindow(key, options) {
     },
     ...options
   });
+  win.codexMessengerTitle = initialTitle;
   windows.set(key, win);
   win.setMenuBarVisibility(false);
+  win.on("page-title-updated", (event) => {
+    if (!win.codexMessengerTitle) return;
+    event.preventDefault();
+    win.setTitle(win.codexMessengerTitle);
+  });
   win.once("ready-to-show", () => {
     win.show();
     if (smokeTest) setTimeout(() => app.quit(), 500);
@@ -754,6 +951,51 @@ function createBaseWindow(key, options) {
   return win;
 }
 
+function showMainWindow() {
+  const existing = windows.get("main");
+  if (existing && !existing.isDestroyed()) {
+    existing.show();
+    existing.focus();
+    return existing;
+  }
+  return createMainWindow();
+}
+
+function hideMainWindow() {
+  const win = windows.get("main");
+  if (!win || win.isDestroyed()) return;
+  win.hide();
+}
+
+async function handleMainWindowClose(event, win) {
+  if (isQuitting || smokeTest) return;
+  event.preventDefault();
+  const settings = await loadSettings();
+  let behavior = normalizeCloseBehavior(settings.closeBehavior);
+
+  if (behavior === "ask") {
+    const result = await dialog.showMessageBox(win, {
+      type: "question",
+      title: "Codex Messenger",
+      message: "Fermer Codex Messenger ?",
+      detail: "Tu peux fermer seulement cette fenetre et garder les conversations ouvertes, ou reduire Codex Messenger dans la zone de notification.",
+      buttons: ["Reduire", "Fermer la fenetre"],
+      defaultId: 0,
+      cancelId: 0,
+      checkboxLabel: "Memoriser mon choix",
+      checkboxChecked: false
+    });
+    behavior = result.response === 1 ? "close" : "hide";
+    if (result.checkboxChecked) await saveSettings({ closeBehavior: behavior });
+  }
+
+  if (behavior === "close") {
+    win.destroy();
+  } else {
+    hideMainWindow();
+  }
+}
+
 function createMainWindow() {
   const win = createBaseWindow("main", {
     width: 430,
@@ -764,6 +1006,16 @@ function createMainWindow() {
     y: 60,
     title: "Codex Messenger"
   });
+  win.on("minimize", (event) => {
+    if (isQuitting || smokeTest) return;
+    event.preventDefault();
+    hideMainWindow();
+  });
+  win.on("close", (event) => {
+    handleMainWindowClose(event, win).catch(() => {
+      if (!win.isDestroyed()) win.hide();
+    });
+  });
   win.loadURL(rendererUrl({ view: "main" }));
   return win;
 }
@@ -771,12 +1023,14 @@ function createMainWindow() {
 function createChatWindow(contactId) {
   const existing = windows.get(`chat:${contactId}`);
   if (existing && !existing.isDestroyed()) {
+    setStableWindowTitle(existing, chatWindowTitle(contactFor(contactId)));
     existing.show();
     existing.focus();
     return existing;
   }
 
   const contact = contactFor(contactId);
+  const title = chatWindowTitle(contact);
   const offset = Math.max(0, Array.from(windows.keys()).filter((key) => key.startsWith("chat:")).length);
   const win = createBaseWindow(`chat:${contactId}`, {
     width: 760,
@@ -785,15 +1039,41 @@ function createChatWindow(contactId) {
     minHeight: 430,
     x: 440 + offset * 28,
     y: 80 + offset * 28,
-    title: `${contact.name} - Conversation`
+    title
   });
   win.on("focus", () => {
-    win.flashFrame(false);
-    clearUnreadReminder(contactId);
+    clearUnread(contactId, { clearReminder: false });
   });
   win.on("closed", () => clearUnreadReminder(contactId));
   win.loadURL(rendererUrl({ view: "chat", contactId }));
   return win;
+}
+
+function createTray() {
+  if (tray || process.platform === "darwin") return tray;
+  tray = new Tray(appIconPath);
+  tray.setToolTip("Codex Messenger");
+  const updateMenu = () => {
+    tray.setContextMenu(Menu.buildFromTemplate([
+      { label: "Ouvrir Codex Messenger", click: showMainWindow },
+      { label: "Ouvrir Codex", click: () => createChatWindow("codex") },
+      { type: "separator" },
+      { label: "Fermer definitivement", click: quitApplication }
+    ]));
+  };
+  tray.on("click", showMainWindow);
+  tray.on("double-click", showMainWindow);
+  updateMenu();
+  updateTrayTitle();
+  return tray;
+}
+
+function quitApplication() {
+  isQuitting = true;
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) win.destroy();
+  }
+  app.quit();
 }
 
 function switchChatWindow(event, contactId) {
@@ -815,6 +1095,7 @@ function switchChatWindow(event, contactId) {
     }
   }
   windows.set(targetKey, win);
+  setStableWindowTitle(win, chatWindowTitle(contactFor(contactId)));
   win.loadURL(rendererUrl({ view: "chat", contactId }));
   return { ok: true };
 }
@@ -831,6 +1112,44 @@ function sendToMain(channel, payload) {
   win.webContents.send(channel, payload);
 }
 
+function unreadState() {
+  return Object.fromEntries(unreadByContact);
+}
+
+function unreadTotal() {
+  return Array.from(unreadByContact.values()).reduce((total, count) => total + count, 0);
+}
+
+function updateTrayTitle() {
+  if (!tray) return;
+  const count = unreadTotal();
+  tray.setToolTip(count ? `Codex Messenger - ${count} unread` : "Codex Messenger");
+}
+
+function emitUnreadState(contactId) {
+  updateTrayTitle();
+  sendToMain("conversation:unread", {
+    contactId,
+    count: unreadByContact.get(contactId) ?? 0,
+    unread: unreadState()
+  });
+}
+
+function markUnread(contactId) {
+  if (!contactId) return;
+  unreadByContact.set(contactId, (unreadByContact.get(contactId) ?? 0) + 1);
+  emitUnreadState(contactId);
+}
+
+function clearUnread(contactId, options = {}) {
+  if (options.clearReminder !== false) clearUnreadReminder(contactId);
+  const win = windows.get(`chat:${contactId}`);
+  if (win && !win.isDestroyed()) win.flashFrame(false);
+  if (!unreadByContact.has(contactId)) return;
+  unreadByContact.delete(contactId);
+  emitUnreadState(contactId);
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -843,19 +1162,16 @@ function clearUnreadReminder(contactId) {
 
 function scheduleUnreadReminder(contactId) {
   const win = windows.get(`chat:${contactId}`);
-  if (win?.isFocused()) {
-    clearUnreadReminder(contactId);
-    return;
-  }
-
   clearUnreadReminder(contactId);
   unreadReminderByContact.set(contactId, setTimeout(() => {
     unreadReminderByContact.delete(contactId);
     const target = windows.get(`chat:${contactId}`);
     if (target && !target.isDestroyed() && !target.isFocused()) {
+      wizz(target, { focus: false });
+    } else if (target && !target.isDestroyed()) {
       wizz(target);
     }
-  }, unreadWizzDelayMs));
+  }, currentUnreadWizzDelayMs()));
 }
 
 async function wizz(win, options = {}) {
@@ -877,6 +1193,172 @@ async function wizz(win, options = {}) {
     await sleep(46);
   }
   if (!win.isDestroyed()) win.setPosition(x, y, false);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function toastPreview(text) {
+  return String(text ?? "")
+    .replace(/\[(?:wink|clin|clin-doeil|nudge):[a-z0-9-]+\]/gi, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120) || "sent you a message.";
+}
+
+function publicAssetUrl(assetPath) {
+  const relativePath = String(assetPath || "").replace(/^\.\//, "");
+  return pathToFileURL(path.join(rootDir, "public", relativePath)).href;
+}
+
+function avatarUrlForToast(contact) {
+  if (contact?.displayPicturePath) return pathToFileURL(contact.displayPicturePath).href;
+  if (contact?.displayPictureAsset && displayPictureAssetSet.has(contact.displayPictureAsset)) return publicAssetUrl(contact.displayPictureAsset);
+  const defaultPicture = displayPictureAssetByAvatar.get(contact?.avatar);
+  if (defaultPicture) return publicAssetUrl(defaultPicture);
+  return pathToFileURL(toastIconPath).href;
+}
+
+function positionToastWindows() {
+  if (!app.isReady()) return;
+  const width = 430;
+  const height = 170;
+  const gap = 12;
+  const margin = 18;
+  const { workArea } = screen.getPrimaryDisplay();
+  toastWindows.forEach((win, index) => {
+    if (win.isDestroyed()) return;
+    win.setBounds({
+      width,
+      height,
+      x: workArea.x + workArea.width - width - margin,
+      y: workArea.y + workArea.height - height - margin - index * (height + gap)
+    }, false);
+  });
+}
+
+function removeToastWindow(win) {
+  const index = toastWindows.indexOf(win);
+  if (index >= 0) toastWindows.splice(index, 1);
+  positionToastWindows();
+}
+
+function messengerToastHtml({ contact, preview, playSound = false }) {
+  const name = escapeHtml(contact.name || "Codex");
+  const message = escapeHtml(preview);
+  const avatar = escapeHtml(avatarUrlForToast(contact));
+  const logo = escapeHtml(pathToFileURL(toastIconPath).href);
+  const sound = escapeHtml(pathToFileURL(path.join(rootDir, "public", "msn-assets", "sounds", "type.wav")).href);
+  return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;font-family:"Segoe UI",Tahoma,Arial,sans-serif;color:#3c3c3c}
+.toast{position:absolute;inset:8px;border:1px solid #61cce8;border-radius:18px;background:linear-gradient(135deg,#f7fcff 0%,#e6f7ff 50%,#ccecff 100%);box-shadow:0 9px 24px rgba(31,47,72,.38),inset 0 1px 0 rgba(255,255,255,.95)}
+.head{display:flex;align-items:center;gap:10px;padding:18px 18px 8px;font-size:23px;color:#515151;text-shadow:0 1px 0 white}
+.head img{width:29px;height:29px;object-fit:contain}.close{margin-left:auto;color:#717171;text-decoration:none;font-size:30px;line-height:1}
+.body{display:grid;grid-template-columns:104px 1fr;gap:18px;padding:6px 22px 0 22px}.avatar{width:94px;height:94px;padding:6px;border:1px solid #9eb8c7;border-radius:18px;background:linear-gradient(#fff,#d7ecf9);box-shadow:0 7px 12px rgba(42,65,83,.28),inset 0 0 0 4px rgba(239,248,255,.95)}.avatar img{width:100%;height:100%;border-radius:8px;object-fit:cover;background:#b8dcf5}.copy{padding-top:14px;font-size:24px;line-height:1.2}.copy strong{display:block;margin-bottom:4px;font-size:26px;font-weight:700;color:#3a3a3a}.copy span{display:block;max-height:58px;overflow:hidden}.options{position:absolute;right:26px;bottom:18px;color:#0a73da;text-decoration:none;font-size:24px}.open{position:absolute;inset:52px 0 0 0}
+</style>
+</head>
+<body>
+<div class="toast">
+  <div class="head"><img src="${logo}" alt=""> <span>Codex Messenger</span><a class="close" href="codex-messenger://toast/close">x</a></div>
+  <a class="open" href="codex-messenger://toast/open"></a>
+  <div class="body"><div class="avatar"><img src="${avatar}" alt=""></div><div class="copy"><strong>${name}</strong><span>${message}</span></div></div>
+  <a class="options" href="codex-messenger://toast/open">Options</a>
+</div>
+${playSound ? `<audio src="${sound}" autoplay></audio>` : ""}
+</body>
+</html>`;
+}
+
+function showMessengerToast(contactId, text, options = {}) {
+  if (smokeTest || isQuitting) return;
+  const contact = contactFor(contactId);
+  const preview = toastPreview(text);
+  const width = 430;
+  const height = 170;
+  const toastWin = new BrowserWindow({
+    width,
+    height,
+    frame: false,
+    show: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    transparent: true,
+    backgroundColor: "#00000000",
+    title: "Codex Messenger",
+    icon: appIconPath,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+  toastWindows.unshift(toastWin);
+  while (toastWindows.length > 3) toastWindows.pop()?.close();
+  toastWin.on("closed", () => removeToastWindow(toastWin));
+  toastWin.webContents.on("will-navigate", (event, url) => {
+    if (!url.startsWith("codex-messenger://toast/")) return;
+    event.preventDefault();
+    if (url.endsWith("/open")) createChatWindow(contactId);
+    toastWin.close();
+  });
+  toastWin.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("codex-messenger://toast/open")) createChatWindow(contactId);
+    toastWin.close();
+    return { action: "deny" };
+  });
+  toastWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(messengerToastHtml({ contact, preview, playSound: Boolean(options.playSound) }))}`);
+  toastWin.once("ready-to-show", () => {
+    positionToastWindows();
+    toastWin.showInactive();
+  });
+  setTimeout(() => {
+    if (!toastWin.isDestroyed()) toastWin.close();
+  }, 8500);
+}
+
+function registerIncomingMessage(contactId, text) {
+  if (!contactId || !String(text ?? "").trim()) return false;
+  const now = Date.now();
+  const signature = `${normalizeMessageTextForDedupe(text)}:${Math.floor(now / 6000)}`;
+  if (recentIncomingByContact.get(contactId) === signature) return false;
+  recentIncomingByContact.set(contactId, signature);
+
+  const chatWin = windows.get(`chat:${contactId}`);
+  if (chatWin?.isFocused()) {
+    clearUnread(contactId, { clearReminder: false });
+    scheduleUnreadReminder(contactId);
+    return false;
+  }
+
+  markUnread(contactId);
+  if (chatWin && !chatWin.isDestroyed()) {
+    chatWin.flashFrame(true);
+  }
+  scheduleUnreadReminder(contactId);
+  const needsMainSound = !chatWin || chatWin.isDestroyed();
+  const mainWin = windows.get("main");
+  const mainCanPlaySound = mainWin && !mainWin.isDestroyed();
+  showMessengerToast(contactId, text, { playSound: needsMainSound && !mainCanPlaySound });
+  if (needsMainSound && mainCanPlaySound) {
+    sendToMain("conversation:notify", { contactId, contact: contactFor(contactId), text: toastPreview(text) });
+  }
+  return true;
+}
+
+function normalizeMessageTextForDedupe(text) {
+  return String(text ?? "").replace(/\s+/g, " ").trim().slice(0, 240);
 }
 
 async function ensureThread(contactId) {
@@ -926,7 +1408,7 @@ codex.on("notification", (message) => {
     const contactId = contactByThread.get(message.params.threadId);
     const text = textFromCompletedItem(message.params.item);
     if (contactId && text) {
-      scheduleUnreadReminder(contactId);
+      registerIncomingMessage(contactId, text);
       sendToChat(contactId, "codex:completed-item", { contactId, text });
     }
     return;
@@ -935,10 +1417,8 @@ codex.on("notification", (message) => {
   if (message.method === "turn/completed") {
     const contactId = contactByThread.get(message.params.threadId);
     if (contactId) {
-      scheduleUnreadReminder(contactId);
       sendToChat(contactId, "codex:done", { contactId });
       sendToMain("conversation:finished", { contactId });
-      wizz(windows.get(`chat:${contactId}`), { focus: false });
     }
     return;
   }
@@ -956,17 +1436,15 @@ codex.on("notification", (message) => {
     if (event.type === "agent_message_delta") {
       sendToChat(contactId, "codex:delta", { contactId, delta: event.delta });
     } else if (event.type === "agent_message" && event.message) {
-      scheduleUnreadReminder(contactId);
+      registerIncomingMessage(contactId, event.message);
       sendToChat(contactId, "codex:completed-item", { contactId, text: event.message });
     } else if (event.type === "task_complete") {
       if (event.last_agent_message) {
-        scheduleUnreadReminder(contactId);
+        registerIncomingMessage(contactId, event.last_agent_message);
         sendToChat(contactId, "codex:completed-item", { contactId, text: event.last_agent_message });
       }
-      scheduleUnreadReminder(contactId);
       sendToChat(contactId, "codex:done", { contactId });
       sendToMain("conversation:finished", { contactId });
-      wizz(windows.get(`chat:${contactId}`), { focus: false });
     } else if (event.type === "stream_error" || event.type === "error") {
       sendToChat(contactId, "codex:error", { contactId, text: event.message ?? "Erreur Codex" });
     }
@@ -979,19 +1457,32 @@ codex.on("status", (status) => {
 
 ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
   const settings = await loadSettings();
-  const contact = contactFor(params.contactId);
+  const contactId = String(params.contactId ?? "");
+  let contact = contactFor(contactId);
   let historyMessages = [];
-  if (params.view === "chat" && threadIdFromContactId(params.contactId)) {
+  if (params.view === "chat") {
     try {
-      const threadId = threadIdFromContactId(params.contactId);
-      const thread = await codex.resumeThread(threadId, {
-        cwd: contact.cwd ?? knownThreads.get(threadId)?.cwd ?? defaultCwd(),
-        developerInstructions: localizedInstructions(contact)
-      });
-      knownThreads.set(threadId, thread);
-      threadByContact.set(params.contactId, threadId);
-      contactByThread.set(threadId, params.contactId);
-      historyMessages = messagesFromThread(thread, contact);
+      let threadId = threadIdFromContactId(contactId) || threadByContact.get(contactId) || null;
+      if (!threadId && contact.kind === "project") {
+        const projectThread = firstThreadForProject(await listVisibleThreads(settings), contact.cwd, settings);
+        threadId = projectThread?.id ?? null;
+      }
+
+      if (threadId) {
+        const thread = await codex.resumeThread(threadId, {
+          cwd: contact.cwd ?? knownThreads.get(threadId)?.cwd ?? defaultCwd(),
+          developerInstructions: localizedInstructions(contact)
+        });
+        knownThreads.set(threadId, thread);
+        if (threadIdFromContactId(contactId)) {
+          contact = contactFromThread(threadId);
+        } else {
+          contact = { ...contact, threadId };
+        }
+        threadByContact.set(contactId, threadId);
+        contactByThread.set(threadId, contactId);
+        historyMessages = messagesFromThread(thread, contact);
+      }
     } catch (error) {
       historyMessages = [{ id: "resume-error", from: "system", author: "system", text: error.message, time: "--:--" }];
     }
@@ -999,12 +1490,13 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
 
   return {
     view: params.view,
-    contactId: params.contactId,
+    contactId,
     contacts: contactsForSettings(settings),
     contact,
     profile,
     cwd: defaultCwd(),
     settings,
+    unread: unreadState(),
     codexStatus: await codexStatus(),
     userAgent: codex.userAgent,
     conversations: params.view === "chat" ? await conversationBrowser() : null,
@@ -1016,6 +1508,7 @@ ipcMain.handle("auth:sign-in", async (_event, nextProfile) => {
   const settings = await saveSettings({
     language: nextProfile.language,
     codexPath: nextProfile.codexPath,
+    unreadWizzDelayMs: nextProfile.unreadWizzDelayMs,
     profile: nextProfile
   });
   Object.assign(profile, settings.profile);
@@ -1093,7 +1586,8 @@ ipcMain.handle("profile:choose-picture", async (event) => {
   const settings = await saveSettings({
     profile: {
       ...profile,
-      displayPicturePath: targetPath
+      displayPicturePath: targetPath,
+      displayPictureAsset: ""
     }
   });
   return { canceled: false, path: targetPath, profile, settings };
@@ -1103,7 +1597,8 @@ ipcMain.handle("profile:clear-picture", async () => {
   const settings = await saveSettings({
     profile: {
       ...profile,
-      displayPicturePath: ""
+      displayPicturePath: "",
+      displayPictureAsset: ""
     }
   });
   return { ok: true, profile, settings };
@@ -1126,6 +1621,28 @@ ipcMain.handle("conversation:open-project", (_event, cwd) => {
 
 ipcMain.handle("conversation:switch-thread", (event, threadId) => {
   return switchChatWindow(event, `thread:${threadId}`);
+});
+
+ipcMain.handle("conversation:load-thread", async (_event, { contactId, threadId } = {}) => {
+  const cleanThreadId = String(threadId || "").trim();
+  const cleanContactId = String(contactId || "").trim();
+  if (!cleanThreadId || !cleanContactId) return { ok: false, error: "Fil invalide" };
+  const contact = contactFor(cleanContactId);
+  const thread = await codex.resumeThread(cleanThreadId, {
+    cwd: contact.cwd ?? knownThreads.get(cleanThreadId)?.cwd ?? defaultCwd(),
+    developerInstructions: localizedInstructions(contact)
+  });
+  knownThreads.set(cleanThreadId, thread);
+  const hydratedContact = contact.kind === "project" ? { ...contact, threadId: cleanThreadId } : contactFromThread(cleanThreadId);
+  threadByContact.set(cleanContactId, cleanThreadId);
+  contactByThread.set(cleanThreadId, cleanContactId);
+  return {
+    ok: true,
+    threadId: cleanThreadId,
+    contact: hydratedContact,
+    messages: messagesFromThread(thread, hydratedContact),
+    conversations: await conversationBrowser()
+  };
 });
 
 ipcMain.handle("conversation:switch-project", (event, cwd) => {
@@ -1194,11 +1711,11 @@ async function sendConversationItems(contactId, items) {
   });
   if (!cleanItems.length) return { ok: false };
   try {
-    clearUnreadReminder(contactId);
+    clearUnread(contactId);
     sendToChat(contactId, "codex:typing", { contactId });
     const threadId = await ensureThread(contactId);
     await codex.startTurn(threadId, cleanItems);
-    return { ok: true };
+    return { ok: true, threadId, conversations: await conversationBrowser() };
   } catch (error) {
     sendToChat(contactId, "codex:error", { contactId, text: error.message });
     return { ok: false, error: error.message };
@@ -1280,7 +1797,7 @@ ipcMain.handle("app:reload", (event) => {
 });
 
 ipcMain.handle("app:quit", () => {
-  app.quit();
+  quitApplication();
   return { ok: true };
 });
 
@@ -1297,7 +1814,7 @@ ipcMain.handle("app:save-text", async (event, { title = "Save", defaultPath = "c
 });
 
 ipcMain.handle("conversation:read", (_event, contactId) => {
-  clearUnreadReminder(contactId);
+  clearUnread(contactId, { clearReminder: false });
   return { ok: true };
 });
 
@@ -1322,16 +1839,18 @@ ipcMain.handle("window:close", (event) => {
 });
 
 app.whenReady().then(() => {
+  createTray();
   createMainWindow();
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    showMainWindow();
   });
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin" && isQuitting) app.quit();
 });
 
 app.on("before-quit", () => {
+  isQuitting = true;
   codex.dispose();
 });

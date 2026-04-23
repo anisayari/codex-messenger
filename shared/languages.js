@@ -5,28 +5,28 @@ export const supportedLanguages = [
     login: {
       subtitle: "Connexion au serveur local Codex",
       email: "Adresse de messagerie",
-      displayName: "Nom affiche",
+      displayName: "Nom affiché",
       personalMessage: "Message personnel",
       status: "Statut",
       language: "Langue",
       codexPath: "Chemin vers Codex CLI",
-      autoPath: "Detection automatique via PATH",
+      autoPath: "Détection automatique via PATH",
       browse: "Parcourir",
       test: "Tester",
       online: "En ligne",
       away: "Absent",
-      busy: "Occupe",
-      offline: "Apparaitre hors ligne",
-      remember: "Memoriser mon adresse",
+      busy: "Occupé",
+      offline: "Apparaître hors ligne",
+      remember: "Mémoriser mon adresse",
       connect: "Connexion",
-      connecting: "Connexion Codex...",
-      hint: "Utilise `codex app-server` via le main process Electron. Aucune cle API n'est exposee au renderer.",
-      found: "Codex detecte",
-      missing: "Codex non detecte. Installez Codex, ajoutez-le au PATH, ou indiquez codex.exe/codex.cmd.",
+      connecting: "Connexion à Codex...",
+      hint: "Utilise `codex app-server` via le processus principal Electron. Aucune clé API n'est exposée au renderer.",
+      found: "Codex détecté",
+      missing: "Codex non détecté. Installe Codex, ajoute-le au PATH, ou indique codex.exe/codex.cmd.",
       testOk: "Test OK",
       testFail: "Test impossible"
     },
-    codexInstruction: "Reponds en francais par defaut sauf demande explicite de l'utilisateur."
+    codexInstruction: "Réponds en français par défaut sauf demande explicite de l'utilisateur."
   },
   {
     code: "en",
@@ -68,7 +68,7 @@ export const supportedLanguages = [
       status: "Estado",
       language: "Idioma",
       codexPath: "Ruta de Codex CLI",
-      autoPath: "Detección automática via PATH",
+      autoPath: "Detección automática vía PATH",
       browse: "Examinar",
       test: "Probar",
       online: "En línea",
@@ -84,7 +84,7 @@ export const supportedLanguages = [
       testOk: "Prueba OK",
       testFail: "Prueba imposible"
     },
-    codexInstruction: "Responde en español por defecto salvo que el usuario pida explicitamente otro idioma."
+    codexInstruction: "Responde en español por defecto salvo que el usuario pida explícitamente otro idioma."
   },
   {
     code: "ja",

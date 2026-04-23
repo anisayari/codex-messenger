@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<toolbar id="toolbar">
+    <options id="options" version="01.01.2607.0" searchurl="http://search.msn.co.uk/" manifesturl="en-gb" acceptlan="en-gb" />
+    <mainmenu id="mainmenu">
+        <button id="msn" caption="151" command="301" url="http://www.msn.co.uk/" navigate="1" />
+        <button id="mymsn" caption="152" command="306" url="http://uk.my.msn.com/" navigate="1" />
+        <separator id="sep1" />
+        <button id="clearhistory" caption="153" command="310" navigate="0" />
+        <button id="preferences" caption="154" command="312" url="http://search.msn.co.uk/preferences.aspx" navigate="1" />
+        <button id="tboptions" caption="155" command="311" navigate="0" />
+        <separator id="sep2" />
+        <button id="help" caption="156" command="332" url="http://search.msn.co.uk/" navigate="0" />
+        <button id="feedback" caption="157" command="329" navigate="0" />
+        <button id="privacy" caption="158" command="314" url="http://privacy.msn.co.uk/" navigate="0" />
+        <button id="uninstall" caption="159" command="317" navigate="0" />
+        <button id="about" caption="160" command="315" navigate="0" />
+    </mainmenu>
+    <searchmenu id="searchmenu">
+        <button id="searchweb" caption="161" command="326" url="http://search.msn.co.uk/results.aspx?FORM=TOOLBR&amp;q=" navigate="0" codepage="0" hidden="0" />
+        <button id="searchsite" caption="162" command="324" url="http://search.msn.co.uk/advresults.aspx?FORM=TOOLBR&amp;adv_dom=&amp;q=" navigate="0" codepage="0" hidden="0" />
+        <separator id="sep4" />
+        <button id="searchnews" caption="Search News" command="322" url="http://uk.newsbot.msn.com/search/?nq=" navigate="0" codepage="0" hidden="1" />
+        <button id="searchdictionary" caption="Search Maps" command="318" url="http://mappoint.msn.com/UK/" navigate="0" codepage="0" hidden="1" />
+        <button id="searchencyclopedia" caption="Search Groups" command="319" url="http://groups.msn.com/search" navigate="0" codepage="0" hidden="1" />
+        <button id="searchmoney" caption="Search Shopping" command="320" url="http://shopping.msn.co.uk/sitesearch/search.jsp?partner=msn&amp;siteSearchQuery=" navigate="0" codepage="1252" hidden="1" />
+        <button id="searchshopping" caption="Search Encarta " command="321" url="http://uk.encarta.msn.com/encnet/refpages/SRPage.aspx?search=" navigate="0" codepage="0" hidden="1" />
+        <button id="search01" caption="Search News" command="358" url="http://uk.newsbot.msn.com/search/?nq=" navigate="0" codepage="0" hidden="0" />
+        <button id="search02" caption="Search Shopping" command="359" url="http://shopping.msn.co.uk/sitesearch/search.jsp?partner=msn&amp;siteSearchQuery=" navigate="0" codepage="1252" hidden="0" />
+        <button id="search03" caption="Search Encarta" command="360" url="http://uk.encarta.msn.com/encnet/refpages/SRPage.aspx?search=" navigate="0" codepage="0" hidden="0" />
+        <button id="search04" caption="Search Groups" command="361" url="http://partners.search.msn.co.uk/partner.asp?CO=50&amp;amp;RS=CHECKED&amp;amp;qap=&amp;amp;FORM=COENGB&amp;amp;dom=groups.msn.com&amp;amp;cfg=COENGB&amp;amp;ba=0&amp;amp;v=1&amp;amp;q=" navigate="0" codepage="0" hidden="0" />
+        <button id="search05" caption="20005" command="362" url="http://search.msn.com/results.aspx?FORM=TOOLBR&amp;q=" navigate="0" codepage="0" hidden="1" />
+        <button id="search06" caption="20006" command="363" url="http://search.msn.com/results.aspx?FORM=TOOLBR&amp;q=" navigate="0" codepage="0" hidden="1" />
+        <button id="search07" caption="20007" command="364" url="http://search.msn.com/results.aspx?FORM=TOOLBR&amp;q=" navigate="0" codepage="0" hidden="1" />
+        <button id="search08" caption="20008" command="365" url="http://search.msn.com/results.aspx?FORM=TOOLBR&amp;q=" navigate="0" codepage="0" hidden="1" />
+        <button id="search09" caption="20009" command="366" url="http://search.msn.com/results.aspx?FORM=TOOLBR&amp;q=" navigate="0" codepage="0" hidden="1" />
+        <button id="search10" caption="20010" command="367" url="http://search.msn.com/results.aspx?FORM=TOOLBR&amp;q=" navigate="0" codepage="0" hidden="1" />
+        <button id="search11" caption="Search Maps" command="368" url="http://mappoint.msn.com/UK/" navigate="0" codepage="0" hidden="1" />
+        <button id="search12" caption="Search Groups" command="369" url="http://groups.msn.com/search" navigate="0" codepage="0" hidden="1" />
+        <button id="search13" caption="20013" command="370" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+        <button id="search14" caption="20014" command="371" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+        <button id="search15" caption="20015" command="372" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+        <button id="search16" caption="20016" command="373" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+        <button id="search17" caption="20017" command="374" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+        <button id="search18" caption="20018" command="375" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+        <button id="search19" caption="20019" command="376" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+        <button id="search20" caption="20020" command="377" url="http://search.msn.com/" navigate="0" codepage="0" hidden="1" />
+    </searchmenu>
+    <popupmenu id="popupmenu">
+        <button id="addurl" caption="171" command="333" />
+        <button id="popupsettings" caption="172" command="334" />
+    </popupmenu>
+    <buttons id="buttons">
+        <button id="buttonhilite" bitmap="103" caption="202" command="303" toggle="1" navigate="0" hidden="0" chkboxid="712" />
+        <separator id="sep7" />
+        <button id="buttonoptions" bitmap="105" caption="173" command="311" navigate="0" hidden="0" chkboxid="713" />
+        <separator id="sep8" />
+        <button id="buttonpopup" bitmap="106" caption="206" command="307" dropdown="1" navigate="0" hidden="0" chkboxid="718" />
+        <button id="buttonhotmail" bitmap="107" caption="204" command="305" url="http://www.hotmail.msn.com/cgi-bin/sbox" navigate="1" hidden="0" chkboxid="714" />
+        <button id="buttonmsgr" bitmap="108" caption="203" command="304" url="http://messenger.msn.co.uk" navigate="0" hidden="0" chkboxid="715" />
+        <button id="buttonmymsn" bitmap="109" caption="205" command="306" url="http://uk.my.msn.com/" navigate="1" hidden="0" chkboxid="716" />
+        <button id="buttonnews" bitmap="110" caption="174" command="331" url="http://uk.newsbot.msn.com" navigate="1" hidden="0" chkboxid="717" />
+    </buttons>
+    <whitelist id="whitelist">
+        <mtburl id="allow1" url="http://entertainment.msn.com/radio/launchradio.aspx" />
+        <mtburl id="allow2" url="http://my.msn.com/video/default.armx" />
+        <mtburl id="allow3" url="http://betavideo.my.msn.com" />
+        <mtburl id="allow4" url="http://my.msn.com/colortheme.armx" />
+        <mtburl id="allow5" url="http://my.msn.com/customizemodule.armx" />
+        <mtburl id="allow6" url="http://my.msn.com/newmodule.armx" />
+        <mtburl id="allow7" url="http://my.msn.com/newpage.armx" />
+        <mtburl id="allow8" url="http://my.msn.com/renamepage.armx" />
+        <mtburl id="allow9" url="http://launchcast.launch.yahoo.com/radio/player/" />
+        <mtburl id="allow10" url="http://stream1.adsertion.com/radio/listen.asp" />
+        <mtburl id="allow11" url="http://www.wlsam.com/listenlive.asp" />
+        <mtburl id="allow12" url="http://www.streamaudio.com/listen" />
+        <mtburl id="allow13" url="http://windowsmedia.com/radiotuner/" />
+    </whitelist>
+    <markets id="markets">
+        <market id="market1" code="ar-xa" language="21201" domain="search.msn.co.uk" di="2999" />
+        <market id="market2" code="cs-cz" language="21202" domain="search.msn.co.uk" di="3020" />
+        <market id="market3" code="da" language="21203" domain="search.msn.dk" di="3022" />
+        <market id="market4" code="de-at" language="21204" domain="search.msn.at" di="3006" />
+        <market id="market5" code="de-ch" language="21205" domain="search.msn.ch" di="3008" />
+        <market id="market6" code="de" language="21206" domain="search.msn.de" di="3021" />
+        <market id="market8" code="en-au" language="21208" domain="search.ninemsn.com.au" di="3031" />
+        <market id="market9" code="en-ca" language="21209" domain="search.msn.ca" di="2997" />
+        <market id="market10" code="en-gb" language="21210" domain="search.msn.co.uk" di="3013" />
+        <market id="market11" code="hi" language="21211" domain="search.msn.co.in" di="3010" />
+        <market id="market12" code="ms" language="21212" domain="search.msn.com.my" di="3017" />
+        <market id="market13" code="en-nz" language="21213" domain="search.xtramsn.co.nz" di="3034" />
+        <market id="market14" code="zh-sg" language="21214" domain="search.msn.com.sg" di="3018" />
+        <market id="market15" code="en-us" language="21215" domain="search.msn.com" di="2883" />
+        <market id="market17" code="en-za" language="21217" domain="search.msn.co.za" di="3014" />
+        <market id="market18" code="es" language="21218" domain="search.msn.es" di="3023" />
+        <market id="market19" code="es-la" language="21219" domain="search.latam.msn.com" di="3004" />
+        <market id="market20" code="es-mx" language="21220" domain="search.t1msn.com.mx" di="3032" />
+        <market id="market21" code="es-us" language="21221" domain="search.latino.msn.com" di="3005" />
+        <market id="market22" code="fi" language="21222" domain="search.msn.fi" di="3024" />
+        <market id="market23" code="fr-be" language="21223" domain="search.fr.msn.be" di="3001" />
+        <market id="market24" code="fr-ca" language="21224" domain="search.fr.msn.ca" di="3002" />
+        <market id="market25" code="fr-ch" language="21225" domain="search.fr.msn.ch" di="3003" />
+        <market id="market26" code="fr" language="21226" domain="search.msn.fr" di="3025" />
+        <market id="market28" code="it" language="21228" domain="search.msn.it" di="3026" />
+        <market id="market29" code="ja" language="21229" domain="search.msn.co.jp" di="3011" />
+        <market id="market30" code="ko" language="21230" domain="search.msn.co.kr" di="3012" />
+        <market id="market31" code="nl-be" language="21231" domain="search.msn.be" di="3007" />
+        <market id="market32" code="nl" language="21232" domain="search.msn.nl" di="3027" />
+        <market id="market33" code="no" language="21233" domain="search.msn.no" di="3028" />
+        <market id="market34" code="pt-br" language="21234" domain="search.msn.com.br" di="3015" />
+        <market id="market35" code="zh-cn" language="21235" domain="cns.3721.com" querystring="/cns.dll?fw=home&amp;name=" di="3000" />
+        <market id="market36" code="sk-sk" language="21236" domain="search.msn.co.uk" di="3030" />
+        <market id="market37" code="sv" language="21237" domain="search.msn.se" di="3029" />
+        <market id="market38" code="zh-hk" language="21238" domain="search.msn.com.hk" di="3016" />
+        <market id="market39" code="zh-tw" language="21239" domain="search.msn.com.tw" di="3019" />
+        <market id="market7" code="en-xa" language="21207" domain="search.msn.co.uk" di="2998" />
+        <market id="market16" code="en-xu" language="21216" domain="search.msn.com" di="3033" />
+        <market id="market27" code="he-il" language="21227" domain="search.msn.co.il" querystring="/msnSearch.asp?SearchSite=8&amp;SearchText=" di="3009" />
+    </markets>
+    <toolbarurls id="msntoolbarurls">
+        <mtburl id="toolbardomainurl" url="http://toolbar.msn.co.uk/" />
+        <mtburl id="iesearchurl" url="http://search.msn.co.uk/results.aspx?q=%s" />
+        <mtburl id="ceipurl" url="http://www.microsoft.com/products/ceip/english/default.htm" />
+        <mtburl id="feedbackurl" url="http://uk.support.msn.com/feedback.aspx?productkey=toolbar&amp;CW=1&amp;P1=TBFEEDBACK" />
+        <mtburl id="helppaneurl" url="http://help.msn.com/en_gb/helpwindow.asp?SearchTerm=TB_HELP3&amp;S_Text=Help&amp;INI=msnsearchtoolbar_v1.ini&amp;H_APP=MSN%20Search%20Toolbar%20V1&amp;H_VER=2.6" />
+        <mtburl id="hvhelpurl" url="http://help.msn.com/en_gb/helpwindow.asp?SearchTerm=srchtbar_hlv&amp;S_Text=Help&amp;INI=msnsearchtoolbar_v1.ini&amp;H_APP=MSN%20Search%20Toolbar%20V1&amp;H_VER=2.6" />
+        <mtburl id="pghelpurl" url="http://help.msn.com/en_gb/helpwindow.asp?SearchTerm=srchtbar_pug&amp;S_Text=Help&amp;INI=msnsearchtoolbar_v1.ini&amp;H_APP=MSN%20Search%20Toolbar%20V1&amp;H_VER=2.6" />
+        <mtburl id="privacytouurl" url="http://privacy.msn.co.uk/tou/default.asp" />
+        <mtburl id="searchwebquerystringurl" url="/results.aspx?FORM=TOOLBR&amp;q=" />
+        <mtburl id="searchsitequerystringurl" url="/advresults.aspx?FORM=TOOLBR&amp;adv_dom=&amp;q=" />
+        <mtburl id="searchbarurl" url="http://g.msn.co.uk/0SEENGB/SAOS01" />
+        <mtburl id="searchpageurl" url="http://www.microsoft.com/isapi/redir.dll?prd=ie&amp;ar=iesearch" />
+        <mtburl id="searchurl" url="http://home.microsoft.com/access/autosearch.asp?p=%s" />
+        <mtburl id="defaultsearchurl" url="http://www.microsoft.com/isapi/redir.dll?prd=ie&amp;ar=iesearch" />
+        <mtburl id="searchassistanturl" url="http://ie.search.msn.com/en-gb/srchasst/srchasst.htm" />
+        <mtburl id="customizesearchurl" url="http://ie.search.msn.com/en-gb/srchasst/srchcust.htm" />
+        <mtburl id="msnurl" url="http://www.msn.co.uk/" />
+        <mtburl id="privacyurl" url="http://privacy.msn.co.uk/" />
+        <mtburl id="searchcompanionurl" url="" />
+    </toolbarurls>
+    <shortcutkeys>
+        <altmodifiedkey id="altmodfocussearch" command="335" character="M" />
+    </shortcutkeys>
+</toolbar>

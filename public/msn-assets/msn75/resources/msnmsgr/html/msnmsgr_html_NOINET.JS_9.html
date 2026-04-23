@@ -1,0 +1,124 @@
+window.onload = CheckConnectivity;
+window.onresize = Resize;
+function CheckConnectivity()
+{
+    Resize();
+
+    CheckingCxn.style.display = "block";
+    NoCxnSubInfo.style.display = "none";
+    NoCxnFound.style.display = "none";
+    btnFinish.style.display = "none";
+    NoCxnNoAppsFoundTxt.style.display = "none";
+    NoCxnAppsFoundTxt.style.display = "none";
+    if (!window.external.CheckConnectivity(true))
+    {
+        CheckingCxn.style.display = "none";
+        NoCxnSubInfo.style.display = "block";
+        NoCxnFound.style.display = "block";
+        btnFinish.style.display = "block";
+        if (CheckApplicationConflict())
+        {
+            AppsFound.style.display = "block";
+            NoCxnAppsFoundTxt.style.display = "block";
+            AppsFound.innerHTML = GetApplicationConflict();
+        }
+        else
+        {
+            AppsFound.style.display = "none";
+            NoCxnNoAppsFoundTxt.style.display = "none";
+        }
+        Resize();
+        
+    }
+}
+
+function GetXMLDoc()
+{ 
+    var appCompat = window.external.AppCompat;
+    var xmlApps = appCompat.GetAppsXML();
+    var xmlDoc = null;
+    if (xmlApps != "")
+    {
+        xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
+        xmlDoc.async = false;
+        xmlDoc.resolveExternals = false;
+        xmlDoc.loadXML(xmlApps);
+    }
+    return xmlDoc;
+}
+function CheckApplicationConflict()
+{
+    var xmlDoc = GetXMLDoc();	
+    if (xmlDoc == null || xmlDoc.parseError.errorCode != 0) 
+    {
+        return false; //no conflicts found
+    }
+    else 
+    {	
+        var objNodeList = xmlDoc.selectNodes("Apps/App[@Search > 0]");
+        if (objNodeList.length > 0)
+            return true; // there is conflict
+        else
+            return false; // there is no conflict
+    }
+}
+
+function GetApplicationConflict()
+{
+    var xmlDoc = GetXMLDoc();
+    if (xmlDoc == null || xmlDoc.parseError.errorCode != 0) 
+    {
+        //there was an error, just ignore and pretend
+        //no apps were found
+    }
+    else 
+    {
+        var strHtml = "";
+        var objNodeList = xmlDoc.selectNodes("Apps/App");
+        for (var i=0; i<objNodeList.length; i++) 
+        {
+            objNode = objNodeList.nextNode();
+            if (objNode.getAttribute("Search") > 0) 
+            {
+                //found
+                strHtml += AddAppInfo(objNode);
+            }
+        } 
+        return "<ul>" + strHtml + "</ul>";
+    }
+}
+
+function AddAppInfo(objNode)
+{
+    var strHtml = "";
+    strHtml += "<li>";
+    strHtml += objNode.getAttribute("Vendor");
+    strHtml += " ";
+    strHtml += objNode.getAttribute("Product");
+    strHtml += "</li>";
+    return strHtml;
+}
+
+//This is to make sure that the bottom blue box is always at the bottom
+function Resize()
+{
+    var totalBody = 130;
+    if (btnFinish.style.display == "block")
+    {
+        totalBody += 10;
+    }
+    if (CheckingCxn.style.display == "none")
+    {
+        NoCxnFound.style.height = document.body.clientHeight > totalBody ? document.body.clientHeight - totalBody : totalBody;
+    }
+    else
+    {
+        CheckingCxn.style.height = document.body.clientHeight > totalBody ? document.body.clientHeight - totalBody : totalBody;
+    }
+}
+
+function Finish()
+{
+    window.external.CloseWindow();        
+}          
+

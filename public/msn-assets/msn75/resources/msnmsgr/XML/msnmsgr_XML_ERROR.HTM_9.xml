@@ -1,0 +1,66 @@
+ <html dir="%2">
+
+    <head>
+            <link href="%1/messenger.css" type="text/css" rel="stylesheet" />
+            <style>
+            %%s
+            </style>
+            <script>
+            window.onload = Resize;
+            //This is to make sure that the bottom blue box is always at the bottom
+		function Resize()
+		{
+		    var totalBody = 180;
+		    spanErrorTxt.style.height = document.body.clientHeight > totalBody ? document.body.clientHeight - totalBody : totalBody;
+		}
+
+	            function Finish()
+		{
+		    window.external.CloseWindow();        
+		}    
+		</script>
+    </head>
+
+    <body class="CTBody">
+
+    	<div class="CTTop">
+    		<table cellspacing="0" cellpadding="0" dir="ltr">
+    			<tr>
+    				<td height="50" valign="top" style="padding-top:8px;"><img src="%1/msn_logo.gif" /></td>
+    				<td height="30" valign="top" style="padding-top:20px;">
+                             	<span class="CTMsgr">%3</span>
+    				</td></tr>
+    			</table>		
+    	</div>
+    	<div class="CTHeader">
+    		<div class="CTMove20">
+    			<span class="bold">%4</span>
+    		</div>
+    	</div>
+    	<table cellpadding="0" cellspacing="0" class="CTTbl" width="100%%%%">
+    	<tr>
+    		<td width="20" bgcolor="white"><img src="%1/spacer.gif" width="20" /></td>
+    		<td width="100%%%%">
+
+    <div class="CTChk">
+    	<br />
+        <p />
+        <span id=spanErrorTxt class="bold">
+            %5
+        </span>
+        <p />      
+    </div>
+          
+    <div class="CTChk">
+    <input type="button" id="btnFinish" class="ctbutton" onclick="Finish()" value="%6">
+    </div>
+          
+    	<div class="CTFooterSp"></div>
+    	</td>
+    </tr>
+    <tr><td colspan="2" height="1" style="padding-right:2px;"><img src="%1/pixel_lavendar.png" height="1" width="100%%%%" /></td></tr>	
+    </table>
+    <span class="CTFooter"></span>
+
+    </body>
+    </html>

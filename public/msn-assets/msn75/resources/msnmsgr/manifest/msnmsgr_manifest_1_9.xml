@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+<assemblyIdentity
+    version="1.0.0.0"
+    processorArchitecture="X86"
+    name="Microsoft.MessengerService.Messenger"
+    type="win32"
+/>
+<description>MSN Messenger Service</description>
+<dependency>
+    <dependentAssembly>
+        <assemblyIdentity
+            type="win32"
+            name="Microsoft.Windows.Common-Controls"
+            version="6.0.0.0"
+            processorArchitecture="X86"
+            publicKeyToken="6595b64144ccf1df"
+            language="*"
+        />
+    </dependentAssembly>
+</dependency>
+
+<file name="rtcres.dll"></file>
+
+<file name="RTCDLL.DLL">
+    <comClass description="RTCClient Class" clsid="{7a42ea29-a2b7-40c4-b091-f6f024aa89be}" threadingModel="Apartment" progid="RTCCore.RTCClient.1"/>	
+</file>
+
+
+</assembly>

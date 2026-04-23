@@ -1,33 +1,35 @@
-![Codex Messenger](public/icons/codex-messenger-people.png)
+![Codex Messenger](public/icons/codex-messenger-readme.png)
 
 # Codex Messenger
 
-Codex Messenger est une application desktop Electron inspirée de MSN Messenger 7. Elle sert de wrapper local pour Codex: chaque agent, projet ou fil Codex devient une conversation, avec fenêtre de chat, sons MSN, Wizz, envoi d'images/fichiers, caméra, messages vocaux et mini-jeux pendant que Codex travaille.
+Codex Messenger is a Windows desktop Electron app inspired by MSN Messenger 7. It wraps a local Codex session in a Messenger-style interface: every Codex agent, project, or recent thread appears as a contact or conversation window with XP-era visuals, MSN sounds, Wizz/Nudge, file and image sending, camera capture, voice clips, profile pictures, status messages, and small games while Codex is working.
 
-Pour l'instant, Codex Messenger est uniquement supporté sur Windows. Le français est la langue par défaut; l'anglais, l'espagnol et le japonais sont disponibles depuis l'écran de connexion.
+Developed by Anis AYARI and Codex.
 
-## Installation Rapide
+Codex Messenger is currently supported on Windows only. French is the default language in the app, with English, Spanish, and Japanese available from the login screen.
 
-### Option 1: installateur Windows
+## Quick Install
 
-1. Ouvrir la page [Releases](https://github.com/anisayari/codex-messenger/releases).
-2. Télécharger `Codex.Messenger.Setup.x.y.z.exe`.
-3. Lancer l'installateur.
-4. Au premier lancement, vérifier que Codex est détecté ou choisir manuellement le chemin vers `codex`, `codex.cmd` ou `codex.exe`.
+### Option 1: Windows installer
 
-Si Windows SmartScreen affiche un avertissement, c'est attendu pour une application non signée. Continuer uniquement si le fichier vient bien de la release GitHub officielle.
+1. Open the [Releases](https://github.com/anisayari/codex-messenger/releases) page.
+2. Download `Codex.Messenger.Setup.0.0.1.exe`.
+3. Run the installer.
+4. On first launch, confirm that Codex is detected or manually select the path to `codex`, `codex.cmd`, or `codex.exe`.
 
-### Option 2: version portable
+If Windows SmartScreen shows a warning, that is expected for an unsigned app. Continue only if the file comes from the official GitHub release.
 
-Télécharger `Codex.Messenger.x.y.z.exe` depuis les releases, puis le lancer directement. Aucun installateur n'est nécessaire.
+### Option 2: portable build
 
-### Option 3: depuis le code source
+Download `Codex.Messenger.0.0.1.exe` from the releases page and run it directly. No installer is required.
 
-Prérequis:
+### Option 3: from source
 
-- Node.js 20 ou plus récent.
+Requirements:
+
+- Node.js 20 or newer.
 - npm.
-- Codex CLI installé localement.
+- Codex CLI installed locally.
 
 ```powershell
 git clone https://github.com/anisayari/codex-messenger.git
@@ -37,129 +39,133 @@ npm run check:codex
 npm run electron:start
 ```
 
-## Scripts Utiles
+## Useful Scripts
 
 ```powershell
-# Vérifie que Codex CLI est détectable
+# Verify that Codex CLI can be detected
 npm run check:codex
 
-# Build du renderer Vite
+# Build the Vite renderer
 npm run build
 
-# Lance l'application Electron
+# Start the Electron app
 npm run electron:start
 
-# Lance Electron en mode dev avec Vite
+# Start Electron in development mode with Vite
 npm run electron:dev
 
-# Smoke test Electron
+# Electron smoke test
 npm run electron:smoke
 
-# Build Windows: installateur + portable
+# Build Windows installer and portable executable
 npm run package:win
 ```
 
-Deux raccourcis PowerShell sont aussi fournis:
+Two PowerShell launchers are also included:
 
 ```powershell
 .\launch-codex-messenger.ps1
 .\launch-web-preview.ps1
 ```
 
-`launch-web-preview.ps1` démarre Vite et ouvre le preview web. L'application complète reste Electron, car les APIs Codex, fichiers, caméra et fenêtres passent par le process principal.
+`launch-web-preview.ps1` starts Vite and opens the web preview. The full application is still Electron-only because Codex integration, filesystem access, camera capture, and conversation windows run through the main process.
 
-## Fonctionnalités
+## Features
 
-- Interface Windows XP / MSN Messenger 7 avec fenêtres de conversation.
-- Connexion à `codex app-server` depuis le process principal Electron.
-- Aucune clé API exposée au renderer.
-- Langues de réponse Codex: français par défaut, anglais, espagnol et japonais. Les langues sont centralisées dans `shared/languages.js` pour en ajouter rapidement.
-- Contacts Codex: agent principal, reviewer, designer, projets locaux et fils récents.
-- Création d'agents personnalisés depuis `Add a Contact`, avec nom, groupe, statut, icône, couleur et instructions dédiées.
-- Liste de contacts groupée façon Messenger.
-- Agents, projets et conversations récentes affichés comme de vrais contacts MSN avec avatars générés.
-- Fenêtre de discussion centrée sur le contact: plus de navigateur de fils dans la conversation.
-- Fils d'un même projet affichés comme onglets MSN au-dessus de la conversation, réorganisables par glisser-déposer et masquables.
-- Une fenêtre par conversation.
-- Streaming des réponses Codex sans doublons.
-- Sons MSN pour nouveau message et Wizz.
-- Pack sons MSN 7 extrait localement: nouveau message, e-mail, Wizz/Nudge, présence en ligne, sonnerie, téléphone, saisie et invite terminée.
-- Clins d'oeil animés depuis l'archive MSN, envoyables depuis le panneau `Act`; Codex peut aussi en envoyer avec les marqueurs `[wink:...]`.
-- Wizz quand Codex termine ou quand un message reste non lu trop longtemps.
-- Envoi de fichiers et images à Codex.
-- Capture caméra locale avant envoi.
-- Enregistrement de messages vocaux.
-- Image de profil, statut et message personnel.
-- Mini-jeux locaux: Morpion, Memory et Wizz Reflex.
-- Mini-jeux habillés avec des assets MSN extraits.
-- Packaging Windows avec installateur NSIS et exécutable portable.
+- Windows XP / MSN Messenger 7 inspired interface.
+- One desktop window per Codex conversation.
+- Connection to `codex app-server` from the Electron main process.
+- No API keys exposed to the renderer.
+- Codex response language selection: French by default, plus English, Spanish, and Japanese.
+- Language definitions centralized in `shared/languages.js` so new languages can be added quickly.
+- Codex contacts for the main agent, reviewer, designer, local projects, custom agents, and recent threads.
+- Custom agents created from `Add a Contact`, with name, group, status, icon, color, and dedicated instructions.
+- Messenger-style grouped contact list.
+- Generated avatars for agents, projects, and recent conversations.
+- Conversation windows focused on the selected contact.
+- Project threads displayed as MSN-style tabs above the transcript, with drag reorder and delete controls.
+- Streaming Codex responses without duplicate final messages.
+- MSN sounds for new messages and Wizz/Nudge.
+- Local MSN 7 sound pack: new message, new email, Wizz/Nudge, online presence, ring, phone, typing, and task complete.
+- MSN Messenger 7.5.0322 assets extracted from the archived Microsoft installer: PNG, GIF, JPG, bitmaps, icons, UI resources, and integrity manifests.
+- MSN emoticon pack extracted from the original 19 px strips, available from the smile button and rendered inline in messages.
+- Extracted MSN CAB packages: 15 official winks, 4 dynamic backgrounds, and preserved MSN Search resources under `public/msn-assets/msn75/packages`.
+- Winks can be sent from the Activities panel; Codex can also trigger them with `[wink:...]` markers.
+- Wizz when Codex finishes or when an unread message stays unattended for too long.
+- Send files and images to Codex.
+- Local camera snapshot before sending.
+- Voice clip recording.
+- Profile picture, status, and personal message.
+- Local mini-games: Tic-Tac-Toe, Memory, and Wizz Reflex.
+- Mini-games styled with extracted MSN assets.
+- Windows packaging with NSIS installer and portable executable.
 
-## Détection De Codex
+## Codex Detection
 
-Codex Messenger cherche Codex dans cet ordre:
+Codex Messenger looks for Codex in this order:
 
-1. Le chemin saisi dans l'écran de connexion.
-2. La variable `CODEX_MESSENGER_CODEX_PATH`.
-3. Le `PATH` système (`where codex` sur Windows).
+1. The path entered on the login screen.
+2. The `CODEX_MESSENGER_CODEX_PATH` environment variable.
+3. The system `PATH` using `where codex` on Windows.
 
-Sur Windows, si npm retourne un shim sans extension comme `C:\Users\vous\AppData\Roaming\npm\codex`, l'application teste automatiquement `codex.cmd`, `codex.exe` puis `codex.bat`.
+On Windows, if npm returns an extensionless shim such as `C:\Users\you\AppData\Roaming\npm\codex`, the app automatically checks `codex.cmd`, `codex.exe`, and `codex.bat`.
 
-Fallback manuel PowerShell:
+Manual PowerShell fallback:
 
 ```powershell
-$env:CODEX_MESSENGER_CODEX_PATH="C:\Users\vous\AppData\Roaming\npm\codex.cmd"
+$env:CODEX_MESSENGER_CODEX_PATH="C:\Users\you\AppData\Roaming\npm\codex.cmd"
 npm run electron:start
 ```
 
-Si la détection échoue dans l'application:
+If detection fails inside the app:
 
-- cliquer sur `Parcourir`;
-- sélectionner `codex`, `codex.cmd`, `codex.exe` ou le binaire équivalent;
-- cliquer sur `Tester`;
-- relancer la connexion.
+1. Click `Browse`.
+2. Select `codex`, `codex.cmd`, `codex.exe`, or an equivalent binary.
+3. Click `Test`.
+4. Connect again.
 
 ## Configuration
 
-Variables d'environnement utiles:
+Useful environment variables:
 
 ```powershell
-# Chemin manuel vers Codex CLI
-$env:CODEX_MESSENGER_CODEX_PATH="C:\chemin\vers\codex.cmd"
+# Manual path to Codex CLI
+$env:CODEX_MESSENGER_CODEX_PATH="C:\path\to\codex.cmd"
 
-# Dossier de travail par défaut pour Codex
-$env:CODEX_MESSENGER_WORKSPACE="C:\Users\vous\Desktop\projects"
+# Default working directory for Codex
+$env:CODEX_MESSENGER_WORKSPACE="C:\Users\you\Desktop\projects"
 
-# Racine scannée pour la liste des projets
-$env:CODEX_MESSENGER_PROJECTS_ROOT="C:\Users\vous\Desktop\projects"
+# Root scanned for local projects
+$env:CODEX_MESSENGER_PROJECTS_ROOT="C:\Users\you\Desktop\projects"
 
-# Délai avant Wizz de rappel non lu, en millisecondes
+# Delay before unread Wizz reminder, in milliseconds
 $env:MSN_UNREAD_WIZZ_MS="300000"
 ```
 
-## Données Locales
+## Local Data
 
-En développement, les uploads temporaires sont stockés dans le dossier du projet.
+In development, temporary uploads are stored inside the project folder.
 
-Dans l'application packagée, les settings, uploads et images de profil sont stockés dans le dossier utilisateur Electron (`userData`). Cela évite d'écrire dans `app.asar`.
+In packaged builds, settings, uploads, and profile pictures are stored in Electron's user data directory. This avoids writing inside `app.asar`.
 
-## Packaging Windows
+## Windows Packaging
 
 ```powershell
 npm install
 npm run package:win
 ```
 
-Les fichiers générés sont dans `release/`:
+Generated files are written to `release/`:
 
-- `Codex Messenger Setup x.y.z.exe`: installateur Windows.
-- `Codex Messenger x.y.z.exe`: version portable.
-- `win-unpacked/`: dossier non compressé pour test local.
+- `Codex Messenger Setup 0.0.1.exe`: Windows installer.
+- `Codex Messenger 0.0.1.exe`: portable build.
+- `win-unpacked/`: unpacked folder for local testing.
 
-Le build n'est pas signé. Pour une distribution publique large, il faudra ajouter une signature de code Windows.
+The build is not signed. For broad public distribution, add Windows code signing.
 
-## Vérification D'Intégrité
+## Integrity Checks
 
-Avant de publier ou de modifier l'app:
+Before publishing or making release changes:
 
 ```powershell
 npm run check:codex
@@ -167,38 +173,38 @@ npm run build
 npm run electron:smoke
 ```
 
-Pour vérifier l'exécutable généré:
+To verify a generated executable:
 
 ```powershell
 & ".\release\win-unpacked\Codex Messenger.exe" --smoke-test
 ```
 
-Les logs Electron du type `Gpu Cache Creation failed` peuvent apparaître pendant les smoke tests Windows. Le test est considéré OK si la commande termine avec le code `0`.
+Windows smoke tests may print Electron logs such as `Gpu Cache Creation failed`. The smoke test is considered successful when the command exits with code `0`.
 
-## Dépannage
+## Troubleshooting
 
-### `codex` n'est pas détecté
+### `codex` is not detected
 
-Définir `CODEX_MESSENGER_CODEX_PATH` ou choisir le binaire depuis l'écran de connexion.
+Set `CODEX_MESSENGER_CODEX_PATH` or select the binary from the login screen.
 
-### Double-clic sur `index.html`
+### Double-clicking `index.html`
 
-Le fichier `index.html` est un point d'entrée Vite. Il ne doit pas être utilisé directement en `file://`. Utiliser plutôt:
+`index.html` is a Vite entry point and should not be opened directly through `file://`. Use:
 
 ```powershell
 npm run dev
 ```
 
-ou:
+or:
 
 ```powershell
 npm run electron:start
 ```
 
-### SmartScreen bloque l'installateur
+### SmartScreen blocks the installer
 
-L'application n'est pas signée. Vérifier que l'exécutable vient de la release GitHub officielle, puis utiliser `Informations complémentaires` > `Exécuter quand même`.
+The app is unsigned. Verify that the executable comes from the official GitHub release, then choose `More info` and `Run anyway`.
 
-## Licence
+## License
 
-MIT. Voir [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

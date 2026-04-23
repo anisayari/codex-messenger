@@ -1,0 +1,389 @@
+<Style resid=ContentDropdownSS>
+element
+{
+fontface:ifhc(sysmetricstr(2),rcstr(2016));
+fontsize:ifhc(sysmetric(-4),rcint(2015)pt);
+fontweight:ifhc(sysmetric(-5),Normal);
+fontstyle:ifhc(sysmetric(-6),None);
+background:argb(0,0,0,0);
+bordercolor:ifhc(menu,white);
+foreground:ifhc(menutext,black);
+borderthickness:rect(0,0,0,0);
+}
+element[class="MenuRoot"]
+{
+Background:ifhc(menu,ifhc(menu,rgb(238,243,250)));
+BorderColor:ifhc(menutext,rgb(67,95,150));
+BorderThickness:rect(1,1,1,1);
+Padding:rect(0,0,0,0);
+colorize:enabled;
+}
+element[id=atom(MenuInsideBorder)]
+{
+Background:argb(0,0,0,0);
+BorderColor:ifhc(menu,white);
+BorderThickness:rect(2,2,2,2);
+Padding:rect(0,0,0,0);
+}
+element[id=atom(MenuSeparator)]
+{
+Layoutpos:top;
+Borderthickness:rect(0,0,0,2);
+Background:ifhc(menutext,rgb(203,216,239));
+Foreground:ifhc(argb(0,0,0,0),white);
+Height:3;
+Padding:rect(0,0,0,0);
+colorize:enabled;
+}
+element[id=atom(menugrp)]
+{
+Layoutpos:bottom;
+BorderColor:ifhc(menutext,rgb(203,216,239));
+Background:argb(0,0,0,0);
+Borderthickness:rect(0,0,0,0);
+Padding:rect(0,0,0,0);
+}
+element[id=atom(menugrp)][class="TwoColumnMode"]
+{
+Padding:rect(0,0,0,0);
+}
+element[id=atom(contentgrp)]
+{
+BorderColor:ifhc(menutext,rgb(203,216,239));
+background:argb(0,0,0,0);
+borderthickness:rect(0,0,0,0);
+Padding:rect(4,4,4,4);
+colorize:enabled;
+}
+element[id=atom(contentgrp)][class="TwoColumnMode"]
+{
+borderthickness:rect(0,0,1,0);
+Padding:rect(4,4,4,0);
+}
+menubutton[class="MenuItem"]
+{
+Accessible:true;
+AccDefAction:rcstr(60047);
+AccRole:12;
+Background:argb(0,0,0,0);
+Foreground:ifhc(menutext,black);
+padding:rect(17,3,17,4);
+Tooltip:true;
+}
+menubutton[class="MenuItem"][enabled=false]
+{
+Foreground:graytext;
+}
+menubutton[class="MenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+foreground:ifhc(highlighttext,black);
+BorderThickness:rect(1,1,1,1);
+padding:rect(16,2,16,3);
+}
+menubutton[class="MenuContentItem"]
+{
+Accessible:true;
+AccDefAction:rcstr(60047);
+AccRole:12;
+Background:argb(0,0,0,0);
+Foreground:ifhc(menutext,black);
+BorderThickness:rect(0,0,0,0);
+padding:rect(2,2,2,2);
+margin:rect(2,0,2,0);
+Tooltip:true;
+}
+menubutton[class="MenuContentItem"][enabled=false]
+{
+Foreground:graytext;
+}
+menubutton[class="MenuContentItem"][mousefocused][id=atom(DynamicContent)]
+{
+cursor:hand;
+}
+element[id=atom(emoticoncont)]
+{
+borderthickness:rect(0,0,0,0);
+padding:rect(1,1,1,1);
+}
+Emoticon[id=atom(emoticoncont)]
+{
+borderthickness:rect(0,0,0,0);
+padding:rect(1,1,1,1);
+}
+element[id=atom(emoticonbottomborder)]
+{
+layoutpos:bottom;
+borderthickness:rect(2,0,2,0);
+bordercolor:ifhc(menu,ifhc(menu,rgb(238,243,250)));
+background:ifhc(menutext,graytext);
+height:1;
+}
+menubutton[class="EmoticonMenuItem"]
+{
+Accessible:true;
+AccDefAction:rcstr(60047);
+AccRole:12;
+Background:argb(0,0,0,0);
+Foreground:ifhc(menutext,black);
+BorderThickness:rect(0,0,0,0);
+padding:rect(2,2,2,2);
+Tooltip:true;
+}
+menubutton[class="EmoticonMenuItem"][enabled=false]
+{
+Foreground:graytext;
+}
+menubutton[class="EmoticonMenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+BorderThickness:rect(1,1,1,1);
+padding:rect(1,1,1,1);
+}
+httpimage
+{
+background:ifhc(menu,white);
+}
+element[id=atom(imageframe)]
+{
+width:54;
+height:54;
+bordercolor:ifhc(graytext,rgb(197,211,237));
+BorderThickness:rect(1,1,1,1);
+padding:rect(1,1,1,1);
+background:ifhc(menu,white);
+}
+element[id=atom(imageframe)][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+}
+png[id=atom(Image)]
+{
+background:ifhc(menu,white);
+}
+asyncimage[id=atom(Image)]
+{
+background:ifhc(menu,white);
+}
+png[id=atom(Image)][class="Emoticon"]
+{
+bordercolor:ifhc(graytext,rgb(197,211,237));
+BorderThickness:rect(1,1,1,1);
+padding:rect(2,2,2,2);
+}
+EmoticonHost[id=atom(Image)][class="Emoticon"]
+{
+background:ifhc(menu,white);
+bordercolor:ifhc(graytext,rgb(197,211,237));
+BorderThickness:rect(1,1,1,1);
+padding:rect(2,2,2,2);
+}
+element[class="MenuCategory"]
+{
+Accessible:true;
+Background:argb(0,0,0,0);
+foreground:ifhc(menutext,rgb(67,95,150));
+FontWeight:rcint(1999);
+Padding:rect(3,2,3,2);
+}
+urlelem[class="MenuCategory"]
+{
+Accessible:true;
+Background:argb(0,0,0,0);
+foreground:ifhc(menutext,rgb(67,95,150));
+FontWeight:rcint(1999);
+Padding:rect(3,2,3,2);
+AccDefAction:rcstr(60047);
+AccRole:12;
+}
+urlelem[class="MenuCategoryUnClickable"]
+{
+Accessible:true;
+Background:argb(0,0,0,0);
+foreground:ifhc(menutext,rgb(67,95,150));
+FontWeight:rcint(1999);
+Padding:rect(3,2,3,2);
+AccDefAction:rcstr(60047);
+AccRole:12;
+}
+urlelem[id=atom(MoreContent)]
+{
+Accessible:true;
+AccDefAction:rcstr(60047);
+AccRole:12;
+Background:argb(0,0,0,0);
+Foreground:ifhc(menutext,rgb(67,95,150));
+Padding:rect(1,1,1,1);
+Tooltip:true;
+buttonstyle:SyncMouseKeyFocus;
+}
+urlelem[id=atom(MoreContent)][enabled=false]
+{
+Foreground:graytext;
+}
+urlelem[id=atom(MoreContent)][keyfocused]
+{
+fontstyle:rcint(2000);
+Foreground:ifhc(menutext,ifhc(hotlight,blue));
+}
+urlelem[id=atom(MoreContent)][mousefocused]
+{
+Cursor:hand;
+}
+urlelem[class="MenuCategory"]
+{
+Accessible:true;
+AccDefAction:rcstr(60047);
+AccRole:12;
+Background:argb(0,0,0,0);
+Foreground:ifhc(menutext,rgb(67,95,150));
+Padding:rect(1,1,1,1);
+Tooltip:true;
+buttonstyle:SyncMouseKeyFocus;
+}
+urlelem[class="MenuCategory"][enabled=false]
+{
+Foreground:graytext;
+}
+urlelem[class="MenuCategory"][keyfocused]
+{
+fontstyle:rcint(2000);
+Foreground:ifhc(menutext,ifhc(hotlight,blue));
+}
+urlelem[class="MenuCategory"][mousefocused]
+{
+Cursor:hand;
+}
+clipper
+{
+background:ifhc(menu,white);
+}
+</Style>
+<clipper resid=backgroundsdropdown>
+<element id=atom(backgroundsdropdown) sheet=styleref(ContentDropdownSS) class="MenuRoot" layout=filllayout()>
+<element id=atom(MenuInsideBorder) layout=filllayout()>
+<BackgroundContentContainer id=atom(ContentContainer) layout=verticalflowlayout(0,3,3,0)>
+<element id=atom(contentgrp) layout=verticalflowlayout(0,3,3,0)>
+<element id=atom(MyDynamicBackgrounds) layout=FillLayout()/>
+<element id=atom(MyBackgrounds) layout=FillLayout()/>
+</element>
+<element id=atom(contentgrp) layout=verticalflowlayout(0,3,3,0) background=ifhc(menu,rgb(238,243,250))>
+<element id=atom(PremiumBackgrounds) layout=FillLayout()/>
+</element>
+<element id=atom(menugrp) layout=verticalflowlayout(0,3,3,0)>
+<menubutton cmdid=40259 class="MenuItem" id=atom(sharebk) content=rcstr(60022) AccName=rcstr(60022) AccDesc=rcstr(44056)/>
+</element>
+</BackgroundContentContainer>
+</element>
+</element>
+</clipper>
+<clipper resid=themesdropdown>
+<element id=atom(themesdropdown) sheet=styleref(ContentDropdownSS) class="MenuRoot" layout=filllayout()>
+<element id=atom(MenuInsideBorder) layout=filllayout()>
+<ThemeContentContainer id=atom(ContentContainer) layout=verticalflowlayout(0,3,3,0)>
+<element id=atom(contentgrp) layout=verticalflowlayout(0,3,3,0) background=ifhc(menu,rgb(238,243,250))>
+<element id=atom(ThemePacks) layout=FillLayout()/>
+<element id=atom(PremiumPacks) layout=FillLayout()/>
+</element>
+</ThemeContentContainer>
+</element>
+</element>
+</clipper>
+<element resid=MenuSeparator id=atom(MenuSeparator)/>
+<element resid=ContentCategory id=atom(ContentCategory) sheet=styleref(ContentDropdownSS) layout=BorderLayout()>
+<urlelem id=atom(Title) class="MenuCategory" layoutpos=top/>
+<element id=atom(ContentListContainer) layoutpos=client layout=FillLayout()/>
+<element layoutpos=bottom layout=VerticalFlowLayout(0,3,3,0)>
+<urlelem id=atom(MoreContent) contentalign=middleright/>
+</element>
+</element>
+<element resid=ContentList id=atom(ContentList) layout=TableLayout(2,4,-1,-1,-1,-1,-1,-1,-1)/>
+<element resid=EmoticonContentList id=atom(ContentList) layout=TableLayout(1,5,-1,-1,-1,-1,-1,-1,-1)/>
+<element resid=ContentMenuItem id=atom(ContentMenuItem) sheet=styleref(ContentDropdownSS) layout=BorderLayout()>
+<urlelem id=atom(Title) class="MenuCategory" layoutpos=top/>
+</element>
+<BackgroundsMRUList resid=BackgroundMRU id=atom(ContentListRoot) layout=TableLayout(3,4,-1,-1,-1,-1,-1,-1,-1)/>
+<BackgroundsMRUList resid=DynamicBackgroundMRU id=atom(ContentListRoot) IsDynamicMRU=true layout=TableLayout(3,4,-1,-1,-1,-1,-1,-1,-1)/>
+<menubutton resid=Background id=atom(Background) class="MenuContentItem" layout=FillLayout() active=mouseandkeyboard|nosyncfocus>
+<element id=atom(ID) visible=false layoutpos=none/>
+<element id=atom(imageframe) layout=filllayout()>
+<asyncimage id=atom(Image) flip=false class="Background" contentalign=middlecenter errorimage=2022 loadingImage=2022 height=54/>
+</element>
+<element Layout=BorderLayout() Background=argb(0,0,0,0)>
+<png id=atom(CheckBox) idres=ifhc(0,788) layoutpos=Top contentalign=topright flip=false visible=false/>
+</element>
+</menubutton>
+<clipper resid=emoticonsdropdown>
+<element id=atom(emoticonsdropdown) sheet=styleref(ContentDropdownSS) class="MenuRoot" layout=filllayout()>
+<element id=atom(MenuInsideBorder) layout=filllayout()>
+<EmoticonContentContainer id=atom(ContentContainer) layout=verticalflowlayout(0,3,3,0)>
+<element id=atom(contentgrp) layout=borderlayout()>
+<element id=atom(MyEmoticons) layoutpos=top layout=verticalflowlayout(0,3,3,0)/>
+</element>
+<element id=atom(contentgrp) layout=verticalflowlayout(0,3,3,0) background=ifhc(menu,rgb(238,243,250))>
+<element id=atom(PremiumEmoticons) layout=FillLayout()/>
+</element>
+</EmoticonContentContainer>
+</element>
+</element>
+</clipper>
+<clipper resid=mobileemoticonsdropdown>
+<element id=atom(mobileemoticonsdropdown) sheet=styleref(ContentDropdownSS) class="MenuRoot" layout=filllayout()>
+<element id=atom(MenuInsideBorder) layout=filllayout()>
+<element id=atom(EmoticonContainer) layout=TableLayout(2,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1)/>
+</element>
+</element>
+</clipper>
+<element resid=EmoticonMRUList layout=filllayout()>
+<EmoticonMRUList id=atom(ContentListRoot) layout=TableLayout(2,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1)/>
+</element>
+<element resid=EmoticonPinnedList layout=filllayout()>
+<EmoticonPinnedList id=atom(ContentListRoot) layout=TableLayout(6,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1)/>
+</element>
+<Emoticon resid=Emoticon id=atom(emoticoncont) layout=borderlayout() width=31>
+<menubutton class="EmoticonMenuItem" layout=borderLayout() id=atom(Emoticon) layoutpos=client contentalign=topcenter active=mouseandkeyboard|nosyncfocus>
+<element id=atom(ID) visible=false layoutpos=none/>
+<EmoticonHost id=atom(Image) class="Emoticon" width=25 height=25 contentalign=topcenter layoutpos=client active=inactive/>
+</menubutton>
+</Emoticon>
+<clipper resid=winksdropdown>
+<element id=atom(winksdropdown) sheet=styleref(ContentDropdownSS) class="MenuRoot" layout=filllayout()>
+<element id=atom(MenuInsideBorder) layout=filllayout()>
+<WinkContentContainer id=atom(ContentContainer) layout=verticalflowlayout(0,3,3,0)>
+<element id=atom(contentgrp) layout=borderlayout()>
+<element id=atom(MyWinks) layoutpos=top layout=verticalflowlayout(0,3,3,0)/>
+</element>
+<element id=atom(contentgrp) layout=verticalflowlayout(0,3,3,0) background=ifhc(menu,rgb(238,243,250))>
+<element id=atom(PremiumWinks) layout=FillLayout()/>
+</element>
+</WinkContentContainer>
+</element>
+</element>
+</clipper>
+<menubutton resid=WinkButton id=atom(WinkButton) class="MenuContentItem" layout=FillLayout() active=mouseandkeyboard|nosyncfocus>
+<element id=atom(ID) visible=false layoutpos=none/>
+<element id=atom(imageframe) layout=filllayout()>
+<asyncimage id=atom(Image) flip=false class="Wink" contentalign=middlecenter errorimage=2022 loadingImage=2022/>
+</element>
+</menubutton>
+<WinkMRUList resid=WinkMRUList id=atom(ContentListRoot) layout=TableLayout(2,4,-1,-1,-1,-1,-1,-1,-1)/>
+<menubutton resid=DynamicContent id=atom(DynamicContent) class="MenuContentItem" layout=FillLayout() active=mouseandkeyboard|nosyncfocus>
+<element id=atom(URL) visible=false layoutpos=none/>
+<element id=atom(Type) visible=false layoutpos=none/>
+<element id=atom(SiteId) visible=false layoutpos=none/>
+<element id=atom(TrackUrl) visible=false layoutpos=none/>
+<element id=atom(imageframe) layout=filllayout()>
+<HttpImage flip=false id=atom(HttpImage) contentalign=middlecenter/>
+</element>
+</menubutton>
+<element resid=DefaultMRUEntry id=atom(DefaultMRUEntry) layout=FillLayout() padding=rect(2,2,2,2) active=inactive>
+<element id=atom(imageframe) background=argb(0,0,0,0) layout=filllayout()/>
+</element>
+<element resid=DefaultEmoticonMRUEntry id=atom(emoticoncont) layout=borderlayout() width=31>
+<menubutton class="EmoticonMenuItem" layout=borderlayout() id=atom(Emoticon) layoutpos=client contentalign=topcenter active=inactive>
+<png id=atom(Image) class="Emoticon" width=25 height=25 layoutpos=client contentalign=topcenter background=argb(0,0,0,0)/>
+</menubutton>
+</element>

@@ -1,0 +1,2382 @@
+<style resid=wpdropdownss>
+element
+{
+fontface:ifhc(sysmetricstr(2),rcstr(2016));
+fontsize:ifhc(sysmetric(-4),rcint(2015)pt);
+fontweight:ifhc(sysmetric(-5),Normal);
+fontstyle:ifhc(sysmetric(-6),None);
+background:argb(0,0,0,0);
+bordercolor:ifhc(menu,window);
+foreground:ifhc(menutext,black);
+borderthickness:rect(0,0,0,0);
+}
+element[class="MenuSeparator"]
+{
+borderthickness:rect(0,0,0,0);
+background:ifhc(menutext,rgb(222,222,222));
+height:1;
+padding:rect(1,0,1,0);
+colorize:enabled;
+}
+element[class="WallpaperSeparator"]
+{
+borderthickness:rect(0,0,0,1);
+bordercolor:ifhc(menutext,rgb(222,222,222));
+height:5;
+layoutpos:bottom;
+}
+menubutton[class="MenuItem"]
+{
+background:argb(0,0,0,0);
+foreground:ifhc(menutext,black);
+borderthickness:rect(0,0,0,0);
+padding:rect(17,3,17,4);
+Accessible:true;
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+menubutton[class="MenuItem"][enabled=false]
+{
+foreground:graytext;
+}
+menubutton[class="MenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+foreground:ifhc(highlighttext,black);
+borderthickness:rect(1,1,1,1);
+padding:rect(16,2,16,3);
+}
+element[class="MenuItem"]
+{
+background:argb(0,0,0,0);
+foreground:ifhc(menutext,black);
+}
+element[class="MenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+foreground:ifhc(highlighttext,black);
+}
+menubutton[class="EmoticonMenuItem"]
+{
+background:ifhc(menu,window);
+foreground:ifhc(menutext,windowtext);
+borderthickness:rect(0,0,0,0);
+padding:rect(5,3,5,4);
+Accessible:true;
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+menubutton[class="EmoticonMenuItem"][enabled=false]
+{
+foreground:graytext;
+}
+menubutton[class="EmoticonMenuItem"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+foreground:ifhc(highlighttext,windowtext);
+borderthickness:rect(1,1,1,1);
+padding:rect(4,2,4,3);
+}
+png[class="EmoticonImage"]
+{
+padding:rect(0,0,0,0);
+}
+png
+{
+padding:rect(-8,-2,16,-3);
+}
+menubutton[class="MenuItemInkColor"]
+{
+background:argb(0,0,0,0);
+padding:rect(3,3,3,3);
+borderthickness:rect(0,0,0,0);
+Accessible:true;
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+menubutton[class="MenuItemInkColor"][keyfocused]
+{
+borderthickness:rect(1,1,1,1);
+padding:rect(2,2,2,2);
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+background:ifhc(highlight,argb(48,49,106,197));
+}
+element[class="ColorSwatch"]
+{
+padding:rect(0,0,0,0);
+bordercolor:threedshadow;
+height:20;
+width:20;
+borderthickness:rect(1,1,1,1);
+tooltip:true;
+}
+element[class="ColorizerSwatch"]
+{
+padding:rect(0,0,0,0);
+bordercolor:black;
+height:20;
+width:20;
+borderthickness:rect(1,1,1,1);
+tooltip:true;
+}
+element[id=atom(wpdropdown)]
+{
+bordercolor:graytext;
+borderthickness:rect(1,1,1,1);
+padding:rect(1,1,1,1);
+}
+wallpaperview
+{
+background:window;
+bordercolor:window;
+borderthickness:rect(1,1,1,1);
+padding:rect(0,0,0,0);
+width:82;
+height:62;
+layoutpos:client;
+Accessible:true;
+AccName:rcstr(44058);
+AccRole:12;
+AccDefAction:rcstr(60047);
+tooltip:true;
+}
+wallpaperview[keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+bordercolor:ifhc(highlighttext,rgb(49,106,197));
+}
+element[class="WallpaperFrame"]
+{
+padding:rect(4,4,4,4);
+}
+element[class="MenuNav"]
+{
+background:ifhc(menu,window);
+foreground:ifhc(menutext,windowtext);
+borderthickness:rect(0,0,0,0);
+padding:rect(17,2,17,2);
+contentalign:middlecenter;
+}
+cmdbutton[class="MenuNav"]
+{
+background:ifhc(menu,window);
+foreground:ifhc(menutext,windowtext);
+borderthickness:rect(0,0,0,0);
+padding:rect(1,1,1,1);
+fontsize:13;
+contentalign:middlecenter;
+Accessible:true;
+AccName:rcstr(44057);
+AccRole:43;
+AccDefAction:rcstr(60047);
+AccDesc:rcstr(44054);
+tooltip:true;
+buttonstyle:customborder|syncmousekeyfocus;
+}
+cmdbutton[class="MenuNav"][keyfocused]
+{
+background:ifhc(highlight,argb(48,49,106,197));
+foreground:ifhc(highlighttext,windowtext);
+}
+cmdbutton[class="MenuNav"][enabled=false]
+{
+foreground:graytext;
+}
+element[id=atom(defaultswatch)]
+{
+background:rgb(207,221,244);
+}
+cmdbutton[class="Link"]
+{
+foreground:argb(255,0,0,255);
+Accessible:true;
+AccRole:43;
+AccState:256;
+contentalign:wrapcenter;
+}
+cmdbutton[class="Link"][mousefocused]
+{
+fontstyle:rcint(2000);
+cursor:hand;
+}
+</style>
+<style resid=convframess>
+viewer
+{
+layoutpos:nineclient;
+}
+simplescrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+simplescrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+scrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+scrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+thumb
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1003,5,#FF00FF,0,0,1,0));
+borderthickness:ifhc(rect(2,2,2,2),rect(3,3,3,3));
+borderstyle:ifhc(raised,solid);
+content:ifhc("",rcbmp(1004,0,#FF00FF,8rp,8rp,1,0));
+contentalign:middlecenter;
+}
+repeatbutton[class="Page"]
+{
+colorize:-2;
+}
+repeatbutton[class="Line"]
+{
+colorize:-2;
+background:ifhc(buttonface,argb(0,0,0,0));
+width:ifhc(-1,15);
+height:ifhc(-1,15);
+borderthickness:ifhc(rect(2,2,2,2),rect(1,1,1,1));
+fontface:"Marlett";
+fontsize:sysmetric(-10);
+borderstyle:ifhc(raised,solid);
+foreground:ifhc(buttontext,windowtext);
+padding:ifhc(rect(0,0,1,1),rect(0,0,0,0));
+}
+repeatbutton[class="Line"][pressed]
+{
+padding:ifhc(rect(1,1,0,0),rect(0,0,0,0));
+borderstyle:ifhc(sunken,solid);
+}
+repeatbutton[id=atom(lineup)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1001,5,-1,15rp,15rp,0,0));
+content:ifhc("5","");
+Accessible:true;
+AccName:rcstr(60063);
+AccRole:43;
+}
+repeatbutton[id=atom(linedown)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1002,5,-1,15rp,15rp,0,0));
+content:ifhc("6","");
+Accessible:true;
+AccName:rcstr(60064);
+AccRole:43;
+}
+repeatbutton[id=atom(lineleft)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1005,5,-1,15rp,15rp,0,0));
+content:ifhc("3","");
+Accessible:true;
+AccName:rcstr(60066);
+AccRole:43;
+}
+repeatbutton[id=atom(lineright)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1006,5,-1,15rp,15rp,0,0));
+content:ifhc("4","");
+Accessible:true;
+AccName:rcstr(60065);
+AccRole:43;
+}
+element
+{
+fontface:rcstr(2016);
+background:argb(0,0,0,0);
+fontsize:rcint(2015)pt;
+foreground:ifhc(windowtext,rgb(60,77,129));
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+borderthickness:rect(0,0,0,0);
+}
+element[enabled=false]
+{
+foreground:graytext;
+}
+button[enabled=false]
+{
+foreground:graytext;
+}
+wallpaperview
+{
+colorize:enabled;
+}
+wallpaperview[id=atom(convframe)]
+{
+colorize:enabled;
+background:ifhc(threedface,rgb(235,241,250));
+borderthickness:rect(1,1,1,1);
+}
+button
+{
+contentalign:middlecenter;
+background:argb(0,0,0,0);
+padding:rect(10,3,10,3);
+Accessible:true;
+AccRole:43;
+AccDefAction:rcstr(60047);
+}
+button[class="StdBtn"]
+{
+background:buttonface;
+contentalign:middlecenter;
+borderthickness:rect(2,2,2,2);
+borderstyle:raised;
+bordercolor:buttonface;
+padding:rect(1,1,1,1);
+}
+button[class="StdBtn"][pressed]
+{
+padding:rect(2,2,0,0);
+borderstyle:sunken;
+contentalign:middlecenter;
+}
+cmdbutton
+{
+Accessible:true;
+AccRole:43;
+AccDefAction:rcstr(60047);
+buttonstyle:focusrect3d;
+}
+CmdCheckBox
+{
+Accessible:true;
+AccRole:44;
+AccState:0;
+AccDefAction:rcstr(60047);
+buttonstyle:focusrect3d;
+}
+cmdbutton[class="DropDownBtn"]
+{
+colorize:enabled;
+padding:rect(1,1,1,1);
+buttonstyle:customborder|borderonselected|focusrect3d;
+AccName:rcstr(437);
+AccDesc:rcstr(44036);
+tooltip:true;
+}
+cmdbutton[class="DropDownBtn"][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="DropDownBtn"][selected]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="DropDownBtn"][pressed]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+element[id=atom(convinputarea)]
+{
+layoutpos:client;
+}
+inkinput
+{
+colorize:enabled;
+background:argb(0,0,0,0);
+Accessible:true;
+AccName:rcstr(60048);
+AccRole:42;
+AccDesc:rcstr(59996);
+tooltip:true;
+layoutpos:client;
+}
+inkinput[enabled=false]
+{
+background:ifhc(buttonshadow,rgb(190,199,220));
+}
+convinput
+{
+colorize:enabled;
+background:argb(0,0,0,0);
+Accessible:true;
+AccName:rcstr(60048);
+AccRole:42;
+AccDesc:rcstr(75);
+richeditstyle:PlainText|HideSelection|SaveSelection|MultiLine|WordWrap|AllowBeep;
+height:51;
+tooltip:true;
+layoutpos:client;
+}
+convinput[enabled=false]
+{
+background:ifhc(buttonshadow,rgb(190,199,220));
+}
+wledit[class="lastmessagetext"]
+{
+Accessible:true;
+AccName:rcstr(60049);
+AccRole:42;
+AccState:64;
+AccDesc:rcstr(76);
+Width:1;
+Height:1;
+richeditstyle:PlainText|HideSelection|DisableDrag|ReadOnly;
+}
+element[id=atom(convhistorymimic)]
+{
+colorize:enabled;
+background:window;
+alpha:201;
+padding:rect(1,1,1,0);
+borderthickness:rect(1,0,1,0);
+}
+element[id=atom(convhistorymimic)][class="DynamicBackground"]
+{
+borderthickness:rect(0,0,0,0);
+background:argb(0,0,0,0);
+}
+element[id=atom(convhistorycontainer)]
+{
+borderthickness:rect(1,0,1,1);
+colorize:enabled;
+}
+element[id=atom(convhistorycontainer)][class="DynamicBackground"]
+{
+borderthickness:rect(0,0,0,0);
+}
+element[id=atom(VoiceIMinputarea)]
+{
+layoutpos:client;
+}
+element[id=atom(VoiceIMinputarea)][mousefocused]
+{
+cursor:arrow;
+}
+infobar[id=atom(infobar)]
+{
+colorize:enabled;
+background:infobackground;
+foreground:infotext;
+borderthickness:rect(1,1,1,1);
+bordercolor:ifhc(windowtext,ifhc(buttonshadow,rgb(68,96,151)));
+animation:exp|alpha|slow;
+}
+htmlview[id=atom(infobartext)]
+{
+background:argb(0,0,0,0);
+foreground:infotext;
+contentalign:WrapLeft;
+Accessible:true;
+AccName:rcstr(60050);
+AccRole:41;
+}
+splitter
+{
+background:argb(0,0,0,0);
+padding:rect(0,0,0,0);
+}
+splitter[class="vertical"][mousefocused]
+{
+cursor:sizens;
+}
+splitter[mousefocused]
+{
+cursor:sizewe;
+}
+avatarview
+{
+layoutpos:top;
+padding:rect(0,0,0,2);
+}
+usertileview
+{
+colorize:enabled;
+blendmode:7;
+isbackground:true;
+borderthickness:ifhc(rect(1,1,1,1),rect(5,6,5,6));
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+background:ifhc(window,argb(0,0,0,0));
+idres:ifhc(0,1044);
+}
+usertileview[id=atom(meusertile)]
+{
+colorize:enabled;
+Accessible:true;
+AccName:rcstr(60051);
+AccRole:43;
+AccDesc:rcstr(44034);
+tooltip:true;
+}
+rtcvideo[id=atom(youvideo)]
+{
+borderthickness:rect(0,0,0,0);
+Accessible:true;
+AccName:rcstr(60052);
+AccRole:54;
+}
+rtcvideo[id=atom(mevideo)]
+{
+borderthickness:rect(0,0,0,0);
+Accessible:true;
+AccName:rcstr(60053);
+AccRole:54;
+}
+CmdCheckBox[id=atom(youmute)]
+{
+flip:false;
+idres:1018;
+AccName:rcstr(60055);
+AccDesc:rcstr(44032);
+tooltip:true;
+}
+CmdCheckBox[id=atom(memute)]
+{
+flip:false;
+idres:1020;
+AccName:rcstr(60054);
+AccDesc:rcstr(44031);
+tooltip:true;
+}
+CmdCheckBox[id=atom(youmute)][selected]
+{
+idres:1019;
+}
+CmdCheckBox[id=atom(memute)][selected]
+{
+idres:1021;
+}
+CmdCheckBox[class="mute"]
+{
+padding:rect(1,1,1,3);
+buttonstyle:customborder|focusrect3d;
+contentalign:middlecenter;
+}
+CmdCheckBox[class="mute"][keyfocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+CmdCheckBox[class="mute"][mousefocused]
+{
+cursor:hand;
+background:ifhc(window,rgb(242,245,251));
+}
+CmdCheckBox[class="mute"][pressed]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="FlyinBtn"]
+{
+colorize:enabled;
+idres:794;
+padding:rect(0,0,0,0);
+Accessible:true;
+AccRole:64;
+AccDefAction:rcstr(60056);
+}
+cmdbutton[class="FlyinBtn"][selected]
+{
+idres:793;
+Accessible:true;
+AccRole:64;
+AccDefAction:rcstr(60057);
+}
+cmdbutton[class="FlyinBtn"][mousefocused]
+{
+idres:823;
+}
+cmdbutton[class="FlyinBtn"][selected][mousefocused]
+{
+idres:822;
+}
+cmdbutton[class="FlyinBtn"][id=atom(exbtnyou)]
+{
+AccName:rcstr(431);
+AccDesc:rcstr(432);
+tooltip:true;
+}
+cmdbutton[class="FlyinBtn"][mousefocused]
+{
+cursor:hand;
+}
+cmdbutton[id=atom(closebox)]
+{
+Accessible:True;
+AccName:rcstr(2012);
+AccRole:43;
+AccDesc:rcstr(2012);
+tooltip:true;
+}
+png[class="SeparatorV"]
+{
+colorize:enabled;
+borderthickness:rect(0,0,0,0);
+isbackground:true;
+blendmode:5;
+idres:1046;
+width:5;
+}
+png[class="SeparatorH"]
+{
+colorize:enabled;
+borderthickness:rect(0,0,0,0);
+isbackground:true;
+blendmode:5;
+idres:1047;
+height:5;
+}
+element[id=atom(p4taskbar)]
+{
+layoutpos:top;
+}
+animatedimage
+{
+background:white;
+layoutpos:auto;
+borderthickness:rect(0,0,0,0);
+}
+animatedimage[id=atom(LoadStrip)]
+{
+background:argb(0,0,0,0);
+}
+clipperh
+{
+isreversed:true;
+animation:rectangleh|reverse|s|fast;
+}
+clipperh[class="AvatarClipper"]
+{
+padding:rect(8,0,0,0);
+}
+element[id=atom(taskbar)]
+{
+layoutpos:top;
+}
+element[id=atom(launchcaret)]
+{
+content:"";
+}
+element[id=atom(launchcaret)][mousefocused]
+{
+content:"6";
+}
+element[id=atom(launchcaret)][keyfocused]
+{
+content:"6";
+}
+element[id=atom(launchcaret)][selected]
+{
+content:"6";
+}
+element[id=atom(webcamspacer)]
+{
+layoutpos:top;
+background:argb(0,0,0,0);
+}
+cmdbutton[class="WebcamStatusBtn"]
+{
+colorize:enabled;
+layoutpos:top;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+background:ifhc(window,argb(0,0,0,0));
+padding:rect(0,0,0,0);
+Accessible:true;
+AccRole:43;
+tooltip:true;
+buttonstyle:customborder|borderonselected|focusrect3d;
+}
+cmdbutton[class="WebCamStatusBtn"][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="WebCamStatusBtn"][selected]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="TaskbarBtn"]
+{
+colorize:enabled;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+background:ifhc(window,argb(0,0,0,0));
+padding:rect(3,3,3,4);
+Accessible:true;
+AccRole:43;
+tooltip:true;
+buttonstyle:customborder|borderonselected|focusrect3d;
+}
+cmdbutton[class="TaskbarBtn"][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="TaskbarBtn"][selected]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="TaskbarBtn"][pressed]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="TaskbarBtnNoMultiClick"]
+{
+colorize:enabled;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+background:ifhc(window,argb(0,0,0,0));
+padding:rect(3,3,3,4);
+Accessible:true;
+AccRole:43;
+tooltip:true;
+buttonstyle:customborder|borderonselected|focusrect3d|disablemulticlick;
+}
+cmdbutton[class="TaskbarBtnNoMultiClick"][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="TaskbarBtnNoMultiClick"][selected]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="TaskbarBtnNoMultiClick"][pressed]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+CmdCheckBox[class="CaptionMiniBtn"]
+{
+colorize:enabled;
+idres:1064;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+bordercolor:argb(0,0,0,0);
+background:argb(0,0,0,0);
+padding:rect(3,1,3,1);
+Accessible:true;
+tooltip:true;
+buttonstyle:focusrect3d;
+width:22;
+height:18;
+}
+CmdCheckBox[class="CaptionMiniBtn"][mousefocused]
+{
+idres:1065;
+}
+CmdCheckBox[class="CaptionMiniBtn"][pressed]
+{
+padding:rect(4,2,2,0);
+}
+CmdCheckBox[class="CaptionMiniBtn"][selected]
+{
+idres:1066;
+}
+CmdCheckBox[class="CaptionMiniBtn"][selected][mousefocused]
+{
+idres:1067;
+}
+png[id=atom(togglebtnimg)][selected=false]
+{
+padding:rect(1,1,-1,-1);
+}
+cmdbutton[class="TaskbarMiniBtn"]
+{
+colorize:enabled;
+idres:ifhc(0,850);
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+bordercolor:argb(0,0,0,0);
+background:argb(0,0,0,0);
+padding:rect(3,1,3,1);
+Accessible:true;
+AccRole:43;
+tooltip:true;
+buttonstyle:ifhc(customborder|focusrect3d,focusrect3d);
+width:25;
+height:22;
+}
+cmdbutton[class="TaskbarMiniBtn"][mousefocused]
+{
+idres:ifhc(0,851);
+background:ifhc(ifhc(window,rgb(242,245,251)),argb(0,0,0,0));
+}
+cmdbutton[class="TaskbarMiniBtn"][pressed]
+{
+idres:ifhc(0,852);
+background:ifhc(ifhc(window,rgb(242,245,251)),argb(0,0,0,0));
+padding:rect(4,2,2,0);
+}
+cmdbutton[class="TaskbarMiniBtn"][selected]
+{
+bordercolor:ifhc(buttonshadow,rgb(47,74,143));
+background:ifhc(highlight,white);
+padding:rect(2,0,2,0);
+borderthickness:rect(1,1,1,1);
+buttonstyle:customborder|borderonselected;
+}
+png[class="CaptionImg"][windowactive=false]
+{
+alpha:128;
+}
+cmdbutton[class="CaptionBtn"]
+{
+colorize:enabled;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+background:argb(0,0,0,0);
+padding:rect(1,1,1,1);
+Accessible:true;
+AccRole:43;
+tooltip:true;
+buttonstyle:customborder|borderonselected|focusrect3d;
+}
+cmdbutton[class="CaptionBtn"][enabled=false]
+{
+foreground:graytext;
+}
+cmdbutton[class="CaptionBtn"][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="CaptionBtn"][selected]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="CaptionBtn"][pressed]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+mtoolbar
+{
+colorize:enabled;
+}
+cmdbutton[class="ToolbarBtn"]
+{
+colorize:enabled;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+background:argb(0,0,0,0);
+padding:rect(5,2,5,2);
+height:23;
+Accessible:true;
+AccRole:43;
+tooltip:true;
+buttonstyle:customborder|borderonselected|focusrect3d;
+}
+cmdbutton[class="ToolbarBtn"][enabled=false]
+{
+foreground:graytext;
+}
+cmdbutton[class="ToolbarBtn"][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="ToolbarBtn"][selected]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[class="ToolbarBtn"][pressed]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+png[class="ToolbarIcon"]
+{
+padding:rect(0,0,0,0);
+}
+png[class="ToolbarIcon"][mousefocused]
+{
+background:argb(0,0,0,0);
+borderthickness:rect(0,0,0,0);
+}
+png[class="ToolbarIcon"][keyfocused]
+{
+background:argb(0,0,0,0);
+}
+png[class="ToolbarIcon"][selected]
+{
+background:argb(0,0,0,0);
+}
+png[class="ToolbarIcon"][pressed]
+{
+background:argb(0,0,0,0);
+}
+png[class="ToolbarIcon"][enabled=false]
+{
+alpha:178;
+colorize:graytext;
+}
+png[class="Icon"][enabled=false]
+{
+alpha:178;
+colorize:graytext;
+}
+png[class="TaskbarMiniIcon"][enabled=false]
+{
+alpha:178;
+colorize:graytext;
+}
+png[class="TaskbarIcon"]
+{
+padding:rect(0,0,1,1);
+}
+png[class="TaskbarIcon"][mousefocused]
+{
+background:argb(0,0,0,0);
+borderthickness:rect(0,0,0,0);
+}
+png[class="TaskbarIcon"][keyfocused]
+{
+background:argb(0,0,0,0);
+}
+png[class="TaskbarIcon"][selected]
+{
+background:argb(0,0,0,0);
+}
+png[class="TaskbarIcon"][pressed]
+{
+background:argb(0,0,0,0);
+}
+png[class="TaskbarIcon"][enabled=false]
+{
+alpha:178;
+colorize:graytext;
+}
+png[class="TaskbarIcon"][pressed]
+{
+padding:rect(1,1,0,0);
+}
+element[class="sblabel"][enabled=false]
+{
+foreground:ifhc(buttonshadow,rgb(146,161,198));
+}
+cmdbutton[class="SendButton"]
+{
+colorize:enabled;
+fontweight:rcint(1999);
+background:ifhc(buttonface,argb(0,0,0,0));
+borderstyle:ifhc(raised,solid);
+foreground:ifhc(buttontext,rgb(47,74,143));
+borderthickness:ifhc(rect(2,2,2,2),rect(7,7,7,7));
+bordercolor:ifhc(captiontext,ifhc(buttonshadow,rgb(68,96,151)));
+padding:ifhc(rect(6,6,7,6),rect(1,1,2,1));
+Accessible:true;
+tooltip:true;
+AccRole:43;
+AccState:256;
+contentalign:middlecenter;
+isbackground:true;
+blendmode:7;
+}
+cmdbutton[class="SendButton"][enabled]
+{
+borderthickness:ifhc(rect(1,1,1,1),rect(7,7,7,7));
+idres:ifhc(0,780);
+foreground:ifhc(buttontext,rgb(47,74,143));
+}
+cmdbutton[class="SendButton"][enabled=false]
+{
+borderstyle:solid;
+borderthickness:ifhc(rect(1,1,1,1),rect(7,7,7,7));
+foreground:ifhc(buttonshadow,rgb(146,161,198));
+idres:ifhc(0,780);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+alpha:ifhc(255,178);
+}
+cmdbutton[class="SendButton"][mousefocused]
+{
+background:ifhc(hotlight,window);
+idres:ifhc(0,782);
+cursor:hand;
+}
+cmdbutton[class="SendButton"][pressed][enabled]
+{
+idres:ifhc(0,783);
+borderstyle:ifhc(sunken,solid);
+padding:ifhc(rect(7,7,6,5),rect(2,2,1,0));
+}
+cmdbutton[class="SendButtonWithSearch"]
+{
+colorize:enabled;
+fontweight:rcint(1999);
+background:ifhc(buttonface,argb(0,0,0,0));
+borderstyle:ifhc(raised,solid);
+foreground:ifhc(buttontext,rgb(47,74,143));
+borderthickness:ifhc(rect(2,2,2,2),rect(7,7,7,7));
+bordercolor:ifhc(captiontext,ifhc(buttonshadow,rgb(68,96,151)));
+padding:ifhc(rect(6,6,7,6),rect(1,1,2,1));
+Accessible:true;
+tooltip:true;
+AccRole:43;
+AccState:256;
+contentalign:middlecenter;
+isbackground:true;
+blendmode:7;
+buttonstyle:customborder|borderonselected|focusrect3d;
+}
+cmdbutton[class="SendButtonWithSearch"][enabled]
+{
+borderthickness:ifhc(rect(1,1,1,1),rect(7,7,7,7));
+idres:ifhc(0,912);
+foreground:ifhc(buttontext,rgb(47,74,143));
+}
+cmdbutton[class="SendButtonWithSearch"][enabled=false]
+{
+borderstyle:solid;
+borderthickness:ifhc(rect(1,1,1,1),rect(7,7,7,7));
+foreground:ifhc(buttonshadow,rgb(146,161,198));
+idres:ifhc(0,912);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+alpha:ifhc(255,178);
+}
+cmdbutton[class="SendButtonWithSearch"][mousefocused]
+{
+background:ifhc(hotlight,window);
+idres:ifhc(0,913);
+cursor:hand;
+}
+cmdbutton[class="SendButtonWithSearch"][pressed][enabled]
+{
+idres:ifhc(0,913);
+borderstyle:ifhc(sunken,solid);
+padding:ifhc(rect(7,7,6,5),rect(2,2,1,0));
+}
+cmdbutton[class="SearchButton"]
+{
+colorize:enabled;
+fontweight:normal;
+background:ifhc(buttonface,argb(0,0,0,0));
+borderstyle:ifhc(raised,solid);
+foreground:ifhc(buttontext,rgb(47,74,143));
+borderthickness:ifhc(rect(2,2,2,2),rect(7,2,7,2));
+bordercolor:ifhc(captiontext,ifhc(buttonshadow,rgb(68,96,151)));
+padding:ifhc(rect(3,1,4,1),rect(1,1,2,1));
+Accessible:true;
+tooltip:true;
+AccRole:43;
+AccState:256;
+contentalign:middlecenter;
+isbackground:true;
+blendmode:7;
+buttonstyle:customborder|borderonselected|focusrect3d;
+}
+cmdbutton[class="SearchButton"][enabled]
+{
+borderthickness:ifhc(rect(1,1,1,1),rect(7,2,7,2));
+idres:ifhc(0,914);
+foreground:ifhc(buttontext,rgb(47,74,143));
+}
+cmdbutton[class="SearchButton"][enabled=false]
+{
+borderstyle:solid;
+borderthickness:ifhc(rect(1,1,1,1),rect(7,2,7,2));
+foreground:ifhc(buttonshadow,rgb(146,161,198));
+idres:ifhc(0,914);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+alpha:ifhc(255,178);
+}
+cmdbutton[class="SearchButton"][mousefocused]
+{
+background:ifhc(hotlight,window);
+idres:ifhc(0,915);
+cursor:hand;
+}
+cmdbutton[class="SearchButton"][pressed][enabled]
+{
+idres:ifhc(0,915);
+borderstyle:ifhc(sunken,solid);
+padding:ifhc(rect(4,2,3,0),rect(2,2,1,0));
+}
+element[class="SendButtonBk"][enabled=false]
+{
+background:ifhc(buttonshadow,rgb(190,199,220));
+}
+element[class="SendButtonBk"]
+{
+colorize:enabled;
+background:argb(0,0,0,0);
+padding:rect(0,0,0,3);
+}
+element[id=atom(sendandsearchbtns)][enabled=false]
+{
+background:ifhc(buttonshadow,rgb(190,199,220));
+}
+element[id=atom(sendandsearchbtns)]
+{
+colorize:enabled;
+background:argb(0,0,0,0);
+}
+element[class="ToolbarCaret"]
+{
+fontface:"Marlett";
+fontsize:10;
+content:"6";
+padding:rect(2,0,0,1);
+}
+element[class="TaskbarCaret"]
+{
+fontface:"Marlett";
+fontsize:13;
+content:"6";
+padding:rect(0,0,0,0);
+}
+p4gamehost
+{
+borderthickness:rect(1,1,1,1);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+background:white;
+padding:rect(0,0,0,0);
+layoutpos:client;
+}
+element[id=atom(p4apptitlebar)]
+{
+Accessible:true;
+AccName:rcstr(61246);
+AccRole:1;
+}
+element[id=atom(browserstatus)]
+{
+Accessible:true;
+fontsize:rcint(2019)pt;
+fontweight:rcint(1999);
+foreground:ifhc(windowtext,rgb(60,77,129));
+}
+audiocontrol
+{
+padding:rect(4,0,0,0);
+background:argb(0,0,0,0);
+layoutpos:right;
+foreground:ifhc(buttonshadow,rgb(68,96,151));
+}
+vumeter
+{
+layoutpos:top;
+width:20;
+padding:rect(5,2,4,0);
+segments:11;
+}
+wledit
+{
+foreground:ifhc(windowtext,rgb(60,77,129));
+background:argb(0,0,0,0);
+}
+wledit[class="ReadOnlyText"]
+{
+richeditstyle:RichText|HideSelection|DisableDrag|ReadOnly;
+}
+wledit[class="ReadOnlyRedText"]
+{
+richeditstyle:RichText|HideSelection|DisableDrag|ReadOnly;
+foreground:ifhc(window,red);
+}
+expandoh
+{
+layoutpos:right;
+}
+avatarhost
+{
+colorize:enabled;
+background:argb(0,0,0,0);
+borderthickness:rect(1,1,1,1);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+tooltip:true;
+AccRole:40;
+}
+wledit[id=atom(tobar)]
+{
+foreground:ifhc(window,ifhc(windowtext,rgb(60,77,129)));
+background:ifhc(buttonshadow,argb(0,0,0,0));
+Accessible:true;
+AccName:rcstr(60059);
+AccRole:41;
+}
+wledit[id=atom(tobar)][mousefocused]
+{
+cursor:hand;
+}
+wledit[id=atom(statusbartext)]
+{
+Accessible:true;
+AccName:rcstr(60060);
+AccRole:41;
+}
+wledit[id=atom(adbannertext)]
+{
+fontweight:rcint(1999);
+}
+wledit[id=atom(adbannertext)][mousefocused]
+{
+cursor:hand;
+foreground:ifhc(hotlight,blue);
+fontstyle:rcint(2000);
+}
+textadbanner
+{
+alpha:201;
+background:white;
+}
+element[id=atom(toarea)]
+{
+colorize:enabled;
+borderthickness:ifhc(rect(1,1,1,1),rect(0,0,0,1));
+padding:rect(4,4,4,2);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+foreground:ifhc(window,ifhc(windowtext,rgb(60,77,129)));
+background:ifhc(buttonshadow,argb(0,0,0,0));
+fontface:rcstr(2016);
+fontsize:rcint(2015)pt;
+AccDesc:rcstr(2039);
+tooltip:true;
+}
+cmdbutton[id=atom(tolink)]
+{
+AccDesc:rcstr(2039);
+tooltip:true;
+}
+cmdbutton[id=atom(tolink)][mousefocused]
+{
+cursor:hand;
+}
+png[class="RoundedFrame"]
+{
+colorize:enabled;
+borderthickness:ifhc(rect(1,1,1,1),rect(5,6,5,6));
+background:ifhc(window,argb(0,0,0,0));
+blendmode:7;
+isbackground:true;
+idres:ifhc(0,1044);
+}
+png[class="AvatarHostRoundedFrame"]
+{
+colorize:enabled;
+borderthickness:ifhc(rect(1,1,1,1),rect(5,6,5,6));
+background:argb(0,0,0,0);
+blendmode:7;
+isbackground:true;
+padding:rect(-1,-1,-1,-1);
+idres:ifhc(0,1045);
+}
+element[id=atom(rostercontainer)]
+{
+layoutpos:client;
+}
+png[class="TabHover"]
+{
+layoutpos:bottom;
+height:3;
+isbackground:true;
+blendmode:7;
+borderthickness:ifhc(rect(1,1,1,1),rect(6,0,6,0));
+background:ifhc(window,argb(0,0,0,0));
+}
+png[class="TabHover"][mousefocused=false][selected=false]
+{
+idres:ifhc(0,1071);
+borderthickness:ifhc(rect(1,1,1,1),rect(0,0,0,0));
+}
+png[class="TabHover"]
+{
+idres:ifhc(0,1070);
+}
+cmdbutton[class="Tab"]
+{
+tooltip:true;
+colorize:enabled;
+height:21;
+isbackground:true;
+blendmode:7;
+borderthickness:ifhc(rect(1,1,1,1),rect(6,0,6,0));
+background:ifhc(window,argb(0,0,0,0));
+padding:ifhc(rect(0,0,0,0),rect(-6,0,-6,0));
+}
+cmdbutton[class="Tab"][selected=false]
+{
+idres:ifhc(0,1069);
+}
+cmdbutton[class="Tab"][selected]
+{
+idres:ifhc(0,1068);
+}
+element[class="TabBtn"]
+{
+background:ifhc(window,argb(0,0,0,0));
+}
+element[class="TabBtn"][selected]
+{
+bordercolor:ifhc(activecaption,orange);
+}
+png[id=atom(topbarlefttaskbar)]
+{
+layoutpos:ninetopleft;
+}
+png[id=atom(topbarleftbase)]
+{
+layoutpos:ninetopleft;
+}
+element[id=atom(topbarbase)]
+{
+layoutpos:top;
+}
+element[id=atom(minmaxclosebase)]
+{
+layoutpos:right;
+padding:rect(4,1,0,0);
+}
+element[id=atom(minmaxclosetaskbar)]
+{
+layoutpos:right;
+padding:rect(4,1,0,0);
+}
+element[id=atom(minmaxclosep4)]
+{
+layoutpos:right;
+padding:rect(4,1,0,0);
+}
+element[id=atom(togglecont)]
+{
+layoutpos:left;
+}
+element[id=atom(togglecont)][direction=RTL]
+{
+layoutpos:right;
+}
+element[id=atom(pagercont)]
+{
+layoutpos:right;
+}
+element[id=atom(pagercont)][direction=RTL]
+{
+layoutpos:left;
+}
+png[id=atom(tbcurve)]
+{
+layoutpos:left;
+}
+png[id=atom(tbcurve)][direction=RTL]
+{
+layoutpos:right;
+}
+CmdCheckBox[id=atom(togglebtn)]
+{
+layoutpos:top;
+AccName:rcstr(120);
+AccDesc:rcstr(47001);
+}
+CmdCheckBox[id=atom(togglebtn)][selected]
+{
+AccDesc:rcstr(47002);
+}
+element[id=atom(captionbtngrptaskbar)]
+{
+layoutpos:top;
+}
+element[id=atom(inputareacont)][class="CustomWallpaper"]
+{
+background:argb(0,0,0,0);
+alpha:201;
+}
+element[id=atom(inputareacont)][class="DefaultWallpaper"]
+{
+background:window;
+alpha:201;
+}
+convhistory
+{
+richeditstyle:RichText|MultiLine|WordWrap;
+Accessible:true;
+AccName:rcstr(60049);
+AccRole:42;
+AccState:64;
+AccDesc:rcstr(76);
+tooltip:true;
+}
+convhistory[class="CustomWallpaper"]
+{
+background:argb(0,0,0,0);
+alpha:201;
+}
+convhistory[class="DefaultWallpaper"]
+{
+background:window;
+alpha:201;
+}
+element[id=atom(inputareacont)][dropfocus]
+{
+background:highlight;
+alpha:128;
+}
+constrainer[id=atom(imcontentcontainer)][dropfocus]
+{
+background:highlight;
+alpha:128;
+}
+usertileview[id=atom(meusertile)][mousefocused]
+{
+cursor:hand;
+}
+usertileview[id=atom(meusertile)][dropfocus]
+{
+background:highlight;
+alpha:128;
+}
+FlashHost
+{
+Background:argb(0,0,0,0);
+}
+DynBkgnd
+{
+Background:argb(0,0,0,0);
+}
+multicmdbutton[class="MultiCmdToolbarBtn"]
+{
+colorize:enabled;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+background:argb(0,0,0,0);
+padding:rect(5,2,5,2);
+height:23;
+Accessible:true;
+AccRole:43;
+tooltip:true;
+buttonstyle:customborder|borderonselected|focusrect3d;
+}
+multicmdbutton[class="MultiCmdToolbarBtn"][enabled=false]
+{
+foreground:graytext;
+}
+multicmdbutton[class="MultiCmdToolbarBtn"][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+multicmdbutton[class="MultiCmdToolbarBtn"][selected]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+multicmdbutton[class="MultiCmdToolbarBtn"][pressed]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+</style>
+<style resid=volumess>
+thumbpng
+{
+idres:1049;
+contentalign:middlecenter;
+}
+thumbpng[mousefocused]
+{
+idres:1050;
+}
+repeatbutton[id=atom(lineup)]
+{
+height:0;
+}
+repeatbutton[id=atom(linedown)]
+{
+height:0;
+}
+volume
+{
+layoutpos:top;
+padding:rect(0,0,0,0);
+width:20;
+height:38;
+proportional:false;
+AccRole:51;
+Accessible:true;
+tooltip:true;
+}
+</style>
+<style resid=listscrollerss>
+viewer
+{
+layoutpos:nineclient;
+}
+simplescrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+simplescrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+scrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+scrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+thumb
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1003,5,#FF00FF,0,0,1,0));
+borderthickness:ifhc(rect(2,2,2,2),rect(3,3,3,3));
+borderstyle:ifhc(raised,solid);
+content:ifhc("",rcbmp(1004,0,#FF00FF,8rp,8rp,1,0));
+contentalign:middlecenter;
+}
+repeatbutton[class="Page"]
+{
+colorize:-2;
+}
+repeatbutton[class="Line"]
+{
+colorize:-2;
+background:ifhc(buttonface,argb(0,0,0,0));
+width:ifhc(-1,15);
+height:ifhc(-1,15);
+borderthickness:ifhc(rect(2,2,2,2),rect(1,1,1,1));
+fontface:"Marlett";
+fontsize:sysmetric(-10);
+borderstyle:ifhc(raised,solid);
+foreground:ifhc(buttontext,windowtext);
+padding:ifhc(rect(0,0,1,1),rect(0,0,0,0));
+}
+repeatbutton[class="Line"][pressed]
+{
+padding:ifhc(rect(1,1,0,0),rect(0,0,0,0));
+borderstyle:ifhc(sunken,solid);
+}
+repeatbutton[id=atom(lineup)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1001,5,-1,15rp,15rp,0,0));
+content:ifhc("5","");
+Accessible:true;
+AccName:rcstr(60063);
+AccRole:43;
+}
+repeatbutton[id=atom(linedown)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1002,5,-1,15rp,15rp,0,0));
+content:ifhc("6","");
+Accessible:true;
+AccName:rcstr(60064);
+AccRole:43;
+}
+repeatbutton[id=atom(lineleft)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1005,5,-1,15rp,15rp,0,0));
+content:ifhc("3","");
+Accessible:true;
+AccName:rcstr(60066);
+AccRole:43;
+}
+repeatbutton[id=atom(lineright)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1006,5,-1,15rp,15rp,0,0));
+content:ifhc("4","");
+Accessible:true;
+AccName:rcstr(60065);
+AccRole:43;
+}
+scrollbar
+{
+colorize:enabled;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+scrollbar[vertical]
+{
+colorize:enabled;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+roster[id=atom(roster)]
+{
+layoutpos:client;
+background:argb(0,0,0,0);
+padding:rect(3,4,3,3);
+}
+p4appdirhost
+{
+borderthickness:rect(5,5,0,5);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+}
+</style>
+<style resid=rosterlistss>
+element
+{
+background:argb(0,0,0,0);
+borderthickness:rect(0,0,0,0);
+}
+buddy[id=atom(rosterbuddy)]
+{
+padding:rect(2,2,2,2);
+background:argb(0,0,0,0);
+borderthickness:rect(0,0,0,0);
+Accessible:true;
+AccName:rcstr(60067);
+AccRole:57;
+AccState:1073741824;
+}
+element[class="headercontainer"]
+{
+background:ifhc(threedface,rgb(235,241,250));
+padding:rect(1,1,1,1);
+}
+element[class="headertext"]
+{
+background:infobackground;
+foreground:infotext;
+padding:rect(0,1,0,2);
+borderthickness:rect(1,1,1,1);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+contentalign:middlecenter;
+Accessible:true;
+AccRole:41;
+}
+wledit
+{
+fontface:rcstr(2016);
+fontstyle:none;
+fontweight:normal;
+background:argb(0,0,0,0);
+foreground:ifhc(windowtext,rgb(60,77,129));
+richeditstyle:RichText|HideSelection|DisableDrag|ReadOnly;
+}
+usertileview
+{
+colorize:enabled;
+background:ifhc(buttonshadow,rgb(235,241,250));
+borderthickness:rect(1,1,1,1);
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+layoutpos:left;
+}
+element[id=atom(rosterbuddyname)]
+{
+fontface:rcstr(2016);
+fontstyle:none;
+fontweight:rcint(1999);
+background:ifhc(window,argb(0,0,0,0));
+foreground:ifhc(windowtext,rgb(60,77,129));
+contentalign:middleleft|wordellipsis;
+Accessible:true;
+AccName:rcstr(60068);
+AccRole:41;
+}
+wledit[id=atom(rosterbuddyname)]
+{
+fontface:rcstr(2016);
+fontstyle:none;
+background:argb(0,0,0,0);
+foreground:ifhc(windowtext,rgb(60,77,129));
+contentalign:middleleft|wordellipsis;
+Accessible:true;
+AccName:rcstr(60068);
+AccRole:41;
+}
+wledit[id=atom(rosterbuddyname)][class="Pending"]
+{
+fontstyle:none;
+fontweight:normal;
+foreground:ifhc(ifhc(windowtext,rgb(60,77,129)),darkslategray);
+}
+wledit[id=atom(rosterbuddyname)][keyfocused]
+{
+background:highlight;
+foreground:highlighttext;
+}
+element[id=atom(rosterbuddystate)]
+{
+fontface:rcstr(2016);
+fontstyle:none;
+fontweight:normal;
+background:ifhc(window,argb(0,0,0,0));
+foreground:ifhc(windowtext,rgb(60,77,129));
+contentalign:middleleft|wordellipsis;
+Accessible:true;
+AccName:rcstr(60069);
+AccRole:41;
+}
+element[id=atom(rosterbuddystate)][class="Pending"]
+{
+fontstyle:none;
+fontweight:normal;
+foreground:ifhc(ifhc(windowtext,rgb(60,77,129)),darkslategray);
+}
+element[id=atom(rosterbuddystate)][keyfocused]
+{
+foreground:highlighttext;
+background:highlight;
+}
+</style>
+<element resid=convframeresid id=atom(convframeroot) sheet=styleref(convframess) layout=filllayout()>
+<element layout=borderlayout()>
+<element layoutpos=client layout=gridlayout(2,1)>
+<element colorize=enabled background=ifhc(window,gradient(rgb(207,221,244),rgb(247,248,253),1))/>
+<element colorize=enabled background=ifhc(window,gradient(rgb(247,248,253),rgb(207,221,244),1))/>
+</element>
+<element colorize=enabled layoutpos=bottom height=20 background=ifhc(window,gradient(rgb(207,221,244),rgb(237,242,251),1))/>
+</element>
+<element id=atom(contentcontainer) layout=borderlayout() layoutpos=client>
+<element id=atom(imcontentandadcontainer) layout=filllayout() layoutpos=client>
+<wallpaperview id=atom(wallpaper) thumbnail=false active=inactive enabled=false/>
+<constrainer id=atom(imcontentcontainer) layout=borderlayout() active=inactive>
+<element id=atom(topbarbase) layoutpos=top layout=filllayout()>
+<png isbackground=true blendmode=7 height=21 colorize=enabled idres=ifhc(0,802)/>
+<element id=atom(captionbtngrpbase) layout=borderlayout() padding=rect(0,0,10,0)>
+<element id=atom(minmaxclosebase) layout=flowlayout(0,2,0,2)>
+<cmdbutton cmdid=40320 class="CaptionBtn" layout=filllayout() AccName=rcstr(47003) AccDesc=rcstr(47003) active=mouse>
+<png class="CaptionImg" contentalign=middlecenter padding=rect(0,0,0,0) idres=866/>
+</cmdbutton>
+<cmdbutton cmdid=40321 class="CaptionBtn" layout=filllayout() AccName=rcstr(47004) AccDesc=rcstr(47004) active=mouse>
+<png class="CaptionImg" idres=867 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=1110 class="CaptionBtn" layout=filllayout() AccName=rcstr(47005) AccDesc=rcstr(47005) active=mouse>
+<png class="CaptionImg" idres=868 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+</element>
+<png class="CaptionImg" id=atom(msnlogo) layoutpos=ifhc(none,right) flip=false idres=1041/>
+</element>
+</element>
+<element id=atom(content) class="content" layoutpos=client layout=borderlayout() padding=rect(13,8,13,13)>
+<element layout=borderlayout() layoutpos=client>
+<constrainer id=atom(youlayout) layoutpos=client layout=borderlayout()>
+<element layoutpos=client id=atom(historycontainer) layout=borderlayout()>
+<element layoutpos=top layout=filllayout()>
+<element layout=borderlayout()>
+<png layoutpos=left width=6 borderthickness=rect(0,5,0,0) blendmode=7 isbackground=true idres=1042 colorize=enabled/>
+<png layoutpos=client borderthickness=rect(0,1,0,0) blendmode=5 isbackground=true idres=1040 colorize=enabled/>
+<png layoutpos=right width=6 borderthickness=rect(0,5,0,0) blendmode=7 isbackground=true idres=1043 colorize=enabled/>
+</element>
+<element layout=borderlayout() id=atom(toarea) active=mouse>
+<png id=atom(tomobileicon) layoutpos=left borderthickness=rect(0,0,0,0) idres=829/>
+<element layoutpos=left padding=rect(2,1,4,0) layout=verticalflowlayout(0,2,2,0)>
+<element id=atom(tolabel) padding=rect(0,0,0,0) contentalign=bottomleft content=rcstr(3009)/>
+</element>
+<cmdbutton id=atom(tolink) layoutpos=client padding=rect(0,1,0,0) contentalign=bottomleft cmdid=35061 layout=filllayout() active=mouse>
+<wledit id=atom(tobar) xscrollable=false yscrollable=true fontweight=rcint(1999) maxvisiblelines=2 label=atom(tolabel) richeditstyle=RichText|HideSelection|DisableDrag|ReadOnly|WordWrap|MultiLine active=inactive/>
+</cmdbutton>
+<element layoutpos=right layout=borderlayout()>
+<element id=atom(UsWebcamBtnSpacer) width=20 height=20/>
+<cmdbutton tooltip=true AccDesc=rcstr(44029) AccName=rcstr(60221) id=atom(UsWebcamBtn) class="WebcamStatusBtn" cmdid=40371 width=20 height=20 padding=rect(2,2,2,2) layout=borderlayout() layoutpos=none active=mouseandkeyboard|nosyncfocus>
+<png class="Icon" flip=false idres=796 layoutpos=client/>
+</cmdbutton>
+</element>
+</element>
+</element>
+<element layoutpos=top id=atom(convhistorymimic) layout=filllayout()>
+<infobar id=atom(infobar) layout=borderlayout() padding=rect(1,1,1,1)>
+<element layoutpos=left layout=flowlayout(0,0,0,0) padding=rect(0,0,3,0)>
+<imagelist id=atom(infobaricon) ImageListId=0 width=16 height=16/>
+</element>
+<htmlview layoutpos=client id=atom(infobartext) label=atom(infobaricon) maxvisiblelines=2/>
+</infobar>
+</element>
+<element id=atom(convhistorycontainer) layoutpos=client layout=filllayout()>
+<DynBkgnd id=atom(flashbackground) class="noncaptionable" layout=filllayout() enabled=true>
+<element id=atom(convhistorysubcontainer) layout=borderlayout()>
+<element id=atom(topdynbkgndspacer) layout=filllayout() layoutpos=top padding=rect(0,0,0,0) height=0 active=inactive enabled=false/>
+<element id=atom(bottomdynbkgndspacer) layout=filllayout() layoutpos=bottom padding=rect(0,0,0,0) height=0 active=inactive enabled=false/>
+<element id=atom(leftdynbkgndspacer) layout=filllayout() layoutpos=left padding=rect(0,0,0,0) width=0 active=inactive enabled=false/>
+<element id=atom(rightdynbkgndspacer) layout=filllayout() layoutpos=right padding=rect(0,0,0,0) width=0 active=inactive enabled=false/>
+<convhistory layoutpos=client dropfocus=false xscrollable=false id=atom(convhistory)/>
+</element>
+</DynBkgnd>
+</element>
+</element>
+</constrainer>
+<constrainer id=atom(inputarea) layout=borderlayout() padding=rect(0,0,0,0) height=100>
+<splitter layoutpos=top class="vertical" height=5 layout=filllayout() beforeid=atom(youlayout) afterid=atom(inputarea) orientationstyle=reverse|vertical/>
+<element layoutpos=client layout=borderlayout() padding=rect(0,4,0,0) borderthickness=rect(0,0,0,0)>
+<element id=atom(melayout) layout=borderlayout() layoutpos=client>
+<element id=atom(inputtoolbar) layoutpos=top layout=borderlayout() borderthickness=ifhc(rect(1,1,1,0),rect(0,0,0,0)) height=23>
+<png layoutpos=left idres=ifhc(0,860) colorize=enabled/>
+<png layoutpos=right idres=ifhc(0,862) colorize=enabled/>
+<mtoolbar layoutpos=client isbackground=true blendmode=7 idres=ifhc(0,861) layout=flowlayout(0,2,0,2) padding=rect(0,2,0,1)>
+<cmdbutton cmdid=40710 id=atom(inkpen) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60044) AccDesc=rcstr(44039) padding=rect(5,0,5,0)>
+<png id=atom(inkpensizedropdownbtnpng) flip=false idres=1037 class="ToolbarIcon"/>
+</cmdbutton>
+<cmdbutton cmdid=40703 id=atom(inkpensizedropdownbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccRole=57 AccName=rcstr(60044) AccDesc=rcstr(44039) padding=rect(0,0,0,0) margin=rect(0,0,5,0)>
+<element class="ToolbarCaret" padding=rect(1,0,0,1)/>
+</cmdbutton>
+<cmdbutton cmdid=40711 id=atom(inkeraser) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60045) AccDesc=rcstr(44040) padding=rect(5,0,5,0)>
+<png id=atom(inkerasersizedropdownbtnpng) flip=false idres=1038 class="ToolbarIcon"/>
+</cmdbutton>
+<cmdbutton cmdid=40704 id=atom(inkerasersizedropdownbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccRole=57 AccName=rcstr(60045) AccDesc=rcstr(44040) padding=rect(0,0,0,0) margin=rect(0,0,5,0)>
+<element class="ToolbarCaret" padding=rect(1,0,0,1)/>
+</cmdbutton>
+<cmdbutton cmdid=40712 id=atom(inkundobtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60088) AccDesc=rcstr(44042)>
+<png flip=false idres=1051 class="ToolbarIcon"/>
+</cmdbutton>
+<element id=atom(inkredobtn) layout=filllayout()>
+<cmdbutton cmdid=40713 id=atom(suppress) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60089) AccDesc=rcstr(44043)>
+<png flip=false idres=1052 class="ToolbarIcon"/>
+</cmdbutton>
+</element>
+<cmdbutton cmdid=40705 id=atom(inkcolordropdownbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccRole=58 AccName=rcstr(60046) AccDesc=rcstr(44041)>
+<png flip=false idres=1039 class="ToolbarIcon"/>
+<element class="ToolbarCaret"/>
+</cmdbutton>
+<cmdbutton cmdid=40714 id=atom(inkbgnddropdownbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccRole=57 AccName=rcstr(60090) AccDesc=rcstr(44051)>
+<png flip=false idres=1079 class="ToolbarIcon"/>
+<element class="ToolbarCaret"/>
+</cmdbutton>
+<element id=atom(inkseparator) height=18 width=2 background=WHITE borderthickness=rect(1,0,0,0) bordercolor=rgb(85,85,85)/>
+<cmdbutton cmdid=40211 id=atom(fontbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60250) AccDesc=rcstr(3172) ShortcutString=rcstr(60006)>
+<png flip=false idres=1010 class="ToolbarIcon"/>
+</cmdbutton>
+<cmdbutton cmdid=35125 id=atom(emoticonbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60251) AccRole=58 AccDesc=rcstr(3173) ShortcutString=rcstr(60003)>
+<png flip=false idres=1011 class="ToolbarIcon"/>
+<element class="ToolbarCaret"/>
+</cmdbutton>
+<multicmdbutton class="MultiCmdToolbarBtn" id=atom(VoiceIMtoolbarbtn) layout=flowlayout(0,2,0,2) mousedowncmdid=697 mouseupcmdid=698 AccName=rcstr(41108) AccDesc=rcstr(41109)>
+<png id=atom(voiceimtoolbarbtnicon) flip=false padding=rect(2,0,0,0) idres=2077 class="ToolbarIcon"/>
+<element id=atom(suppress) padding=rect(2,0,0,0) content=rcstr(41108)/>
+</multicmdbutton>
+<cmdbutton cmdid=35126 id=atom(winkbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(4234) AccRole=58 AccDesc=rcstr(3178) ShortcutString=rcstr(60004)>
+<png flip=false idres=1093 class="ToolbarIcon"/>
+<element id=atom(suppress) padding=rect(2,0,0,0) content=rcstr(60004)/>
+<element class="ToolbarCaret"/>
+</cmdbutton>
+<cmdbutton cmdid=40615 id=atom(backgroundsbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60253) AccRole=58 AccDesc=rcstr(44033) ShortcutString=rcstr(60012)>
+<png flip=false idres=1009 class="ToolbarIcon"/>
+<element id=atom(suppress) padding=rect(2,0,0,0) content=rcstr(60012)/>
+<element class="ToolbarCaret"/>
+</cmdbutton>
+<cmdbutton cmdid=40614 id=atom(themesbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(60252) AccDesc=rcstr(44082) AccRole=58 ShortcutString=rcstr(60013)>
+<png flip=false idres=1012 class="ToolbarIcon"/>
+<element id=atom(suppress) padding=rect(2,0,0,0) content=rcstr(60013)/>
+<element class="ToolbarCaret"/>
+</cmdbutton>
+<cmdbutton cmdid=689 id=atom(buzzbtn) class="ToolbarBtn" layout=flowlayout(0,2,0,2) AccName=rcstr(2195) AccRole=43 AccDesc=rcstr(700) ShortcutString=rcstr(699)>
+<png flip=false padding=rect(2,0,0,0) idres=911 class="ToolbarIcon"/>
+</cmdbutton>
+</mtoolbar>
+</element>
+<element id=atom(inputareacont) layout=borderlayout() layoutpos=client dropfocus=false borderthickness=rect(1,1,1,0) colorize=enabled>
+<element layout=borderlayout() layoutpos=client>
+<element id=atom(convinputarea) layout=borderlayout()>
+<convinput id=atom(convinput) xscrollable=false margin=rect(4,0,0,0) padding=rect(0,1,0,1) borderthickness=rect(0,0,0,0)/>
+<element layoutpos=right class="SendButtonBk" layout=flowlayout(0,2,1,2) id=atom(ink2textsendbtnbk)>
+<cmdbutton class="SendButton" height=37 id=atom(ink2textsendbtn) cmdid=272 layout=filllayout() ShortcutString=rcstr(60014) AccDefAction=rcstr(60047) AccName=rcstr(60058) AccDesc=rcstr(77)>
+<element class="sblabel" content=rcstr(60014)/>
+</cmdbutton>
+</element>
+</element>
+<element id=atom(inkinputarea) layout=borderlayout() layoutpos=bottom>
+<element id=atom(inksplitter) layoutpos=top height=2 borderthickness=rect(1,1,1,1)/>
+<inkinput active=mouseandkeyboard|nosyncfocus borderthickness=rect(0,0,0,0) id=atom(inkinput)/>
+</element>
+<element id=atom(VoiceIMinputarea) layoutpos=none layout=borderlayout()>
+<element layoutpos=left id=atom(VoiceIMvumeterContainer) width=30 layout=VerticalFlowLayout(0,2,3,2)>
+<vumeter id=atom(VoiceIMvumeter) segments=10/>
+</element>
+<element layoutpos=client id=atom(VoiceIMrecordingcontainer) layout=verticalflowlayout(0,2,2,2) padding=rect(5,2,5,2)>
+<element id=atom(VoiceIMrecordprogresscontainer) height=18 width=200 layout=filllayout()>
+<progress id=atom(VoiceIMrecordprogress) minimum=0 maximum=100 position=0 foreground=argb(255,56,181,73) BorderThickness=Rect(1,1,1,1) BorderColor=argb(255,68,96,151)/>
+</element>
+<element id=atom(VoiceIMrecordingdescription) contentalign=wrapcenter content=rcstr(41106) margin=rect(0,3,0,0)/>
+</element>
+</element>
+<element id=atom(sendandsearchbtns) layoutpos=right layout=verticalflowlayout(0,2,3,2) padding=rect(3,3,3,0)>
+<element class="SendButtonBk" layout=borderlayout() id=atom(sendbtnbk) padding=rect(0,0,0,0)>
+<cmdbutton class="SendButtonWithSearch" height=37 id=atom(sendbtn) cmdid=272 layoutpos=client layout=filllayout() ShortcutString=rcstr(60014) AccDefAction=rcstr(60047) AccName=rcstr(60058) AccDesc=rcstr(77)>
+<element class="sblabel" content=rcstr(60014)/>
+</cmdbutton>
+</element>
+<element id=atom(searchbtnbk) class="SendButtonBk" layout=borderlayout()>
+<cmdbutton class="SearchButton" height=25 id=atom(searchbtn) cmdid=888 layoutpos=client layout=filllayout() ShortcutString=rcstr(39703) AccDefAction=rcstr(60047) AccName=rcstr(39709) AccDesc=rcstr(39708)>
+<element class="sblabel" content=rcstr(39703)/>
+</cmdbutton>
+</element>
+</element>
+</element>
+</element>
+<element id=atom(statusbarcont) layout=filllayout() layoutpos=bottom borderthickness=ifhc(rect(1,0,1,1),rect(0,0,0,0))>
+<element height=22 layout=borderlayout()>
+<png layoutpos=left width=6 borderthickness=ifhc(rect(0,0,0,0),rect(0,0,0,5)) blendmode=7 isbackground=true idres=ifhc(0,863) colorize=enabled/>
+<png layoutpos=client blendmode=5 borderthickness=ifhc(rect(0,0,0,0),rect(0,0,0,1)) isbackground=true idres=ifhc(0,864) colorize=enabled/>
+<png layoutpos=right width=6 borderthickness=ifhc(rect(0,0,0,0),rect(0,0,0,5)) blendmode=7 isbackground=true idres=ifhc(0,865) colorize=enabled/>
+</element>
+<convstatusbar id=atom(statusbar) layout=borderlayout() padding=rect(1,0,1,3)>
+<element layoutpos=left layout=flowlayout(0,1,0,1) padding=rect(3,0,2,2) borderthickness=rect(0,1,0,0) colorize=enabled>
+<imagelist id=atom(statusbaricon) layoutpos=left ImageListId=0 width=16 height=16/>
+</element>
+<element id=atom(statusbartextcontainer) layoutpos=client layout=flowlayout(0,1,0,1) padding=rect(3,0,2,2) borderthickness=rect(0,1,0,0) colorize=enabled>
+<wledit id=atom(statusbartext) layoutpos=client class="ReadOnlyText" label=atom(statusbaricon) active=inactive/>
+</element>
+<inkmodecontainer id=atom(inkmodecontainer) layoutpos=right layout=borderlayout() padding=rect(0,0,0,-3) active=inactive>
+<element layoutpos=right width=15 borderthickness=rect(0,1,0,0) colorize=enabled/>
+<selector id=atom(inkmodeselector) layoutpos=right layout=flowlayout(0) active=inactive>
+<cmdbutton class="Tab" layout=filllayout() id=atom(inkmodeinkelem) AccName=rcstr(60026) AccDesc=rcstr(44064)>
+<element class="TabBtn" layout=borderlayout()>
+<element layoutpos=client layout=flowlayout(0,2,0,2) padding=rect(6,0,6,0)>
+<png flip=false idres=1104 class="ToolbarIcon"/>
+</element>
+<png class="TabHover"/>
+</element>
+</cmdbutton>
+<cmdbutton class="Tab" layout=filllayout() id=atom(inksendastextelem) AccName=rcstr(60027) AccDesc=rcstr(44065)>
+<element class="TabBtn" layout=borderlayout()>
+<element layoutpos=client layout=flowlayout(0,2,0,2) padding=rect(6,0,6,0)>
+<png flip=false idres=1105 class="ToolbarIcon"/>
+</element>
+<png class="TabHover"/>
+</element>
+</cmdbutton>
+<cmdbutton class="Tab" layout=filllayout() id=atom(inkmodetextelem) AccName=rcstr(60028) AccDesc=rcstr(44066)>
+<element class="TabBtn" layout=borderlayout()>
+<element layoutpos=client layout=flowlayout(0,2,0,2) padding=rect(6,0,6,0)>
+<png flip=false idres=1106 class="ToolbarIcon"/>
+</element>
+<png class="TabHover"/>
+</element>
+</cmdbutton>
+</selector>
+</inkmodecontainer>
+</convstatusbar>
+</element>
+</element>
+</element>
+</constrainer>
+</element>
+<element id=atom(youmearea) layout=borderlayout() layoutpos=right>
+<element id=atom(merightsidecontainer) layout=verticalflowlayout(0,2) layoutpos=bottom>
+<expandoh id=atom(mecontainer) remoteexpandoid=atom(youcontainer) clipperid=atom(clipperhme) layout=borderlayout() selected=false>
+<clipperh layoutpos=left id=atom(clipperhme) class="AvatarClipper" layout=borderlayout()>
+<element id=atom(meview) layoutpos=top layout=borderlayout()>
+<avatarview id=atom(mecontrol) layout=filllayout()>
+<png class="RoundedFrame"/>
+<element layout=borderlayout() padding=rect(4,3,4,0)>
+<element id=atom(avatarviewcontainer) layoutpos=top layout=flowlayout(0,0,2,0)>
+<usertileview id=atom(meusertile) cmdid=310 dropfocus=false active=mouseandkeyboard|nosyncfocus/>
+<element layout=FillLayout()>
+<avatarhost id=atom(mehost) layoutpos=none layout=filllayout() visible=false>
+<element id=atom(DUIableAvatarHost) layout=FillLayout()/>
+</avatarhost>
+<png id=atom(AvatarHostRoundedFrame) class="AvatarHostRoundedFrame" visible=false layoutpos=none/>
+</element>
+<audiocontrol id=atom(meaudio) layout=verticalflowlayout(0,0,3,2) layoutpos=right muteid=atom(memute) volumeid=atom(meslider) signalid=atom(memeter)>
+<CmdCheckBox id=atom(memute) class="mute" layoutpos=top/>
+<element layout=filllayout() layoutpos=client>
+<vumeter id=atom(memeter)/>
+<volume id=atom(meslider) sheet=styleref(volumess) active=mouseandkeyboard|nosyncfocus layoutpos=top AccName=rcstr(41012) AccDesc=rcstr(40185) maximum=100 line=1 page=20/>
+</element>
+</audiocontrol>
+</element>
+<element layoutpos=bottom padding=rect(0,1,0,2) layout=borderlayout()>
+<element layoutpos=left layout=FillLayout()>
+<element height=16 width=16/>
+<element id=atom(MeWebCam) layoutpos=left layout=flowlayout()>
+<element height=2 width=3/>
+<cmdbutton tooltip=true AccDesc=rcstr(60226) AccName=rcstr(60221) id=atom(MeWebcamButton) class="WebcamStatusBtn" cmdid=40370 width=16 height=16 padding=rect(2,2,2,2) layout=filllayout() active=mouseandkeyboard|nosyncfocus selected=false visible=true>
+<png class="Icon" flip=false idres=797/>
+</cmdbutton>
+</element>
+</element>
+<cmdbutton cmdid=2251 class="DropDownBtn" id=atom(medropdownbtn) layoutpos=right selected=false layout=filllayout()>
+<element class="TaskbarCaret"/>
+</cmdbutton>
+</element>
+</element>
+</avatarview>
+<element layout=verticalflowlayout(0,2) layoutpos=bottom>
+<cmdbutton content=rcstr(2245) cmdid=2247 fontstyle=rcint(2000) cursor=hand foreground=ifhc(white,blue) layoutpos=none id=atom(GetaWebcamLink)/>
+</element>
+</element>
+</clipperh>
+<element layoutpos=right layout=borderlayout() padding=rect(0,4,0,0)>
+<cmdbutton visible=false cmdid=2248 layoutpos=top class="FlyinBtn" id=atom(exbtnme)/>
+</element>
+</expandoh>
+</element>
+<element id=atom(yourightsidecontainer) layout=verticalflowlayout(0,2) layoutpos=top>
+<expandoh id=atom(youcontainer) triggerid=atom(exbtnyou) clipperid=atom(clipperhyou) layout=borderlayout() selected=false>
+<clipperh layoutpos=left id=atom(clipperhyou) class="AvatarClipper" layout=borderlayout() width=0>
+<element id=atom(youview) layoutpos=top layout=borderlayout()>
+<element id=atom(rostercontainer) layout=filllayout()>
+<png class="RoundedFrame"/>
+<roster id=atom(roster) sheet=styleref(listscrollerss) xscrollable=false width=138>
+<selector id=atom(rosterlistselector) sheet=styleref(rosterlistss) layout=verticalflowlayout(0,3,3,0)>
+<element id=atom(invitees) class="headercontainer" active=inactive layout=filllayout()>
+<element class="headertext" active=inactive content=rcstr(60005)/>
+</element>
+</selector>
+</roster>
+</element>
+<avatarview id=atom(youcontrol) layout=filllayout()>
+<png class="RoundedFrame"/>
+<element layout=borderlayout() padding=rect(4,3,4,0)>
+<element id=atom(avatarviewcontainer) layoutpos=top layout=flowlayout(0,0,2,0)>
+<usertileview id=atom(youusertile) dropfocus=false active=mouse/>
+<element layout=FillLayout()>
+<avatarhost id=atom(youhost) layoutpos=none layout=filllayout() visible=false direction=LTR>
+<element id=atom(DUIableAvatarHost) layout=FillLayout()/>
+<element id=atom(preroll) layout=filllayout() width=320 height=250>
+<element id=atom(msnlogo) layout=filllayout() bordercolor=ifhc(window,rgb(236,240,245)) borderthickness=rect(1,1,1,1)>
+<element width=300 height=250 padding=rect(10,0,0,0)/>
+<element layout=verticalflowlayout(0,2,2,2) background=window>
+<animatedimage id=atom(butterfly)/>
+<element layout=filllayout()>
+<element id=atom(videocallText) content=rcstr(41008) contentalign=middlecenter fontface=rcstr(2016) fontweight=rcint(1999) fontsize=rcint(56205) foreground=ifhc(windowtext,rgb(0x26,0x49,0x89))/>
+<element id=atom(webcamText) content=rcstr(41002) contentalign=middlecenter fontface=rcstr(2016) fontweight=rcint(1999) fontsize=rcint(56205) foreground=ifhc(windowtext,rgb(0x26,0x49,0x89))/>
+</element>
+<element layout=filllayout()>
+<element id=atom(connectingText) content=rcstr(192) contentalign=middlecenter fontface=rcstr(2016) fontsize=rcint(56205) foreground=ifhc(windowtext,rgb(0x26,0x49,0x89)) visible=false/>
+<element id=atom(sponsoredByText) content=rcstr(44088) contentalign=middlecenter fontface=rcstr(2016) fontsize=rcint(56205) foreground=ifhc(windowtext,rgb(0x26,0x49,0x89))/>
+</element>
+</element>
+</element>
+<element id=atom(adbrowsercontainer) layoutpos=top layout=flowlayout(0,0,2,0)>
+<element id=atom(adbrowserleft) width=8 height=250 background=rgb(0,0,0) visible=false/>
+<element id=atom(adbrowserright) width=8 height=250 background=rgb(0,0,0) visible=false/>
+</element>
+<element layout=filllayout() padding=rect(-1,-1,-1,-1)>
+<png isbackground=true blendmode=7 borderthickness=rect(5,6,5,6) idres=1045/>
+</element>
+</element>
+</avatarhost>
+<png id=atom(AvatarHostRoundedFrame) class="AvatarHostRoundedFrame" visible=false layoutpos=none/>
+</element>
+<audiocontrol id=atom(youaudio) layout=verticalflowlayout(0,0,3,2) layoutpos=right muteid=atom(youmute) volumeid=atom(youslider) signalid=atom(youmeter)>
+<CmdCheckBox id=atom(youmute) class="mute" layoutpos=top/>
+<element layout=filllayout() layoutpos=client>
+<vumeter id=atom(youmeter)/>
+<volume id=atom(youslider) sheet=styleref(volumess) layoutpos=top active=mouseandkeyboard|nosyncfocus AccName=rcstr(41011) AccDesc=rcstr(40184) maximum=100 line=1 page=20/>
+</element>
+<element id=atom(fullscreenspacer) width=20 height=10/>
+<cmdbutton cmdid=2252 id=atom(youfullscreen) class="CaptionBtn" padding=rect(1,3,1,3) layout=filllayout() active=mouseandkeyboard|nosyncfocus AccName=rcstr(41009) AccDesc=rcstr(41010) selected=false>
+<png idres=2009 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+</audiocontrol>
+</element>
+<element id=atom(youavatarcaret) layoutpos=bottom padding=rect(0,1,0,2) layout=borderlayout()>
+<element layoutpos=left layout=FillLayout()>
+<element id=atom(YouAreaStatus) layoutpos=none layout=flowlayout()>
+<element id=atom(YouAreaStatusText) padding=rect(6,0,0,0)/>
+<animatedimage id=atom(LoadStrip) padding=rect(10,0,0,0)/>
+</element>
+<element height=16 width=16/>
+<element id=atom(YouWebCam) layoutpos=left layout=flowlayout()>
+<element height=2 width=3/>
+<cmdbutton tooltip=true AccDesc=rcstr(60087) AccName=rcstr(60221) id=atom(YouWebCamButton) class="WebcamStatusBtn" cmdid=40333 width=16 height=16 padding=rect(2,2,2,2) layout=fillLayout() active=mouseandkeyboard|nosyncfocus selected=false>
+<png class="Icon" flip=false idres=797/>
+</cmdbutton>
+</element>
+</element>
+<cmdbutton cmdid=2250 layoutpos=right class="DropDownBtn" id=atom(youdropdownbtn) selected=false layout=filllayout()>
+<element class="TaskbarCaret"/>
+</cmdbutton>
+</element>
+</element>
+</avatarview>
+</element>
+</clipperh>
+<element layoutpos=right layout=borderlayout() padding=rect(0,4,0,0)>
+<cmdbutton cmdid=2249 layoutpos=top class="FlyinBtn" id=atom(exbtnyou)/>
+</element>
+</expandoh>
+</element>
+</element>
+</element>
+<element id=atom(adbannercont) layout=filllayout() layoutpos=bottom>
+<element height=25 layout=borderlayout() borderthickness=rect(0,1,0,0) bordercolor=ifhc(buttonshadow,rgb(68,96,151)) colorize=enabled/>
+<textadbanner id=atom(adbanner) layout=verticalflowlayout(0,0,2,2) padding=rect(16,0,0,3) borderthickness=rect(0,1,0,0) bordercolor=ifhc(buttonshadow,rgb(68,96,151)) colorize=enabled>
+<cmdbutton id=atom(adbannertextcontainer) padding=rect(4,1,4,1) layout=filllayout() background=argb(0,0,0,0) tooltip=true AccName=rcstr(85) colorize=enabled>
+<wledit id=atom(adbannertext) class="ReadOnlyText" active=inactive/>
+</cmdbutton>
+</textadbanner>
+</element>
+</constrainer>
+<FlashHost id=atom(FlashWink) Enabled=False Active=Inactive/>
+</element>
+</element>
+<element layoutpos=ifhc(none,auto) layout=filllayout() active=inactive enabled=false>
+<element layout=borderlayout()>
+<png layoutpos=left blendmode=5 isbackground=true idres=855 width=5 colorize=enabled/>
+<png layoutpos=right blendmode=5 isbackground=true idres=856 width=5 colorize=enabled/>
+<png layoutpos=bottom blendmode=5 isbackground=true idres=857 height=5 colorize=enabled/>
+</element>
+<element layout=ninegridlayout()>
+<png layoutpos=ninebottomleft idres=853 colorize=enabled/>
+</element>
+<element layout=ninegridlayout()>
+<png layoutpos=ninebottomright id=atom(gripper) idres=854 colorize=enabled/>
+</element>
+<element layout=filllayout()>
+<element layout=ninegridlayout()>
+<png id=atom(topbarlefttaskbar) layoutpos=none colorize=enabled idres=ifhc(0,806)/>
+<png id=atom(topbarleftbase) layoutpos=none colorize=enabled idres=ifhc(0,824)/>
+<png layoutpos=ninetopright colorize=enabled idres=ifhc(0,804)/>
+</element>
+</element>
+</element>
+<element id=atom(togglecont) layout=borderlayout() padding=rect(0,1,0,0)>
+<CmdCheckBox id=atom(togglebtn) cmdid=35120 class="CaptionMiniBtn" layout=flowlayout(0,2,2,2)>
+<png class="CaptionImg" id=atom(togglebtnimg) margin=rect(1,3,0,0) flip=false contentalign=middlecenter idres=1063/>
+</CmdCheckBox>
+</element>
+</element>
+<p4gamecontainer resid=p4appside sheet=styleref(convframess) id=atom(p4appcontainerright1) layout=borderlayout()>
+<element id=atom(p4taskbar) layout=filllayout() borderthickness=ifhc(rect(1,1,1,1),rect(0,0,0,0))>
+<element layout=borderlayout()>
+<png layoutpos=top isbackground=true blendmode=7 height=21 colorize=enabled idres=ifhc(0,802)/>
+</element>
+<element id=atom(captionbtngrpp4) layout=borderlayout() padding=rect(0,0,10,0)>
+<element id=atom(minmaxclosep4) layout=flowlayout(0,2,0,2)>
+<cmdbutton cmdid=40320 class="CaptionBtn" layout=filllayout() AccName=rcstr(47003) AccDesc=rcstr(47003) active=mouse>
+<png class="CaptionImg" idres=866 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=40321 class="CaptionBtn" layout=filllayout() AccName=rcstr(47004) AccDesc=rcstr(47004) active=mouse>
+<png class="CaptionImg" idres=867 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=1110 class="CaptionBtn" layout=filllayout() AccName=rcstr(47005) AccDesc=rcstr(47005) active=mouse>
+<png class="CaptionImg" idres=868 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+</element>
+<png class="CaptionImg" id=atom(msnlogo) layoutpos=ifhc(none,right) flip=false idres=1041/>
+</element>
+</element>
+<splitter layoutpos=left width=5 layout=filllayout() beforeid=atom(imcontentcontainer) afterid=atom(p4appcontainerright1) orientationstyle=reverse|horizontal>
+<png class="SeparatorV"/>
+</splitter>
+<element id=atom(p4appcontainer) layoutpos=client layout=borderlayout()>
+<element layoutpos=client padding=rect(13,8,19,19) layout=borderlayout()>
+<element id=atom(p4apptitlebar) layoutpos=top layout=borderlayout() background=argb(0,0,0,0) borderthickness=ifhc(rect(1,1,1,0),rect(0,0,0,0)) tooltip=true active=mouse height=23>
+<png layoutpos=left colorize=enabled idres=ifhc(0,860)/>
+<png layoutpos=right colorize=enabled idres=ifhc(0,862)/>
+<png layoutpos=right layout=flowlayout(0,2,0,2) isbackground=true blendmode=7 colorize=enabled idres=ifhc(0,861)>
+<cmdbutton id=atom(closebox) class="ToolbarBtn" background=argb(0,0,0,0) height=-1 padding=rect(5,5,5,5) layout=borderlayout()>
+<png layoutpos=top idres=795 background=argb(0,0,0,0) padding=rect(0,0,0,0) height=-1 colorize=disabled/>
+</cmdbutton>
+</png>
+<png layoutpos=client isbackground=true blendmode=7 layout=flowlayout(0,2,3,2) colorize=enabled idres=ifhc(0,861)>
+<element layoutpos=client id=atom(p4apptitle) background=argb(0,0,0,0) foreground=ifhc(windowtext,rgb(68,96,151)) contentalign=middleleft fontface=rcstr(2016) fontsize=rcint(2015)pt fontweight=rcint(1999) padding=rect(5,1,5,1)/>
+</png>
+</element>
+<element id=atom(p4applayout) layoutpos=client layout=filllayout()>
+<element id=atom(statuscontainer) layoutpos=none borderthickness=rect(1,1,1,1) layout=filllayout()>
+<element layout=verticalflowlayout(0,2,2,2) background=window>
+<Image id=atom(butterfly) colorize=Disabled ImageEncoding=imageGIF idres=417 background=argb(0,0,0,0) animationstate=LoopForever/>
+<element id=atom(browserstatus) content=rcstr(190) padding=rect(5,5,5,5)/>
+</element>
+</element>
+</element>
+</element>
+</element>
+</p4gamecontainer>
+<element resid=usertilepreview layout=filllayout() sheet=styleref(convframess)>
+<element layout=VerticalFlowLayout(0,2,2,2) background=white>
+<Image idres=1054 background=white colorize=disabled AnimationState=Animate/>
+</element>
+<avatarhost borderthickness=rect(0,0,0,0) id=atom(usertilepreviewid) layout=filllayout()>
+<element id=atom(DUIableAvatarHost) layout=FillLayout()/>
+</avatarhost>
+</element>
+<adbrowser resid=adbrowser id=atom(adbrowser) layoutpos=none width=304 height=250 padding=rect(0,0,0,0) background=rgb(0,0,0) DefaultADTimerMS=0 ADBrowserFlags=siteAV|stdUAP DLControl=dlctlNoActiveX DocHostUIFlags=dhUIscrollno|dhUIopennewwin|dhUIno3dborder|dhUIactivateclienthitonly/>
+<element resid=taskbar sheet=styleref(convframess) id=atom(taskbar) padding=rect(9,0,0,0) layout=borderlayout() borderthickness=ifhc(rect(0,1,0,1),rect(0,0,0,0))>
+<element layoutpos=left layout=filllayout()>
+<png id=atom(taskbarcontainer) isbackground=true blendmode=7 layout=flowlayout(0,2,0,3) padding=rect(0,4,0,2) colorize=enabled idres=ifhc(0,805)>
+<element width=13/>
+<cmdbutton id=atom(invitetoimbtn) cmdid=40269 class="TaskbarBtn" layout=borderlayout() AccName=rcstr(60032) AccDesc=rcstr(44027) ShortcutString=rcstr(60032)>
+<png layoutpos=top flip=false idres=808 contentalign=topcenter class="TaskbarIcon"/>
+<element id=atom(suppress) layoutpos=client padding=rect(2,-1,2,2) contentalign=bottomcenter content=rcstr(60032)/>
+</cmdbutton>
+<cmdbutton cmdid=40275 id=atom(sendfilebtn) class="TaskbarBtn" layout=borderlayout() AccName=rcstr(60033) AccDesc=rcstr(44028) ShortcutString=rcstr(60033)>
+<png layoutpos=top flip=false idres=811 contentalign=topcenter class="TaskbarIcon"/>
+<element id=atom(suppress) layoutpos=client padding=rect(2,-1,2,2) contentalign=bottomcenter content=rcstr(60033)/>
+</cmdbutton>
+<cmdbutton cmdid=40332 AccName=rcstr(60034) AccDesc=rcstr(44029) ShortcutString=rcstr(60034) id=atom(webcambtn) class="TaskbarBtnNoMultiClick" layout=borderlayout()>
+<png id=atom(webcambtnimage) layoutpos=top flip=false idres=813 contentalign=topcenter class="TaskbarIcon"/>
+<element id=atom(suppress) content=rcstr(60034) layoutpos=client padding=rect(2,-1,2,2) contentalign=bottomcenter/>
+</cmdbutton>
+<cmdbutton cmdid=40273 id=atom(audiobtn) class="TaskbarBtnNoMultiClick" layout=borderlayout() AccName=rcstr(60035) AccDesc=rcstr(178) ShortcutString=rcstr(60035)>
+<png layoutpos=top flip=false idres=812 contentalign=topcenter class="TaskbarIcon"/>
+<element id=atom(suppress) layoutpos=client padding=rect(2,-1,2,2) contentalign=bottomcenter content=rcstr(60035)/>
+</cmdbutton>
+<cmdbutton cmdid=40617 id=atom(appdropdownbtn) class="TaskbarBtn" layout=borderlayout() AccName=rcstr(61345) AccDesc=rcstr(44037) ShortcutString=rcstr(60041)>
+<png localized=false layoutpos=top flip=false idres=809 contentalign=topcenter class="TaskbarIcon"/>
+<element id=atom(suppress) layoutpos=client padding=rect(2,-1,2,2) contentalign=bottomcenter content=rcstr(60041)/>
+</cmdbutton>
+<cmdbutton cmdid=40618 id=atom(gamesdropdownbtn) class="TaskbarBtn" layout=borderlayout() AccName=rcstr(61346) AccDesc=rcstr(44038) ShortcutString=rcstr(60042)>
+<png localized=false layoutpos=top flip=false idres=810 contentalign=topcenter class="TaskbarIcon"/>
+<element id=atom(suppress) layoutpos=client padding=rect(2,-1,2,2) contentalign=bottomcenter content=rcstr(60042)/>
+</cmdbutton>
+</png>
+</element>
+<element layoutpos=client layout=filllayout()>
+<element layoutpos=client layout=borderlayout()>
+<element layoutpos=top layout=borderlayout()>
+<element layoutpos=client layout=filllayout()>
+<png layoutpos=top isbackground=true blendmode=7 height=21 colorize=enabled idres=ifhc(0,802)/>
+<element layout=borderlayout() padding=rect(0,0,10,0)>
+<element id=atom(captionbtngrptaskbar) layout=borderlayout() height=21>
+<element id=atom(minmaxclosetaskbar) layout=flowlayout(0,2,0,2)>
+<cmdbutton cmdid=40320 class="CaptionBtn" layout=filllayout() AccName=rcstr(47003) AccDesc=rcstr(47003) active=mouse>
+<png class="CaptionImg" idres=866 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=40321 class="CaptionBtn" layout=filllayout() AccName=rcstr(47004) AccDesc=rcstr(47004) active=mouse>
+<png class="CaptionImg" idres=867 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=1110 class="CaptionBtn" layout=filllayout() AccName=rcstr(47005) AccDesc=rcstr(47005) active=mouse>
+<png class="CaptionImg" idres=868 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+</element>
+</element>
+</element>
+</element>
+</element>
+<element layoutpos=top layout=borderlayout()>
+<element layoutpos=top padding=rect(0,0,0,0) layout=flowlayout(0,3,0,3)>
+<png id=atom(taskbarseccontainer) padding=rect(0,0,2,0) isbackground=true blendmode=7 layout=flowlayout(0,2,2,2) colorize=enabled idres=ifhc(0,807)>
+<element width=44/>
+<cmdbutton cmdid=40276 id=atom(blockbtn) class="TaskbarMiniBtn" shortcut=107 layout=flowlayout(0,2,2,2)>
+<png id=atom(blockbtnicon) layoutpos=top margin=rect(1,1,0,0) flip=false idres=816 contentalign=middlecenter class="TaskbarMiniIcon" background=argb(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=40317 id=atom(colorizedropdownbtn) class="TaskbarMiniBtn" layout=filllayout() AccName=rcstr(436) AccDesc=rcstr(435)>
+<png layoutpos=top margin=rect(1,3,0,0) flip=false idres=819 contentalign=middlecenter class="TaskbarMiniIcon" background=argb(0,0,0,0)/>
+</cmdbutton>
+</png>
+<png colorize=enabled idres=ifhc(0,801)/>
+</element>
+</element>
+</element>
+<png id=atom(tbcurve) colorize=enabled idres=ifhc(0,803)/>
+<element layout=borderlayout() padding=rect(0,0,53,0)>
+<element id=atom(captionbtngrptaskbar) layout=borderlayout() height=21>
+<png class="CaptionImg" id=atom(msnlogo) layoutpos=ifhc(none,right) flip=false idres=1041/>
+</element>
+</element>
+</element>
+</element>
+<element resid=mobiletaskbar sheet=styleref(convframess) padding=rect(9,0,0,0) layout=borderlayout() borderthickness=ifhc(rect(0,1,0,1),rect(0,0,0,0))>
+<element layoutpos=top layout=borderlayout() id=atom(taskbar)>
+<element layoutpos=left layout=borderlayout()>
+<element layoutpos=top layout=flowlayout(0,3,0,3) height=58>
+<png id=atom(taskbarcontainer) isbackground=true blendmode=7 layout=flowlayout(0,2,0,2) padding=rect(0,4,0,2) colorize=enabled idres=ifhc(0,805)>
+<element width=13/>
+<cmdbutton id=atom(sendmailbtn) cmdid=40205 class="TaskbarBtn" layout=verticalflowlayout(1,2,2,2) AccName=rcstr(60037) ShortcutString=rcstr(60037)>
+<png flip=false idres=814 class="TaskbarIcon"/>
+<element padding=rect(2,-1,2,2) content=rcstr(60037)/>
+</cmdbutton>
+<cmdbutton id=atom(buycreditsbtn) cmdid=690 class="TaskbarBtn" layout=verticalflowlayout(1,2,2,2) AccName=rcstr(60218) AccDesc=rcstr(60043) ShortcutString=rcstr(60038)>
+<png flip=false idres=820 class="TaskbarIcon"/>
+<element padding=rect(2,-1,2,2) content=rcstr(60038)/>
+</cmdbutton>
+<cmdbutton id=atom(balancebtn) cmdid=691 class="TaskbarBtn" layout=verticalflowlayout(1,2,2,2) AccName=rcstr(60219) AccDesc=rcstr(60040) ShortcutString=rcstr(60036)>
+<png flip=false idres=818 class="TaskbarIcon"/>
+<element padding=rect(2,-1,2,2) content=rcstr(60036)/>
+</cmdbutton>
+<cmdbutton id=atom(accountStatusbtn) cmdid=692 class="TaskbarBtn" layout=verticalflowlayout(1,2,2,2) AccName=rcstr(60220) AccDesc=rcstr(60217) ShortcutString=rcstr(60216)>
+<png flip=false idres=818 class="TaskbarIcon"/>
+<element padding=rect(2,-1,2,2) content=rcstr(60216)/>
+</cmdbutton>
+</png>
+</element>
+</element>
+<element layoutpos=client layout=filllayout()>
+<element layoutpos=client layout=borderlayout()>
+<element layoutpos=top layout=borderlayout()>
+<element layoutpos=client layout=filllayout()>
+<png layoutpos=top isbackground=true blendmode=7 height=21 colorize=enabled idres=ifhc(0,802)/>
+<element layout=borderlayout() padding=rect(0,0,10,0)>
+<element id=atom(captionbtngrptaskbar) layout=borderlayout() height=21>
+<element id=atom(minmaxclosetaskbar) layout=flowlayout(0,2,0,2)>
+<cmdbutton cmdid=40320 class="CaptionBtn" layout=filllayout() AccName=rcstr(47003) AccDesc=rcstr(47003) active=mouse>
+<png class="CaptionImg" idres=866 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=40321 class="CaptionBtn" layout=filllayout() AccName=rcstr(47004) AccDesc=rcstr(47004) active=mouse>
+<png class="CaptionImg" idres=867 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=1110 class="CaptionBtn" layout=filllayout() AccName=rcstr(47005) AccDesc=rcstr(47005) active=mouse>
+<png class="CaptionImg" idres=868 contentalign=middlecenter padding=rect(0,0,0,0)/>
+</cmdbutton>
+</element>
+<png class="CaptionImg" id=atom(msnlogo) layoutpos=ifhc(none,right) flip=false idres=1041/>
+</element>
+</element>
+</element>
+</element>
+<element layoutpos=top layout=borderlayout()>
+<element layoutpos=top padding=rect(0,0,0,0) layout=flowlayout(0,3,0,3)>
+<png id=atom(taskbarseccontainer) padding=rect(0,0,2,0) isbackground=true blendmode=7 layout=flowlayout(0,2,2,2) colorize=enabled idres=ifhc(0,807)>
+<element width=44/>
+<cmdbutton cmdid=40276 id=atom(blockbtn) class="TaskbarMiniBtn" shortcut=107 layout=flowlayout(0,2,2,2)>
+<png id=atom(blockbtnicon) layoutpos=top margin=rect(1,1,0,0) flip=false idres=816 contentalign=middlecenter class="TaskbarMiniIcon" background=argb(0,0,0,0)/>
+</cmdbutton>
+<cmdbutton cmdid=40317 id=atom(colorizedropdownbtn) class="TaskbarMiniBtn" layout=filllayout() AccName=rcstr(436) AccDesc=rcstr(435)>
+<png layoutpos=top margin=rect(1,3,0,0) flip=false idres=819 contentalign=middlecenter class="TaskbarMiniIcon" background=argb(0,0,0,0)/>
+</cmdbutton>
+</png>
+<png colorize=enabled idres=ifhc(0,801)/>
+</element>
+</element>
+</element>
+<png id=atom(tbcurve) colorize=enabled idres=ifhc(0,803)/>
+</element>
+</element>
+</element>

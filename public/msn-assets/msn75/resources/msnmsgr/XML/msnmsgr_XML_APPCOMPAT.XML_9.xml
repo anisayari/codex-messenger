@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<MsgrAppCompatConfig  >
+    <App Vendor="%1" Product="%2" SQMID="1">
+        <Processes>
+            <Process ProcessName="zoneal~1.exe" />
+            <Process ProcessName="zonealarm.exe" />
+            <Process ProcessName="vsmon.exe" />
+        </Processes>
+         <Services>
+            <Service  ServiceName="vsmon" />
+        </Services>
+   </App>
+    <App Vendor="%3" Product="%4" SQMID="2">
+        <Processes>
+            <Process ProcessName="MPFSERVICE.exe" />
+            <Process ProcessName="MpfAgent.exe" />
+            <Process ProcessName="MpfConsole.exe" />
+            <Process ProcessName="MpfTray.exe" />
+	</Processes>
+        <Services>
+            <Service  ServiceName="MpfService" />
+        </Services>
+    </App>
+    <App Vendor="%5" Product="%6" SQMID="4">
+        <Processes>
+            <Process ProcessName="nmain.exe" />
+            <Process ProcessName="nisum.exe" />
+            <Process ProcessName="SymMoni.exe" />
+	</Processes>
+        <Services>
+            <Service  ServiceName="NISUM" />
+        </Services>
+    </App>
+</MsgrAppCompatConfig>
+

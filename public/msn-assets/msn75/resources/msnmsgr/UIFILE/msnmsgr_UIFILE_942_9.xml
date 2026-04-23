@@ -1,0 +1,28 @@
+<DialogHost resid=AutoBkndShareDlg ID=atom(AutoBkndShareDlg) Sheet=styleref(STDDLGSS) FrameTitle=rcstr(35600) Layout=filllayout() width=401 height=377>
+<element Layout=BorderLayout() background=buttonface padding=rect(12,12,12,12)>
+<element layoutpos=client Layout=BorderLayout()>
+<element layoutpos=top content=rcstr(35602) ContentAlign=WrapLeft Background=argb(0,0,0,0) active=inactive/>
+<element Layout=VerticalFlowLayout(0,0,3,0) layoutpos=left>
+<element content=rcstr(35603) Background=argb(0,0,0,0) ContentAlign=WrapLeft active=inactive padding=rect(0,6,0,0)/>
+<png id=atom(BkndImage) idres=2020 contentalign=topcenter padding=rect(0,6,0,0)/>
+</element>
+</element>
+<element layout=TableLayout(2,1,-1,-1,-1) layoutpos=bottom>
+<element content=rcstr(35604) Background=argb(0,0,0,0) ContentAlign=WrapLeft active=inactive padding=rect(0,6,0,0)/>
+<element layout=flowlayout(0,1,1,2) layoutpos=bottom padding=rect(0,6,0,0)>
+<element layout=filllayout()>
+<element width=72/>
+<cmdbutton id=atom(idyes) cmdid=6 content=rcstr(35505) accName=rcstr(35505) ShortcutString=rcstr(35505) selected=true default=true/>
+</element>
+<element layout=filllayout()>
+<element width=72/>
+<cmdbutton id=atom(idno) cmdid=7 content=rcstr(35506) accName=rcstr(35506) ShortcutString=rcstr(35506)/>
+</element>
+<element layout=filllayout()>
+<element width=72/>
+<cmdbutton id=atom(idhelp) cmdid=9 content=rcstr(35508) accName=rcstr(35508)/>
+</element>
+</element>
+</element>
+</element>
+</DialogHost>

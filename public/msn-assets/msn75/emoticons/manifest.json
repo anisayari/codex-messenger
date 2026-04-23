@@ -1,0 +1,430 @@
+{
+  "source": "MSN Messenger 7.5.0322 resources",
+  "count": 42,
+  "items": [
+    {
+      "id": "smile",
+      "label": "Sourire",
+      "code": ":)",
+      "aliases": [
+        ":-)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/smile.png",
+      "source": "msnmsgr_PNG_423_9.png",
+      "frame": 0
+    },
+    {
+      "id": "star",
+      "label": "Etoile",
+      "code": "(*)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/star.png",
+      "source": "msnmsgr_PNG_423_9.png",
+      "frame": 1
+    },
+    {
+      "id": "rose",
+      "label": "Rose",
+      "code": "(F)",
+      "aliases": [
+        "(f)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/rose.png",
+      "source": "msnmsgr_PNG_423_9.png",
+      "frame": 2
+    },
+    {
+      "id": "wink",
+      "label": "Clin d'oeil",
+      "code": ";)",
+      "aliases": [
+        ";-)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/wink.png",
+      "source": "msnmsgr_PNG_900_9.png",
+      "frame": 0
+    },
+    {
+      "id": "kiss",
+      "label": "Bisou",
+      "code": ":*",
+      "aliases": [
+        ":-*",
+        "(K)",
+        "(k)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/kiss.png",
+      "source": "msnmsgr_PNG_900_9.png",
+      "frame": 1
+    },
+    {
+      "id": "big-smile",
+      "label": "Grand sourire",
+      "code": ":D",
+      "aliases": [
+        ":-D"
+      ],
+      "src": "./msn-assets/msn75/emoticons/big-smile.png",
+      "source": "msnmsgr_PNG_900_9.png",
+      "frame": 2
+    },
+    {
+      "id": "blank-face",
+      "label": "Neutre",
+      "code": ":|",
+      "aliases": [
+        ":-|"
+      ],
+      "src": "./msn-assets/msn75/emoticons/blank-face.png",
+      "source": "msnmsgr_PNG_904_9.png",
+      "frame": 0
+    },
+    {
+      "id": "curious",
+      "label": "Question",
+      "code": ":?",
+      "aliases": [
+        ":-?"
+      ],
+      "src": "./msn-assets/msn75/emoticons/curious.png",
+      "source": "msnmsgr_PNG_904_9.png",
+      "frame": 1
+    },
+    {
+      "id": "surprised",
+      "label": "Surpris",
+      "code": ":O",
+      "aliases": [
+        ":-O",
+        ":o",
+        ":-o"
+      ],
+      "src": "./msn-assets/msn75/emoticons/surprised.png",
+      "source": "msnmsgr_PNG_904_9.png",
+      "frame": 2
+    },
+    {
+      "id": "sad",
+      "label": "Triste",
+      "code": ":(",
+      "aliases": [
+        ":-("
+      ],
+      "src": "./msn-assets/msn75/emoticons/sad.png",
+      "source": "msnmsgr_PNG_904_9.png",
+      "frame": 3
+    },
+    {
+      "id": "cool",
+      "label": "Cool",
+      "code": "(H)",
+      "aliases": [
+        "(h)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/cool.png",
+      "source": "msnmsgr_PNG_904_9.png",
+      "frame": 4
+    },
+    {
+      "id": "thinking",
+      "label": "Confus",
+      "code": ":S",
+      "aliases": [
+        ":-S",
+        ":s",
+        ":-s"
+      ],
+      "src": "./msn-assets/msn75/emoticons/thinking.png",
+      "source": "msnmsgr_PNG_904_9.png",
+      "frame": 5
+    },
+    {
+      "id": "pencil-black",
+      "label": "Crayon noir",
+      "code": "(pen)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-black.png",
+      "source": "msnmsgr_PNG_906_9.png",
+      "frame": 0
+    },
+    {
+      "id": "pencil-red",
+      "label": "Crayon rouge",
+      "code": "(redpen)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-red.png",
+      "source": "msnmsgr_PNG_906_9.png",
+      "frame": 1
+    },
+    {
+      "id": "pencil-blue",
+      "label": "Crayon bleu",
+      "code": "(bluepen)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-blue.png",
+      "source": "msnmsgr_PNG_906_9.png",
+      "frame": 2
+    },
+    {
+      "id": "pencil-tools",
+      "label": "Outils",
+      "code": "(tools)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-tools.png",
+      "source": "msnmsgr_PNG_906_9.png",
+      "frame": 3
+    },
+    {
+      "id": "pencil-cut",
+      "label": "Couper",
+      "code": "(cut)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-cut.png",
+      "source": "msnmsgr_PNG_906_9.png",
+      "frame": 4
+    },
+    {
+      "id": "moon-party",
+      "label": "Lune",
+      "code": "(mo)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-party.png",
+      "source": "msnmsgr_PNG_907_9.png",
+      "frame": 0
+    },
+    {
+      "id": "moon-happy",
+      "label": "Lune heureuse",
+      "code": "(moon)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-happy.png",
+      "source": "msnmsgr_PNG_907_9.png",
+      "frame": 1
+    },
+    {
+      "id": "moon-sleepy",
+      "label": "Endormi",
+      "code": "|-)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-sleepy.png",
+      "source": "msnmsgr_PNG_907_9.png",
+      "frame": 2
+    },
+    {
+      "id": "moon-wink",
+      "label": "Nuit",
+      "code": "(night)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-wink.png",
+      "source": "msnmsgr_PNG_907_9.png",
+      "frame": 3
+    },
+    {
+      "id": "cloud",
+      "label": "Nuage",
+      "code": "(cloud)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/cloud.png",
+      "source": "msnmsgr_PNG_908_9.png",
+      "frame": 0
+    },
+    {
+      "id": "rain",
+      "label": "Pluie",
+      "code": "(rain)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/rain.png",
+      "source": "msnmsgr_PNG_908_9.png",
+      "frame": 1
+    },
+    {
+      "id": "storm",
+      "label": "Orage",
+      "code": "(st)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/storm.png",
+      "source": "msnmsgr_PNG_908_9.png",
+      "frame": 2
+    },
+    {
+      "id": "sun",
+      "label": "Soleil",
+      "code": "(#)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/sun.png",
+      "source": "msnmsgr_PNG_908_9.png",
+      "frame": 3
+    },
+    {
+      "id": "umbrella",
+      "label": "Parapluie",
+      "code": "(um)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/umbrella.png",
+      "source": "msnmsgr_PNG_908_9.png",
+      "frame": 4
+    },
+    {
+      "id": "wind",
+      "label": "Vent",
+      "code": "(wind)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/wind.png",
+      "source": "msnmsgr_PNG_908_9.png",
+      "frame": 5
+    },
+    {
+      "id": "shy",
+      "label": "Gene",
+      "code": ":$",
+      "aliases": [
+        ":-$"
+      ],
+      "src": "./msn-assets/msn75/emoticons/shy.png",
+      "source": "msnmsgr_PNG_909_9.png",
+      "frame": 0
+    },
+    {
+      "id": "angry-soft",
+      "label": "Fache",
+      "code": ":@",
+      "aliases": [
+        ":-@"
+      ],
+      "src": "./msn-assets/msn75/emoticons/angry-soft.png",
+      "source": "msnmsgr_PNG_909_9.png",
+      "frame": 1
+    },
+    {
+      "id": "angel",
+      "label": "Ange",
+      "code": "(A)",
+      "aliases": [
+        "(a)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/angel.png",
+      "source": "msnmsgr_PNG_909_9.png",
+      "frame": 2
+    },
+    {
+      "id": "wonder",
+      "label": "Dubitatif",
+      "code": ":^)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/wonder.png",
+      "source": "msnmsgr_PNG_909_9.png",
+      "frame": 3
+    },
+    {
+      "id": "plain",
+      "label": "Simple",
+      "code": ":I",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/plain.png",
+      "source": "msnmsgr_PNG_910_9.png",
+      "frame": 0
+    },
+    {
+      "id": "sleep",
+      "label": "Sommeil",
+      "code": "(S)",
+      "aliases": [
+        "(s)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/sleep.png",
+      "source": "msnmsgr_PNG_910_9.png",
+      "frame": 1
+    },
+    {
+      "id": "stare",
+      "label": "Regard",
+      "code": "8|",
+      "aliases": [
+        "8-|"
+      ],
+      "src": "./msn-assets/msn75/emoticons/stare.png",
+      "source": "msnmsgr_PNG_910_9.png",
+      "frame": 2
+    },
+    {
+      "id": "laugh-side",
+      "label": "Rire",
+      "code": ":))",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/laugh-side.png",
+      "source": "msnmsgr_PNG_910_9.png",
+      "frame": 3
+    },
+    {
+      "id": "smirk",
+      "label": "Langue",
+      "code": ":P",
+      "aliases": [
+        ":-P",
+        ":p",
+        ":-p"
+      ],
+      "src": "./msn-assets/msn75/emoticons/smirk.png",
+      "source": "msnmsgr_PNG_910_9.png",
+      "frame": 4
+    },
+    {
+      "id": "framed-smile",
+      "label": "Smile MSN",
+      "code": ":msn:",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/framed-smile.png",
+      "source": "msnmsgr_PNG_911_9.png",
+      "frame": 0
+    },
+    {
+      "id": "simple-smile",
+      "label": "Petit sourire",
+      "code": ":smile:",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/simple-smile.png",
+      "source": "msnmsgr_PNG_1011_9.png",
+      "frame": 0
+    },
+    {
+      "id": "gift",
+      "label": "Cadeau",
+      "code": "(G)",
+      "aliases": [
+        "(g)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/gift.png",
+      "source": "msnmsgr_PNG_1012_9.png",
+      "frame": 0
+    },
+    {
+      "id": "butterfly",
+      "label": "Papillon MSN",
+      "code": "(M)",
+      "aliases": [
+        "(m)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/butterfly.png",
+      "source": "msnmsgr_PNG_1092_9.png",
+      "frame": 0
+    },
+    {
+      "id": "soft-wink",
+      "label": "Clin d'oeil doux",
+      "code": ";D",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/soft-wink.png",
+      "source": "msnmsgr_PNG_1093_9.png",
+      "frame": 0
+    },
+    {
+      "id": "laughing",
+      "label": "Rire MSN",
+      "code": "(lol)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/laughing.png",
+      "source": "msnmsgr_PNG_2004_9.png",
+      "frame": 0
+    }
+  ]
+}

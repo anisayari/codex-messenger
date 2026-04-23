@@ -1,0 +1,27 @@
+HKCR
+{
+    IMAPP.IMAPP.1 = s 'IMAPP Class'
+    {
+        CLSID = s '{828030A1-22C1-4009-854F-8E305202313F}'
+    }
+    IMAPP.IMAPP = s 'IMAPP Class'
+    {
+        CLSID = s '{828030A1-22C1-4009-854F-8E305202313F}'
+        CurVer = s 'IMAPP.IMAPP.1'
+    }
+    NoRemove CLSID
+    {
+        ForceRemove {828030A1-22C1-4009-854F-8E305202313F} = s 'IMAPP Class'
+        {
+            ProgID = s 'IMAPP.IMAPP.1'
+            VersionIndependentProgID = s 'IMAPP.IMAPP'
+            ForceRemove 'Programmable'
+            InprocServer32 = s '%MODULE%'
+            {
+                val ThreadingModel = s 'Apartment'
+            }
+            'TypeLib' = s '{E354A14F-2F73-46c9-B12B-FD58193C4355}'
+        }
+    }
+}
+

@@ -1,0 +1,376 @@
+<style resid=buddy>
+element
+{
+fontface:sysmetricstr(6);
+fontsize:sysmetric(-16);
+}
+element[id=atom(listitemsel)][selected]
+{
+borderthickness:rect(1,1,1,1);
+background:ifhc(highlight,ifhc(window,rgb(242,245,251)));
+bordercolor:ifhc(highlight,ifhc(window,rgb(242,245,251)));
+}
+element[id=atom(listitemsel)][selected][windowactive=false]
+{
+background:ifhc(window,threedlightshadow);
+bordercolor:ifhc(window,threedlightshadow);
+}
+element[id=atom(listitemsel)][selected][keyfocused]
+{
+bordercolor:ifhc(buttonshadow,rgb(131,150,195));
+}
+cmdbutton[id=atom(itemiconcont)]
+{
+Accessible:true;
+AccRole:43;
+AccState:0;
+AccDefAction:rcstr(60047);
+tooltip:true;
+layoutpos:left;
+padding:rect(1,1,1,1);
+borderthickness:rect(0,0,0,0);
+background:argb(0,0,0,0);
+buttonstyle:customborder|nohandlemouseevents;
+cursor:hand;
+}
+cmdbutton[id=atom(itemiconcont)][class="NoGleaming"]
+{
+AccName:rcstr(61733);
+AccDesc:rcstr(61734);
+}
+cmdbutton[id=atom(itemiconcont)][class="Gleaming"]
+{
+AccName:rcstr(61736);
+AccDesc:rcstr(61737);
+}
+cmdbutton[id=atom(itemiconcont)][mousefocused]
+{
+background:ifhc(window,rgb(242,245,251));
+}
+cmdbutton[id=atom(listitemsel2)]
+{
+padding:rect(4,0,4,0);
+}
+cmdbutton[id=atom(listitemsel2)][selected]
+{
+foreground:ifhc(highlighttext,black);
+}
+element[id=atom(listitem)]
+{
+Accessible:true;
+AccRole:36;
+AccState:2097152;
+AccDefAction:rcstr(60212);
+layoutpos:client;
+tooltip:true;
+padding:rect(0,0,4,0);
+bordercolor:ifhc(windowtext,rgb(213,224,238));
+foreground:windowtext;
+}
+element[id=atom(listitem)][indrag]
+{
+foreground:graytext;
+alpha:128;
+}
+element[id=atom(listitem)][dropfocus]
+{
+foreground:rgb(255,128,0);
+}
+element[id=atom(listitem)][class="hint"]
+{
+padding:rect(0,0,4,0);
+foreground:graytext;
+}
+element[id=atom(itemname)][selected]
+{
+foreground:ifhc(ifhc(highlighttext,black),graytext);
+}
+element[id=atom(listitem)][class="group"]
+{
+tooltip:true;
+AccRole:64;
+padding:rect(0,0,4,0);
+foreground:ifhc(windowtext,rgb(0,0,117));
+}
+imagelist[id=atom(itemicon)]
+{
+layoutpos:left;
+}
+element[id=atom(itemnamecont)]
+{
+layoutpos:client;
+}
+labelrichedit[id=atom(groupname)]
+{
+enabled:false;
+background:argb(0,0,0,0);
+fontweight:rcint(1999);
+contentalign:bottomleft|endellipsis;
+padding:rect(5,0,5,0);
+richeditstyle:PlainText|SaveSelection;
+}
+labelrichedit[id=atom(groupname)][selected]
+{
+foreground:ifhc(ifhc(highlighttext,black),ifhc(windowtext,rgb(0,0,117)));
+}
+labelrichedit[id=atom(groupname)][dropfocus]
+{
+foreground:rgb(255,128,0);
+}
+labelrichedit[id=atom(groupname)][isediting]
+{
+enabled:true;
+padding:rect(4,2,4,2);
+borderthickness:rect(1,1,1,1);
+bordercolor:windowtext;
+background:window;
+}
+element[id=atom(itemname)]
+{
+fontweight:normal;
+contentalign:middleleft|endellipsis;
+padding:rect(4,0,4,0);
+}
+element[id=atom(itemname)][dropfocus]
+{
+foreground:rgb(255,128,0);
+}
+emoticontext[id=atom(buddyname)]
+{
+layoutpos:left;
+fontweight:normal;
+contentalign:bottomleft|endellipsis;
+padding:rect(0,0,0,0);
+richeditstyle:PlainText|HideSelection|DisableDrag|ReadOnly;
+}
+element[id=atom(buddystatus)]
+{
+layoutpos:left;
+fontweight:normal;
+foreground:graytext;
+contentalign:middleleft|endellipsis;
+padding:rect(0,0,0,0);
+}
+element[id=atom(buddystatus)][dropfocus]
+{
+foreground:rgb(255,128,0);
+}
+element[id=atom(idPSM)]
+{
+layoutpos:left;
+}
+element[id=atom(idPSMIcon)]
+{
+layoutpos:left;
+contentalign:middleleft;
+padding:rect(1,0,0,0);
+}
+emoticontext[id=atom(idPSMText)]
+{
+layoutpos:left;
+fontweight:normal;
+fontstyle:rcint(2007);
+foreground:windowtext;
+contentalign:bottomleft|endellipsis;
+padding:rect(1,0,2,0);
+richeditstyle:PlainText|HideSelection|DisableDrag|ReadOnly;
+}
+emoticontext[id=atom(idPSMText)][selected]
+{
+foreground:ifhc(highlighttext,black);
+}
+emoticontext[id=atom(idPSMText)][dropfocus]
+{
+foreground:rgb(255,128,0);
+}
+element[id=atom(idCurrentSong)]
+{
+layoutpos:left;
+padding:rect(1,0,0,0);
+}
+png[id=atom(idSongIcon)]
+{
+layoutpos:left;
+idres:2044;
+contentalign:middlecenter;
+padding:rect(0,1,0,0);
+height:18;
+}
+urlelem
+{
+Accessible:true;
+AccDefAction:rcstr(60047);
+AccRole:12;
+Background:argb(0,0,0,0);
+ContentAlign:MiddleLeft|EndEllipsis;
+Cursor:hand;
+Foreground:ifhc(menutext,ifhc(hotlight,blue));
+FontStyle:underline;
+LayoutPos:left;
+Padding:rect(2,0,2,0);
+Tooltip:true;
+}
+urlelem[class="unlaunchable"]
+{
+Cursor:Arrow;
+Foreground:menutext;
+FontStyle:none;
+}
+urlelem[dropfocus]
+{
+foreground:rgb(255,128,0);
+}
+element[id=atom(separator)]
+{
+height:1;
+background:rgb(213,222,239);
+padding:rect(0,1,0,1);
+}
+png[id=atom(groupicon)]
+{
+layoutpos:left;
+contentalign:middlecenter;
+padding:rect(2,0,4,0);
+}
+element[id=atom(itemgleambuddycont)]
+{
+padding:rect(2,0,2,0);
+}
+element[id=atom(itemgleamcont)]
+{
+height:16;
+}
+buddytile
+{
+contentalign:middlecenter;
+borderthickness:rect(1,1,1,1);
+bordercolor:ifhc(windowtext,rgb(173,187,210));
+}
+gleam[id=atom(gleam)]
+{
+visible:false;
+layoutpos:none;
+padding:rect(2,2,2,2);
+}
+gleam[id=atom(gleam)][class="Gleaming"]
+{
+layoutpos:auto;
+visible:true;
+}
+</style>
+<element resid=groupitemtemplate sheet=styleref(buddy) layout=borderlayout() id=atom(groupitemtemplate)>
+<element active=inactive layout=borderlayout()>
+<element layout=filllayout() layoutpos=left>
+<element id=atom(listitem) class="group" layout=flowlayout(0,0,0,3) active=mouseandkeyboard>
+<element id=atom(itemiconcont) class="NoHoverBorder" layout=verticalflowlayout(0,2,2,2) height=16 active=inactive>
+<png id=atom(groupicon) active=inactive/>
+</element>
+<element layout=filllayout()>
+<element id=atom(listitemsel) active=inactive/>
+<element layout=verticalflowlayout(0,0,2,2) background=argb(0,0,0,0) active=inactive>
+<labelrichedit id=atom(groupname) active=inactive/>
+</element>
+</element>
+</element>
+</element>
+</element>
+</element>
+<element resid=smallbuddyitemtemplate sheet=styleref(buddy) layout=borderlayout() id=atom(smallbuddyitemtemplate)>
+<element active=inactive layout=filllayout() layoutpos=left>
+<element id=atom(listitem) layout=flowlayout(0,3,3,3) active=mouseandkeyboard>
+<element layout=filllayout()>
+<element width=39/>
+<element id=atom(itemgleambuddycont) layout=borderlayout()>
+<cmdbutton layoutpos=right id=atom(itemiconcont) layout=borderlayout() active=mouse>
+<element layoutpos=right layout=verticalflowlayout(0,1,1,2) active=inactive>
+<buddytile id=atom(buddyicon) usertilestyle=cacheonly active=inactive/>
+</element>
+<element id=atom(itemgleamcont) layoutpos=right layout=verticalflowlayout(0,1,1,2) active=inactive>
+<gleam id=atom(gleam) active=inactive enabled=false/>
+</element>
+</cmdbutton>
+</element>
+</element>
+<element layout=filllayout()>
+<element id=atom(listitemsel)/>
+<cmdbutton id=atom(listitemsel2) layout=borderlayout() active=inactive>
+<element layoutpos=left layout=verticalflowlayout(0,0,0,2) active=inactive>
+<emoticontext id=atom(buddyname) background=argb(0,0,0,0) active=inactive/>
+</element>
+<element id=atom(buddystatus) background=argb(0,0,0,0) active=inactive/>
+<element layoutpos=left id=atom(idPSM) layout=borderlayout()>
+<element id=atom(idPSMIcon) content=rcstr(329)/>
+<element layoutpos=client layout=verticalflowlayout(0,0,0,2) active=inactive>
+<emoticontext id=atom(idPSMText) background=argb(0,0,0,0) active=inactive/>
+</element>
+</element>
+<element layoutpos=left id=atom(idCurrentSong) layout=borderlayout() visible=false active=inactive>
+<png id=atom(idSongIcon) active=inactive/>
+<urlelem id=atom(idSongText) layoutpos=left cmdid=2339 showampersand=false/>
+</element>
+</cmdbutton>
+</element>
+</element>
+</element>
+</element>
+<element resid=largebuddyitemtemplate sheet=styleref(buddy) layout=borderlayout() id=atom(largebuddyitemtemplate)>
+<element active=inactive layout=filllayout() layoutpos=left>
+<element id=atom(listitem) layout=flowlayout(0,3,3,3) padding=rect(2,0,4,0) active=mouseandkeyboard>
+<element layout=filllayout()>
+<element width=56/>
+<element id=atom(itemgleambuddycont) layout=borderlayout()>
+<cmdbutton layoutpos=right id=atom(itemiconcont) layout=borderlayout() active=mouse>
+<element layoutpos=right layout=verticalflowlayout(0,1,1,2) active=inactive>
+<buddytile id=atom(buddyicon) usertilestyle=cacheonly active=inactive/>
+</element>
+<element id=atom(itemgleamcont) layoutpos=right layout=verticalflowlayout(0,1,1,2) active=inactive>
+<gleam id=atom(gleam) active=inactive enabled=false/>
+</element>
+</cmdbutton>
+</element>
+</element>
+<element layout=filllayout()>
+<element id=atom(listitemsel)/>
+<cmdbutton id=atom(listitemsel2) layout=verticalflowlayout(0,0,0,2) active=inactive>
+<element layout=borderlayout()>
+<element layoutpos=top layout=borderlayout()>
+<element layoutpos=left layout=verticalflowlayout(0,0,0,2) active=inactive>
+<emoticontext id=atom(buddyname) background=argb(0,0,0,0) active=inactive/>
+</element>
+<element id=atom(buddystatus) background=argb(0,0,0,0) active=inactive/>
+</element>
+<element layoutpos=top layout=borderlayout()>
+<element id=atom(idPSM) layout=filllayout()>
+<element height=18/>
+<element layout=verticalflowlayout(0,2,2,2)>
+<emoticontext id=atom(idPSMText) background=argb(0,0,0,0) active=inactive/>
+</element>
+</element>
+<element id=atom(idCurrentSong) layout=borderlayout() visible=false active=inactive>
+<png id=atom(idSongIcon) active=inactive/>
+<urlelem id=atom(idSongText) layoutpos=left cmdid=2339 showampersand=false/>
+</element>
+</element>
+</element>
+</cmdbutton>
+</element>
+</element>
+</element>
+</element>
+<element resid=baseitemtemplate sheet=styleref(buddy) layout=borderlayout() id=atom(baseitemtemplate)>
+<element active=inactive layout=borderlayout()>
+<element layout=filllayout() layoutpos=left>
+<element id=atom(listitem) class="hint" layout=flowlayout(0,0,0,3) active=mouseandkeyboard>
+<element id=atom(itemiconcont) class="NoHoverBorder" layout=verticalflowlayout(0,2,2,2) height=16 active=inactive>
+<imagelist id=atom(itemicon) ImageListId=3 width=22 height=17 active=inactive/>
+</element>
+<element layout=filllayout()>
+<element id=atom(listitemsel) active=inactive/>
+<element layout=verticalflowlayout(0,0,2,2) background=argb(0,0,0,0) active=inactive>
+<element id=atom(itemname) background=argb(0,0,0,0)/>
+</element>
+</element>
+</element>
+</element>
+</element>
+</element>

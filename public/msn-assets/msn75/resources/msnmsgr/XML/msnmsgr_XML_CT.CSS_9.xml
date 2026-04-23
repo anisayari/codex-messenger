@@ -1,0 +1,41 @@
+body, .gamesdlg{font-size:%1;background-color:#004E82;margin:0;padding:0;font-family:%2;color:#000000}
+.ct a, .ct a:hover, .ct a:visited{text-decoration:underline}
+.CTBody, .CTFooter{background-color:#D4DEF4;}
+.CTTbl, input.CTButton, input.CTText, .CTTblRTL{margin:0px  2px 0px 0px;font-size:%3; font-family:%4;}
+.CTTblRTL{margin:0px  0px 0px 2px}
+.CTTop, .CTHeader{margin:0px  2px 0px 0px;width:100%%;}
+.CTTopRTL, .CTHeaderRTL{margin:0px  0px 0px 2px;width:100%%;}
+.CTTop, .CTTopRTL{background: url(../../images/bg_gradient_top.png);padding-left:20px;height:53px;}
+.CTHeader, .CTHeaderRTL{font-size:%5;background-color:#F2F6FD;padding-top:7px;color:#1877B5; height:30px;}
+.CTMsgr{padding-left:10px;color:#0069AD; font-size:%6;}
+.CTFooter, .CTFooterSp{width:100%%;height:20px;}
+.CTMove3{padding-top:3px; padding-left:5px;}
+.CTMove20{padding-left:20px;}
+.CTMove5{padding:5px 0px 0px 74px;}
+.CTMove8{padding-top:8px;}
+input.CTText{width:185px; font-size:12px; padding-top:3px;height:25;}
+input.CTButton{width:70px;}
+.CTEml, .CTCreLabel{padding-bottom:5px;}
+.CTEml{width:200px;}
+.CTCreLabel{width:75px;}
+.CTSSSpn{width:90px;}
+.CTSSLnk{color:#264989;}
+.CTChk{height:215px}
+.CTSS, .CTChk{display:block; padding:8px  0px  0px 12px;}
+.CTResult, .CTTChanges{padding-left:20px;}
+.CTTChanges{padding-top:20px;}
+.CTResult .CTTChanges {padding: 7px 0px 0px 40px;}
+.CTChk, .CTPage, .CTBPage, .CTFooterSp{background-color:#FFFFFF;}
+.CTSSDesc, .CTSSHead{border:1px solid #AEC2E3;color:#000000;font-size:11px;width:200px; }
+.CTSSDesc{ background-color:#F7FAFC;border-top:none 0px; padding: 5px 5px 5px 5px;}
+.CTSSHead{ background-color:#DBE7FB;padding: 3px 5px 3px 5px;}
+.CTCredential{padding-left:20px;}
+.CTBPage{overflow:auto;height:220px}
+.CTPage, .CTBPage{padding-right:20px;}
+.CTPage p, .CTBPage p {padding-top:2px;}
+.CTBPage ul {list-style-image: url(../../images/bullet.gif); list-style-position: outside; margin:10px 0px 0px 29px; }
+.CTPage hr {color:#8E9FC6;height:1px;}
+.CTErrTtl {padding-left: 3px; vertical-align:top;}
+.CTFooterSp{height:10;}
+.bold		{font-weight:%7}
+#NextStep{height:55px;}

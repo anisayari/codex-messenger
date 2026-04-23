@@ -1,0 +1,380 @@
+<Style resid=STDDLGSS>
+viewer
+{
+layoutpos:nineclient;
+}
+simplescrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+simplescrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+scrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+scrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+thumb
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1003,5,#FF00FF,0,0,1,0));
+borderthickness:ifhc(rect(2,2,2,2),rect(3,3,3,3));
+borderstyle:ifhc(raised,solid);
+content:ifhc("",rcbmp(1004,0,#FF00FF,8rp,8rp,1,0));
+contentalign:middlecenter;
+}
+repeatbutton[class="Page"]
+{
+colorize:-2;
+}
+repeatbutton[class="Line"]
+{
+colorize:-2;
+background:ifhc(buttonface,argb(0,0,0,0));
+width:ifhc(-1,15);
+height:ifhc(-1,15);
+borderthickness:ifhc(rect(2,2,2,2),rect(1,1,1,1));
+fontface:"Marlett";
+fontsize:sysmetric(-10);
+borderstyle:ifhc(raised,solid);
+foreground:ifhc(buttontext,windowtext);
+padding:ifhc(rect(0,0,1,1),rect(0,0,0,0));
+}
+repeatbutton[class="Line"][pressed]
+{
+padding:ifhc(rect(1,1,0,0),rect(0,0,0,0));
+borderstyle:ifhc(sunken,solid);
+}
+repeatbutton[id=atom(lineup)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1001,5,-1,15rp,15rp,0,0));
+content:ifhc("5","");
+Accessible:true;
+AccName:rcstr(60063);
+AccRole:43;
+}
+repeatbutton[id=atom(linedown)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1002,5,-1,15rp,15rp,0,0));
+content:ifhc("6","");
+Accessible:true;
+AccName:rcstr(60064);
+AccRole:43;
+}
+repeatbutton[id=atom(lineleft)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1005,5,-1,15rp,15rp,0,0));
+content:ifhc("3","");
+Accessible:true;
+AccName:rcstr(60066);
+AccRole:43;
+}
+repeatbutton[id=atom(lineright)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1006,5,-1,15rp,15rp,0,0));
+content:ifhc("4","");
+Accessible:true;
+AccName:rcstr(60065);
+AccRole:43;
+}
+DialogHost
+{
+background:window;
+}
+scrollbar
+{
+colorize:enabled;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+scrollbar[vertical]
+{
+colorize:enabled;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+element
+{
+fontface:rcstr(2016);
+background:argb(0,0,0,0);
+fontsize:rcint(2015)pt;
+foreground:windowtext;
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+borderthickness:rect(0,0,0,0);
+}
+element[enabled=false]
+{
+foreground:graytext;
+}
+cmdbutton
+{
+background:ifthemed(dtb(1,1,1),dfc(4,0x0010));
+contentalign:middlecenter;
+borderthickness:ifhc(rect(2,2,2,2),rect(0,0,0,0));
+borderstyle:solid;
+bordercolor:ifhc(windowframe,argb(0,0,0,0));
+padding:ifthemed(rect(6,5,6,6),rect(6,4,6,6));
+margin:rect(4,3,4,3);
+Accessible:true;
+AccRole:43;
+AccDefAction:rcstr(60047);
+tooltip:true;
+buttonstyle:Defaultable|FocusRectBtnStd;
+}
+cmdbutton[default]
+{
+background:ifthemed(dtb(1,1,5),dfc(4,0x0010|0x1000));
+}
+cmdbutton[mousefocused]
+{
+background:ifthemed(dtb(1,1,2),dfc(4,0x0010|0x1000));
+bordercolor:ifhc(windowframe,argb(0,0,0,0));
+}
+cmdbutton[pressed]
+{
+background:ifthemed(dtb(1,1,3),dfc(4,0x0010|0x0200));
+borderstyle:solid;
+}
+cmdbutton[enabled=false]
+{
+foreground:graytext;
+background:ifthemed(dtb(1,1,4),dfc(4,0x0010|0x0100));
+}
+CmdCheckBox
+{
+Accessible:true;
+AccRole:44;
+AccState:0;
+AccDefAction:rcstr(60047);
+buttonstyle:FocusRect3d;
+flip:false;
+idres:1086;
+}
+CmdCheckBox[MouseFocused]
+{
+idres:1088;
+}
+CmdCheckBox[selected]
+{
+AccState:16;
+idres:1087;
+}
+CmdCheckBox[selected][MouseFocused]
+{
+AccState:16;
+idres:1089;
+}
+urlelem
+{
+Accessible:true;
+AccDefAction:rcstr(60047);
+AccRole:43;
+Background:argb(0,0,0,0);
+Foreground:ifhc(menutext,ifhc(hotlight,blue));
+Tooltip:true;
+fontstyle:rcint(2000);
+buttonstyle:FocusRect3d;
+}
+urlelem[enabled=false]
+{
+Foreground:graytext;
+}
+urlelem[mousefocused]
+{
+Cursor:hand;
+Foreground:ifhc(menutext,ifhc(hotlight,rgb(100,127,205)));
+}
+IMInput[class="editfield"]
+{
+background:window;
+foreground:windowtext;
+richeditstyle:RichText|SaveSelection;
+contentalign:middleleft;
+maxvisiblelines:1;
+padding:rect(3,3,3,3);
+}
+IMInput[class="editfield"][enabled=false]
+{
+background:ifhc(buttonshadow,rgb(180,180,180));
+foreground:ifhc(graytext,rgb(80,80,80));
+}
+</Style>
+<style resid=winkcontentss>
+asyncimage
+{
+layoutpos:top;
+bordercolor:threedlightshadow;
+borderthickness:rect(1,1,1,1);
+padding:rect(2,2,2,2);
+}
+element[id=atom(WinkImageFrame)]
+{
+layoutpos:top;
+bordercolor:window;
+borderthickness:rect(2,2,2,2);
+padding:rect(0,0,0,0);
+}
+element[id=atom(WinkImageFrame)][keyfocused]
+{
+bordercolor:highlight;
+}
+cmdbutton[id=atom(winkbutton)]
+{
+colorize:enabled;
+foreground:ifhc(windowtext,rgb(68,96,151));
+isbackground:false;
+background:argb(0,0,0,0);
+Accessible:true;
+AccRole:34;
+AccState:2097152;
+tooltip:true;
+buttonstyle:0;
+padding:rect(0,0,2,2);
+}
+cmdbutton[id=atom(winkbutton)][enabled=false]
+{
+foreground:graytext;
+}
+element[id=atom(CategoryLabel)]
+{
+ContentAlign:WrapLeft;
+Background:argb(0,0,0,0);
+fontweight:rcint(1999);
+foreground:ifhc(windowtext,rgb(60,77,129));
+}
+</style>
+<DialogHost resid=MyBackgroundsDlg ID=atom(MyBackgroundsDlg) Sheet=styleref(STDDLGSS) FrameTitle=rcstr(36000) Layout=filllayout() height=371>
+<element Layout=BorderLayout() background=buttonface padding=rect(16,20,18,18)>
+<element layoutpos=client Layout=BorderLayout() padding=rect(0,0,0,9)>
+<element id=atom(instructions) layoutpos=top ContentAlign=WrapLeft Background=argb(0,0,0,0) active=inactive padding=rect(0,0,0,16) accessible=true accRole=41 accName=rcstr(36001) content=rcstr(36001)/>
+<element layoutpos=client layout=filllayout() padding=rect(0,3,0,3) width=330>
+<scrollviewer id=atom(listofapps) borderthickness=rect(1,1,1,1) bordercolor=ifhc(highlight,rgb(123,158,189)) background=window padding=rect(1,1,1,1) layoutpos=client>
+<BackgroundCategories id=atom(BackgroundCategories) layout=VerticalFlowLayout(0,0,0,0) sheet=styleref(winkcontentss)/>
+</scrollviewer>
+</element>
+<element layoutpos=right layout=BorderLayout() padding=rect(20,0,4,0)>
+<element layoutpos=top layout=filllayout()>
+<element Layout=VerticalFlowLayout(0,3,3,0) layoutpos=right padding=rect(0,0,4,0)>
+<element width=90/>
+<cmdbutton id=atom(idbrowse) cmdid=2500 content=rcstr(36004) accName=rcstr(36014) accDesc=rcstr(36005) ShortcutString=rcstr(36004) enabled=true tooltip=true/>
+<cmdbutton id=atom(idremove) cmdid=2501 content=rcstr(36006) accName=rcstr(36015) accDesc=rcstr(36007) ShortcutString=rcstr(36006) enabled=true tooltip=true/>
+</element>
+</element>
+<element layoutpos=bottom layout=filllayout()>
+<element Layout=VerticalFlowLayout(0,0,3,0) layoutpos=right>
+<element contentalign=middlecenter content=rcstr(36012)/>
+<element layout=FlowLayout(0,0,2,0) padding=rect(0,2,0,2)>
+<element width=60 height=60 layout=FillLayout() borderthickness=rect(2,2,2,2) bordercolor=ifhc(buttonshadow,rgb(47,74,143))>
+<asyncimage id=atom(Preview) accessible=true tooltip=true flip=false class="Background" contentalign=middlecenter errorimage=2058 loadingImage=2022/>
+<png id=atom(PreviewSpecial) contentalign=middlecenter/>
+</element>
+</element>
+<cmdbutton id=atom(idsetasdefault) cmdid=2502 content=rcstr(36008) accName=rcstr(36016) accDesc=rcstr(36009) ShortcutString=rcstr(36008) enabled=true tooltip=true/>
+</element>
+</element>
+</element>
+</element>
+<element layoutpos=bottom layout=borderlayout()>
+<cmdcheckbox id=atom(ABSCheckBox) ShortCut=rcchar(36020) layoutpos=client layout=flowlayout() cmdid=2503 AccName=rcstr(36019) Margin=Rect(10,10,10,10) active=mouseandkeyboard buttonstyle=FocusRectStd>
+<element ShortCut=rcchar(36020) Content=rcstr(36019) padding=rect(16,0,0,0)/>
+</cmdcheckbox>
+<element layoutpos=bottom layout=borderlayout()>
+<element layoutpos=top layout=borderlayout()>
+<urlelem id=atom(getwinks) layoutpos=left active=mouseandkeyboard|nosyncfocus fontsize=rcint(2015)pt content=rcstr(36010) AccDesc=rcstr(36011) AccName=rcstr(36017) ShortcutString=rcstr(36010) contentalign=middleleft/>
+</element>
+<element layout=flowlayout(0,1,1,2) layoutpos=bottom margin=rect(0,0,0,0) padding=rect(0,9,0,0)>
+<element layout=filllayout()>
+<element width=72/>
+<cmdbutton id=atom(idok) cmdid=1 selected=true content=rcstr(36013) accName=rcstr(36018) ShortcutString=rcstr(36013) enabled=true default=true/>
+</element>
+<element layout=filllayout()>
+<element width=72/>
+<cmdbutton id=atom(idcancel) cmdid=2 content=rcstr(35593) accName=rcstr(35593)/>
+</element>
+<element layout=filllayout()>
+<element width=72/>
+<cmdbutton id=atom(idhelp) cmdid=9 content=rcstr(35508) accName=rcstr(35508)/>
+</element>
+</element>
+</element>
+</element>
+</element>
+</DialogHost>
+<element resid=Category layout=VerticalFlowLayout(0,0,3,0) padding=rect(4,4,2,4)>
+<element id=atom(CategoryLabel) active=inactive/>
+<element resid=BackgroundList id=atom(BackgroundList) layout=FlowLayout()/>
+</element>
+<cmdbutton resid=WinkButton id=atom(WinkButton) width=60 height=60 accessible=true tooltip=true layout=FillLayout() active=mouseandkeyboard>
+<element id=atom(ID) visible=false layoutpos=none/>
+<element id=atom(WinkImageFrame) layout=filllayout()>
+<asyncimage id=atom(WinkImage) flip=false class="Background" contentalign=middlecenter errorimage=2058 loadingImage=2022/>
+</element>
+<element Layout=BorderLayout() Background=argb(0,0,0,0)>
+<png id=atom(CheckBox) idres=ifhc(0,788) layoutpos=Top contentalign=topright flip=false visible=false/>
+</element>
+</cmdbutton>
+<cmdbutton resid=NoneButton id=atom(WinkButton) width=60 height=60 layout=FillLayout() accessible=true tooltip=true AccName=rcstr(2216) AccDesc=rcstr(2216) active=mouseandkeyboard>
+<element id=atom(ID) visible=false layoutpos=none content="None"/>
+<element id=atom(WinkImageFrame) layout=filllayout()>
+<png id=atom(WinkImage) width=58 height=58 bordercolor=buttonshadow borderthickness=rect(1,1,1,1) idres=787/>
+</element>
+<element Layout=BorderLayout() Background=argb(0,0,0,0)>
+<png id=atom(CheckBox) idres=ifhc(0,788) layoutpos=Top contentalign=topright flip=false visible=false/>
+</element>
+</cmdbutton>
+<cmdbutton resid=MSNButton id=atom(WinkButton) width=60 height=60 layout=FillLayout() accessible=true tooltip=true active=mouseandkeyboard>
+<element id=atom(ID) visible=false layoutpos=none content="MSN"/>
+<element id=atom(WinkImageFrame) layout=filllayout()>
+<png id=atom(WinkImage) idres=786/>
+</element>
+<element Layout=BorderLayout() Background=argb(0,0,0,0)>
+<png id=atom(CheckBox) idres=ifhc(0,788) layoutpos=Top contentalign=topright flip=false visible=false/>
+</element>
+</cmdbutton>

@@ -1,0 +1,351 @@
+<style resid=mainss>
+viewer
+{
+layoutpos:nineclient;
+}
+simplescrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+simplescrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+scrollbar
+{
+colorize:-2;
+layoutpos:ninebottom;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60061);
+AccRole:3;
+}
+scrollbar[vertical]
+{
+colorize:-2;
+layoutpos:nineright;
+background:ifhc(buttonshadow,gradient(rgb(223,229,246),rgb(243,245,251),0));
+borderthickness:rect(1,0,1,0);
+bordercolor:ifhc(captiontext,rgb(214,221,243));
+Accessible:true;
+AccName:rcstr(60062);
+AccRole:3;
+}
+thumb
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1003,5,#FF00FF,0,0,1,0));
+borderthickness:ifhc(rect(2,2,2,2),rect(3,3,3,3));
+borderstyle:ifhc(raised,solid);
+content:ifhc("",rcbmp(1004,0,#FF00FF,8rp,8rp,1,0));
+contentalign:middlecenter;
+}
+repeatbutton[class="Page"]
+{
+colorize:-2;
+}
+repeatbutton[class="Line"]
+{
+colorize:-2;
+background:ifhc(buttonface,argb(0,0,0,0));
+width:ifhc(-1,15);
+height:ifhc(-1,15);
+borderthickness:ifhc(rect(2,2,2,2),rect(1,1,1,1));
+fontface:"Marlett";
+fontsize:sysmetric(-10);
+borderstyle:ifhc(raised,solid);
+foreground:ifhc(buttontext,windowtext);
+padding:ifhc(rect(0,0,1,1),rect(0,0,0,0));
+}
+repeatbutton[class="Line"][pressed]
+{
+padding:ifhc(rect(1,1,0,0),rect(0,0,0,0));
+borderstyle:ifhc(sunken,solid);
+}
+repeatbutton[id=atom(lineup)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1001,5,-1,15rp,15rp,0,0));
+content:ifhc("5","");
+Accessible:true;
+AccName:rcstr(60063);
+AccRole:43;
+}
+repeatbutton[id=atom(linedown)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1002,5,-1,15rp,15rp,0,0));
+content:ifhc("6","");
+Accessible:true;
+AccName:rcstr(60064);
+AccRole:43;
+}
+repeatbutton[id=atom(lineleft)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1005,5,-1,15rp,15rp,0,0));
+content:ifhc("3","");
+Accessible:true;
+AccName:rcstr(60066);
+AccRole:43;
+}
+repeatbutton[id=atom(lineright)]
+{
+colorize:-2;
+background:ifhc(scrollbar,rcbmp(1006,5,-1,15rp,15rp,0,0));
+content:ifhc("4","");
+Accessible:true;
+AccName:rcstr(60065);
+AccRole:43;
+}
+Element
+{
+Margin:Rect(0,0,0,0);
+Background:ARGB(0,255,255,255);
+Foreground:ARGBHC(0,31,51,107,infotext);
+}
+Element[id=atom(idToastHeaderBottom)]
+{
+colorize:-2;
+Background:IFHC(infobackground,Gradient(rgb(207,221,244),rgb(255,255,255),1));
+}
+Element[id=atom(idToastFooter)]
+{
+colorize:-2;
+Background:IFHC(infobackground,Gradient(rgb(207,221,244),rgb(237,242,251),1));
+}
+Element[id=atom(idToastHeaderBrandingString)]
+{
+colorize:-2;
+Padding:Rect(3,0,0,0);
+FontSize:rcint(2015)pt;
+ContentAlign:MiddleLeft;
+Fontweight:IFHC(bold,normal);
+Foreground:ARGBHC(0,31,51,107,inactivecaptiontext);
+}
+CmdButton
+{
+BorderThickness:Rect(0,0,0,0);
+Background:ARGB(0,255,255,255);
+Foreground:ARGBHC(0,31,51,107,infotext);
+Cursor:Hand;
+FontSize:rcint(2015)pt;
+Margin:Rect(0,0,0,0);
+ContentAlign:MiddleCenter;
+Fontweight:IFHC(Bold,Normal);
+buttonstyle:focusrect3d;
+AccDefAction:rcstr(60047);
+}
+CmdButton[KeyFocused]
+{
+Fontstyle:rcint(2000);
+}
+CmdButton[MouseFocused]
+{
+Fontstyle:rcint(2000);
+Cursor:Hand;
+}
+CmdButton[id=atom(idToastOptions)]
+{
+FontSize:rcint(1998)pt;
+Accessible:True;
+AccName:rcstr(80);
+AccRole:PushButton;
+}
+CmdButton[id=atom(idToastForward)]
+{
+FontSize:rcint(1998)pt;
+Accessible:True;
+AccName:rcstr(2321);
+AccRole:PushButton;
+}
+cmdbutton[id=atom(idToastClose)]
+{
+Padding:Rect(0,3,3,3);
+idres:1013;
+Accessible:True;
+AccName:rcstr(2012);
+AccRole:PushButton;
+Cursor:Arrow;
+buttonstyle:0;
+}
+cmdbutton[id=atom(idToastClose)][KeyFocused]
+{
+idres:1014;
+contentalign:0;
+}
+cmdbutton[id=atom(idToastClose)][MouseFocused]
+{
+idres:1014;
+background:argb(0,0,0,0);
+}
+cmdbutton[id=atom(idToastClose)][Pressed]
+{
+idres:1015;
+}
+CmdButton[id=atom(idToastClientButton)]
+{
+Accessible:True;
+AccName:rcstr(2322);
+AccRole:PushButton;
+buttonstyle:focusrect3d;
+}
+CmdButton[id=atom(idToastClientButton)][MouseFocused]
+{
+background:argb(0,0,0,0);
+Cursor:Hand;
+}
+ToastMessage
+{
+Accessible:True;
+AccRole:42;
+AccState:64;
+AccName:rcstr(635);
+Padding:Rect(3,0,0,0);
+FontFace:rcstr(2016);
+FontSize:rcint(2015)pt;
+Fontstyle:none;
+Fontweight:IFHC(SemiBold,Normal);
+Foreground:ARGBHC(0,31,51,107,infotext);
+Background:argb(0,255,255,255);
+}
+Png
+{
+colorize:-2;
+}
+ToastRoot
+{
+Accessible:True;
+AccRole:16;
+}
+usertileview
+{
+colorize:enabled;
+borderthickness:ifhc(rect(1,1,1,1),rect(5,6,5,6));
+bordercolor:ifhc(buttonshadow,rgb(68,96,151));
+background:ifhc(window,argb(0,0,0,0));
+blendmode:7;
+isbackground:true;
+idres:ifhc(0,1044);
+}
+usertileview[id=atom(idToastUserTile)]
+{
+colorize:enabled;
+Accessible:true;
+AccName:rcstr(60051);
+AccRole:43;
+AccDesc:rcstr(44034);
+tooltip:true;
+}
+</style>
+<ToastRoot resid=MsgrToastRoot ID=atom(MsgrToastRoot) AccName=rcstr(2318) Sheet=styleref(mainss) Layout=borderlayout()>
+<element id=atom(idToastHeader) layoutpos=top background=inactivecaption Layout=BorderLayout()>
+<png layoutpos=left blendmode=5 isbackground=true idres=ifhc(0,870) width=2/>
+<png layoutpos=client isbackground=true blendmode=7 idres=ifhc(0,876) layout=borderlayout() padding=rect(0,4,0,2)>
+<element layoutpos=left id=atom(idToastHeaderTopIconContainer) Layout=FlowLayout(0,2,0,2)>
+<png id=atom(idToastHeaderBrandingIcon) idres=215 Padding=Rect(5,0,0,0) colorize=-1/>
+<element id=atom(idToastHeaderBrandingString) content=rcstr(2318)/>
+</element>
+<element layoutpos=right id=atom(idToastHeaderTopCloseContainer) Layout=FlowLayout(0,0,1)>
+<cmdbutton id=atom(idToastClose)/>
+</element>
+</png>
+<png layoutpos=right blendmode=5 isbackground=true idres=ifhc(0,871) width=2/>
+</element>
+<element layoutpos=bottom Layout=borderlayout()>
+<png layoutpos=left idres=ifhc(0,872)/>
+<png layoutpos=client blendmode=5 isbackground=true idres=ifhc(0,877) height=3/>
+<png layoutpos=right idres=ifhc(0,873)/>
+</element>
+<png layoutpos=left blendmode=5 isbackground=true idres=ifhc(0,874) width=3/>
+<element layoutpos=client Layout=borderlayout()>
+<element layoutpos=top id=atom(idToastHeaderBottom) Layout=borderlayout()>
+<element layoutpos=right id=atom(idToastHeaderBottomOptionsContainer) Layout=FlowLayout(0,0,1,0)>
+<CmdButton id=atom(idToastOptions) content=rcstr(80) Padding=Rect(0,0,1,0)/>
+</element>
+</element>
+<element id=atom(idToastClientArea) layoutpos=client Layout=filllayout() padding=rect(5,2,5,0) Background=IFHC(infobackground,Gradient(rgb(255,255,255),rgb(207,221,244),1)) colorize=-2>
+<CmdButton id=atom(idToastClientButton) background=argb(0,0,0,0) layout=borderlayout() FontStyle=None>
+<element id=atom(idToastClientContent) layoutpos=top Layout=borderlayout()>
+<element id=atom(idToastUserTileCont) Layout=borderlayout() layoutpos=left padding=rect(3,0,5,0)>
+<usertileview id=atom(idToastUserTile) usertilestyle=delayedfetch layoutpos=top active=inactive height=50/>
+</element>
+<element layoutpos=client layout=verticalflowlayout(0,3,3,2) active=inactive>
+<ToastMessage id=atom(idToastMessage) contentalign=topleft bordercolor=black active=inactive borderthickness=rect(0,0,0,0)/>
+</element>
+</element>
+</CmdButton>
+</element>
+<element id=atom(idToastFooter) layoutpos=bottom Layout=filllayout()>
+<element id=atom(idToastFooterIconContainer) Layout=FlowLayout(0,0,1)>
+<png id=atom(idToastFooterIcon) localized=false flip=false Padding=Rect(0,0,1,2) colorize=-1/>
+</element>
+</element>
+</element>
+<png layoutpos=right blendmode=5 isbackground=true idres=ifhc(0,875) width=3/>
+</ToastRoot>
+<ToastRoot resid=AlertsToastRoot ID=atom(AlertsToastRoot) AccName=rcstr(2319) Sheet=styleref(mainss) Layout=borderlayout()>
+<element id=atom(idToastHeader) layoutpos=top background=inactivecaption Layout=BorderLayout()>
+<png layoutpos=left blendmode=5 isbackground=true idres=ifhc(0,870) width=2/>
+<png layoutpos=client isbackground=true blendmode=7 idres=ifhc(0,876) layout=borderlayout() padding=rect(0,4,0,2)>
+<element layoutpos=left id=atom(idToastHeaderTopIconContainer) Layout=FlowLayout(0,2,0,2)>
+<png id=atom(idToastHeaderBrandingIcon) idres=215 Padding=Rect(5,0,0,0) colorize=-1/>
+<element id=atom(idToastHeaderBrandingString) content=rcstr(2318)/>
+</element>
+<element layoutpos=right id=atom(idToastHeaderTopCloseContainer) Layout=FlowLayout(0,0,1)>
+<cmdbutton id=atom(idToastClose)/>
+</element>
+</png>
+<png layoutpos=right blendmode=5 isbackground=true idres=ifhc(0,871) width=2/>
+</element>
+<element layoutpos=bottom Layout=borderlayout()>
+<png layoutpos=left idres=ifhc(0,872)/>
+<png layoutpos=client blendmode=5 isbackground=true idres=ifhc(0,877) height=3/>
+<png layoutpos=right idres=ifhc(0,873)/>
+</element>
+<png layoutpos=left blendmode=5 isbackground=true idres=ifhc(0,874) width=3/>
+<element layoutpos=client Layout=borderlayout()>
+<element layoutpos=top id=atom(idToastHeaderBottom) Layout=borderlayout()>
+<element layoutpos=right id=atom(idToastHeaderBottomOptionsContainer) Layout=FlowLayout(0,0,1,0)>
+<CmdButton id=atom(idToastOptions) content=rcstr(80) Padding=Rect(0,0,1,0)/>
+</element>
+</element>
+<element id=atom(idToastPartnerMessageContainer) layoutpos=client Layout=filllayout() padding=rect(0,0,0,0)>
+<CmdButton id=atom(idToastClientButton) padding=rect(0,0,0,0) background=argb(0,0,0,0) Layout=Filllayout()>
+<element id=atom(idToastPartnerArea) Layout=Borderlayout() padding=rect(0,0,0,0)>
+<element id=atom(idToastPartnerHeader) layoutpos=top Layout=FlowLayout(0,0,2,0) Background=IFHC(infobackground,Gradient(rgb(255,255,255),rgb(255,255,255),1)) colorize=enabled>
+<element id=atom(idToastPartnerHeaderIcon) Padding=Rect(0,0,0,0) colorize=-1/>
+</element>
+<element layout=verticalflowlayout(0,2,2,2) active=inactive layoutpos=client padding=rect(5,0,5,0) Background=IFHC(infobackground,Gradient(rgb(255,255,255),rgb(207,221,244),1)) colorize=enabled>
+<ToastMessage id=atom(idToastMessage) bordercolor=black active=inactive borderthickness=rect(0,0,0,0)/>
+</element>
+</element>
+</CmdButton>
+</element>
+<element id=atom(idToastFooter) layoutpos=bottom Layout=filllayout()>
+<element id=atom(idToastFooterIconContainer) Layout=FlowLayout(0,0,1)>
+<png id=atom(idToastFooterIcon) localized=false flip=false Padding=Rect(0,0,1,2) colorize=-1/>
+</element>
+<element id=atom(idToastFooterForwardContainer) Layout=FlowLayout(0,1,0)>
+<CmdButton id=atom(idToastForward) Padding=Rect(3,0,0,1) content=rcstr(2321)/>
+</element>
+</element>
+</element>
+<png layoutpos=right blendmode=5 isbackground=true idres=ifhc(0,875) width=3/>
+</ToastRoot>
