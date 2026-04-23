@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Codex Messenger - all Codex functionality with your childhood memories.">
-  <link rel="preload" href="./assets/codex-messenger-logo-transparent.png" as="image">
+  <meta name="description" content="Codex Messenger - all Codex functionality with your childhood memories and AI friends.">
   <link rel="preload" href="./assets/codex-messenger-people.png" as="image">
   <title>codex messenger</title>
   <style>
@@ -12,586 +11,418 @@
     body {
       margin: 0;
       min-height: 100%;
-      background: #dceeff;
+      background: #dcebff;
       font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
     }
 
     body {
-      display: flex;
-      justify-content: center;
+      min-height: 100svh;
+      display: grid;
+      place-items: start;
     }
 
-    .page {
-      width: min(1024px, 100vw);
-      height: auto;
-      display: block;
-      background: #fff;
-      box-shadow: 0 0 0 2px #1742b7;
-    }
-
-    .wide-page {
-      display: none;
+    .site {
       width: 100vw;
-      height: 100vh;
       background: #fff;
-      box-shadow: 0 0 0 2px #1742b7 inset;
+      box-shadow: 0 0 0 2px #0d2dbb, 0 9px 26px rgba(0, 31, 130, .22);
+    }
+
+    svg {
+      width: 100%;
+      height: 56.2799vw;
+      display: block;
     }
 
     text {
       letter-spacing: 0;
+      paint-order: stroke fill;
     }
 
-    .focus-ring {
-      fill: none;
-      pointer-events: none;
+    a {
+      cursor: pointer;
     }
 
     a:focus-visible .focus-ring {
       stroke: #0019b8;
-      stroke-width: 4;
-      stroke-dasharray: 7 5;
+      stroke-width: 5;
+      stroke-dasharray: 9 6;
+      fill: none;
     }
 
-    .xp-taskbar {
-      position: fixed;
-      left: 50%;
-      bottom: 0;
-      z-index: 20;
-      width: min(1024px, 100vw);
-      height: 36px;
-      display: grid;
-      grid-template-columns: 112px 1fr 142px;
-      transform: translateX(-50%);
-      color: #fff;
-      font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
-      background: linear-gradient(#39a0ff, #0059d8 55%, #003da8);
-      border-top: 1px solid #4e86dc;
-      box-shadow: 0 1px 0 #8fc1ff inset;
+    .gloss-pass {
+      animation: gloss-slide 3.6s ease-in-out infinite;
     }
 
-    .start {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding-left: 14px;
-      color: #fff;
-      font-size: 21px;
-      font-style: italic;
-      font-weight: 900;
-      text-decoration: none;
-      background: linear-gradient(#66ea4f, #168e0b 55%, #056500);
-      border-right: 2px solid #0b5e00;
-      border-radius: 0 12px 13px 0;
-      text-shadow: 1px 1px 0 #004200;
+    .download-link:hover .download-button,
+    .source-link:hover .source-panel,
+    .social-link:hover .social-hit {
+      filter: brightness(1.06);
     }
 
-    .windows-mark {
-      width: 19px;
-      height: 19px;
-      display: inline-block;
-      background:
-        linear-gradient(90deg, #ff372b 0 50%, #00a3ff 50%) 0 0 / 100% 50% no-repeat,
-        linear-gradient(90deg, #14b324 0 50%, #ffc400 50%) 0 100% / 100% 50% no-repeat;
-      transform: skewY(-7deg);
-      box-shadow: 1px 1px 0 rgba(0, 0, 0, .35);
+    .download-link:hover .download-label {
+      transform: translateY(-1px);
     }
 
-    .task {
-      width: 214px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      align-self: center;
-      gap: 7px;
-      margin-left: 12px;
-      padding: 0 9px;
-      border: 1px solid #1c53bd;
-      border-radius: 3px;
-      background: linear-gradient(#3a9bff, #0753d7 48%, #0340a8);
-      font-size: 14px;
-      overflow: hidden;
-      white-space: nowrap;
+    .download-label {
+      transition: transform .16s ease;
     }
 
-    .task-buddies {
-      width: 19px;
-      height: 18px;
-      flex: 0 0 auto;
-      border-radius: 50%;
-      background: linear-gradient(90deg, #46bf28 0 45%, #54b8f5 46%);
-      box-shadow: 0 -5px 0 rgba(255, 255, 255, .35) inset;
-    }
-
-    .tray-html {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      padding-right: 10px;
-      background: linear-gradient(#1aa1ff, #0980dc);
-      border-left: 1px solid #0e51bd;
-      font-size: 14px;
-    }
-
-    .tray-light {
-      width: 13px;
-      height: 13px;
-      border-radius: 3px;
-      border: 1px solid rgba(0, 0, 0, .35);
-      background: linear-gradient(#fff, #f03333);
-    }
-
-    .tray-light.blue {
-      background: linear-gradient(#fff, #267aff);
-    }
-
-    .tray-light.green {
-      background: linear-gradient(#fff56d, #008b3a);
-    }
-
-    @media (min-width: 1200px) and (min-aspect-ratio: 4 / 3) {
-      body {
-        align-items: flex-start;
+    @keyframes gloss-slide {
+      0%, 44% {
+        transform: translateX(-520px);
+        opacity: 0;
       }
-
-      .page,
-      .xp-taskbar {
-        display: none;
+      55% {
+        opacity: .75;
       }
+      72% {
+        transform: translateX(520px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(520px);
+        opacity: 0;
+      }
+    }
 
-      .wide-page {
-        position: fixed;
-        inset: 0;
-        display: block;
-        width: 100vw;
-        height: 100vh;
+    @media (prefers-reduced-motion: reduce) {
+      .gloss-pass {
+        animation: none;
       }
     }
   </style>
 </head>
 <body>
-  <svg class="page" viewBox="0 0 1024 1536" role="img" aria-labelledby="page-title page-desc" xmlns="http://www.w3.org/2000/svg">
-    <title id="page-title">Codex Messenger</title>
-    <desc id="page-desc">A retro MSN-inspired landing page for Codex Messenger, with download and GitHub source links.</desc>
+  <main class="site" aria-label="Codex Messenger landing page">
+    <svg width="1672" height="941" viewBox="0 0 1672 941" role="img" aria-labelledby="page-title page-desc" xmlns="http://www.w3.org/2000/svg">
+      <title id="page-title">Codex Messenger</title>
+      <desc id="page-desc">A glossy retro MSN-inspired landing page for Codex Messenger, with a download button, GitHub source link, and AI friends tagline.</desc>
 
-    <defs>
-      <linearGradient id="topBlue" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#1b4cff"/>
-        <stop offset=".48" stop-color="#062ecf"/>
-        <stop offset="1" stop-color="#00168f"/>
-      </linearGradient>
-      <linearGradient id="redBtn" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#ff493d"/>
-        <stop offset="1" stop-color="#cf0909"/>
-      </linearGradient>
-      <linearGradient id="langBlue" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#245cff"/>
-        <stop offset="1" stop-color="#061b95"/>
-      </linearGradient>
-      <linearGradient id="logoText" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#2860ff"/>
-        <stop offset=".56" stop-color="#0d3dde"/>
-        <stop offset="1" stop-color="#001d8d"/>
-      </linearGradient>
-      <linearGradient id="downloadYellow" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#fff879"/>
-        <stop offset=".23" stop-color="#fff335"/>
-        <stop offset=".62" stop-color="#ffe014"/>
-        <stop offset="1" stop-color="#ffc500"/>
-      </linearGradient>
-      <linearGradient id="xpGreen" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#66ea4f"/>
-        <stop offset=".55" stop-color="#168e0b"/>
-        <stop offset="1" stop-color="#056500"/>
-      </linearGradient>
-      <linearGradient id="taskBlue" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#39a0ff"/>
-        <stop offset=".55" stop-color="#0059d8"/>
-        <stop offset="1" stop-color="#003da8"/>
-      </linearGradient>
-      <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#002677" flood-opacity=".25"/>
-      </filter>
-      <filter id="hardShadow" x="-10%" y="-10%" width="120%" height="125%">
-        <feDropShadow dx="2" dy="4" stdDeviation="1" flood-color="#00136f" flood-opacity=".7"/>
-      </filter>
-      <pattern id="bgPattern" width="138" height="92" patternUnits="userSpaceOnUse">
-        <g opacity=".09">
-          <ellipse cx="52" cy="28" rx="18" ry="22" fill="#1a84d8"/>
-          <ellipse cx="37" cy="34" rx="14" ry="17" fill="#42a52a"/>
-          <circle cx="52" cy="12" r="10" fill="#1a84d8"/>
-          <circle cx="37" cy="18" r="8" fill="#42a52a"/>
-          <text x="8" y="62" font-family="Arial Black, Arial" font-size="19" font-style="italic" fill="#0735bd">codex</text>
-          <text x="11" y="79" font-family="Arial Black, Arial" font-size="17" font-style="italic" fill="#0735bd">messenger</text>
+      <defs>
+        <linearGradient id="topBlue" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#2a5dff"/>
+          <stop offset=".18" stop-color="#0e35e4"/>
+          <stop offset=".54" stop-color="#001ea8"/>
+          <stop offset="1" stop-color="#000b69"/>
+        </linearGradient>
+        <linearGradient id="topBlueGloss" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#ffffff" stop-opacity=".72"/>
+          <stop offset=".22" stop-color="#8fb5ff" stop-opacity=".34"/>
+          <stop offset=".55" stop-color="#ffffff" stop-opacity=".08"/>
+          <stop offset="1" stop-color="#000000" stop-opacity=".22"/>
+        </linearGradient>
+        <linearGradient id="footerBlue" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#123fe1"/>
+          <stop offset=".18" stop-color="#0525a5"/>
+          <stop offset=".72" stop-color="#001574"/>
+          <stop offset="1" stop-color="#000a4f"/>
+        </linearGradient>
+        <linearGradient id="langBlue" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#2e73ff"/>
+          <stop offset=".5" stop-color="#0735d8"/>
+          <stop offset="1" stop-color="#00177c"/>
+        </linearGradient>
+        <linearGradient id="redButton" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#ff766a"/>
+          <stop offset=".48" stop-color="#e71616"/>
+          <stop offset="1" stop-color="#a90000"/>
+        </linearGradient>
+        <linearGradient id="logoText" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#2a6dff"/>
+          <stop offset=".32" stop-color="#0a47df"/>
+          <stop offset=".7" stop-color="#002ea8"/>
+          <stop offset="1" stop-color="#00126d"/>
+        </linearGradient>
+        <linearGradient id="downloadYellow" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#fff986"/>
+          <stop offset=".15" stop-color="#fff64d"/>
+          <stop offset=".5" stop-color="#ffe318"/>
+          <stop offset=".82" stop-color="#ffd000"/>
+          <stop offset="1" stop-color="#f2aa00"/>
+        </linearGradient>
+        <linearGradient id="downloadStroke" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#e6b100"/>
+          <stop offset=".55" stop-color="#a87400"/>
+          <stop offset="1" stop-color="#7e5400"/>
+        </linearGradient>
+        <linearGradient id="greenArrow" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#78ff43"/>
+          <stop offset=".42" stop-color="#19d414"/>
+          <stop offset="1" stop-color="#079500"/>
+        </linearGradient>
+        <linearGradient id="panelFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#fbfff7"/>
+          <stop offset="1" stop-color="#eef7e6"/>
+        </linearGradient>
+        <linearGradient id="socialFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#fbfdff"/>
+          <stop offset="1" stop-color="#edf6ff"/>
+        </linearGradient>
+        <radialGradient id="openGreen" cx=".5" cy=".34" r=".74">
+          <stop offset="0" stop-color="#4dcb48"/>
+          <stop offset="1" stop-color="#0f7d16"/>
+        </radialGradient>
+        <linearGradient id="igGrad" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#7338ff"/>
+          <stop offset=".38" stop-color="#d52b91"/>
+          <stop offset=".72" stop-color="#ff5c2b"/>
+          <stop offset="1" stop-color="#ffd336"/>
+        </linearGradient>
+
+        <filter id="softBlueShadow" x="-16%" y="-22%" width="132%" height="144%">
+          <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#001c82" flood-opacity=".28"/>
+        </filter>
+        <filter id="logoShadow" x="-8%" y="-18%" width="116%" height="136%">
+          <feDropShadow dx="2" dy="5" stdDeviation="1.5" flood-color="#001253" flood-opacity=".62"/>
+        </filter>
+        <filter id="buttonShadow" x="-12%" y="-35%" width="124%" height="170%">
+          <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#8f6500" flood-opacity=".55"/>
+        </filter>
+        <filter id="panelShadow" x="-8%" y="-18%" width="116%" height="136%">
+          <feDropShadow dx="0" dy="2" stdDeviation="1.4" flood-color="#678c67" flood-opacity=".36"/>
+        </filter>
+        <filter id="iconShadow" x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#000" flood-opacity=".24"/>
+        </filter>
+
+        <pattern id="scanlines" width="1" height="5" patternUnits="userSpaceOnUse">
+          <rect width="1" height="1" fill="#dbe7f7" opacity=".55"/>
+          <rect y="2" width="1" height="1" fill="#edf3fb" opacity=".65"/>
+        </pattern>
+
+        <pattern id="bgPattern" width="165" height="110" patternUnits="userSpaceOnUse">
+          <g opacity=".12">
+            <ellipse cx="62" cy="31" rx="18" ry="22" fill="#76aee2"/>
+            <ellipse cx="45" cy="37" rx="15" ry="18" fill="#7cc663"/>
+            <circle cx="62" cy="14" r="10" fill="#9ed2f4"/>
+            <circle cx="45" cy="20" r="8" fill="#91de70"/>
+            <ellipse cx="59" cy="19" rx="12" ry="7" fill="#fff" opacity=".5"/>
+            <text x="14" y="65" font-family="Arial Black, Arial" font-size="19" font-style="italic" fill="#1b49c8">codex</text>
+            <text x="15" y="83" font-family="Arial Black, Arial" font-size="17" font-style="italic" fill="#1b49c8">messenger</text>
+          </g>
+        </pattern>
+
+        <g id="smallBuddies">
+          <ellipse cx="19" cy="29" rx="15" ry="18" fill="#55c62c" stroke="#0a7209" stroke-width="1.4"/>
+          <circle cx="19" cy="12" r="9" fill="#96ed70" stroke="#0a7209" stroke-width="1.2"/>
+          <ellipse cx="37" cy="28" rx="18" ry="23" fill="#55bdf6" stroke="#0b63c7" stroke-width="1.5"/>
+          <circle cx="37" cy="10" r="11" fill="#baf2ff" stroke="#0b63c7" stroke-width="1.4"/>
+          <ellipse cx="34" cy="16" rx="13" ry="8" fill="#fff" opacity=".58"/>
         </g>
-      </pattern>
-      <g id="smallBuddies">
-        <ellipse cx="18" cy="27" rx="13" ry="15" fill="#45b520" stroke="#0a6d09"/>
-        <circle cx="18" cy="12" r="8" fill="#82e36b" stroke="#0a6d09"/>
-        <ellipse cx="34" cy="25" rx="16" ry="20" fill="#51b6f3" stroke="#065fc3"/>
-        <circle cx="34" cy="9" r="10" fill="#b9f2ff" stroke="#065fc3"/>
-        <ellipse cx="30" cy="15" rx="12" ry="8" fill="#fff" opacity=".5"/>
-      </g>
-      <g id="downloadArrow">
-        <path d="M23 0 H42 V44 H61 L32 78 L3 44 H23 Z" fill="#18df1d" stroke="#118011" stroke-width="2"/>
-        <path d="M26 2 H40 V43 H55" fill="none" stroke="#bbff7e" stroke-width="2" opacity=".7"/>
-      </g>
-      <g id="sourceDoc">
-        <path d="M0 0 H36 L50 14 V50 H0 Z" fill="#f8fbff" stroke="#53677e"/>
-        <path d="M36 0 V14 H50" fill="#cbdcf0" stroke="#53677e"/>
-        <text x="8" y="32" font-family="Consolas, monospace" font-size="15" font-weight="700" fill="#304562">&lt;/&gt;</text>
-      </g>
-      <g id="miniContact">
-        <circle cx="7" cy="6" r="5" fill="#9bf25e" stroke="#3c7d23"/>
-        <ellipse cx="7" cy="17" rx="7" ry="9" fill="#31a921" stroke="#3c7d23"/>
-      </g>
-    </defs>
 
-    <rect width="1024" height="1536" fill="#fff"/>
-    <rect y="58" width="1024" height="1442" fill="url(#bgPattern)"/>
-
-    <rect x="0" y="0" width="1024" height="58" fill="url(#topBlue)" stroke="#00176e" stroke-width="2"/>
-    <use href="#smallBuddies" x="31" y="9"/>
-    <text x="89" y="40" fill="#fff" font-family="Trebuchet MS, Arial" font-size="36" font-weight="800" font-style="italic">codex messenger</text>
-
-    <a href="?lang=en" aria-label="English language">
-      <rect class="focus-ring" x="688" y="12" width="146" height="37"/>
-      <rect x="688" y="12" width="146" height="37" rx="2" fill="url(#langBlue)" stroke="#6b96ff" stroke-width="2"/>
-      <g transform="translate(700 21)">
-        <rect width="31" height="20" fill="#184492"/>
-        <path d="M0 0 L31 20 M31 0 L0 20" stroke="#fff" stroke-width="5"/>
-        <path d="M0 0 L31 20 M31 0 L0 20" stroke="#d41022" stroke-width="2.5"/>
-        <path d="M15.5 0 V20 M0 10 H31" stroke="#fff" stroke-width="7"/>
-        <path d="M15.5 0 V20 M0 10 H31" stroke="#d41022" stroke-width="4"/>
-      </g>
-      <text x="737" y="37" fill="#fff" font-size="21" font-weight="700">English</text>
-    </a>
-
-    <a href="?lang=fr" aria-label="French language">
-      <rect class="focus-ring" x="850" y="12" width="143" height="37"/>
-      <rect x="850" y="12" width="143" height="37" rx="2" fill="url(#redBtn)" stroke="#ff8f83" stroke-width="2"/>
-      <g transform="translate(863 21)">
-        <rect width="31" height="20" fill="#fff"/>
-        <rect width="10.33" height="20" fill="#2649c9"/>
-        <rect x="20.66" width="10.34" height="20" fill="#e21d1d"/>
-      </g>
-      <text x="898" y="37" fill="#fff" font-size="21" font-weight="700">Français</text>
-    </a>
-
-    <image href="./assets/codex-messenger-logo-transparent.png" x="115" y="48" width="794" height="570" preserveAspectRatio="none"/>
-
-    <rect x="65" y="624" width="894" height="4" fill="#0f5ae0"/>
-    <rect x="65" y="621" width="894" height="1" fill="#b8d6ff"/>
-    <rect x="65" y="629" width="894" height="1" fill="#b8d6ff"/>
-
-    <text x="89" y="673" font-size="43" font-weight="900" font-style="italic">
-      <tspan fill="#062fd4">Codex</tspan><tspan fill="#111"> + </tspan><tspan fill="#098b12">MSN Messenger</tspan><tspan fill="#111"> = </tspan><tspan fill="#9124d5">Codex Messenger</tspan>
-    </text>
-    <text x="512" y="723" text-anchor="middle" font-size="32" font-weight="900" font-style="italic" fill="#db1cd1">All Codex functionality...</text>
-    <text x="512" y="760" text-anchor="middle" font-size="32" font-weight="900" font-style="italic" fill="#db1cd1">but with your childhood memories !</text>
-
-    <g font-size="22" font-style="italic" fill="#111">
-      <text x="181" y="807"><tspan font-size="36" font-style="normal">⭐</tspan><tspan dx="26">Classic look &amp; feel from the 2000s</tspan></text>
-      <text x="181" y="851"><tspan font-size="34" font-style="normal">👥</tspan><tspan dx="27">Private messaging like MSN</tspan></text>
-      <text x="181" y="894"><tspan font-size="35" font-style="normal">🙂</tspan><tspan dx="26">Emoticons, winks and more!</tspan></text>
-      <text x="181" y="936"><tspan font-size="36" font-style="normal">⚡</tspan><tspan dx="28">Lightweight and blazing fast</tspan></text>
-      <text x="181" y="979"><tspan font-size="35" font-style="normal">🔒</tspan><tspan dx="28">Secure, modern and Open Source</tspan></text>
-    </g>
-
-    <g transform="translate(763 710)">
-      <rect width="232" height="288" fill="#f4f4f4" stroke="#072f91" stroke-width="2"/>
-      <rect width="232" height="26" fill="url(#topBlue)"/>
-      <text x="27" y="18" fill="#fff" font-size="14" font-weight="700">Codex Messenger</text>
-      <rect x="163" y="5" width="18" height="17" fill="#2366df" stroke="#b7ccff"/>
-      <rect x="186" y="5" width="18" height="17" fill="#2366df" stroke="#b7ccff"/>
-      <rect x="209" y="5" width="18" height="17" fill="#e92a1a" stroke="#ffc0b6"/>
-      <use href="#smallBuddies" x="8" y="43" transform="scale(.75)"/>
-      <text x="64" y="57" font-size="14">Anis (Online)</text>
-      <rect x="62" y="68" width="21" height="21" fill="#eaf3f9" stroke="#8aa4b8"/>
-      <rect x="92" y="68" width="21" height="21" fill="#eaf3f9" stroke="#8aa4b8"/>
-      <rect x="122" y="68" width="21" height="21" fill="#eaf3f9" stroke="#8aa4b8"/>
-      <rect x="0" y="96" width="232" height="1" fill="#999"/>
-      <rect x="0" y="97" width="232" height="25" fill="#eee"/>
-      <text x="9" y="115" font-size="13" font-weight="700">▾ Friends (5/12)</text>
-      <g font-size="12">
-        <use href="#miniContact" x="22" y="130"/><text x="50" y="143">Yassine</text><text x="190" y="143" fill="#008000">Online</text>
-        <use href="#miniContact" x="22" y="154"/><text x="50" y="167">Sarra</text><text x="194" y="167" fill="#1d23cd">Away</text>
-        <use href="#miniContact" x="22" y="178"/><text x="50" y="191">Mehdi</text><text x="190" y="191" fill="#008000">Online</text>
-        <use href="#miniContact" x="22" y="202"/><text x="50" y="215">Lina</text><text x="198" y="215" fill="#c40000">Busy</text>
-        <use href="#miniContact" x="22" y="226"/><text x="50" y="239">Karim</text><text x="190" y="239" fill="#008000">Online</text>
-      </g>
-      <rect x="0" y="246" width="232" height="22" fill="#eee" stroke="#c5c5c5"/>
-      <text x="9" y="262" font-size="13" font-weight="700">▸ Family (1/3)</text>
-      <rect x="0" y="268" width="232" height="20" fill="#eee" stroke="#c5c5c5"/>
-      <text x="9" y="283" font-size="13" font-weight="700">▸ Offline (6)</text>
-      <text x="79" y="308" fill="#2f43d0" font-family="Arial Black, Arial" font-size="16" font-style="italic">codex messenger</text>
-    </g>
-
-    <a href="./downloads/CodexMessenger.exe?v=0.1.4" download="CodexMessenger.exe" aria-label="Download Codex Messenger for Windows">
-      <rect class="focus-ring" x="228" y="1014" width="570" height="90" rx="16"/>
-      <rect x="228" y="1014" width="570" height="90" rx="16" fill="url(#downloadYellow)" stroke="#d49c00" stroke-width="4"/>
-      <rect x="235" y="1020" width="556" height="17" rx="8" fill="#fff" opacity=".45"/>
-      <use href="#downloadArrow" x="267" y="1026"/>
-      <use href="#downloadArrow" x="703" y="1026"/>
-      <text x="512" y="1083" text-anchor="middle" font-family="Arial Black, Arial" font-size="54" font-style="italic" fill="#2814bb" stroke="#a995ff" stroke-width="1.1">DOWNLOAD</text>
-    </a>
-    <text x="512" y="1125" text-anchor="middle" fill="#0068ff" font-size="25" font-style="italic">Get Codex Messenger Now !</text>
-
-    <g transform="translate(120 1143)">
-      <rect width="800" height="124" rx="8" fill="#fff" fill-opacity=".9" stroke="#12671d" stroke-width="2"/>
-      <line x1="157" y1="0" x2="157" y2="124" stroke="#d4d4d4"/>
-      <line x1="538" y1="0" x2="538" y2="124" stroke="#d4d4d4"/>
-      <circle cx="80" cy="39" r="37" fill="#24992a" stroke="#12651b" stroke-width="2"/>
-      <circle cx="80" cy="39" r="11" fill="#fff"/>
-      <path d="M76 49 L86 49 L90 77 L69 77 Z" fill="#fff"/>
-      <text x="16" y="83" font-family="Arial" font-size="22"><tspan font-size="31">open</tspan> SOURCE</text>
-      <text x="166" y="37" fill="#0a8614" font-size="31" font-weight="900" font-style="italic">Open Source Project</text>
-      <text x="166" y="65" font-size="19" font-style="italic">Codex Messenger is 100% Open Source.</text>
-      <text x="166" y="89" font-size="19" font-style="italic">Check out the code, contribute and</text>
-      <text x="166" y="113" font-size="19" font-style="italic">help make it even better!</text>
-      <a href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub">
-        <rect class="focus-ring" x="538" y="0" width="262" height="124"/>
-        <use href="#sourceDoc" x="562" y="27"/>
-        <text x="617" y="51" fill="#071fd0" font-size="23" font-style="italic" text-decoration="underline">View Source Code</text>
-        <text x="617" y="80" fill="#071fd0" font-size="23" font-style="italic" text-decoration="underline">on GitHub</text>
-      </a>
-    </g>
-
-    <rect x="0" y="1278" width="1024" height="122" fill="#ececec" stroke="#b9b9b9"/>
-    <text x="512" y="1306" text-anchor="middle" fill="#06158f" font-size="21" font-weight="700" font-style="italic">Developed with fun by Anis Ayari and Codex</text>
-    <g text-anchor="middle" font-size="17" font-style="italic" fill="#071fd0">
-      <g aria-label="X Twitter">
-        <rect x="96" y="1318" width="51" height="51" rx="7" fill="#000"/>
-        <text x="121" y="1356" fill="#fff" font-size="37" font-style="normal">X</text>
-        <text x="121" y="1397" text-decoration="underline">X (Twitter)</text>
-      </g>
-      <g aria-label="LinkedIn">
-        <rect x="277" y="1318" width="51" height="51" rx="6" fill="#1278b9"/>
-        <text x="302" y="1355" fill="#fff" font-size="31" font-style="normal" font-weight="700">in</text>
-        <text x="302" y="1397" text-decoration="underline">LinkedIn</text>
-      </g>
-      <a href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-        <rect x="463" y="1318" width="51" height="51" rx="6" fill="#1b2130"/>
-        <text x="488" y="1355" fill="#fff" font-size="29" font-style="normal">⌂</text>
-        <text x="488" y="1397" text-decoration="underline">GitHub</text>
-      </a>
-      <g aria-label="YouTube">
-        <rect x="652" y="1322" width="63" height="43" rx="10" fill="#fb1111"/>
-        <text x="684" y="1355" fill="#fff" font-size="29" font-style="normal">▶</text>
-        <text x="684" y="1397" text-decoration="underline">YouTube</text>
-      </g>
-      <g aria-label="Instagram">
-        <rect x="863" y="1318" width="51" height="51" rx="12" fill="#d92c8e"/>
-        <circle cx="888" cy="1343" r="14" fill="none" stroke="#fff" stroke-width="4"/>
-        <circle cx="903" cy="1328" r="4" fill="#fff"/>
-        <text x="888" y="1397" text-decoration="underline">Instagram</text>
-      </g>
-    </g>
-    <line x1="0" y1="1400" x2="1024" y2="1400" stroke="#a0a0a0"/>
-    <text x="512" y="1426" text-anchor="middle" font-size="18">© 2000-2025 Codex Messenger Project. All rights reserved.</text>
-    <text x="512" y="1452" text-anchor="middle" font-size="18">Bringing back the vibes. Powered by <tspan fill="#071fd0" font-weight="700" text-decoration="underline">Code</tspan>. <tspan fill="#de1e1e">♥</tspan></text>
-
-    <rect x="0" y="1464" width="1024" height="36" fill="url(#taskBlue)" stroke="#4e86dc"/>
-    <rect x="0" y="1464" width="112" height="36" rx="0" fill="url(#xpGreen)"/>
-    <path d="M0 1464 H101 Q112 1464 112 1476 V1488 Q112 1500 101 1500 H0 Z" fill="url(#xpGreen)" stroke="#0b5e00"/>
-    <g transform="translate(18 1474) scale(.8)">
-      <rect width="21" height="10" fill="#ff372b" transform="skewY(-8)"/>
-      <rect x="23" width="21" height="10" fill="#00a3ff" transform="skewY(-8)"/>
-      <rect y="13" width="21" height="10" fill="#14b324" transform="skewY(-8)"/>
-      <rect x="23" y="13" width="21" height="10" fill="#ffc400" transform="skewY(-8)"/>
-    </g>
-    <text x="49" y="1490" fill="#fff" font-size="21" font-weight="900" font-style="italic">start</text>
-    <rect x="124" y="1468" width="214" height="28" rx="3" fill="url(#taskBlue)" stroke="#1c53bd"/>
-    <use href="#smallBuddies" x="137" y="1473" transform="scale(.46)"/>
-    <text x="157" y="1488" fill="#fff" font-size="14">Codex Messenger - H...</text>
-    <rect x="882" y="1464" width="142" height="36" fill="#0a86df" opacity=".8"/>
-    <circle cx="902" cy="1481" r="6" fill="#ff3434" stroke="#fff"/>
-    <circle cx="922" cy="1481" r="6" fill="#2d7eff" stroke="#fff"/>
-    <circle cx="942" cy="1481" r="6" fill="#43d24d" stroke="#fff"/>
-    <text x="957" y="1488" fill="#fff" font-size="14">12:00 AM</text>
-  </svg>
-  <svg class="wide-page" viewBox="0 0 1536 1024" preserveAspectRatio="none" role="img" aria-labelledby="wide-title wide-desc" xmlns="http://www.w3.org/2000/svg">
-    <title id="wide-title">Codex Messenger responsive landing page</title>
-    <desc id="wide-desc">Wide responsive version of the Codex Messenger landing page, with the product text on the left and the MSN-inspired buddies on the right.</desc>
-    <defs>
-      <linearGradient id="wTopBlue" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#1b4cff"/>
-        <stop offset=".48" stop-color="#062ecf"/>
-        <stop offset="1" stop-color="#00168f"/>
-      </linearGradient>
-      <linearGradient id="wRedBtn" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#ff493d"/>
-        <stop offset="1" stop-color="#cf0909"/>
-      </linearGradient>
-      <linearGradient id="wLangBlue" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#245cff"/>
-        <stop offset="1" stop-color="#061b95"/>
-      </linearGradient>
-      <linearGradient id="wLogoText" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#2860ff"/>
-        <stop offset=".56" stop-color="#0d3dde"/>
-        <stop offset="1" stop-color="#001d8d"/>
-      </linearGradient>
-      <linearGradient id="wDownloadYellow" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="#fff879"/>
-        <stop offset=".23" stop-color="#fff335"/>
-        <stop offset=".62" stop-color="#ffe014"/>
-        <stop offset="1" stop-color="#ffc500"/>
-      </linearGradient>
-      <filter id="wSoftShadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#002677" flood-opacity=".25"/>
-      </filter>
-      <filter id="wHardShadow" x="-10%" y="-10%" width="120%" height="125%">
-        <feDropShadow dx="2" dy="4" stdDeviation="1" flood-color="#00136f" flood-opacity=".7"/>
-      </filter>
-      <pattern id="wBgPattern" width="132" height="88" patternUnits="userSpaceOnUse">
-        <g opacity=".09">
-          <ellipse cx="50" cy="27" rx="17" ry="21" fill="#1a84d8"/>
-          <ellipse cx="35" cy="33" rx="14" ry="16" fill="#42a52a"/>
-          <circle cx="50" cy="12" r="10" fill="#1a84d8"/>
-          <circle cx="35" cy="18" r="8" fill="#42a52a"/>
-          <text x="8" y="60" font-family="Arial Black, Arial" font-size="18" font-style="italic" fill="#0735bd">codex</text>
-          <text x="10" y="76" font-family="Arial Black, Arial" font-size="16" font-style="italic" fill="#0735bd">messenger</text>
+        <g id="downloadArrow">
+          <path d="M24 0 H43 V45 H64 L32 83 L0 45 H24 Z" fill="url(#greenArrow)" stroke="#0d7e04" stroke-width="2.3"/>
+          <path d="M28 3 H40 V44 H56" fill="none" stroke="#d4ff9b" stroke-width="2.4" opacity=".75"/>
         </g>
-      </pattern>
-      <g id="wSmallBuddies">
-        <ellipse cx="18" cy="27" rx="13" ry="15" fill="#45b520" stroke="#0a6d09"/>
-        <circle cx="18" cy="12" r="8" fill="#82e36b" stroke="#0a6d09"/>
-        <ellipse cx="34" cy="25" rx="16" ry="20" fill="#51b6f3" stroke="#065fc3"/>
-        <circle cx="34" cy="9" r="10" fill="#b9f2ff" stroke="#065fc3"/>
-        <ellipse cx="30" cy="15" rx="12" ry="8" fill="#fff" opacity=".5"/>
-      </g>
-      <g id="wDownloadArrow">
-        <path d="M23 0 H42 V44 H61 L32 78 L3 44 H23 Z" fill="#18df1d" stroke="#118011" stroke-width="2"/>
-        <path d="M26 2 H40 V43 H55" fill="none" stroke="#bbff7e" stroke-width="2" opacity=".7"/>
-      </g>
-      <g id="wSourceDoc">
-        <path d="M0 0 H36 L50 14 V50 H0 Z" fill="#f8fbff" stroke="#53677e"/>
-        <path d="M36 0 V14 H50" fill="#cbdcf0" stroke="#53677e"/>
-        <text x="8" y="32" font-family="Consolas, monospace" font-size="15" font-weight="700" fill="#b24c00">&lt;/&gt;</text>
-      </g>
-    </defs>
 
-    <rect width="1536" height="1024" fill="#fff"/>
-    <rect y="68" width="1536" height="956" fill="url(#wBgPattern)"/>
-    <rect x="0" y="0" width="1536" height="68" fill="url(#wTopBlue)" stroke="#00176e" stroke-width="2"/>
-    <use href="#wSmallBuddies" x="22" y="14"/>
-    <text x="82" y="47" fill="#fff" font-family="Trebuchet MS, Arial" font-size="36" font-weight="800" font-style="italic">codex messenger</text>
+        <g id="sourceDoc">
+          <path d="M0 0 H37 L53 16 V61 H0 Z" fill="#f7fbff" stroke="#526373" stroke-width="2"/>
+          <path d="M37 0 V16 H53" fill="#d7e6f6" stroke="#526373" stroke-width="2"/>
+          <text x="10" y="39" font-family="Consolas, monospace" font-size="20" font-weight="800" fill="#2b3442">&lt;/&gt;</text>
+        </g>
 
-    <a href="?lang=en" aria-label="English language">
-      <rect class="focus-ring" x="1205" y="13" width="145" height="40"/>
-      <rect x="1205" y="13" width="145" height="40" rx="3" fill="url(#wLangBlue)" stroke="#6b96ff" stroke-width="2"/>
-      <g transform="translate(1217 22)">
-        <rect width="31" height="20" fill="#184492"/>
-        <path d="M0 0 L31 20 M31 0 L0 20" stroke="#fff" stroke-width="5"/>
-        <path d="M0 0 L31 20 M31 0 L0 20" stroke="#d41022" stroke-width="2.5"/>
-        <path d="M15.5 0 V20 M0 10 H31" stroke="#fff" stroke-width="7"/>
-        <path d="M15.5 0 V20 M0 10 H31" stroke="#d41022" stroke-width="4"/>
+        <g id="starIcon">
+          <path d="M18 0 L24 12 L38 14 L28 24 L31 38 L18 31 L5 38 L8 24 L-2 14 L12 12 Z" fill="#ffd321" stroke="#a57900" stroke-width="1.5"/>
+          <path d="M18 3 L22 13 L33 15" fill="none" stroke="#fff9a8" stroke-width="2" opacity=".75"/>
+        </g>
+        <g id="smileIcon">
+          <circle cx="18" cy="18" r="17" fill="#ffcf1e" stroke="#a47d00" stroke-width="1.5"/>
+          <circle cx="11" cy="14" r="2.7" fill="#111"/>
+          <circle cx="25" cy="14" r="2.7" fill="#111"/>
+          <path d="M9 23 Q18 33 28 23" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+          <ellipse cx="12" cy="8" rx="7" ry="4" fill="#fff" opacity=".38"/>
+        </g>
+        <g id="boltIcon">
+          <path d="M24 0 L3 33 H21 L12 63 L46 22 H27 Z" fill="#ffc900" stroke="#8c6100" stroke-width="2"/>
+          <path d="M22 5 L8 30 H23" fill="none" stroke="#fff785" stroke-width="2" opacity=".65"/>
+        </g>
+        <g id="lockIcon">
+          <rect x="5" y="25" width="30" height="28" rx="3" fill="#ffca32" stroke="#8b6500" stroke-width="1.8"/>
+          <path d="M10 25 V16 C10 2 31 2 31 16 V25" fill="none" stroke="#868686" stroke-width="5" stroke-linecap="round"/>
+          <rect x="18" y="36" width="5" height="11" fill="#6a4a00"/>
+          <rect x="9" y="28" width="24" height="5" fill="#fff" opacity=".28"/>
+        </g>
+
+        <clipPath id="downloadClip">
+          <rect x="0" y="0" width="458" height="82" rx="9"/>
+        </clipPath>
+      </defs>
+
+      <rect width="1672" height="941" fill="#fff"/>
+      <rect y="75" width="1672" height="797" fill="url(#bgPattern)"/>
+      <rect y="75" width="1672" height="797" fill="url(#scanlines)" opacity=".62"/>
+
+      <rect x="4" y="3" width="1664" height="72" rx="2" fill="url(#topBlue)" stroke="#0629b2" stroke-width="3"/>
+      <rect x="8" y="7" width="1656" height="19" rx="2" fill="url(#topBlueGloss)" opacity=".9"/>
+      <rect x="7" y="68" width="1658" height="5" fill="#000548" opacity=".6"/>
+      <g transform="translate(28 18) scale(.82)" filter="url(#iconShadow)">
+        <use href="#smallBuddies"/>
       </g>
-      <text x="1255" y="40" fill="#fff" font-size="22">English</text>
-    </a>
-    <a href="?lang=fr" aria-label="French language">
-      <rect class="focus-ring" x="1364" y="13" width="151" height="40"/>
-      <rect x="1364" y="13" width="151" height="40" rx="3" fill="url(#wRedBtn)" stroke="#ff8f83" stroke-width="2"/>
-      <g transform="translate(1378 22)">
-        <rect width="31" height="20" fill="#fff"/>
-        <rect width="10.33" height="20" fill="#2649c9"/>
-        <rect x="20.66" width="10.34" height="20" fill="#e21d1d"/>
-      </g>
-      <text x="1415" y="40" fill="#fff" font-size="22">Français</text>
-    </a>
+      <text x="101" y="50" fill="#fff" font-family="Trebuchet MS, Arial" font-size="34" font-weight="900" font-style="italic" stroke="#00127d" stroke-width="1.1">codex messenger</text>
 
-    <g filter="url(#wHardShadow)">
-      <text x="82" y="166" font-family="Arial Black, Arial" font-size="92" font-style="italic" fill="url(#wLogoText)" stroke="#00188d" stroke-width="2">codex</text>
-      <text x="78" y="250" font-family="Arial Black, Arial" font-size="86" font-style="italic" fill="url(#wLogoText)" stroke="#00188d" stroke-width="2">messenger</text>
-    </g>
-    <text x="80" y="305" font-size="30" font-weight="900" font-style="italic">
-      <tspan fill="#062fd4">Codex</tspan><tspan fill="#111"> + </tspan><tspan fill="#098b12">MSN Messenger</tspan><tspan fill="#111"> = </tspan><tspan fill="#9124d5">Codex Messenger !</tspan>
-    </text>
-    <text x="80" y="351" font-size="30" font-weight="900" font-style="italic" fill="#db1cd1">All Codex functionality...</text>
-    <text x="80" y="384" font-size="30" font-weight="900" font-style="italic" fill="#db1cd1">but with your childhood memories !</text>
-
-    <image href="./assets/codex-messenger-people.png" x="755" y="120" width="704" height="585" preserveAspectRatio="none"/>
-
-    <g font-size="21" font-style="italic" fill="#111">
-      <path d="M96 397 L103 411 L119 413 L107 424 L110 439 L96 431 L82 439 L85 424 L73 413 L89 411 Z" fill="#ffd100" stroke="#9a7800" stroke-width="1.2"/>
-      <text x="123" y="421">Classic look &amp; feel from the 2000s</text>
-      <g transform="translate(82 432) scale(.58)">
-        <use href="#wSmallBuddies"/>
-      </g>
-      <text x="123" y="456">Private messaging like MSN</text>
-      <circle cx="96" cy="483" r="15" fill="#ffd51f" stroke="#9d7b00" stroke-width="1.2"/>
-      <circle cx="90" cy="478" r="2.6" fill="#111"/>
-      <circle cx="102" cy="478" r="2.6" fill="#111"/>
-      <path d="M88 488 Q96 496 105 488" fill="none" stroke="#111" stroke-width="2"/>
-      <text x="123" y="491">Emoticons, winks and more!</text>
-      <path d="M100 502 L82 532 H98 L90 558 L119 521 H102 Z" fill="#ffc400" stroke="#8c6200" stroke-width="1.4"/>
-      <text x="123" y="526">Lightweight and blazing fast</text>
-      <rect x="87" y="544" width="22" height="21" rx="2" fill="#ffca35" stroke="#8c6200" stroke-width="1.2"/>
-      <path d="M91 544 V535 C91 524 106 524 106 535 V544" fill="none" stroke="#777" stroke-width="4"/>
-      <text x="123" y="561">Secure, modern and Open Source</text>
-    </g>
-
-    <a href="./downloads/CodexMessenger.exe?v=0.1.4" download="CodexMessenger.exe" aria-label="Download Codex Messenger for Windows">
-      <rect class="focus-ring" x="80" y="582" width="496" height="78" rx="13"/>
-      <rect x="80" y="582" width="496" height="78" rx="13" fill="url(#wDownloadYellow)" stroke="#d49c00" stroke-width="4"/>
-      <rect x="88" y="589" width="480" height="15" rx="7" fill="#fff" opacity=".42"/>
-      <g transform="translate(121 599) scale(.72)">
-        <use href="#wDownloadArrow"/>
-      </g>
-      <g transform="translate(507 599) scale(.72)">
-        <use href="#wDownloadArrow"/>
-      </g>
-      <text x="328" y="638" text-anchor="middle" font-family="Arial Black, Arial" font-size="48" font-style="italic" fill="#2814bb" stroke="#a995ff" stroke-width="1">DOWNLOAD</text>
-    </a>
-    <text x="328" y="687" text-anchor="middle" fill="#0068ff" font-size="21" font-style="italic">Get Codex Messenger Now !</text>
-
-    <g transform="translate(76 715)">
-      <rect width="760" height="124" rx="5" fill="#fff" fill-opacity=".92" stroke="#333" stroke-width="1.4"/>
-      <line x1="195" y1="0" x2="195" y2="124" stroke="#d4d4d4"/>
-      <line x1="551" y1="0" x2="551" y2="124" stroke="#d4d4d4"/>
-      <circle cx="66" cy="53" r="42" fill="#24992a" stroke="#12651b" stroke-width="2"/>
-      <circle cx="66" cy="53" r="12" fill="#fff"/>
-      <path d="M61 66 L72 66 L77 100 L53 100 Z" fill="#fff"/>
-      <text x="15" y="104" font-family="Arial" font-size="22"><tspan font-size="32">open</tspan> SOURCE</text>
-      <text x="212" y="34" fill="#0a8614" font-size="28" font-weight="900" font-style="italic">Open Source Project</text>
-      <text x="212" y="64" font-size="18" font-style="italic">Codex Messenger is 100% Open Source.</text>
-      <text x="212" y="88" font-size="18" font-style="italic">Check out the code, contribute and</text>
-      <text x="212" y="111" font-size="18" font-style="italic">help make it even better!</text>
-      <a href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub">
-        <rect class="focus-ring" x="551" y="0" width="209" height="124"/>
-        <use href="#wSourceDoc" x="572" y="42"/>
-        <text x="626" y="60" fill="#071fd0" font-size="17" text-decoration="underline">View Source</text>
-        <text x="626" y="84" fill="#071fd0" font-size="17" text-decoration="underline">on GitHub</text>
+      <a href="?lang=en" aria-label="English language">
+        <rect class="focus-ring" x="1306" y="16" width="151" height="43" rx="4"/>
+        <rect x="1306" y="16" width="151" height="43" rx="4" fill="url(#langBlue)" stroke="#69a0ff" stroke-width="2"/>
+        <rect x="1310" y="20" width="143" height="11" rx="2" fill="#fff" opacity=".22"/>
+        <g transform="translate(1318 27)">
+          <rect width="34" height="22" fill="#184492"/>
+          <path d="M0 0 L34 22 M34 0 L0 22" stroke="#fff" stroke-width="5.2"/>
+          <path d="M0 0 L34 22 M34 0 L0 22" stroke="#d41022" stroke-width="2.6"/>
+          <path d="M17 0 V22 M0 11 H34" stroke="#fff" stroke-width="7.3"/>
+          <path d="M17 0 V22 M0 11 H34" stroke="#d41022" stroke-width="4.2"/>
+        </g>
+        <text x="1368" y="46" fill="#fff" font-size="22" font-style="italic" stroke="#00127d" stroke-width=".8">English</text>
       </a>
-    </g>
 
-    <g transform="translate(74 864)">
-      <rect width="1388" height="143" rx="3" fill="#ececec" stroke="#b9b9b9"/>
-      <text x="694" y="27" text-anchor="middle" fill="#06158f" font-size="21" font-weight="700" font-style="italic">Developed with fun by Anis Ayari and Codex</text>
-      <g text-anchor="middle" font-size="16" font-style="italic" fill="#071fd0">
-        <rect x="220" y="55" width="43" height="43" rx="6" fill="#000"/><text x="241" y="88" fill="#fff" font-size="32" font-style="normal">X</text><text x="303" y="82" text-decoration="underline">X (Twitter)</text>
-        <rect x="430" y="55" width="43" height="43" rx="6" fill="#1278b9"/><text x="451" y="86" fill="#fff" font-size="27" font-style="normal" font-weight="700">in</text><text x="524" y="82" text-decoration="underline">LinkedIn</text>
-        <a href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-          <rect x="648" y="55" width="43" height="43" rx="6" fill="#1b2130"/><text x="670" y="86" fill="#fff" font-size="25" font-style="normal">⌂</text><text x="745" y="82" text-decoration="underline">GitHub</text>
+      <a href="?lang=fr" aria-label="French language">
+        <rect class="focus-ring" x="1477" y="16" width="164" height="43" rx="4"/>
+        <rect x="1477" y="16" width="164" height="43" rx="4" fill="url(#redButton)" stroke="#ff8f84" stroke-width="2"/>
+        <rect x="1481" y="20" width="156" height="11" rx="2" fill="#fff" opacity=".24"/>
+        <g transform="translate(1490 27)">
+          <rect width="34" height="22" fill="#fff"/>
+          <rect width="11.33" height="22" fill="#2649c9"/>
+          <rect x="22.66" width="11.34" height="22" fill="#e21d1d"/>
+        </g>
+        <text x="1537" y="46" fill="#fff" font-size="22" font-style="italic" stroke="#6d0000" stroke-width=".7">Fran&#231;ais</text>
+      </a>
+
+      <g filter="url(#logoShadow)">
+        <text x="84" y="145" font-family="Arial Black, Arial" font-size="86" font-style="italic" fill="url(#logoText)" stroke="#001a8c" stroke-width="2.2">codex</text>
+        <text x="84" y="230" font-family="Arial Black, Arial" font-size="83" font-style="italic" fill="url(#logoText)" stroke="#001a8c" stroke-width="2.2">messenger</text>
+      </g>
+      <rect x="87" y="285" width="559" height="4" fill="#0e43d6"/>
+      <rect x="87" y="282" width="559" height="1" fill="#a8caff"/>
+      <rect x="87" y="291" width="559" height="1" fill="#a8caff"/>
+
+      <g font-style="italic">
+        <text x="87" y="338" font-size="28" font-weight="900">
+          <tspan fill="#0734d1">Codex</tspan><tspan fill="#111"> + </tspan><tspan fill="#098b12">MSN Messenger</tspan><tspan fill="#111"> = </tspan><tspan fill="#7d24bf">Codex Messenger !</tspan>
+        </text>
+        <text x="87" y="386" fill="#e31cc8" font-size="30" font-weight="900">All Codex functionality...</text>
+        <text x="87" y="421" fill="#e31cc8" font-size="30" font-weight="900">but with your childhood memories !</text>
+        <text x="87" y="456" fill="#0d2ad1" font-size="20" font-weight="900">you have lost your old friends, but now you can talk with your AI friends !</text>
+      </g>
+
+      <image href="./assets/codex-messenger-people.png" x="935" y="82" width="711" height="574" preserveAspectRatio="none" filter="url(#softBlueShadow)"/>
+
+      <g font-size="22" font-style="italic" fill="#111">
+        <use href="#starIcon" x="90" y="477" filter="url(#iconShadow)"/>
+        <text x="136" y="504">Classic look &amp; feel from the 2000s</text>
+        <g transform="translate(88 518) scale(.56)" filter="url(#iconShadow)">
+          <use href="#smallBuddies"/>
+        </g>
+        <text x="136" y="544">Private messaging like MSN</text>
+        <use href="#smileIcon" x="84" y="556" filter="url(#iconShadow)"/>
+        <text x="136" y="584">Emoticons, winks and more!</text>
+        <g transform="translate(86 596) scale(.78)" filter="url(#iconShadow)">
+          <use href="#boltIcon"/>
+        </g>
+        <text x="136" y="624">Lightweight and blazing fast</text>
+        <g transform="translate(84 635) scale(.75)" filter="url(#iconShadow)">
+          <use href="#lockIcon"/>
+        </g>
+        <text x="136" y="662">Secure, modern and Open Source</text>
+      </g>
+
+      <a class="download-link" href="./downloads/CodexMessenger.exe?v=0.1.4" download="CodexMessenger.exe" aria-label="Download Codex Messenger for Windows">
+        <rect class="focus-ring" x="542" y="468" width="458" height="82" rx="9"/>
+        <g transform="translate(542 468)" filter="url(#buttonShadow)">
+          <rect class="download-button" width="458" height="82" rx="9" fill="url(#downloadYellow)" stroke="url(#downloadStroke)" stroke-width="3"/>
+          <rect x="6" y="5" width="446" height="18" rx="9" fill="#fff" opacity=".48"/>
+          <rect x="7" y="64" width="444" height="11" rx="5" fill="#9d7100" opacity=".18"/>
+          <g clip-path="url(#downloadClip)">
+            <path class="gloss-pass" d="M-85 -12 L-20 -12 L132 96 L67 96 Z" fill="#fff" opacity=".45"/>
+          </g>
+          <use href="#downloadArrow" x="29" y="16"/>
+          <use href="#downloadArrow" x="380" y="16"/>
+          <text class="download-label" x="229" y="58" text-anchor="middle" font-family="Arial Black, Arial" font-size="52" font-style="italic" fill="#1e26de" stroke="#b9a5ff" stroke-width="1.1">DOWNLOAD</text>
+        </g>
+      </a>
+      <text x="772" y="606" text-anchor="middle" fill="#0861ff" font-size="24" font-style="italic">Get Codex Messenger Now !</text>
+
+      <g transform="translate(81 679)" filter="url(#panelShadow)">
+        <rect width="742" height="148" rx="7" fill="url(#panelFill)" stroke="#4f8a59" stroke-width="3"/>
+        <rect x="3" y="3" width="736" height="20" rx="6" fill="#fff" opacity=".42"/>
+        <line x1="193" y1="0" x2="193" y2="148" stroke="#c7d6c1"/>
+        <line x1="593" y1="0" x2="593" y2="148" stroke="#c7d6c1"/>
+        <g transform="translate(40 26)">
+          <circle cx="47" cy="45" r="42" fill="url(#openGreen)" stroke="#0d6617" stroke-width="2"/>
+          <circle cx="47" cy="45" r="13" fill="#fff"/>
+          <path d="M42 60 H53 L59 96 H36 Z" fill="#fff"/>
+          <text x="-6" y="104" font-family="Arial" font-size="27" fill="#111"><tspan font-size="34">open</tspan> source</text>
+          <text x="124" y="74" font-size="12" fill="#0d6617">TM</text>
+        </g>
+        <text x="251" y="48" fill="#0a8614" font-size="29" font-weight="900" font-style="italic">Open Source Project</text>
+        <text x="251" y="80" font-size="19" font-style="italic">Codex Messenger is 100% Open Source.</text>
+        <text x="251" y="106" font-size="19" font-style="italic">Check out the code, contribute and</text>
+        <text x="251" y="132" font-size="19" font-style="italic">help make it even better!</text>
+        <a class="source-link" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub">
+          <rect class="focus-ring" x="593" y="0" width="149" height="148"/>
+          <rect class="source-panel" x="593" y="0" width="149" height="148" fill="#f4faee"/>
+          <use href="#sourceDoc" x="617" y="43"/>
+          <text x="670" y="70" fill="#071fd0" font-size="17" font-style="italic" text-decoration="underline">View Source</text>
+          <text x="670" y="96" fill="#071fd0" font-size="17" font-style="italic" text-decoration="underline">on GitHub</text>
         </a>
-        <rect x="855" y="59" width="55" height="36" rx="9" fill="#fb1111"/><text x="883" y="87" fill="#fff" font-size="25" font-style="normal">▶</text><text x="963" y="82" text-decoration="underline">YouTube</text>
-        <rect x="1076" y="55" width="43" height="43" rx="10" fill="#d92c8e"/><circle cx="1097" cy="76" r="12" fill="none" stroke="#fff" stroke-width="4"/><circle cx="1110" cy="63" r="3" fill="#fff"/><text x="1179" y="82" text-decoration="underline">Instagram</text>
       </g>
-      <line x1="32" y1="104" x2="1356" y2="104" stroke="#d2d2d2"/>
-      <text x="694" y="128" text-anchor="middle" font-size="17">© 2000-2025 Codex Messenger Project. All rights reserved.</text>
-      <text x="694" y="151" text-anchor="middle" font-size="17">Bringing back the vibes. Powered by <tspan fill="#071fd0" font-weight="700" text-decoration="underline">Code</tspan>. <tspan fill="#de1e1e">♥</tspan></text>
-    </g>
-  </svg>
-  <div class="xp-taskbar" aria-hidden="true">
-    <a class="start" href="/"><span class="windows-mark"></span> start</a>
-    <div class="task"><span class="task-buddies"></span><span>Codex Messenger - H...</span></div>
-    <div class="tray-html">
-      <span class="tray-light"></span>
-      <span class="tray-light blue"></span>
-      <span class="tray-light green"></span>
-      <span>12:00 AM</span>
-    </div>
-  </div>
+
+      <g transform="translate(850 670)">
+        <rect width="755" height="182" rx="7" fill="url(#socialFill)" stroke="#95b2d8" stroke-width="2"/>
+        <rect x="3" y="3" width="749" height="22" rx="6" fill="#fff" opacity=".52"/>
+        <text x="378" y="39" text-anchor="middle" fill="#06158f" font-size="22" font-weight="700" font-style="italic">Developed with fun by Anis Ayari and Codex</text>
+        <line x1="147" y1="62" x2="147" y2="158" stroke="#c5c5c5"/>
+        <line x1="303" y1="62" x2="303" y2="158" stroke="#c5c5c5"/>
+        <line x1="459" y1="62" x2="459" y2="158" stroke="#c5c5c5"/>
+        <line x1="615" y1="62" x2="615" y2="158" stroke="#c5c5c5"/>
+
+        <a class="social-link" href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X Twitter">
+          <rect class="social-hit" x="0" y="54" width="147" height="111" fill="#fff" fill-opacity="0"/>
+          <rect x="42" y="73" width="50" height="50" rx="6" fill="#000" filter="url(#iconShadow)"/>
+          <text x="67" y="111" text-anchor="middle" fill="#fff" font-size="38">X</text>
+          <text x="67" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">X (Twitter)</text>
+        </a>
+
+        <a class="social-link" href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <rect class="social-hit" x="147" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
+          <rect x="196" y="74" width="49" height="49" rx="5" fill="#0a76b7" filter="url(#iconShadow)"/>
+          <text x="221" y="110" text-anchor="middle" fill="#fff" font-family="Arial" font-size="34" font-weight="800">in</text>
+          <text x="221" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">LinkedIn</text>
+        </a>
+
+        <a class="social-link" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <rect class="social-hit" x="303" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
+          <rect x="351" y="74" width="50" height="50" rx="6" fill="#111" filter="url(#iconShadow)"/>
+          <circle cx="376" cy="98" r="14" fill="#fff"/>
+          <rect x="363" y="97" width="26" height="19" rx="7" fill="#fff"/>
+          <circle cx="368" cy="93" r="5" fill="#111"/>
+          <circle cx="384" cy="93" r="5" fill="#111"/>
+          <path d="M363 82 L366 72 L372 82 M389 82 L386 72 L380 82" fill="#fff"/>
+          <text x="376" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">GitHub</text>
+        </a>
+
+        <a class="social-link" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+          <rect class="social-hit" x="459" y="54" width="156" height="111" fill="#fff" fill-opacity="0"/>
+          <rect x="507" y="78" width="60" height="42" rx="9" fill="#fb1111" filter="url(#iconShadow)"/>
+          <path d="M531 88 L531 111 L550 100 Z" fill="#fff"/>
+          <text x="537" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">YouTube</text>
+        </a>
+
+        <a class="social-link" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <rect class="social-hit" x="615" y="54" width="140" height="111" fill="#fff" fill-opacity="0"/>
+          <rect x="664" y="73" width="50" height="50" rx="12" fill="url(#igGrad)" filter="url(#iconShadow)"/>
+          <circle cx="689" cy="98" r="13" fill="none" stroke="#fff" stroke-width="4"/>
+          <circle cx="704" cy="83" r="4" fill="#fff"/>
+          <text x="689" y="154" text-anchor="middle" fill="#071fd0" font-size="18" font-style="italic" text-decoration="underline">Instagram</text>
+        </a>
+      </g>
+
+      <rect x="4" y="872" width="1664" height="65" fill="url(#footerBlue)" stroke="#0529b4" stroke-width="3"/>
+      <rect x="8" y="876" width="1656" height="12" fill="#fff" opacity=".16"/>
+      <text x="341" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8">&#169; 2000-2025 Codex Messenger Project. All rights reserved.</text>
+      <line x1="894" y1="892" x2="894" y2="918" stroke="#fff" stroke-width="2" opacity=".9"/>
+      <text x="930" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8">Bringing back the vibes. Powered by </text>
+      <text x="1247" y="912" fill="#fff" font-size="18" font-style="italic" text-decoration="underline" stroke="#001268" stroke-width=".8">Codex</text>
+      <text x="1310" y="912" fill="#ff3030" font-size="24" stroke="#001268" stroke-width=".8">&#10084;</text>
+    </svg>
+  </main>
 </body>
 </html>
