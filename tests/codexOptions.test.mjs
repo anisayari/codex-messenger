@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   codexApprovalOptions,
   codexCwdOptions,
+  codexModelOptions,
   codexSandboxOptions,
   defaultCodexOptions,
   normalizeCodexOptions,
@@ -12,6 +13,7 @@ import {
 import { appCopyFor, codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
 
 test("normalizes Codex option aliases used by saved settings", () => {
+  assert.deepEqual(codexModelOptions, [{ value: "", label: "Auto" }]);
   assert.deepEqual(normalizeCodexOptions({
     model: "gpt-5.4",
     reasoningEffort: "high",
@@ -34,6 +36,7 @@ test("normalizes Codex option aliases used by saved settings", () => {
     approvalPolicy: "always"
   }), {
     ...defaultCodexOptions,
+    model: "unknown",
     sandbox: "dangerFullAccess"
   });
 });

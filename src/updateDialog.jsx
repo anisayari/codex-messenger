@@ -68,6 +68,10 @@ export default function UpdateDialog({
   const frontProgress = progress?.target === "front" ? progress : null;
   const codexProgress = progress?.target === "codex" ? progress : null;
   const needsRestart = Boolean(progress?.needsRestart) && !progress?.quitStarted;
+  const frontReadyToInstall = Boolean(frontProgress?.needsRestart) && !frontProgress?.quitStarted;
+  const restartLabel = progress?.target === "front"
+    ? updateCopy.restartInstall || updateCopy.restart || "Redemarrer et installer"
+    : updateCopy.restart || "Redemarrer";
 
   return (
     <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
@@ -94,9 +98,15 @@ export default function UpdateDialog({
               <button
                 type="button"
                 onClick={() => front.updateAvailable ? onInstall("front") : onOpen("front")}
-                disabled={frontInstalling}
+                disabled={frontInstalling || frontReadyToInstall}
               >
-                {frontInstalling ? updateCopy.updating || "Update en cours..." : front.updateAvailable ? updateCopy.updateAutomatically || "Update automatiquement" : updateCopy.openReleases || "Ouvrir les releases"}
+                {frontInstalling
+                  ? updateCopy.updating || "Update en cours..."
+                  : frontReadyToInstall
+                    ? updateCopy.readyToInstall || "Telecharge, pret a installer"
+                    : front.updateAvailable
+                      ? updateCopy.updateAutomatically || "Update automatiquement"
+                      : updateCopy.openReleases || "Ouvrir les releases"}
               </button>
               <UpdateProgress progress={frontProgress} copy={copy} />
             </article>
@@ -121,7 +131,7 @@ export default function UpdateDialog({
             {checking ? updateCopy.checking || "Verification..." : updateCopy.check || "Verifier mise a jour"}
           </button>
           {needsRestart ? (
-            <button type="button" className="primary-footer-button" onClick={onRestart}>{updateCopy.restart || "Redemarrer"}</button>
+            <button type="button" className="primary-footer-button" onClick={() => onRestart(progress?.target)}>{restartLabel}</button>
           ) : null}
           <button type="button" onClick={onClose}>{commonCopy.close || "Fermer"}</button>
         </footer>

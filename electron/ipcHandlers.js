@@ -23,9 +23,14 @@ export function registerUpdateIpcHandlers({
     return updates.installCodexUpdate();
   });
 
-  ipcMain.handle("updates:restart", () => {
+  ipcMain.handle("updates:restart", async (_event, target) => {
+    const fallback = updates.hasPendingFrontUpdate?.() ? "front" : "codex";
+    const cleanTarget = assertEnum(target, ["front", "codex"], "target", fallback);
+    if (cleanTarget === "front") {
+      return updates.applyPendingFrontUpdate();
+    }
     restartApp();
-    return { ok: true };
+    return { ok: true, target: "codex", quitStarted: true };
   });
 }
 

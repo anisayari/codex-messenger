@@ -48,6 +48,7 @@ jobs:
         env:
           ELECTRON_DISABLE_SANDBOX: 1
         run: |
+          npm run audit:security
           npm run test
           npm run test:release
           npm run build

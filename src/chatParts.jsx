@@ -46,7 +46,7 @@ export function ApprovalRequestsPanel({ requests, onRespond }) {
   );
 }
 
-export function Message({ message, extractWinkFromText, renderFormattedMessageText }) {
+export function Message({ message, extractWinkFromText, renderFormattedMessageText, onOpenAttachment }) {
   if (message.itemType === "commandExecution") {
     const commandText = message.command || message.text || "Commande Codex";
     const outputText = message.text && message.text !== message.command
@@ -87,17 +87,48 @@ export function Message({ message, extractWinkFromText, renderFormattedMessageTe
   }
   const parsed = message.wink ? { text: message.text, wink: message.wink } : extractWinkFromText(message.text);
   const wink = message.wink ?? parsed.wink;
+  const imageAttachments = [
+    ...(Array.isArray(message.images) ? message.images : []),
+    message.attachment?.type === "image" ? message.attachment : null
+  ].filter((attachment, index, all) => attachment?.src && all.findIndex((candidate) => candidate?.src === attachment.src) === index);
+  const imageCommand = message.imageCommand ?? null;
   return (
     <article className={message.from === "me" ? "message me-message" : "message"}>
       <header><strong>{message.author}</strong><time>{message.time}</time></header>
-      <div className="message-content">{renderFormattedMessageText(parsed.text)}</div>
+      {imageCommand ? (
+        <details className={`codex-item command image-generation-call ${imageCommand.status ?? ""}`}>
+          <summary>
+            <span className="command-summary-title">{imageCommand.command || "image_generation_call"}</span>
+            <span className="command-summary-status">{imageCommand.status || "pending"}</span>
+            <time>{message.time}</time>
+          </summary>
+          {!message.attachment?.src ? <small>Generation d'image en cours...</small> : null}
+          {imageCommand.path ? <small>{imageCommand.path}</small> : null}
+          {imageCommand.prompt ? <pre>{imageCommand.prompt}</pre> : null}
+        </details>
+      ) : null}
+      {parsed.text ? <div className="message-content">{renderFormattedMessageText(parsed.text)}</div> : null}
       {wink ? (
         <div className="message-wink">
           <img src={wink.src} alt="" draggable="false" />
           <span>{wink.label}</span>
         </div>
       ) : null}
-      {message.attachment?.type === "image" ? <img className="message-attachment" src={message.attachment.src} alt={message.attachment.name ?? ""} /> : null}
+      {imageAttachments.length ? (
+        <div className={message.itemType === "imageGeneration" || message.itemType === "image_generation_call" ? "message-gallery generated" : "message-gallery"}>
+          {imageAttachments.map((attachment, index) => (
+            <button
+              type="button"
+              className="message-image-link"
+              key={`${attachment.src}-${index}`}
+              onClick={() => onOpenAttachment?.(attachment)}
+              title={attachment.prompt || attachment.name || "Image"}
+            >
+              <img className="message-attachment" src={attachment.src} alt={attachment.name ?? "Image"} loading="lazy" draggable="false" />
+            </button>
+          ))}
+        </div>
+      ) : null}
       {message.attachment?.type === "audio" ? <audio className="message-audio" controls src={message.attachment.src} /> : null}
       {message.attachment?.type === "file" ? <small className="message-file">{message.attachment.name}</small> : null}
     </article>

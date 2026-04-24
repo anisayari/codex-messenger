@@ -194,10 +194,12 @@ export function createUpdateService({
   codexStatus,
   runCodexCommand,
   quitApplication,
-  sendProgress
+  sendProgress,
+  logDebug = () => {}
 }) {
   let updateCheckCache = null;
   let updateCheckPromise = null;
+  let pendingFrontUpdate = null;
   const appVersion = () => app.getVersion();
 
   async function latestFrontRelease() {
@@ -379,6 +381,7 @@ export function createUpdateService({
       stdio: "ignore"
     });
     child.unref();
+    logDebug("update.front.installer.scheduled", { platform: "win32", installerPath, scriptPath, latestVersion });
     setTimeout(() => quitApplication(), 500);
     return {
       quitStarted: true,
@@ -443,10 +446,61 @@ open "$TARGET_APP"
       stdio: "ignore"
     });
     child.unref();
+    logDebug("update.front.installer.scheduled", { platform: "darwin", dmgPath, targetApp, scriptPath, latestVersion });
     setTimeout(() => quitApplication(), 500);
     return {
       quitStarted: true,
       message: `Mise a jour ${latestVersion} telechargee. Codex Messenger va se fermer, installer l'app, puis se relancer.`
+    };
+  }
+
+  function canPrepareFrontUpdateForRestart() {
+    return app.isPackaged && ["darwin", "win32"].includes(process.platform);
+  }
+
+  function frontUpdateReadyMessage(latestVersion) {
+    return `Mise a jour ${latestVersion} telechargee et verifiee. Clique sur Redemarrer et installer quand tu es pret.`;
+  }
+
+  function hasPendingFrontUpdate() {
+    return Boolean(pendingFrontUpdate);
+  }
+
+  async function applyPendingFrontUpdate() {
+    if (!pendingFrontUpdate) {
+      throw new Error("Aucune mise a jour Codex Messenger n'est prete a installer.");
+    }
+    const pending = pendingFrontUpdate;
+    await fs.access(pending.filePath);
+    const message = `Installation de la mise a jour ${pending.latestVersion}. Codex Messenger va se fermer puis se relancer.`;
+    logDebug("update.front.apply.requested", {
+      latestVersion: pending.latestVersion,
+      assetName: pending.assetName,
+      filePath: pending.filePath,
+      sha256: pending.sha256
+    });
+    sendProgress({
+      target: "front",
+      phase: "restarting",
+      percent: 100,
+      latestVersion: pending.latestVersion,
+      assetName: pending.assetName,
+      quitStarted: true,
+      message
+    });
+    const launch = await launchDownloadedFrontUpdate(pending.filePath, pending.latestVersion);
+    pendingFrontUpdate = null;
+    return {
+      ok: true,
+      target: "front",
+      latestVersion: pending.latestVersion,
+      assetName: pending.assetName,
+      filePath: pending.filePath,
+      bytes: pending.bytes,
+      sha256: pending.sha256,
+      quitStarted: launch.quitStarted,
+      needsRestart: !launch.quitStarted,
+      message: launch.message || message
     };
   }
 
@@ -462,6 +516,7 @@ open "$TARGET_APP"
   }
 
   async function installFrontUpdate() {
+    pendingFrontUpdate = null;
     sendProgress({ target: "front", phase: "checking", indeterminate: true, message: "Verification de la version Codex Messenger..." });
     const before = await checkFrontUpdate();
     if (!before.updateAvailable) {
@@ -500,6 +555,55 @@ open "$TARGET_APP"
         ...progress
       })
     });
+    logDebug("update.front.downloaded", {
+      latestVersion,
+      assetName: asset.name,
+      filePath: download.path,
+      bytes: download.bytes,
+      sha256: download.sha256
+    });
+    if (canPrepareFrontUpdateForRestart()) {
+      pendingFrontUpdate = {
+        latestVersion,
+        assetName: asset.name,
+        filePath: download.path,
+        bytes: download.bytes,
+        sha256: download.sha256,
+        createdAt: new Date().toISOString()
+      };
+      const message = frontUpdateReadyMessage(latestVersion);
+      const result = {
+        ok: true,
+        target: "front",
+        before,
+        latestVersion,
+        assetName: asset.name,
+        filePath: download.path,
+        bytes: download.bytes,
+        sha256: download.sha256,
+        quitStarted: false,
+        needsRestart: true,
+        message
+      };
+      sendProgress({
+        target: "front",
+        phase: "ready",
+        percent: 100,
+        assetName: asset.name,
+        latestVersion,
+        needsRestart: true,
+        quitStarted: false,
+        message
+      });
+      logDebug("update.front.ready", {
+        latestVersion,
+        assetName: asset.name,
+        filePath: download.path,
+        sha256: download.sha256
+      });
+      return result;
+    }
+
     sendProgress({ target: "front", phase: "installing", percent: 100, assetName: asset.name, latestVersion, message: "Preparation de l'installation..." });
     const launch = await launchDownloadedFrontUpdate(download.path, latestVersion);
     updateCheckCache = null;
@@ -523,6 +627,8 @@ open "$TARGET_APP"
   return {
     checkUpdates,
     installCodexUpdate,
-    installFrontUpdate
+    installFrontUpdate,
+    applyPendingFrontUpdate,
+    hasPendingFrontUpdate
   };
 }

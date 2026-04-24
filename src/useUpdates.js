@@ -81,6 +81,40 @@ export function useUpdates({ api, appVersion = "", userAgent = "", initialCheck 
     }
   }
 
+  async function restartForUpdate(target = updateProgress?.target || "codex") {
+    const cleanTarget = target === "front" ? "front" : "codex";
+    const message = cleanTarget === "front"
+      ? "Installation de la mise a jour Codex Messenger..."
+      : "Redemarrage de Codex Messenger...";
+    setInstallingUpdateTarget(cleanTarget);
+    setUpdateActionMessage(message);
+    setUpdateProgress((current) => ({
+      ...(current ?? {}),
+      target: cleanTarget,
+      phase: "restarting",
+      percent: 100,
+      quitStarted: true,
+      needsRestart: false,
+      message
+    }));
+    try {
+      return await api.restartForUpdate(cleanTarget);
+    } catch (error) {
+      const errorMessage = error.message || "Redemarrage impossible.";
+      setInstallingUpdateTarget("");
+      setUpdateActionMessage(errorMessage);
+      setUpdateProgress((current) => ({
+        ...(current ?? {}),
+        target: cleanTarget,
+        phase: "error",
+        quitStarted: false,
+        needsRestart: true,
+        message: errorMessage
+      }));
+      return { ok: false, error: errorMessage };
+    }
+  }
+
   return {
     updateDialogOpen,
     setUpdateDialogOpen,
@@ -92,6 +126,6 @@ export function useUpdates({ api, appVersion = "", userAgent = "", initialCheck 
     checkForUpdates,
     openUpdateTarget: (target) => api.openUpdateTarget(target),
     installUpdateTarget,
-    restartForUpdate: () => api.restartForUpdate()
+    restartForUpdate
   };
 }

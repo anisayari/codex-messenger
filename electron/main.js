@@ -7,6 +7,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { defaultCodexOptions, normalizeCodexOptions, sandboxPolicyForMode } from "../shared/codexOptions.js";
+import { codexImageFromItem, isCodexImageItem } from "../shared/codexImages.js";
 import { codexLoginStatus, findCodexCommand, findNpmCommand, installCodexCli, nodeDownloadUrl, quoteWindowsArg, spawnCommand } from "../shared/codexSetup.js";
 import { codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
 import { newestThreadForProject, threadTimeMs } from "../shared/threadSelection.js";
@@ -184,6 +185,7 @@ const unreadByContact = new Map();
 const recentIncomingByContact = new Map();
 const knownThreads = new Map();
 const threadItemsByThread = new Map();
+const deliveredItemsByThread = new Map();
 const activeTurnByThread = new Map();
 const activeTurnMetaByThread = new Map();
 const approvalRequests = new Map();
@@ -293,6 +295,17 @@ function logDebug(event, details = {}) {
   fs.appendFile(logFilePath(), `${line}\n`, "utf8").catch(() => {});
 }
 
+function safeSend(win, channel, payload) {
+  if (!win || win.isDestroyed() || win.webContents?.isDestroyed?.()) return false;
+  try {
+    win.webContents.send(channel, payload);
+    return true;
+  } catch (error) {
+    logDebug("window.send.error", { channel, error: error.message });
+    return false;
+  }
+}
+
 function openExternalUrl(url) {
   if (!isSafeExternalUrl(url)) {
     logDebug("security.openExternal.blocked", { url });
@@ -308,7 +321,7 @@ function sendUpdateProgress(payload = {}) {
     ...payload
   };
   for (const win of BrowserWindow.getAllWindows()) {
-    if (!win.isDestroyed()) win.webContents.send("updates:progress", eventPayload);
+    safeSend(win, "updates:progress", eventPayload);
   }
 }
 
@@ -942,7 +955,8 @@ const updates = createUpdateService({
   codexStatus,
   runCodexCommand,
   quitApplication,
-  sendProgress: sendUpdateProgress
+  sendProgress: sendUpdateProgress,
+  logDebug
 });
 
 const notifications = createNotificationService({
@@ -1350,6 +1364,32 @@ function messagesFromTurns(turns, contact) {
       } else if (["agentmessage", "agent_message", "assistant", "assistant_message"].includes(type)) {
         const text = textFromItem(item);
         if (text) messages.push({ id: item.id ?? `agent-${messages.length}`, from: "them", author, text, time: timeFromHistoryItem(timeSource), itemType: item.type });
+      } else if (isCodexImageItem(item)) {
+        const image = codexImageFromItem(item);
+        if (image) {
+          messages.push({
+            id: item.id ?? `image-${messages.length}`,
+            from: "them",
+            author,
+            text: image.text,
+            time: timeFromHistoryItem(timeSource),
+            itemType: item.type,
+            attachment: image.src ? {
+              type: "image",
+              src: image.src,
+              name: image.name,
+              path: image.path,
+              prompt: image.prompt,
+              status: image.status
+            } : null,
+            imageCommand: image.kind === "imageGeneration" ? {
+              command: "image_generation_call",
+              status: image.status,
+              prompt: image.prompt,
+              path: image.path
+            } : null
+          });
+        }
       } else if (type === "commandexecution") {
         const output = item.aggregatedOutput ? `\n\n${item.aggregatedOutput}` : "";
         messages.push({
@@ -1658,20 +1698,20 @@ function switchChatWindow(event, contactId) {
 function sendToChat(contactId, channel, payload) {
   const win = windows.get(`chat:${contactId}`);
   if (!win || win.isDestroyed()) return;
-  win.webContents.send(channel, payload);
+  safeSend(win, channel, payload);
 }
 
 function sendToOpenChats(channel, payload) {
   for (const [key, win] of windows) {
     if (!key.startsWith("chat:") || !win || win.isDestroyed()) continue;
-    win.webContents.send(channel, payload);
+    safeSend(win, channel, payload);
   }
 }
 
 function sendToMain(channel, payload) {
   const win = windows.get("main");
   if (!win || win.isDestroyed()) return;
-  win.webContents.send(channel, payload);
+  safeSend(win, channel, payload);
 }
 
 function clearTurnTimers(meta) {
@@ -1733,6 +1773,8 @@ function trackActiveTurn(threadId, contactId, turnId) {
     turnId: cleanTurnId,
     startedAt: Date.now(),
     lastActivityAt: Date.now(),
+    visibleOutputCount: 0,
+    warningKeys: new Set(),
     noResponseTimer: null,
     stalledTimer: null
   };
@@ -1754,10 +1796,29 @@ function noteTurnActivity(threadId) {
   }
 }
 
+function noteVisibleTurnOutput(threadId) {
+  const meta = activeTurnMetaByThread.get(threadId);
+  if (meta) meta.visibleOutputCount = (meta.visibleOutputCount ?? 0) + 1;
+  noteTurnActivity(threadId);
+}
+
 function clearActiveTurn(threadId) {
   const meta = activeTurnMetaByThread.get(threadId);
   clearTurnTimers(meta);
   activeTurnMetaByThread.delete(threadId);
+}
+
+function mcpConnectorNameFromWarning(message) {
+  const url = String(message || "").match(/https?:\/\/[^"\\,\s)]+/i)?.[0];
+  if (!url) return "";
+  try {
+    const host = new URL(url).hostname.replace(/^mcp\./i, "").replace(/^www\./i, "");
+    const name = host.split(".")[0] || "";
+    if (!name) return "";
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  } catch {
+    return "";
+  }
 }
 
 function codexRuntimeWarnings(stderrText) {
@@ -1785,10 +1846,11 @@ function codexRuntimeWarnings(stderrText) {
         text: "Codex n'arrive pas a rafraichir la liste des modeles pour l'instant. Le message reste envoye, mais la reponse peut etre retardee."
       });
     } else if (/invalid_token|Missing or invalid access token/i.test(message) && /mcp|oauth|Bearer/i.test(message)) {
+      const connectorName = mcpConnectorNameFromWarning(message);
       warnings.push({
-        key: "mcp-invalid-token",
+        key: `mcp-invalid-token:${connectorName || "unknown"}`,
         kind: "warning",
-        text: "Un connecteur MCP configure dans Codex a un token expire ou invalide. Si la reponse bloque, desactive ou reconnecte ce connecteur dans Codex."
+        text: `${connectorName ? `Le connecteur MCP ${connectorName}` : "Un connecteur MCP"} configure dans Codex a un token expire ou invalide. Si la reponse bloque, desactive ou reconnecte ce connecteur dans Codex.`
       });
     }
   }
@@ -1804,6 +1866,15 @@ function logCodexRuntimeDiagnostics(stderrText) {
       kind: warning.kind,
       text: warning.text
     });
+    for (const meta of activeTurnMetaByThread.values()) {
+      if (!meta?.contactId || meta.warningKeys?.has(warning.key)) continue;
+      meta.warningKeys?.add(warning.key);
+      sendToChat(meta.contactId, "codex:status-note", {
+        contactId: meta.contactId,
+        text: warning.text,
+        kind: warning.kind
+      });
+    }
   }
 }
 
@@ -1816,6 +1887,28 @@ function storeThreadItem(threadId, item) {
   }
   items.set(item.id, item);
   while (items.size > 250) items.delete(items.keys().next().value);
+}
+
+function deliveredThreadItems(threadId) {
+  if (!threadId) return null;
+  let items = deliveredItemsByThread.get(threadId);
+  if (!items) {
+    items = new Set();
+    deliveredItemsByThread.set(threadId, items);
+  }
+  return items;
+}
+
+function threadItemWasDelivered(threadId, itemId) {
+  if (!threadId || !itemId) return false;
+  return deliveredItemsByThread.get(threadId)?.has(itemId) === true;
+}
+
+function markThreadItemDelivered(threadId, itemId) {
+  if (!threadId || !itemId) return;
+  const items = deliveredThreadItems(threadId);
+  items.add(itemId);
+  while (items.size > 300) items.delete(items.values().next().value);
 }
 
 function threadItem(threadId, itemId) {
@@ -2151,9 +2244,102 @@ function textFromCompletedItem(item) {
   return "";
 }
 
+function isAgentMessageItem(item) {
+  const type = String(item?.type ?? "").toLowerCase();
+  return ["agentmessage", "agent_message", "assistant", "assistant_message"].includes(type);
+}
+
 function isUserMessageItem(item) {
   const type = String(item?.type ?? "").toLowerCase();
   return ["usermessage", "user_message", "user"].includes(type);
+}
+
+function renderedMessageFromThreadItem(item, contact, completedAt = Date.now() / 1000) {
+  const [renderedItem] = messagesFromTurns([{ items: [item], completedAt }], contact);
+  return renderedItem ?? null;
+}
+
+function deliverStartedThreadItemToChat(threadId, contactId, item, startedAt = Date.now() / 1000) {
+  if (!threadId || !contactId || !item || !isCodexImageItem(item)) return false;
+  const contact = contactFor(contactId);
+  const renderedItem = renderedMessageFromThreadItem(item, contact, startedAt);
+  if (!renderedItem) return false;
+  sendToChat(contactId, "codex:item-started", {
+    contactId,
+    message: {
+      ...renderedItem,
+      pending: true
+    }
+  });
+  noteTurnActivity(threadId);
+  logDebug("codex.item.started.delivered", { threadId, contactId, itemId: item.id ?? "", type: item.type });
+  return true;
+}
+
+function deliverThreadItemToChat(threadId, contactId, item, source = "item/completed", completedAt = Date.now() / 1000) {
+  if (!threadId || !contactId || !item || isUserMessageItem(item)) return false;
+  const itemId = item.id ?? "";
+  if (itemId && threadItemWasDelivered(threadId, itemId)) return false;
+
+  const text = textFromCompletedItem(item);
+  if (text) {
+    markThreadItemDelivered(threadId, itemId);
+    registerIncomingMessage(contactId, text);
+    sendToChat(contactId, "codex:completed-item", { contactId, text });
+    noteVisibleTurnOutput(threadId);
+    logDebug("codex.item.delivered", { source, threadId, itemId, type: item.type, channel: "codex:completed-item" });
+    return true;
+  }
+
+  const contact = contactFor(contactId);
+  const renderedItem = renderedMessageFromThreadItem(item, contact, completedAt);
+  if (!renderedItem) return false;
+  markThreadItemDelivered(threadId, itemId);
+  registerIncomingMessage(contactId, renderedItem.text || renderedItem.command || renderedItem.itemType || "Element Codex");
+  if (isAgentMessageItem(item)) {
+    sendToChat(contactId, "codex:completed-item", { contactId, text: renderedItem.text });
+  } else {
+    sendToChat(contactId, "codex:item-completed", { contactId, message: renderedItem });
+  }
+  noteVisibleTurnOutput(threadId);
+  logDebug("codex.item.delivered", { source, threadId, itemId, type: item.type, channel: isAgentMessageItem(item) ? "codex:completed-item" : "codex:item-completed" });
+  return true;
+}
+
+function deliverTurnItemsToChat(threadId, contactId, turn, source = "turn/completed") {
+  if (!threadId || !contactId || !turn?.items?.length) return 0;
+  let deliveredCount = 0;
+  const completedAt = turn.completedAt ?? turn.updatedAt ?? Date.now() / 1000;
+  for (const item of turn.items) {
+    storeThreadItem(threadId, item);
+    if (deliverThreadItemToChat(threadId, contactId, item, source, completedAt)) deliveredCount += 1;
+  }
+  return deliveredCount;
+}
+
+function notifyNoVisibleTurnOutput(contactId, threadId, turnId) {
+  const text = "Codex a termine le tour, mais app-server n'a renvoye aucun message affichable. Regarde le log codex-messenger.log pour ce thread.";
+  logDebug("codex.turn.no-visible-output", { contactId, threadId, turnId, text });
+  sendToChat(contactId, "codex:status-note", { contactId, text, kind: "warning" });
+}
+
+async function recoverCompletedTurnOutput(threadId, contactId, turnId, hadVisibleOutput) {
+  try {
+    const result = await codex.listThreadTurns(threadId, { limit: 5, sortDirection: "desc" });
+    const turns = result?.data ?? [];
+    const turn = turns.find((item) => item.id === turnId) ?? turns[0];
+    const deliveredCount = deliverTurnItemsToChat(threadId, contactId, turn, "thread/turns/list");
+    if (!deliveredCount && !hadVisibleOutput) notifyNoVisibleTurnOutput(contactId, threadId, turnId);
+  } catch (error) {
+    logDebug("codex.turn.recover-output.error", { contactId, threadId, turnId, error: error.message });
+    if (!hadVisibleOutput) {
+      sendToChat(contactId, "codex:status-note", {
+        contactId,
+        text: `Codex a termine sans message affichable et la relecture du tour a echoue: ${error.message}`,
+        kind: "warning"
+      });
+    }
+  }
 }
 
 codex.on("request", (message) => {
@@ -2202,38 +2388,45 @@ codex.on("notification", (message) => {
   }
 
   if (message.method === "item/started") {
-    storeThreadItem(message.params?.threadId, message.params?.item);
+    const threadId = message.params?.threadId;
+    const item = message.params?.item;
+    storeThreadItem(threadId, item);
+    const contactId = contactByThread.get(threadId);
+    if (contactId) deliverStartedThreadItemToChat(threadId, contactId, item);
     return;
   }
 
   if (message.method === "item/completed") {
-    storeThreadItem(message.params?.threadId, message.params?.item);
-    noteTurnActivity(message.params?.threadId);
-    const contactId = contactByThread.get(message.params.threadId);
-    if (isUserMessageItem(message.params?.item)) return;
-    const text = textFromCompletedItem(message.params.item);
-    if (contactId && text) {
-      registerIncomingMessage(contactId, text);
-      sendToChat(contactId, "codex:completed-item", { contactId, text });
-    } else if (contactId && message.params?.item) {
-      const contact = contactFor(contactId);
-      const [renderedItem] = messagesFromTurns([{ items: [message.params.item], completedAt: Date.now() / 1000 }], contact);
-      if (renderedItem) sendToChat(contactId, "codex:item-completed", { contactId, message: renderedItem });
-    }
+    const threadId = message.params?.threadId;
+    const item = message.params?.item;
+    storeThreadItem(threadId, item);
+    noteTurnActivity(threadId);
+    const contactId = contactByThread.get(threadId);
+    if (contactId) deliverThreadItemToChat(threadId, contactId, item, "item/completed");
     return;
   }
 
   if (message.method === "turn/completed") {
-    const contactId = contactByThread.get(message.params.threadId);
-    if (message.params?.threadId) activeTurnByThread.delete(message.params.threadId);
-    if (message.params?.threadId) clearActiveTurn(message.params.threadId);
+    const threadId = message.params?.threadId;
+    const turnId = message.params?.turn?.id;
+    const contactId = contactByThread.get(threadId);
+    const activeMeta = activeTurnMetaByThread.get(threadId);
+    const hadVisibleOutput = Boolean(activeMeta?.visibleOutputCount);
+    const deliveredCount = contactId ? deliverTurnItemsToChat(threadId, contactId, message.params?.turn, "turn/completed") : 0;
+    if (threadId) activeTurnByThread.delete(threadId);
+    if (threadId) clearActiveTurn(threadId);
     logDebug("codex.turn.completed", {
-      threadId: message.params?.threadId,
-      turnId: message.params?.turn?.id,
+      threadId,
+      turnId,
       status: message.params?.turn?.status,
-      error: message.params?.turn?.error
+      error: message.params?.turn?.error,
+      deliveredCount,
+      hadVisibleOutput
     });
     if (contactId) {
+      if (!deliveredCount && !hadVisibleOutput) {
+        recoverCompletedTurnOutput(threadId, contactId, turnId, hadVisibleOutput);
+      }
       sendToChat(contactId, "codex:done", { contactId });
       sendToMain("conversation:finished", { contactId });
     }
@@ -2395,6 +2588,7 @@ registerUpdateIpcHandlers({
   frontReleasesUrl,
   codexNpmUrl,
   restartApp: () => {
+    logDebug("update.restart.requested", { target: "codex" });
     app.relaunch();
     quitApplication();
   }
@@ -2437,10 +2631,21 @@ ipcMain.handle("settings:set", async (_event, nextSettings = {}) => ({
   codexStatus: await codexStatus(nextSettings.codexPath)
 }));
 
-ipcMain.handle("models:list", async () => ({
-  ok: true,
-  models: codexServerIsActive() ? await codex.listModels() : []
-}));
+ipcMain.handle("models:list", async () => {
+  try {
+    return {
+      ok: true,
+      models: await codex.listModels()
+    };
+  } catch (error) {
+    logDebug("codex.models.list.error", { error: error.message });
+    return {
+      ok: false,
+      models: [],
+      error: error.message
+    };
+  }
+});
 
 ipcMain.handle("contacts:create-agent", async (_event, draft = {}) => {
   const current = await loadSettings();

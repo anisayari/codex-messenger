@@ -30,8 +30,15 @@ assert.equal(packageLock.packages[""].version, packageJson.version, "package-loc
 
 assertIncludes("README.md", releaseTag);
 assertIncludes("README.md", packageJson.version);
+assertIncludes("README.md", "actions/workflows/ci.yml/badge.svg");
+assertIncludes("README.md", "actions/workflows/codeql.yml/badge.svg");
+assertIncludes("README.md", "actions/workflows/dependency-review.yml/badge.svg");
+assertIncludes("README.md", "npm run audit:security");
 assertIncludes("codexmessenger.net/index.html", releaseTag);
 assertIncludes("codexmessenger.net/index.html", `?v=${releaseTag}`);
+
+assertIncludes("SECURITY.md", "Reporting a Vulnerability");
+assertIncludes(".github/dependabot.yml", "package-ecosystem: \"npm\"");
 
 const main = read("electron/main.js");
 const appServerClient = read("electron/codexAppServerClient.js");
@@ -49,7 +56,14 @@ assert.equal((siteHtml.match(/CodexMessenger-mac-arm64\.dmg\?v=/g) || []).length
 assert.ok(!siteHtml.includes("v0.0.2.3"), "site must not keep stale release tags");
 
 const workflow = read(".github/workflows/deploy-codexmessenger-net.yml");
+const ciWorkflow = read(".github/workflows/ci.yml");
+const codeqlWorkflow = read(".github/workflows/codeql.yml");
+const dependencyReviewWorkflow = read(".github/workflows/dependency-review.yml");
+assert.ok(ciWorkflow.includes("npm run audit:security"), "CI workflow must run npm security audit");
+assert.ok(codeqlWorkflow.includes("github/codeql-action/analyze"), "CodeQL workflow must run GitHub code scanning");
+assert.ok(dependencyReviewWorkflow.includes("actions/dependency-review-action"), "dependency review workflow must inspect PR dependency changes");
 assert.ok(workflow.includes("Release preflight"), "deploy workflow must run release preflight before deployment");
+assert.ok(workflow.includes("npm run audit:security"), "deploy workflow must run npm security audit before deployment");
 assert.ok(workflow.includes("npm run test:release"), "deploy workflow must verify release metadata");
 assert.ok(workflow.includes("npm run test"), "deploy workflow must run API/formatting tests");
 assert.ok(workflow.includes("ELECTRON_DISABLE_SANDBOX: 1"), "deploy workflow must disable Electron sandbox only for Linux smoke tests");

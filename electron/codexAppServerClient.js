@@ -294,7 +294,8 @@ export class CodexAppServerClient extends EventEmitter {
     do {
       const result = await this.request("model/list", {
         cursor,
-        limit: 100
+        limit: 100,
+        includeHidden: false
       });
       data.push(...(result.data ?? []));
       cursor = result.nextCursor ?? null;

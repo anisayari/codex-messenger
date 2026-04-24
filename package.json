@@ -1,6 +1,6 @@
 {
   "name": "codex-messenger",
-  "version": "0.0.2-6",
+  "version": "0.0.2-7",
   "description": "MSN Messenger-inspired Electron desktop client for running Codex locally.",
   "author": "Anis AYARI",
   "license": "MIT",
@@ -13,8 +13,9 @@
     "electron:start": "npm run build && electron .",
     "electron:smoke": "npm run build && electron . --smoke-test",
     "test": "node --test tests/*.test.mjs",
+    "audit:security": "npm audit --audit-level=moderate",
     "test:release": "node scripts/release-check.mjs",
-    "ci": "npm run test && npm run test:release && npm run build && npm run electron:smoke",
+    "ci": "npm run audit:security && npm run test && npm run test:release && npm run build && npm run electron:smoke",
     "check:codex": "node scripts/check-codex.mjs",
     "setup:codex": "node scripts/bootstrap-codex-env.mjs --ensure",
     "setup:codex:check": "node scripts/bootstrap-codex-env.mjs --check",

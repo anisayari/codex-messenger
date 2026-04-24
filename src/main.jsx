@@ -36,6 +36,7 @@ import {
 import { playNewMessage, playSoundKey, playWink, playWizz, soundCatalog } from "./soundEffects.js";
 import { extractWinkFromText, winkCatalog } from "./winks.js";
 import UpdateDialog from "./updateDialog.jsx";
+import CodexConfigurationDialog from "./codexConfigurationDialog.jsx";
 import Composer from "./composer.jsx";
 import { ApprovalRequestsPanel, Message } from "./chatParts.jsx";
 import GamesPanel from "./gamesPanel.jsx";
@@ -55,6 +56,7 @@ import RosterView from "./rosterView.jsx";
 import { useCodexEvents } from "./useCodexEvents.js";
 import { usePromptDialog } from "./usePromptDialog.jsx";
 import { useUpdates } from "./useUpdates.js";
+import { versionLabel } from "./versionLabel.js";
 import { brandPeopleLogo, Logo, Menu, ResizeGrip, Titlebar } from "./windowChrome.jsx";
 import "./styles.css";
 
@@ -221,6 +223,7 @@ function uniqueOptions(options) {
 
 function codexModelMenuOptions(models = [], selectedValue = "") {
   const dynamicOptions = models
+    .filter((model) => model?.hidden !== true)
     .map((model) => {
       const value = codexModelValue(model);
       if (!value) return null;
@@ -230,7 +233,7 @@ function codexModelMenuOptions(models = [], selectedValue = "") {
   const selectedOption = selectedValue && !dynamicOptions.some((option) => option.value === selectedValue)
     ? [{ value: selectedValue, label: selectedValue }]
     : [];
-  return uniqueOptions([codexModelOptions[0], ...selectedOption, ...dynamicOptions, ...codexModelOptions.slice(1)]);
+  return uniqueOptions([codexModelOptions[0], ...selectedOption, ...dynamicOptions]);
 }
 
 function codexReasoningMenuOptions(models = [], selectedModel = "", selectedReasoning = "") {
@@ -281,10 +284,6 @@ function normalizeMessengerSettings(settings = {}) {
 
 function hasAvailableUpdates(updateState) {
   return Boolean(updateState?.front?.updateAvailable || updateState?.codex?.updateAvailable);
-}
-
-function versionLabel(value, unknown = "inconnue") {
-  return String(value || unknown);
 }
 
 function updateLineState(item, copy = appCopyFor("fr")) {
@@ -1495,6 +1494,7 @@ function ChatWindow({ bootstrap }) {
   const [conversationZoom, setConversationZoom] = useState(1);
   const [textStyle, setTextStyle] = useState(() => textStyleForContact(bootstrap.settings, contact.id));
   const [openFlyout, setOpenFlyout] = useState("");
+  const [configurationOpen, setConfigurationOpen] = useState(false);
   const [flyoutPosition, setFlyoutPosition] = useState({ left: 8, top: 88, arrowX: 24, placement: "below" });
   const [activeGame, setActiveGame] = useState("morpion");
   const [cameraStream, setCameraStream] = useState(null);
@@ -1579,6 +1579,10 @@ function ChatWindow({ bootstrap }) {
     () => codexReasoningMenuOptions(codexModels, codexOptions.model, codexOptions.reasoningEffort),
     [codexModels, codexOptions.model, codexOptions.reasoningEffort]
   );
+  const reasoningDialogOptions = useMemo(() => ({
+    current: reasoningMenuOptions,
+    forModel: (model) => codexReasoningMenuOptions(codexModels, model, codexOptions.reasoningEffort)
+  }), [codexModels, codexOptions.reasoningEffort, reasoningMenuOptions]);
   const codexOptionsSummary = useMemo(() => (
     [
       optionLabel(modelMenuOptions, codexOptions.model),
@@ -1624,6 +1628,7 @@ function ChatWindow({ bootstrap }) {
       window.clearTimeout(deltaFlushTimerRef.current);
       deltaFlushTimerRef.current = null;
     }
+    setConfigurationOpen(false);
   }, [contact.id, contact.threadId]);
 
   useEffect(() => {
@@ -1698,6 +1703,7 @@ function ChatWindow({ bootstrap }) {
     let alive = true;
     api.listCodexModels()
       .then((result) => {
+        if (!result?.ok) throw new Error(result?.error || "Modeles Codex indisponibles");
         if (alive) setCodexModels(Array.isArray(result?.models) ? result.models : []);
       })
       .catch(() => {
@@ -1707,6 +1713,14 @@ function ChatWindow({ bootstrap }) {
       alive = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!codexOptions.model || !codexModels.length) return;
+    const selectedModelExists = codexModels
+      .filter((model) => model?.hidden !== true)
+      .some((model) => codexModelValue(model) === codexOptions.model);
+    if (!selectedModelExists) saveContactCodexOptions({ model: "", reasoningEffort: "" });
+  }, [codexModels, codexOptions.model]);
 
   useEffect(() => {
     setChatSettings(bootstrap.settings ?? {});
@@ -1920,6 +1934,31 @@ function ChatWindow({ bootstrap }) {
       setTyping(false);
       setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
     }
+  }
+
+  function localPathFromFileUrl(src) {
+    try {
+      const url = new URL(String(src || ""));
+      if (url.protocol !== "file:") return "";
+      const decoded = decodeURIComponent(url.pathname);
+      return /^[A-Z]:\//i.test(decoded.slice(1)) ? decoded.slice(1) : decoded;
+    } catch {
+      return "";
+    }
+  }
+
+  async function openMessageAttachment(attachment) {
+    const targetPath = attachment?.path || localPathFromFileUrl(attachment?.src);
+    if (targetPath) {
+      const result = await api.app.openPath(targetPath);
+      if (!result?.ok) setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Image impossible a ouvrir.")]);
+      return;
+    }
+    if (/^https?:\/\//i.test(String(attachment?.src || ""))) {
+      window.open(attachment.src, "_blank", "noopener,noreferrer");
+      return;
+    }
+    setMessages((current) => [...current, makeMessage("system", "system", "Aucun fichier image ouvrable pour ce message.")]);
   }
 
   function submit(event) {
@@ -2339,7 +2378,26 @@ function ChatWindow({ bootstrap }) {
     sendItems([{ type: "text", text: prompt }], prompt);
   }
 
+  function prepareQuickPrompt(prompt) {
+    const clean = String(prompt ?? "").trim();
+    if (!clean) return;
+    setDraft((current) => {
+      const prefix = current && !current.endsWith("\n") ? "\n" : "";
+      const next = current ? `${current}${prefix}${clean}` : clean;
+      window.requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(next.length, next.length);
+      });
+      return next;
+    });
+  }
+
+  function prepareContextPrompt() {
+    prepareQuickPrompt(`Resume le contexte de cette conversation avec ${contact.name}.`);
+  }
+
   function playNewMessageIfEnabled() {
+    if (document.hasFocus() && document.visibilityState === "visible") return;
     api.getSettings()
       .then((result) => {
         if (result?.settings) setChatSettings(result.settings);
@@ -2625,52 +2683,11 @@ function ChatWindow({ bootstrap }) {
     })),
     { separator: true },
     { type: "status", label: `Codex: ${codexOptionsSummary}` },
-    {
-      type: "select",
-      label: copy.chat.model,
-      value: codexOptions.model,
-      options: modelMenuOptions,
-      onChange: (value) => {
-        const nextReasoningOptions = codexReasoningMenuOptions(codexModels, value, codexOptions.reasoningEffort);
-        const supportsCurrentReasoning = nextReasoningOptions.some((option) => option.value === codexOptions.reasoningEffort);
-        saveContactCodexOptions({
-          model: value,
-          reasoningEffort: supportsCurrentReasoning ? codexOptions.reasoningEffort : ""
-        });
-      }
-    },
-    {
-      type: "select",
-      label: copy.chat.reasoning,
-      value: codexOptions.reasoningEffort,
-      options: reasoningMenuOptions,
-      onChange: (value) => saveContactCodexOptions({ reasoningEffort: value })
-    },
-    {
-      type: "select",
-      label: copy.chat.execution,
-      value: codexOptions.cwdMode,
-      options: codexCwdOptions,
-      onChange: (value) => saveContactCodexOptions({ cwdMode: value })
-    },
-    {
-      type: "select",
-      label: copy.chat.sandbox,
-      value: codexOptions.sandbox,
-      options: codexSandboxOptions,
-      onChange: (value) => saveContactCodexOptions({ sandbox: value })
-    },
-    {
-      type: "select",
-      label: copy.chat.confirmation,
-      value: codexOptions.approvalPolicy,
-      options: codexApprovalOptions,
-      onChange: (value) => saveContactCodexOptions({ approvalPolicy: value })
-    },
+    { label: copy.chat.configuration, action: () => setConfigurationOpen(true) },
     { separator: true },
     {
       label: copy.chat.askContext,
-      action: () => sendQuickPrompt(`Resume le contexte de cette conversation avec ${contact.name}.`)
+      action: prepareContextPrompt
     }
   ].filter(Boolean);
   const selfFrameMenu = [
@@ -2806,6 +2823,20 @@ function ChatWindow({ bootstrap }) {
           onInstall={installUpdateTarget}
           onRestart={restartForUpdate}
           onClose={() => setUpdateDialogOpen(false)}
+        />
+      ) : null}
+      {configurationOpen ? (
+        <CodexConfigurationDialog
+          copy={copy}
+          summary={codexOptionsSummary}
+          codexOptions={codexOptions}
+          modelOptions={modelMenuOptions}
+          reasoningOptions={reasoningDialogOptions}
+          cwdOptions={codexCwdOptions}
+          sandboxOptions={codexSandboxOptions}
+          approvalOptions={codexApprovalOptions}
+          onChange={saveContactCodexOptions}
+          onClose={() => setConfigurationOpen(false)}
         />
       ) : null}
       <div className="toolbar-shell">
@@ -2951,6 +2982,7 @@ function ChatWindow({ bootstrap }) {
                 message={message}
                 extractWinkFromText={extractWinkFromText}
                 renderFormattedMessageText={renderFormattedMessageText}
+                onOpenAttachment={openMessageAttachment}
               />
             ))}
             {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} {copy.chat.typing}</div> : null}

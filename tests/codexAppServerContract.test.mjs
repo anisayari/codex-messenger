@@ -80,6 +80,7 @@ async function writeFakeCodexAppServer(dir) {
 import readline from "node:readline";
 
 let initialized = false;
+let experimentalApi = false;
 let nextThread = 1;
 let nextTurn = 1;
 const threads = new Map();
@@ -92,11 +93,13 @@ function fail(id, message) {
   send({ id, error: { code: -32000, message } });
 }
 
-function assertNoExperimental(id, method, params) {
+function assertExperimentalCapability(id, method, params) {
   for (const key of ["persistExtendedHistory", "experimentalRawEvents", "persistFullHistory"]) {
     if (Object.prototype.hasOwnProperty.call(params, key)) {
-      fail(id, method + "." + key + " requires experimentalApi capability");
-      return false;
+      if (!experimentalApi) {
+        fail(id, method + "." + key + " requires experimentalApi capability");
+        return false;
+      }
     }
   }
   return true;
@@ -115,12 +118,13 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
 
   if (method === "initialize") {
     initialized = true;
+    experimentalApi = params.capabilities?.experimentalApi === true;
     send({ id, result: { userAgent: "fake-codex/1.0", codexHome: "/tmp/fake-codex", platformFamily: "unix", platformOs: "test" } });
     return;
   }
 
   if (method === "thread/start") {
-    if (!assertNoExperimental(id, method, params)) return;
+    if (!assertExperimentalCapability(id, method, params)) return;
     const thread = { id: "thr_" + nextThread++, cwd: params.cwd, turns: [], preview: "New thread", createdAt: Date.now() / 1000, updatedAt: Date.now() / 1000 };
     threads.set(thread.id, thread);
     send({ id, result: { thread, model: params.model || "auto", modelProvider: "fake", cwd: params.cwd } });
@@ -129,7 +133,7 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
   }
 
   if (method === "thread/resume") {
-    if (!assertNoExperimental(id, method, params)) return;
+    if (!assertExperimentalCapability(id, method, params)) return;
     const thread = threads.get(params.threadId);
     if (!thread) return fail(id, "thread not found: " + params.threadId);
     send({ id, result: { thread: params.excludeTurns ? { ...thread, turns: [] } : thread, model: params.model || "auto", modelProvider: "fake", cwd: params.cwd || thread.cwd } });
@@ -188,7 +192,7 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
   }
 
   if (method === "thread/fork") {
-    if (!assertNoExperimental(id, method, params)) return;
+    if (!assertExperimentalCapability(id, method, params)) return;
     const source = threads.get(params.threadId);
     if (!source) return fail(id, "thread not found: " + params.threadId);
     const thread = { ...source, id: "thr_" + nextThread++, turns: params.excludeTurns ? [] : [...source.turns], forkedFromId: source.id };
@@ -224,7 +228,8 @@ function threadStartParams(cwd) {
     },
     baseInstructions: null,
     developerInstructions: "Test developer instruction",
-    personality: "pragmatic"
+    personality: "pragmatic",
+    persistExtendedHistory: true
   };
 }
 
@@ -281,7 +286,8 @@ test("Codex app-server contract covers auth, thread read/write, resume, steer, r
     baseInstructions: null,
     developerInstructions: "resume instruction",
     personality: "pragmatic",
-    excludeTurns: true
+    excludeTurns: true,
+    persistExtendedHistory: true
   });
   assert.equal(resumed.thread.id, started.thread.id);
   assert.deepEqual(resumed.thread.turns, []);
@@ -319,7 +325,8 @@ test("Codex app-server contract covers auth, thread read/write, resume, steer, r
     baseInstructions: null,
     developerInstructions: "fork instruction",
     ephemeral: false,
-    excludeTurns: true
+    excludeTurns: true,
+    persistExtendedHistory: true
   });
   assert.notEqual(forked.thread.id, started.thread.id);
   assert.equal(forked.thread.forkedFromId, started.thread.id);
@@ -343,7 +350,7 @@ test("Codex app-server contract covers auth, thread read/write, resume, steer, r
   assert.ok(client.notifications.some((item) => item.method === "turn/completed"));
 });
 
-test("contract fake server fails if experimental thread history fields are sent", async (t) => {
+test("contract fake server requires experimentalApi for experimental thread history fields", async (t) => {
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "codex-messenger-contract-"));
   t.after(async () => fs.rm(tmp, { recursive: true, force: true }));
   const fakeServer = await writeFakeCodexAppServer(tmp);
@@ -352,7 +359,7 @@ test("contract fake server fails if experimental thread history fields are sent"
 
   await client.request("initialize", {
     clientInfo: { name: "codex-messenger", title: "Codex Messenger", version: "test" },
-    capabilities: { experimentalApi: true }
+    capabilities: {}
   });
   client.notify("initialized");
 

@@ -71,6 +71,7 @@ const emoticonTokens = inlineEmoticons
 const emoticonByToken = Object.fromEntries(emoticonTokens);
 
 const inlineTokenSource = [
+  "!\\[[^\\]\\n]*\\]\\([^\\s)]+\\)",
   "\\[[^\\]\\n]+\\]\\([^\\s)]+\\)",
   "https?:\\/\\/[^\\s<>()]+",
   "`[^`\\n]+`",
@@ -81,6 +82,7 @@ const inlineTokenSource = [
   ...emoticonTokens.map(([code]) => escapeRegExp(code))
 ].join("|");
 
+const markdownImagePattern = /^!\[([^\]\n]*)\]\(([^)\s]+)\)$/;
 const markdownLinkPattern = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/;
 const internalMentionProtocols = new Set(["plugin", "app", "skill"]);
 
@@ -92,6 +94,24 @@ function protocolForHref(href) {
 function isSafeExternalHref(href) {
   const protocol = protocolForHref(href);
   return protocol === "http" || protocol === "https" || protocol === "mailto";
+}
+
+function encodeFilePathForImage(pathValue) {
+  const normalized = String(pathValue ?? "").trim().replace(/\\/g, "/");
+  if (!normalized) return "";
+  const encoded = encodeURI(normalized).replace(/[#?]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+  if (/^[a-zA-Z]:\//.test(normalized)) return `file:///${encoded}`;
+  if (normalized.startsWith("/")) return `file://${encoded}`;
+  return "";
+}
+
+function imageSrcForHref(href) {
+  const text = String(href ?? "").trim();
+  if (!text) return "";
+  const protocol = protocolForHref(text);
+  if (protocol === "http" || protocol === "https" || protocol === "file") return text;
+  if (/^data:image\/[a-z0-9.+-]+;base64,/i.test(text)) return text;
+  return encodeFilePathForImage(text);
 }
 
 function internalMentionKind(href) {
@@ -141,6 +161,25 @@ function renderMarkdownLinkToken(token, keyPrefix) {
   );
 }
 
+function renderMarkdownImageToken(token, keyPrefix) {
+  const match = String(token ?? "").match(markdownImagePattern);
+  if (!match) return null;
+  const label = match[1].trim() || "image";
+  const src = imageSrcForHref(match[2]);
+  if (!src) {
+    return (
+      <span className="message-link disabled" key={`${keyPrefix}-image-disabled`} title={match[2]}>
+        {label}
+      </span>
+    );
+  }
+  return (
+    <a className="message-image-link inline" key={`${keyPrefix}-image`} href={src} target="_blank" rel="noreferrer noopener" title={label}>
+      <img className="message-inline-image" src={src} alt={label} loading="lazy" draggable="false" />
+    </a>
+  );
+}
+
 function renderUrlToken(token, keyPrefix) {
   const { href, suffix } = splitTrailingUrlPunctuation(token);
   if (!isSafeExternalHref(href)) return token;
@@ -163,7 +202,9 @@ function renderInlineFormattedText(text, keyPrefix = "inline") {
     const token = match[0];
     if (match.index > lastIndex) nodes.push(source.slice(lastIndex, match.index));
     const emoticon = emoticonByToken[token];
-    if (markdownLinkPattern.test(token)) {
+    if (markdownImagePattern.test(token)) {
+      nodes.push(renderMarkdownImageToken(token, `${keyPrefix}-mdimage-${match.index}`));
+    } else if (markdownLinkPattern.test(token)) {
       nodes.push(renderMarkdownLinkToken(token, `${keyPrefix}-mdlink-${match.index}`));
     } else if (/^https?:\/\//i.test(token)) {
       nodes.push(renderUrlToken(token, `${keyPrefix}-url-${match.index}`));

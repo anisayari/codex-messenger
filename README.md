@@ -2,6 +2,14 @@
 
 # Codex Messenger
 
+[![CI](https://github.com/anisayari/codex-messenger/actions/workflows/ci.yml/badge.svg)](https://github.com/anisayari/codex-messenger/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/anisayari/codex-messenger/actions/workflows/codeql.yml/badge.svg)](https://github.com/anisayari/codex-messenger/actions/workflows/codeql.yml)
+[![Dependency Review](https://github.com/anisayari/codex-messenger/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/anisayari/codex-messenger/actions/workflows/dependency-review.yml)
+[![Deploy](https://github.com/anisayari/codex-messenger/actions/workflows/deploy-codexmessenger-net.yml/badge.svg)](https://github.com/anisayari/codex-messenger/actions/workflows/deploy-codexmessenger-net.yml)
+[![License: MIT](https://img.shields.io/github/license/anisayari/codex-messenger)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/anisayari/codex-messenger?display_name=tag)](https://github.com/anisayari/codex-messenger/releases)
+[![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-blue)](#quick-install)
+
 Codex Messenger is a Windows and macOS desktop Electron app inspired by MSN Messenger 7. It wraps a local Codex session in a Messenger-style interface: every Codex agent, project, or recent thread appears as a contact or conversation window with XP-era visuals, MSN sounds, Wizz/Nudge, file and image sending, camera capture, voice clips, profile pictures, status messages, and small games while Codex is working.
 
 Developed by Anis AYARI and Codex.
@@ -21,8 +29,8 @@ Important: Codex Messenger is only a local front-end client for `codex app-serve
 
 Official downloads are available from [codexmessenger.net](https://codexmessenger.net/). Click `DOWNLOAD` and choose the platform in the popup:
 
-- macOS `v0.0.2.6`: `CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.6`: `CodexMessenger.exe`.
+- macOS `v0.0.2.7`: `CodexMessenger-mac-arm64.dmg`.
+- Windows `v0.0.2.7`: `CodexMessenger.exe`.
 
 The website download popup is backed by GitHub release assets. A release must include both the Windows `.exe` and macOS `.dmg`; otherwise the site deployment should fail instead of publishing a broken download button.
 
@@ -80,6 +88,9 @@ npm run setup:codex:check
 
 # Run the Node test suite
 npm test
+
+# Run npm security audit for production and development dependencies
+npm run audit:security
 
 # Run release metadata checks
 npm run test:release
@@ -305,8 +316,8 @@ npm run package:win
 
 Generated Windows files are written to `release/windows/`:
 
-- `Codex Messenger Setup 0.0.2-6.exe`: Windows installer.
-- `Codex Messenger 0.0.2-6.exe`: portable build.
+- `Codex Messenger Setup 0.0.2-7.exe`: Windows installer.
+- `Codex Messenger 0.0.2-7.exe`: portable build.
 - `win-unpacked/`: unpacked folder for local testing.
 
 The build is not signed. For broad public distribution, add Windows code signing.
@@ -320,8 +331,8 @@ npm run package:mac
 
 Generated macOS files are written to `release/macos/`:
 
-- `Codex-Messenger-0.0.2-6-arm64.dmg` or `Codex-Messenger-0.0.2-6-x64.dmg`.
-- `Codex-Messenger-0.0.2-6-arm64.zip` or `Codex-Messenger-0.0.2-6-x64.zip`.
+- `Codex-Messenger-0.0.2-7-arm64.dmg` or `Codex-Messenger-0.0.2-7-x64.dmg`.
+- `Codex-Messenger-0.0.2-7-arm64.zip` or `Codex-Messenger-0.0.2-7-x64.zip`.
 - `mac-arm64/` or `mac/`: unpacked app folder for local testing.
 
 The unsigned macOS build includes camera and microphone usage descriptions for the snapshot and voice clip features, but it is not notarized or Developer ID signed.
@@ -355,8 +366,8 @@ The static showcase site lives in `codexmessenger.net/`.
 
 Its `DOWNLOAD` button opens a platform chooser popup with:
 
-- macOS `v0.0.2.6`: `downloads/CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.6`: `downloads/CodexMessenger.exe`.
+- macOS `v0.0.2.7`: `downloads/CodexMessenger-mac-arm64.dmg`.
+- Windows `v0.0.2.7`: `downloads/CodexMessenger.exe`.
 
 The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, resolves one Windows `.exe` asset and one macOS `.dmg` asset, patches the cache-buster in `codexmessenger.net/index.html`, uploads the static files to the VPS, then downloads the two release assets into `/downloads/` and writes `.sha256` files.
 
@@ -374,6 +385,7 @@ Before publishing or making release changes:
 ```powershell
 npm run check:codex
 npm test
+npm run audit:security
 npm run test:release
 npm run build
 npm run electron:smoke

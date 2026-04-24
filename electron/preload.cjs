@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 const listeners = new Set([
   "codex:delta",
   "codex:completed-item",
+  "codex:item-started",
   "codex:item-completed",
   "codex:done",
   "codex:error",
@@ -38,7 +39,7 @@ contextBridge.exposeInMainWorld("codexMsn", {
   checkUpdates: (options) => ipcRenderer.invoke("updates:check", options),
   openUpdateTarget: (target) => ipcRenderer.invoke("updates:open", target),
   installUpdateTarget: (target) => ipcRenderer.invoke("updates:install", target),
-  restartForUpdate: () => ipcRenderer.invoke("updates:restart"),
+  restartForUpdate: (target) => ipcRenderer.invoke("updates:restart", target),
   signIn: (profile) => ipcRenderer.invoke("auth:sign-in", profile),
   openConversation: (contactId) => ipcRenderer.invoke("conversation:open", contactId),
   openThread: (threadId) => ipcRenderer.invoke("conversation:open-thread", threadId),

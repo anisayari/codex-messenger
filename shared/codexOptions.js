@@ -1,10 +1,5 @@
 export const codexModelOptions = [
-  { value: "", label: "Auto" },
-  { value: "crest-alpha", label: "crest-alpha" },
-  { value: "gpt-5.4", label: "GPT-5.4" },
-  { value: "gpt-5.4-mini", label: "GPT-5.4 Mini" },
-  { value: "gpt-5.3-codex", label: "GPT-5.3 Codex" },
-  { value: "gpt-5.2-codex", label: "GPT-5.2 Codex" }
+  { value: "", label: "Auto" }
 ];
 
 export const codexReasoningOptions = [
@@ -49,6 +44,10 @@ function normalizeChoice(value, options, fallback) {
   return options.some((option) => option.value === clean) ? clean : fallback;
 }
 
+function normalizeModelChoice(value) {
+  return String(value ?? "").trim();
+}
+
 function normalizeSandboxChoice(value) {
   const clean = String(value ?? "");
   const aliases = {
@@ -70,7 +69,7 @@ function normalizeSandboxChoice(value) {
 
 export function normalizeCodexOptions(options = {}) {
   return {
-    model: normalizeChoice(options.model, codexModelOptions, defaultCodexOptions.model),
+    model: normalizeModelChoice(options.model),
     reasoningEffort: normalizeChoice(options.reasoningEffort, codexReasoningOptions, defaultCodexOptions.reasoningEffort),
     cwdMode: normalizeChoice(options.cwdMode, codexCwdOptions, defaultCodexOptions.cwdMode),
     sandbox: normalizeSandboxChoice(options.sandbox),

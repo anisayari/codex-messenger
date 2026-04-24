@@ -1,15 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { codexImageFromItem, imageSrcFromBase64Png, imageSrcFromPathOrUrl, isCodexImageItem } from "../shared/codexImages.js";
 import { appCopyFor, supportedLanguages } from "../shared/languages.js";
 import { newestThreadForProject } from "../shared/threadSelection.js";
 import { assetDigestSha256, safeAssetFileName, selectFrontReleaseAsset } from "../shared/updateAssets.js";
 import { displayVersion, updateAvailable } from "../shared/versionUtils.js";
+import { versionLabel } from "../src/versionLabel.js";
 
 test("version helpers support package and release tag formats", () => {
   assert.equal(displayVersion("0.0.2-5"), "0.0.2.5");
   assert.equal(displayVersion("v0.0.2.5"), "0.0.2.5");
   assert.equal(updateAvailable("v0.0.2.5", "0.0.2-4"), true);
   assert.equal(updateAvailable("0.0.2-5", "0.0.2.5"), false);
+  assert.equal(versionLabel("0.0.2-7"), "0.0.2.7");
+  assert.equal(versionLabel("", "inconnue"), "inconnue");
 });
 
 test("front release asset selection prefers platform installer assets", () => {
@@ -27,6 +31,71 @@ test("front release asset selection prefers platform installer assets", () => {
   assert.equal(selectFrontReleaseAsset(release, { platform: "linux" }), null);
   assert.equal(assetDigestSha256({ digest: "sha256:ABC" }), "abc");
   assert.equal(safeAssetFileName("../bad:name.exe"), "..-bad-name.exe");
+});
+
+test("Codex image items expose renderable image attachments", () => {
+  const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
+  const pngDataUrl = `data:image/png;base64,${pngBase64}`;
+  const generated = codexImageFromItem({
+    id: "ig_123",
+    type: "imageGeneration",
+    status: "completed",
+    revisedPrompt: "final prompt",
+    savedPath: "/tmp/codex image.png",
+    result: pngBase64
+  });
+  assert.equal(generated.kind, "imageGeneration");
+  assert.equal(generated.src, pngDataUrl);
+  assert.equal(generated.path, "/tmp/codex image.png");
+  assert.equal(generated.name, "codex image.png");
+  assert.match(generated.text, /Image generee: final prompt/);
+  assert.equal(isCodexImageItem({ type: "imageGeneration" }), true);
+
+  const savedPathFallback = codexImageFromItem({
+    id: "ig_path",
+    type: "imageGeneration",
+    savedPath: "/tmp/codex image.png",
+    result: "ignored"
+  });
+  assert.equal(savedPathFallback.src, "file:///tmp/codex%20image.png");
+
+  const viewed = codexImageFromItem({ type: "imageView", path: "/tmp/viewed.png" });
+  assert.equal(viewed.kind, "imageView");
+  assert.equal(viewed.src, "file:///tmp/viewed.png");
+  assert.equal(isCodexImageItem({ type: "imageView" }), true);
+
+  const rawCall = codexImageFromItem({
+    id: "ig_raw",
+    type: "image_generation_call",
+    status: "completed",
+    result: pngBase64
+  });
+  assert.equal(rawCall.src, pngDataUrl);
+  const pendingCall = codexImageFromItem({
+    id: "ig_pending",
+    type: "imageGeneration",
+    status: "generating",
+    revisedPrompt: "low poly cat",
+    result: ""
+  });
+  assert.equal(pendingCall.src, "");
+  assert.equal(pendingCall.status, "generating");
+  assert.match(pendingCall.text, /Image en generation/);
+  const officialSrc = codexImageFromItem({
+    id: "ig_src",
+    type: "imageGeneration",
+    status: "completed",
+    src: pngDataUrl,
+    result: "ignored"
+  });
+  assert.equal(officialSrc.src, pngDataUrl);
+  assert.equal(officialSrc.path, "");
+  assert.equal(imageSrcFromBase64Png(pngDataUrl), pngDataUrl);
+  assert.equal(imageSrcFromBase64Png(Buffer.from("not a png").toString("base64")), "");
+  assert.equal(imageSrcFromBase64Png("a".repeat(64)), "");
+  assert.equal(isCodexImageItem({ type: "image_generation_call" }), true);
+  assert.equal(isCodexImageItem({ type: "message" }), false);
+  assert.equal(imageSrcFromPathOrUrl("C:\\Users\\Anis\\Pictures\\image 1.png"), "file:///C:/Users/Anis/Pictures/image%201.png");
 });
 
 test("project opening chooses the newest active thread, including hidden tabs", () => {
@@ -50,6 +119,8 @@ test("all supported languages expose update dialog copy", () => {
     "currentVersion",
     "latestVersion",
     "updateAutomatically",
+    "readyToInstall",
+    "restartInstall",
     "check",
     "checking",
     "restart",
@@ -65,5 +136,7 @@ test("all supported languages expose update dialog copy", () => {
       assert.equal(typeof copy.updates?.[key], "string", `${language.code}.updates.${key}`);
       assert.notEqual(copy.updates[key].trim(), "", `${language.code}.updates.${key}`);
     }
+    assert.equal(typeof copy.chat?.configuration, "string", `${language.code}.chat.configuration`);
+    assert.notEqual(copy.chat.configuration.trim(), "", `${language.code}.chat.configuration`);
   }
 });

@@ -1,5 +1,12 @@
 import { useEffect } from "react";
 
+function upsertMessageById(messages, message) {
+  if (!message?.id) return [...messages, message];
+  const index = messages.findIndex((item) => item.id === message.id);
+  if (index === -1) return [...messages, message];
+  return messages.map((item, itemIndex) => itemIndex === index ? { ...item, ...message } : item);
+}
+
 export function useCodexEvents({
   api,
   contact,
@@ -46,17 +53,26 @@ export function useCodexEvents({
         playWink(incomingWink);
         triggerWinkAnimation(incomingWink, "incoming");
       }
-      setTyping(false);
       setMessages((current) => {
         if (!current[current.length - 1]?.streaming && !incomingWink) playNewMessageIfEnabled();
         playedStreamingSoundRef.current = false;
         return finishAgentMessage(current, conversationAgentName, text);
       });
     });
+    const offItemStarted = api.on("codex:item-started", ({ contactId, message }) => {
+      if (contactId !== contact.id || !message) return;
+      flushAgentDeltas();
+      setTyping(true);
+      setMessages((current) => upsertMessageById(current, message));
+    });
     const offItemCompleted = api.on("codex:item-completed", ({ contactId, message }) => {
       if (contactId !== contact.id || !message) return;
       flushAgentDeltas();
-      setMessages((current) => [...current, message]);
+      setMessages((current) => {
+        const alreadyVisible = Boolean(message.id && current.some((item) => item.id === message.id));
+        if (!alreadyVisible && message.from === "them") playNewMessageIfEnabled();
+        return upsertMessageById(current, message);
+      });
     });
     const offTyping = api.on("codex:typing", ({ contactId }) => {
       if (contactId === contact.id) setTyping(true);
@@ -93,7 +109,10 @@ export function useCodexEvents({
             if (showThreadLoader) setThreadsLoading(false);
           });
         api.listCodexModels()
-          .then((result) => setCodexModels(Array.isArray(result?.models) ? result.models : []))
+          .then((result) => {
+            if (!result?.ok) throw new Error(result?.error || "Codex models unavailable");
+            setCodexModels(Array.isArray(result?.models) ? result.models : []);
+          })
           .catch(() => setCodexModels([]));
         return;
       }
@@ -129,7 +148,7 @@ export function useCodexEvents({
       deltaFlushTimerRef.current = null;
       deltaQueueRef.current = [];
       deltaFirstQueuedAtRef.current = 0;
-      offDelta(); offCompleted(); offItemCompleted(); offTyping(); offDone(); offError(); offStatus(); offStatusNote(); offApprovalRequest(); offApprovalResolved(); offWizz();
+      offDelta(); offCompleted(); offItemStarted(); offItemCompleted(); offTyping(); offDone(); offError(); offStatus(); offStatusNote(); offApprovalRequest(); offApprovalResolved(); offWizz();
     };
   }, [api, contact.id, contact.kind, contact.cwd, conversationAgentName]);
 }
