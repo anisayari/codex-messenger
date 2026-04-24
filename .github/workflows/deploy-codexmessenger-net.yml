@@ -30,6 +30,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install smoke-test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Release preflight
+        run: |
+          npm run test
+          npm run test:release
+          npm run build
+          xvfb-run --auto-servernum npm run electron:smoke
+
       - name: Install deploy tools
         run: |
           sudo apt-get update

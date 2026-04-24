@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install smoke-test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit and API contract tests
+        run: npm run test
+
+      - name: Run release preflight
+        run: npm run test:release
+
+      - name: Build renderer
+        run: npm run build
+
+      - name: Run Electron smoke test
+        run: xvfb-run --auto-servernum npm run electron:smoke
