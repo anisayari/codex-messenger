@@ -25,6 +25,8 @@ const appIconPath = path.join(
   "icons",
   process.platform === "win32" ? "codex-messenger-people.ico" : "codex-messenger-people-256.png"
 );
+const macTrayTemplateIconPath = path.join(rootDir, "public", "icons", "codex-messenger-menubarTemplate.png");
+const macTrayTemplateIcon2xPath = path.join(rootDir, "public", "icons", "codex-messenger-menubarTemplate@2x.png");
 const toastIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people-256.png");
 const repositoryUrl = "https://github.com/anisayari/codex-messenger";
 const frontPackageUrl = "https://raw.githubusercontent.com/anisayari/codex-messenger/main/package.json";
@@ -33,6 +35,8 @@ const codexNpmPackageName = "@openai/codex";
 const codexNpmRegistryUrl = "https://registry.npmjs.org/@openai%2Fcodex/latest";
 const codexNpmUrl = "https://www.npmjs.com/package/@openai/codex";
 const updateCheckCacheMs = 10 * 60_000;
+const threadListPageSize = 20;
+const codexHistoryPageSize = 10;
 
 app.setName("Codex Messenger");
 if (process.platform === "win32") app.setAppUserModelId("com.codex.messenger");
@@ -183,11 +187,13 @@ const recentIncomingByContact = new Map();
 const toastWindows = [];
 const knownThreads = new Map();
 const threadItemsByThread = new Map();
+const activeTurnByThread = new Map();
 const approvalRequests = new Map();
 let tray = null;
 let isQuitting = false;
 let updateCheckCache = null;
 let updateCheckPromise = null;
+let codexWarmupPromise = null;
 let nextApprovalRequestId = 1;
 const defaultUnreadWizzDelayMs = Math.max(10_000, Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 60_000);
 const defaultThreadTabs = { orderByCwd: {}, hiddenIds: [] };
@@ -224,7 +230,9 @@ const defaultSettings = {
   newMessageSoundEnabled: true,
   unreadWizzEnabled: true,
   demoMode: false,
-  closeBehavior: "ask"
+  closeBehavior: "ask",
+  signedIn: false,
+  autoSignIn: true
 };
 let settingsCache = null;
 
@@ -291,6 +299,23 @@ function normalizeBoolean(value, fallback = true) {
   if (value === true || value === "true" || value === 1 || value === "1") return true;
   if (value === false || value === "false" || value === 0 || value === "0") return false;
   return fallback;
+}
+
+function shouldAutoSignIn(settings, status) {
+  return Boolean(
+    settings?.signedIn === true
+    && settings?.autoSignIn !== false
+    && status?.ok
+    && (!status.login || status.login.ok)
+  );
+}
+
+function withTimeout(promise, timeoutMs, message) {
+  let timeout = null;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeout));
 }
 
 function normalizeContactAliases(value = {}) {
@@ -649,9 +674,11 @@ function contactsForSettings(settings = settingsCache) {
 
 async function loadSettings() {
   if (settingsCache) return settingsCache;
+  let loadedStoredSettings = false;
   try {
     const raw = await fs.readFile(settingsFilePath(), "utf8");
     settingsCache = { ...defaultSettings, ...JSON.parse(raw) };
+    loadedStoredSettings = true;
   } catch {
     settingsCache = { ...defaultSettings };
   }
@@ -672,6 +699,8 @@ async function loadSettings() {
   settingsCache.unreadWizzEnabled = normalizeBoolean(settingsCache.unreadWizzEnabled, true);
   settingsCache.demoMode = normalizeBoolean(settingsCache.demoMode, false);
   settingsCache.closeBehavior = normalizeCloseBehavior(settingsCache.closeBehavior);
+  settingsCache.signedIn = normalizeBoolean(settingsCache.signedIn, loadedStoredSettings && Boolean(settingsCache.profile.email));
+  settingsCache.autoSignIn = normalizeBoolean(settingsCache.autoSignIn, true);
   Object.assign(profile, settingsCache.profile);
   return settingsCache;
 }
@@ -702,7 +731,9 @@ async function saveSettings(nextSettings = {}) {
     newMessageSoundEnabled: normalizeBoolean(nextSettings.newMessageSoundEnabled ?? current.newMessageSoundEnabled, true),
     unreadWizzEnabled: normalizeBoolean(nextSettings.unreadWizzEnabled ?? current.unreadWizzEnabled, true),
     demoMode: normalizeBoolean(nextSettings.demoMode ?? current.demoMode, false),
-    closeBehavior: normalizeCloseBehavior(nextSettings.closeBehavior ?? current.closeBehavior)
+    closeBehavior: normalizeCloseBehavior(nextSettings.closeBehavior ?? current.closeBehavior),
+    signedIn: normalizeBoolean(nextSettings.signedIn ?? current.signedIn, false),
+    autoSignIn: normalizeBoolean(nextSettings.autoSignIn ?? current.autoSignIn, true)
   };
   await fs.mkdir(path.dirname(settingsFilePath()), { recursive: true });
   await fs.writeFile(settingsFilePath(), JSON.stringify(settingsCache, null, 2), "utf8");
@@ -1170,7 +1201,7 @@ class CodexAppServer extends EventEmitter {
 
   async start() {
     const codexCommand = await resolveCodexCommand();
-    this.child = spawnCodex(codexCommand.command, ["app-server"], {
+    this.child = spawnCodex(codexCommand.command, ["app-server", "--analytics-default-enabled"], {
       cwd: defaultCwd(),
       stdio: ["pipe", "pipe", "pipe"],
       windowsHide: true,
@@ -1195,6 +1226,7 @@ class CodexAppServer extends EventEmitter {
       this.emit("status", { kind: "exit", text: `codex app-server exited with ${code ?? "unknown"}` });
       this.child = null;
       this.ready = null;
+      this.userAgent = null;
       for (const [, pending] of this.pending) pending.reject(new Error("codex app-server stopped"));
       this.pending.clear();
     });
@@ -1277,6 +1309,16 @@ class CodexAppServer extends EventEmitter {
     this.child.stdin.write(`${JSON.stringify(payload)}\n`);
   }
 
+  stop(reason = "codex app-server stopped") {
+    const child = this.child;
+    this.child = null;
+    this.ready = null;
+    this.userAgent = null;
+    for (const [, pending] of this.pending) pending.reject(new Error(reason));
+    this.pending.clear();
+    if (child && !child.killed) child.kill();
+  }
+
   respond(id, result) {
     if (!this.child) throw new Error("codex app-server is not running");
     this.child.stdin.write(`${JSON.stringify({ id, result })}\n`);
@@ -1295,10 +1337,13 @@ class CodexAppServer extends EventEmitter {
       modelProvider: null,
       cwd,
       approvalPolicy: codexOptions.approvalPolicy,
-      sandbox: codexOptions.sandbox,
+      permissionProfile: null,
       config: null,
       baseInstructions: null,
-      developerInstructions: localizedInstructions(contact)
+      developerInstructions: localizedInstructions(contact),
+      personality: "pragmatic",
+      persistExtendedHistory: true,
+      experimentalRawEvents: false
     });
     return result.thread.id;
   }
@@ -1314,28 +1359,50 @@ class CodexAppServer extends EventEmitter {
       modelProvider: null,
       cwd: overrides.cwd ?? null,
       approvalPolicy: codexOptions.approvalPolicy,
-      sandbox: codexOptions.sandbox,
+      permissionProfile: null,
       config: null,
       baseInstructions: null,
-      developerInstructions: overrides.developerInstructions ?? null
+      developerInstructions: overrides.developerInstructions ?? null,
+      personality: "pragmatic",
+      excludeTurns: overrides.excludeTurns !== false,
+      persistExtendedHistory: true
     });
     return result.thread;
   }
 
-  async listThreads() {
+  async listThreads(options = {}) {
     await this.ensureReady();
-    const data = [];
-    let cursor = null;
-    do {
-      const result = await this.request("thread/list", {
-        cursor,
-        limit: 100,
-        modelProviders: null
-      });
-      data.push(...(result.data ?? []));
-      cursor = result.nextCursor ?? null;
-    } while (cursor);
-    return data;
+    return this.request("thread/list", {
+      cursor: options.cursor ?? null,
+      limit: Math.max(1, Math.min(100, Number(options.limit) || threadListPageSize)),
+      sortKey: options.sortKey ?? "updated_at",
+      sortDirection: options.sortDirection ?? "desc",
+      modelProviders: options.modelProviders ?? null,
+      sourceKinds: options.sourceKinds ?? null,
+      archived: options.archived ?? null,
+      cwd: options.cwd ?? null,
+      useStateDbOnly: options.useStateDbOnly !== false,
+      searchTerm: options.searchTerm ?? null
+    });
+  }
+
+  async readThread(threadId, options = {}) {
+    await this.ensureReady();
+    const result = await this.request("thread/read", {
+      threadId,
+      includeTurns: options.includeTurns === true
+    });
+    return result.thread ?? null;
+  }
+
+  async listThreadTurns(threadId, options = {}) {
+    await this.ensureReady();
+    return this.request("thread/turns/list", {
+      threadId,
+      cursor: options.cursor ?? null,
+      limit: Math.max(1, Math.min(50, Number(options.limit) || codexHistoryPageSize)),
+      sortDirection: options.sortDirection ?? "desc"
+    });
   }
 
   async listModels() {
@@ -1367,6 +1434,60 @@ class CodexAppServer extends EventEmitter {
       effort: codexOptions.reasoningEffort || null,
       summary: null
     });
+  }
+
+  async interruptTurn(threadId, turnId) {
+    await this.ensureReady();
+    return this.request("turn/interrupt", { threadId, turnId });
+  }
+
+  async steerTurn(threadId, turnId, input) {
+    await this.ensureReady();
+    const items = typeof input === "string" ? [{ type: "text", text: input }] : input;
+    return this.request("turn/steer", {
+      threadId,
+      input: items,
+      expectedTurnId: turnId
+    });
+  }
+
+  async compactThread(threadId) {
+    await this.ensureReady();
+    return this.request("thread/compact/start", { threadId });
+  }
+
+  async reviewThread(threadId) {
+    await this.ensureReady();
+    return this.request("review/start", {
+      threadId,
+      target: { type: "uncommittedChanges" },
+      delivery: "inline"
+    });
+  }
+
+  async forkThread(threadId, contact, options = defaultCodexOptions) {
+    await this.ensureReady();
+    const codexOptions = normalizeCodexOptions(options);
+    const result = await this.request("thread/fork", {
+      threadId,
+      model: codexOptions.model || null,
+      modelProvider: null,
+      cwd: contact?.cwd ?? null,
+      approvalPolicy: codexOptions.approvalPolicy,
+      permissionProfile: null,
+      config: null,
+      baseInstructions: null,
+      developerInstructions: contact ? localizedInstructions(contact) : null,
+      ephemeral: false,
+      excludeTurns: true,
+      persistExtendedHistory: true
+    });
+    return result.thread;
+  }
+
+  async setThreadName(threadId, name) {
+    await this.ensureReady();
+    return this.request("thread/name/set", { threadId, name });
   }
 
   dispose() {
@@ -1480,13 +1601,16 @@ async function listWorkspaceProjects(settings = settingsCache) {
 function normalizeThread(thread) {
   knownThreads.set(thread.id, thread);
   const createdAt = Number(thread.createdAt ?? 0) * 1000;
+  const updatedAt = Number(thread.updatedAt ?? thread.createdAt ?? 0) * 1000;
   return {
     id: thread.id,
     contactId: `thread:${thread.id}`,
     preview: String(thread.preview ?? "").trim() || "Nouveau fil Codex",
     cwd: thread.cwd || defaultCwd(),
     projectName: projectNameFor(thread.cwd || defaultCwd()),
-    timestamp: createdAt ? new Date(createdAt).toISOString() : null,
+    createdAt: createdAt ? new Date(createdAt).toISOString() : null,
+    updatedAt: updatedAt ? new Date(updatedAt).toISOString() : null,
+    timestamp: updatedAt || createdAt ? new Date(updatedAt || createdAt).toISOString() : null,
     source: thread.source,
     modelProvider: thread.modelProvider
   };
@@ -1534,12 +1658,58 @@ async function projectMetadata(cwd, threads) {
   };
 }
 
-async function conversationBrowser() {
-  const settings = await loadSettings();
-  const threads = await listVisibleThreads(settings);
+function codexServerIsActive() {
+  return Boolean(codex.child || codex.ready || codex.userAgent);
+}
 
-  const projectPaths = new Set(await listWorkspaceProjects(settings));
+function scheduleCodexWarmup(reason = "startup") {
+  if (smokeTest || codexWarmupPromise || codexServerIsActive()) return codexWarmupPromise;
+  codexWarmupPromise = withTimeout(
+    codex.ensureReady(),
+    30000,
+    "Démarrage de Codex trop long."
+  )
+    .then((init) => {
+      const payload = {
+        kind: "ready",
+        text: init.userAgent || "Codex pret",
+        userAgent: init.userAgent || "",
+        reason
+      };
+      sendToMain("codex:status", payload);
+      sendToOpenChats("codex:status", payload);
+      return init;
+    })
+    .catch((error) => {
+      codex.stop(error.message);
+      const payload = { kind: "error", text: error.message, reason };
+      sendToMain("codex:status", payload);
+      sendToOpenChats("codex:status", payload);
+      return null;
+    })
+    .finally(() => {
+      codexWarmupPromise = null;
+    });
+  return codexWarmupPromise;
+}
+
+async function conversationBrowser(options = {}) {
+  const settings = await loadSettings();
+  const browserThreads = await listBrowserThreads(settings, {
+    startCodex: Boolean(options.startCodex),
+    cursor: options.cursor ?? null,
+    limit: options.limit ?? threadListPageSize,
+    cwd: options.cwd ?? null,
+    searchTerm: options.searchTerm ?? null
+  });
+  const { visible: threads, hidden: hiddenThreads } = browserThreads;
+
+  const projectPaths = new Set();
   for (const thread of threads) projectPaths.add(thread.cwd);
+  for (const thread of hiddenThreads) projectPaths.add(thread.cwd);
+  if (demoModeIsEnabled(settings) && !projectPaths.size) {
+    for (const cwd of await listWorkspaceProjects(settings)) projectPaths.add(cwd);
+  }
 
   const projects = await Promise.all(Array.from(projectPaths).map(async (cwd) => {
     const projectContactId = encodeProjectId(cwd);
@@ -1548,49 +1718,128 @@ async function conversationBrowser() {
       cwd,
       settings.threadTabs
     );
+    const projectHiddenThreads = sortThreadsForCwd(
+      hiddenThreads.filter((thread) => thread.cwd === cwd),
+      cwd,
+      settings.threadTabs
+    );
+    const allProjectThreads = [...projectThreads, ...projectHiddenThreads];
     return {
       id: projectContactId,
       cwd,
       name: contactAliasFor(projectContactId, settings) || projectNameFor(cwd),
       threads: projectThreads,
-      ...(await projectMetadata(cwd, projectThreads))
+      hiddenThreads: projectHiddenThreads,
+      hiddenThreadCount: projectHiddenThreads.length,
+      visibleThreadCount: projectThreads.length,
+      ...(await projectMetadata(cwd, allProjectThreads))
     };
   }));
 
   return {
     rootDir: defaultCwd(),
     projectsRoot: projectsRoot(),
-    projects: projects.sort((a, b) => a.name.localeCompare(b.name))
+    projects: projects.sort((a, b) => a.name.localeCompare(b.name)),
+    nextCursor: browserThreads.nextCursor ?? null,
+    backwardsCursor: browserThreads.backwardsCursor ?? null,
+    hasMore: Boolean(browserThreads.nextCursor)
   };
 }
 
-async function listVisibleThreads(settings = settingsCache) {
+function splitHiddenThreads(threads = [], settings = settingsCache) {
+  const hiddenIds = new Set(settings?.threadTabs?.hiddenIds ?? []);
+  return {
+    visible: threads.filter((thread) => !hiddenIds.has(thread.id)),
+    hidden: threads.filter((thread) => hiddenIds.has(thread.id))
+  };
+}
+
+async function listBrowserThreads(settings = settingsCache, options = {}) {
   const currentSettings = settings ?? await loadSettings();
-  const hiddenIds = new Set(currentSettings.threadTabs.hiddenIds);
+  const shouldQueryCodex = Boolean(options.startCodex || codexServerIsActive());
+  if (!shouldQueryCodex) {
+    if (demoModeIsEnabled(currentSettings)) {
+      await ensureDemoProject();
+      return {
+        ...splitHiddenThreads(
+        demoSeedThreads().map((thread) => applyThreadAlias(thread, currentSettings)),
+        currentSettings
+        ),
+        nextCursor: null,
+        backwardsCursor: null
+      };
+    }
+    return { visible: [], hidden: [], nextCursor: null, backwardsCursor: null };
+  }
+
   try {
-    const threads = (await codex.listThreads()).map(normalizeThread).map((thread) => applyThreadAlias(thread, currentSettings)).filter((thread) => !hiddenIds.has(thread.id));
+    const page = await codex.listThreads({
+      cursor: options.cursor ?? null,
+      limit: options.limit ?? threadListPageSize,
+      cwd: options.cwd ?? null,
+      searchTerm: options.searchTerm ?? null,
+      useStateDbOnly: true
+    });
+    const listedThreads = (page.data ?? []).map(normalizeThread).map((thread) => applyThreadAlias(thread, currentSettings));
+    const listedIds = new Set(listedThreads.map((thread) => thread.id));
+    const hiddenMetadata = (await Promise.all(currentSettings.threadTabs.hiddenIds
+      .filter((threadId) => !listedIds.has(threadId))
+      .slice(0, 100)
+      .map(async (threadId) => {
+        try {
+          const thread = await codex.readThread(threadId, { includeTurns: false });
+          return thread ? applyThreadAlias(normalizeThread(thread), currentSettings) : null;
+        } catch {
+          return null;
+        }
+      }))).filter(Boolean);
+    const threads = [...listedThreads, ...hiddenMetadata];
     if (demoModeIsEnabled(currentSettings)) {
       await ensureDemoProject();
       const realDemoThreads = threads.filter((thread) => isDemoProjectPath(thread.cwd));
-      const seeded = demoSeedThreads().map((thread) => applyThreadAlias(thread, currentSettings)).filter((thread) => !hiddenIds.has(thread.id));
-      return [...seeded, ...realDemoThreads];
+      const seeded = demoSeedThreads().map((thread) => applyThreadAlias(thread, currentSettings));
+      return {
+        ...splitHiddenThreads([...seeded, ...realDemoThreads], currentSettings),
+        nextCursor: page.nextCursor ?? null,
+        backwardsCursor: page.backwardsCursor ?? null
+      };
     }
-    return threads;
+    return {
+      ...splitHiddenThreads(threads, currentSettings),
+      nextCursor: page.nextCursor ?? null,
+      backwardsCursor: page.backwardsCursor ?? null
+    };
   } catch {
     if (demoModeIsEnabled(currentSettings)) {
       await ensureDemoProject();
-      return demoSeedThreads().map((thread) => applyThreadAlias(thread, currentSettings)).filter((thread) => !hiddenIds.has(thread.id));
+      return {
+        ...splitHiddenThreads(
+        demoSeedThreads().map((thread) => applyThreadAlias(thread, currentSettings)),
+        currentSettings
+        ),
+        nextCursor: null,
+        backwardsCursor: null
+      };
     }
-    return [];
+    return { visible: [], hidden: [], nextCursor: null, backwardsCursor: null };
   }
 }
 
-function firstThreadForProject(threads, cwd, settings = settingsCache) {
-  return sortThreadsForCwd(
-    threads.filter((thread) => thread.cwd === cwd),
-    cwd,
-    settings?.threadTabs ?? defaultThreadTabs
-  )[0] ?? null;
+async function listVisibleThreads(settings = settingsCache, options = {}) {
+  return (await listBrowserThreads(settings, options)).visible;
+}
+
+async function revealThreadInTabs(threadId) {
+  const cleanThreadId = String(threadId || "").trim();
+  if (!cleanThreadId) return await loadSettings();
+  const current = await loadSettings();
+  if (!current.threadTabs.hiddenIds.includes(cleanThreadId)) return current;
+  return await saveSettings({
+    threadTabs: {
+      ...current.threadTabs,
+      hiddenIds: current.threadTabs.hiddenIds.filter((id) => id !== cleanThreadId)
+    }
+  });
 }
 
 function textFromUserInput(input) {
@@ -1630,21 +1879,106 @@ function timeFromHistoryItem(item) {
 }
 
 function messagesFromThread(thread, contact) {
+  return messagesFromTurns(thread?.turns ?? [], contact);
+}
+
+function messagesFromTurns(turns, contact) {
   const messages = [];
   const author = historyAuthorForContact(contact);
-  for (const turn of thread?.turns ?? []) {
+  for (const turn of turns ?? []) {
     for (const item of turn.items ?? []) {
       const type = String(item.type ?? "").toLowerCase();
+      const timeSource = {
+        ...item,
+        createdAt: item.createdAt ?? turn.completedAt ?? turn.startedAt
+      };
       if (["usermessage", "user_message", "user"].includes(type)) {
         const text = textFromItem(item);
-        if (text) messages.push({ id: item.id ?? `user-${messages.length}`, from: "me", author: profile.displayName, text, time: timeFromHistoryItem(item) });
+        if (text) messages.push({ id: item.id ?? `user-${messages.length}`, from: "me", author: profile.displayName, text, time: timeFromHistoryItem(timeSource), itemType: item.type });
       } else if (["agentmessage", "agent_message", "assistant", "assistant_message"].includes(type)) {
         const text = textFromItem(item);
-        if (text) messages.push({ id: item.id ?? `agent-${messages.length}`, from: "them", author, text, time: timeFromHistoryItem(item) });
+        if (text) messages.push({ id: item.id ?? `agent-${messages.length}`, from: "them", author, text, time: timeFromHistoryItem(timeSource), itemType: item.type });
+      } else if (type === "commandexecution") {
+        const output = item.aggregatedOutput ? `\n\n${item.aggregatedOutput}` : "";
+        messages.push({
+          id: item.id ?? `command-${messages.length}`,
+          from: "system",
+          author: "command",
+          text: `${item.command ?? "Commande Codex"}${output}`,
+          time: timeFromHistoryItem(timeSource),
+          itemType: "commandExecution",
+          command: item.command,
+          cwd: item.cwd,
+          status: item.status,
+          exitCode: item.exitCode,
+          durationMs: item.durationMs
+        });
+      } else if (type === "filechange") {
+        const changes = Array.isArray(item.changes) ? item.changes : [];
+        messages.push({
+          id: item.id ?? `file-${messages.length}`,
+          from: "system",
+          author: "files",
+          text: changes.length ? changes.map((change) => change.path ?? change.file ?? "fichier").join("\n") : "Modification de fichiers",
+          time: timeFromHistoryItem(timeSource),
+          itemType: "fileChange",
+          changes,
+          status: item.status
+        });
+      } else if (type === "mcptoolcall" || type === "dynamictoolcall") {
+        messages.push({
+          id: item.id ?? `tool-${messages.length}`,
+          from: "system",
+          author: "tool",
+          text: `${item.server ? `${item.server}: ` : ""}${item.tool ?? "outil"} (${item.status ?? "termine"})`,
+          time: timeFromHistoryItem(timeSource),
+          itemType: item.type,
+          status: item.status
+        });
       }
     }
   }
   return messages;
+}
+
+async function threadHistoryPageFromServer(threadId, contact, options = {}) {
+  try {
+    const page = await codex.listThreadTurns(threadId, {
+      cursor: options.cursor || null,
+      limit: options.limit || codexHistoryPageSize,
+      sortDirection: "desc"
+    });
+    const turns = [...(page.data ?? [])].reverse();
+    return {
+      messages: messagesFromTurns(turns, contact),
+      historyCursor: page.nextCursor ?? null,
+      historyBackwardsCursor: page.backwardsCursor ?? null,
+      historyHasMore: Boolean(page.nextCursor),
+      historySource: "codex-app-server"
+    };
+  } catch {
+    return {
+      messages: [],
+      historyCursor: null,
+      historyBackwardsCursor: null,
+      historyHasMore: false,
+      historySource: "codex-app-server"
+    };
+  }
+}
+
+function threadHistoryPageFromThread(thread, contact, options = {}) {
+  const limit = Math.max(1, Math.min(50, Number(options.limit) || codexHistoryPageSize));
+  const skipNewest = Math.max(0, Number(options.cursor) || 0);
+  const messages = messagesFromThread(thread, contact);
+  const end = Math.max(0, messages.length - skipNewest);
+  const start = Math.max(0, end - limit);
+  return {
+    messages: messages.slice(start, end),
+    historyCursor: messages.length - start,
+    historyHasMore: start > 0,
+    historySource: "codex-app-server"
+  };
 }
 
 function rendererUrl(params) {
@@ -1842,9 +2176,28 @@ function createTray() {
 }
 
 function trayIcon() {
+  if (process.platform === "darwin") {
+    const templateIcon = macTrayTemplateIcon();
+    if (!templateIcon.isEmpty()) return templateIcon;
+  }
+
   const image = nativeImage.createFromPath(appIconPath);
   if (process.platform !== "darwin" || image.isEmpty()) return image;
   return image.resize({ width: 18, height: 18 });
+}
+
+function macTrayTemplateIcon() {
+  const image = nativeImage.createEmpty();
+  try {
+    image.addRepresentation({ scaleFactor: 1, buffer: readFileSync(macTrayTemplateIconPath) });
+    image.addRepresentation({ scaleFactor: 2, buffer: readFileSync(macTrayTemplateIcon2xPath) });
+    image.setTemplateImage(true);
+    return image;
+  } catch {
+    const fallback = nativeImage.createFromPath(macTrayTemplateIconPath);
+    if (!fallback.isEmpty()) fallback.setTemplateImage(true);
+    return fallback;
+  }
 }
 
 function quitApplication() {
@@ -2366,7 +2719,8 @@ async function ensureThread(contactId) {
     const thread = await codex.resumeThread(existingThreadId, {
       cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(existingThreadId)?.cwd),
       developerInstructions: localizedInstructions(contact),
-      codexOptions
+      codexOptions,
+      excludeTurns: true
     });
     knownThreads.set(existingThreadId, thread);
     threadByContact.set(contactId, existingThreadId);
@@ -2410,6 +2764,13 @@ codex.on("request", (message) => {
 });
 
 codex.on("notification", (message) => {
+  if (message.method === "turn/started") {
+    if (message.params?.threadId && message.params?.turn?.id) {
+      activeTurnByThread.set(message.params.threadId, message.params.turn.id);
+    }
+    return;
+  }
+
   if (message.method === "item/agentMessage/delta") {
     const contactId = contactByThread.get(message.params.threadId);
     if (contactId) {
@@ -2430,12 +2791,17 @@ codex.on("notification", (message) => {
     if (contactId && text) {
       registerIncomingMessage(contactId, text);
       sendToChat(contactId, "codex:completed-item", { contactId, text });
+    } else if (contactId && message.params?.item) {
+      const contact = contactFor(contactId);
+      const [renderedItem] = messagesFromTurns([{ items: [message.params.item], completedAt: Date.now() / 1000 }], contact);
+      if (renderedItem) sendToChat(contactId, "codex:item-completed", { contactId, message: renderedItem });
     }
     return;
   }
 
   if (message.method === "turn/completed") {
     const contactId = contactByThread.get(message.params.threadId);
+    if (message.params?.threadId) activeTurnByThread.delete(message.params.threadId);
     if (contactId) {
       sendToChat(contactId, "codex:done", { contactId });
       sendToMain("conversation:finished", { contactId });
@@ -2459,6 +2825,7 @@ codex.on("notification", (message) => {
       registerIncomingMessage(contactId, event.message);
       sendToChat(contactId, "codex:completed-item", { contactId, text: event.message });
     } else if (event.type === "task_complete") {
+      if (message.params?.conversationId) activeTurnByThread.delete(message.params.conversationId);
       if (event.last_agent_message) {
         registerIncomingMessage(contactId, event.last_agent_message);
         sendToChat(contactId, "codex:completed-item", { contactId, text: event.last_agent_message });
@@ -2479,27 +2846,28 @@ codex.on("status", (status) => {
 
 ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
   const settings = await loadSettings();
+  let startupCodexStatus = await codexStatus();
+  let startupUserAgent = codex.userAgent;
+  if (!startupUserAgent && shouldAutoSignIn(settings, startupCodexStatus)) {
+    startupUserAgent = startupCodexStatus.login?.text || "Codex local connecte";
+    setTimeout(() => scheduleCodexWarmup("startup"), 250);
+  }
+
   const contactId = String(params.contactId ?? "");
   let contact = contactFor(contactId);
   let historyMessages = [];
+  let historyCursor = null;
+  let historyHasMore = false;
   if (params.view === "chat") {
+    let attemptedThreadResume = false;
     try {
-      let threadId = threadIdFromContactId(contactId) || threadByContact.get(contactId) || null;
-      if (!threadId && contact.kind === "project") {
-        const projectThread = firstThreadForProject(await listVisibleThreads(settings), contact.cwd, settings);
-        threadId = projectThread?.id ?? null;
-      }
+      const directThreadId = threadIdFromContactId(contactId);
+      let threadId = directThreadId || (contact.kind === "project" ? null : threadByContact.get(contactId) || null);
 
       if (threadId) {
+        attemptedThreadResume = true;
         const codexOptions = codexOptionsForContact(contactId, settings);
-        const thread = isDemoSeedThreadId(threadId)
-          ? demoSeedThreadById(threadId)
-          : await codex.resumeThread(threadId, {
-            cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(threadId)?.cwd),
-            developerInstructions: localizedInstructions(contact),
-            codexOptions
-          });
-        if (thread) knownThreads.set(threadId, thread);
+        const thread = isDemoSeedThreadId(threadId) ? demoSeedThreadById(threadId) : null;
         if (threadIdFromContactId(contactId)) {
           contact = contactFromThread(threadId);
         } else {
@@ -2509,10 +2877,30 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
           threadByContact.set(contactId, threadId);
           contactByThread.set(threadId, contactId);
         }
-        historyMessages = messagesFromThread(thread, contact);
+        const historyPage = thread
+          ? threadHistoryPageFromThread(thread, contact)
+          : await threadHistoryPageFromServer(threadId, contact, { limit: codexHistoryPageSize });
+        if (historyPage?.messages?.length || historyPage?.historyHasMore) {
+          historyMessages = historyPage.messages;
+          historyCursor = historyPage.historyCursor;
+          historyHasMore = historyPage.historyHasMore;
+        } else {
+          codex.resumeThread(threadId, {
+            cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(threadId)?.cwd),
+            developerInstructions: localizedInstructions(contact),
+            codexOptions,
+            excludeTurns: true
+          }).then((resumedThread) => {
+            if (resumedThread) knownThreads.set(threadId, resumedThread);
+          }).catch(() => {});
+        }
       }
     } catch (error) {
-      historyMessages = [{ id: "resume-error", from: "system", author: "system", text: error.message, time: "--:--" }];
+      historyMessages = attemptedThreadResume
+        ? [{ id: "resume-error", from: "system", author: "system", text: error.message, time: "--:--" }]
+        : [];
+      historyCursor = null;
+      historyHasMore = false;
     }
   }
 
@@ -2526,10 +2914,12 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
     appVersion: app.getVersion(),
     settings,
     unread: unreadState(),
-    codexStatus: await codexStatus(),
-    userAgent: codex.userAgent,
-    conversations: params.view === "chat" ? await conversationBrowser() : null,
+    codexStatus: startupCodexStatus,
+    userAgent: startupUserAgent,
+    conversations: null,
     historyMessages,
+    historyCursor,
+    historyHasMore,
     approvalRequests: params.view === "chat" ? approvalPayloadsForContact(contactId) : []
   };
 });
@@ -2564,11 +2954,19 @@ ipcMain.handle("auth:sign-in", async (_event, nextProfile) => {
     language: nextProfile.language,
     codexPath: nextProfile.codexPath,
     unreadWizzDelayMs: nextProfile.unreadWizzDelayMs,
+    signedIn: true,
+    autoSignIn: normalizeBoolean(nextProfile.autoSignIn, true),
     profile: nextProfile
   });
   Object.assign(profile, settings.profile);
-  const init = await codex.ensureReady();
-  return { ok: true, userAgent: init.userAgent, profile, settings, codexStatus: await codexStatus() };
+  setTimeout(() => scheduleCodexWarmup("sign-in"), 250);
+  return {
+    ok: true,
+    userAgent: status.login?.text || "Codex local connecte",
+    profile,
+    settings,
+    codexStatus: await codexStatus()
+  };
 });
 
 ipcMain.handle("settings:get", async () => ({
@@ -2583,7 +2981,7 @@ ipcMain.handle("settings:set", async (_event, nextSettings = {}) => ({
 
 ipcMain.handle("models:list", async () => ({
   ok: true,
-  models: await codex.listModels()
+  models: codexServerIsActive() ? await codex.listModels() : []
 }));
 
 ipcMain.handle("contacts:create-agent", async (_event, draft = {}) => {
@@ -2618,6 +3016,14 @@ ipcMain.handle("contacts:rename", async (_event, payload = {}) => {
   const contactAliases = normalizeContactAliases(current.contactAliases);
   if (name) contactAliases[contactId] = name;
   else delete contactAliases[contactId];
+  const threadId = threadIdFromContactId(contactId);
+  if (threadId && name && codexServerIsActive()) {
+    try {
+      await codex.setThreadName(threadId, name);
+    } catch {
+      // Local alias still keeps the UI responsive if the stored thread is unavailable.
+    }
+  }
   const settings = await saveSettings({ contactAliases });
   return {
     ok: true,
@@ -2725,9 +3131,12 @@ ipcMain.handle("conversation:open", (_event, contactId) => {
   return { ok: true };
 });
 
-ipcMain.handle("conversation:open-thread", (_event, threadId) => {
-  createChatWindow(`thread:${threadId}`);
-  return { ok: true };
+ipcMain.handle("conversation:open-thread", async (_event, threadId) => {
+  const cleanThreadId = String(threadId || "").trim();
+  if (!cleanThreadId) return { ok: false, error: "Fil invalide" };
+  await revealThreadInTabs(cleanThreadId);
+  createChatWindow(`thread:${cleanThreadId}`);
+  return { ok: true, conversations: await conversationBrowser() };
 });
 
 ipcMain.handle("conversation:open-project", async (_event, cwd) => {
@@ -2745,16 +3154,12 @@ ipcMain.handle("conversation:load-thread", async (event, { contactId, threadId }
   const cleanThreadId = String(threadId || "").trim();
   const cleanContactId = String(contactId || "").trim();
   if (!cleanThreadId || !cleanContactId) return { ok: false, error: "Fil invalide" };
-  const settings = await loadSettings();
+  const settings = await revealThreadInTabs(cleanThreadId);
   const contact = contactFor(cleanContactId);
   const codexOptions = codexOptionsForContact(cleanContactId, settings);
   const thread = isDemoSeedThreadId(cleanThreadId)
     ? demoSeedThreadById(cleanThreadId)
-    : await codex.resumeThread(cleanThreadId, {
-      cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(cleanThreadId)?.cwd),
-      developerInstructions: localizedInstructions(contact),
-      codexOptions
-  });
+    : null;
   if (thread) knownThreads.set(cleanThreadId, thread);
   const hydratedContact = contact.kind === "project" ? { ...contact, threadId: cleanThreadId } : contactFromThread(cleanThreadId);
   const targetContactId = hydratedContact.id;
@@ -2762,15 +3167,45 @@ ipcMain.handle("conversation:load-thread", async (event, { contactId, threadId }
     threadByContact.set(targetContactId, cleanThreadId);
     contactByThread.set(cleanThreadId, targetContactId);
   }
+  let historyPage = thread
+    ? threadHistoryPageFromThread(thread, hydratedContact)
+    : await threadHistoryPageFromServer(cleanThreadId, hydratedContact, { limit: codexHistoryPageSize });
+  if (!thread && !isDemoSeedThreadId(cleanThreadId)) {
+    codex.resumeThread(cleanThreadId, {
+      cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(cleanThreadId)?.cwd),
+      developerInstructions: localizedInstructions(contact),
+      codexOptions,
+      excludeTurns: true
+    }).then((resumedThread) => {
+      if (resumedThread) knownThreads.set(cleanThreadId, resumedThread);
+    }).catch(() => {});
+  }
   retargetChatWindow(event, targetContactId);
   return {
     ok: true,
     threadId: cleanThreadId,
     contactId: targetContactId,
     contact: hydratedContact,
-    messages: messagesFromThread(thread, hydratedContact),
+    messages: historyPage.messages,
+    historyCursor: historyPage.historyCursor,
+    historyHasMore: historyPage.historyHasMore,
     conversations: await conversationBrowser()
   };
+});
+
+ipcMain.handle("conversation:load-previous-messages", async (_event, { contactId, threadId, cursor, limit } = {}) => {
+  const cleanThreadId = String(threadId || "").trim();
+  const cleanContactId = String(contactId || "").trim();
+  if (!cleanThreadId || !cleanContactId) return { ok: false, error: "Fil invalide" };
+  const contact = contactFor(cleanContactId);
+  const hydratedContact = contact.threadId === cleanThreadId || contact.kind !== "project"
+    ? contact
+    : { ...contact, threadId: cleanThreadId };
+  const historyPage = isDemoSeedThreadId(cleanThreadId)
+    ? threadHistoryPageFromThread(demoSeedThreadById(cleanThreadId), hydratedContact, { cursor, limit })
+    : await threadHistoryPageFromServer(cleanThreadId, hydratedContact, { cursor, limit });
+  if (!historyPage) return { ok: true, messages: [], historyCursor: null, historyHasMore: false };
+  return { ok: true, ...historyPage };
 });
 
 ipcMain.handle("conversation:switch-project", async (event, cwd) => {
@@ -2808,7 +3243,13 @@ ipcMain.handle("app:choose-directory", async (event, options = {}) => {
   return { canceled: false, cwd: result.filePaths[0] };
 });
 
-ipcMain.handle("conversation:list", async () => conversationBrowser());
+ipcMain.handle("conversation:list", async (_event, options = {}) => conversationBrowser({
+  startCodex: true,
+  cursor: options?.cursor ?? null,
+  limit: options?.limit ?? threadListPageSize,
+  cwd: options?.cwd ?? null,
+  searchTerm: options?.searchTerm ?? null
+}));
 
 ipcMain.handle("approval:respond", async (_event, { approvalId, decision } = {}) => {
   const cleanId = String(approvalId ?? "");
@@ -2860,6 +3301,70 @@ ipcMain.handle("conversation:send-items", async (_event, { contactId, items }) =
   return sendConversationItems(contactId, Array.isArray(items) ? items : []);
 });
 
+function resolvedThreadIdForContact(contactId, threadId = "") {
+  return String(threadId || "").trim()
+    || threadIdFromContactId(contactId)
+    || threadByContact.get(contactId)
+    || "";
+}
+
+ipcMain.handle("conversation:interrupt-turn", async (_event, { contactId, threadId } = {}) => {
+  const cleanContactId = String(contactId || "").trim();
+  const cleanThreadId = resolvedThreadIdForContact(cleanContactId, threadId);
+  const turnId = activeTurnByThread.get(cleanThreadId);
+  if (!cleanThreadId || !turnId) return { ok: false, error: "Aucun tour Codex en cours." };
+  try {
+    await codex.interruptTurn(cleanThreadId, turnId);
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
+ipcMain.handle("conversation:compact", async (_event, { contactId, threadId } = {}) => {
+  const cleanContactId = String(contactId || "").trim();
+  try {
+    const cleanThreadId = resolvedThreadIdForContact(cleanContactId, threadId) || await ensureThread(cleanContactId);
+    await codex.compactThread(cleanThreadId);
+    return { ok: true, threadId: cleanThreadId };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
+ipcMain.handle("conversation:review", async (_event, { contactId, threadId } = {}) => {
+  const cleanContactId = String(contactId || "").trim();
+  try {
+    const cleanThreadId = resolvedThreadIdForContact(cleanContactId, threadId) || await ensureThread(cleanContactId);
+    const result = await codex.reviewThread(cleanThreadId);
+    if (result?.turn?.id) activeTurnByThread.set(cleanThreadId, result.turn.id);
+    return { ok: true, threadId: cleanThreadId };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
+ipcMain.handle("conversation:fork", async (_event, { contactId, threadId } = {}) => {
+  const cleanContactId = String(contactId || "").trim();
+  const cleanThreadId = resolvedThreadIdForContact(cleanContactId, threadId);
+  if (!cleanThreadId) return { ok: false, error: "Aucun fil a dupliquer." };
+  try {
+    const settings = await loadSettings();
+    const contact = contactFor(cleanContactId);
+    const codexOptions = codexOptionsForContact(cleanContactId, settings);
+    const thread = await codex.forkThread(cleanThreadId, contact, codexOptions);
+    if (thread) knownThreads.set(thread.id, thread);
+    const targetContact = thread ? contactFromThread(thread.id) : null;
+    if (targetContact?.id && thread?.id) {
+      threadByContact.set(targetContact.id, thread.id);
+      contactByThread.set(thread.id, targetContact.id);
+    }
+    return { ok: true, threadId: thread?.id, contact: targetContact, conversations: await conversationBrowser() };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
 async function sendConversationItems(contactId, items) {
   const cleanItems = items.filter((item) => {
     if (item?.type === "text") return String(item.text ?? "").trim();
@@ -2873,7 +3378,13 @@ async function sendConversationItems(contactId, items) {
     const settings = await loadSettings();
     const codexOptions = codexOptionsForContact(contactId, settings);
     const threadId = await ensureThread(contactId);
-    await codex.startTurn(threadId, cleanItems, codexOptions);
+    const activeTurnId = activeTurnByThread.get(threadId);
+    if (activeTurnId) {
+      await codex.steerTurn(threadId, activeTurnId, cleanItems);
+      return { ok: true, threadId, steered: true, conversations: await conversationBrowser() };
+    }
+    const result = await codex.startTurn(threadId, cleanItems, codexOptions);
+    if (result?.turn?.id) activeTurnByThread.set(threadId, result.turn.id);
     return { ok: true, threadId, conversations: await conversationBrowser() };
   } catch (error) {
     sendToChat(contactId, "codex:error", { contactId, text: error.message });

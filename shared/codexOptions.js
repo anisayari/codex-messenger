@@ -23,9 +23,10 @@ export const codexCwdOptions = [
 ];
 
 export const codexSandboxOptions = [
-  { value: "read-only", label: "Lecture seule" },
-  { value: "workspace-write", label: "Ecriture workspace" },
-  { value: "danger-full-access", label: "Acces complet" }
+  { value: "readOnly", label: "Lecture seule" },
+  { value: "workspaceWrite", label: "Ecriture workspace" },
+  { value: "dangerFullAccess", label: "Acces complet" },
+  { value: "externalSandbox", label: "Sandbox externe" }
 ];
 
 export const codexApprovalOptions = [
@@ -39,7 +40,7 @@ export const defaultCodexOptions = {
   model: "",
   reasoningEffort: "",
   cwdMode: "contact",
-  sandbox: "workspace-write",
+  sandbox: "workspaceWrite",
   approvalPolicy: "never"
 };
 
@@ -51,15 +52,18 @@ function normalizeChoice(value, options, fallback) {
 function normalizeSandboxChoice(value) {
   const clean = String(value ?? "");
   const aliases = {
-    readOnly: "read-only",
-    read_only: "read-only",
-    "read-only": "read-only",
-    workspaceWrite: "workspace-write",
-    workspace_write: "workspace-write",
-    "workspace-write": "workspace-write",
-    dangerFullAccess: "danger-full-access",
-    danger_full_access: "danger-full-access",
-    "danger-full-access": "danger-full-access"
+    readOnly: "readOnly",
+    read_only: "readOnly",
+    "read-only": "readOnly",
+    workspaceWrite: "workspaceWrite",
+    workspace_write: "workspaceWrite",
+    "workspace-write": "workspaceWrite",
+    dangerFullAccess: "dangerFullAccess",
+    danger_full_access: "dangerFullAccess",
+    "danger-full-access": "dangerFullAccess",
+    externalSandbox: "externalSandbox",
+    external_sandbox: "externalSandbox",
+    "external-sandbox": "externalSandbox"
   };
   return normalizeChoice(aliases[clean] ?? clean, codexSandboxOptions, defaultCodexOptions.sandbox);
 }
@@ -80,11 +84,19 @@ export function optionLabel(options, value) {
 
 export function sandboxPolicyForMode(mode) {
   const sandbox = normalizeSandboxChoice(mode);
-  if (sandbox === "read-only") return { type: "readOnly" };
-  if (sandbox === "danger-full-access") return { type: "dangerFullAccess" };
+  if (sandbox === "readOnly") {
+    return {
+      type: "readOnly",
+      access: { type: "fullAccess" },
+      networkAccess: false
+    };
+  }
+  if (sandbox === "dangerFullAccess") return { type: "dangerFullAccess" };
+  if (sandbox === "externalSandbox") return { type: "externalSandbox", networkAccess: "enabled" };
   return {
     type: "workspaceWrite",
     writableRoots: [],
+    readOnlyAccess: { type: "fullAccess" },
     networkAccess: true,
     excludeTmpdirEnvVar: false,
     excludeSlashTmp: false

@@ -89,6 +89,14 @@ const gameCatalog = [
   { id: "memory", label: "Memory" },
   { id: "wizz", label: "Wizz" }
 ];
+const slashCommandCatalog = [
+  { id: "status", label: "/status", detail: "etat du fil" },
+  { id: "new", label: "/new", detail: "nouveau fil" },
+  { id: "review", label: "/review", detail: "revue Codex" },
+  { id: "compact", label: "/compact", detail: "compacter" },
+  { id: "fork", label: "/fork", detail: "dupliquer" },
+  { id: "model", label: "/model", detail: "modele actif" }
+];
 const soundCatalog = [
   ["message", "Nouveau message", audioFiles.message],
   ["wizz", "Wizz / Nudge", audioFiles.wizz],
@@ -117,6 +125,8 @@ const defaultTextStyle = {
   bubble: "#f0f6ff",
   meBubble: "#eefaf1"
 };
+const transcriptInitialRenderLimit = 160;
+const transcriptRenderStep = 80;
 const textFontOptions = ["Tahoma", "Verdana", "Arial", "Segoe UI", "Times New Roman", "Courier New", "Comic Sans MS"];
 const textColorOptions = ["#182337", "#123f82", "#0b7747", "#7a1c1c", "#4b347a", "#111111"];
 const bubbleColorOptions = ["#f0f6ff", "#fffbd0", "#eefaf1", "#fff0f0", "#f2edff", "#ffffff"];
@@ -513,6 +523,7 @@ function normalizeMessengerSettings(settings = {}) {
     newMessageSoundEnabled: source.newMessageSoundEnabled !== false,
     unreadWizzEnabled: source.unreadWizzEnabled !== false,
     demoMode: source.demoMode === true,
+    autoSignIn: source.autoSignIn !== false,
     unreadWizzDelaySeconds: normalizeWizzDelaySeconds((source.unreadWizzDelayMs ?? 60_000) / 1000),
     closeBehavior: ["ask", "hide", "quit"].includes(closeBehavior) ? closeBehavior : "ask"
   };
@@ -551,6 +562,46 @@ function projectThreadCount(project) {
   return Number(project?.threadCount ?? project?.threads?.length ?? 0) || 0;
 }
 
+function combinedProjectThreads(project = {}) {
+  const seen = new Set();
+  return [...(project.threads ?? []), ...(project.hiddenThreads ?? [])].filter((thread) => {
+    if (!thread?.id || seen.has(thread.id)) return false;
+    seen.add(thread.id);
+    return true;
+  });
+}
+
+function mergeThreadArrays(left = [], right = []) {
+  const byId = new Map();
+  for (const thread of [...left, ...right]) {
+    if (thread?.id) byId.set(thread.id, { ...(byId.get(thread.id) ?? {}), ...thread });
+  }
+  return Array.from(byId.values()).sort((a, b) => String(b.timestamp ?? "").localeCompare(String(a.timestamp ?? "")));
+}
+
+function mergeConversationPages(current, next) {
+  if (!current) return next;
+  if (!next) return current;
+  const projects = new Map();
+  for (const project of current.projects ?? []) projects.set(project.cwd || project.id, { ...project });
+  for (const project of next.projects ?? []) {
+    const key = project.cwd || project.id;
+    const existing = projects.get(key);
+    projects.set(key, existing ? {
+      ...existing,
+      ...project,
+      threads: mergeThreadArrays(existing.threads, project.threads),
+      hiddenThreads: mergeThreadArrays(existing.hiddenThreads, project.hiddenThreads),
+      threadCount: Math.max(projectThreadCount(existing), projectThreadCount(project))
+    } : { ...project });
+  }
+  return {
+    ...current,
+    ...next,
+    projects: Array.from(projects.values()).sort((a, b) => String(a.name ?? "").localeCompare(String(b.name ?? "")))
+  };
+}
+
 function compareProjectNames(left, right) {
   return String(left?.name ?? "").localeCompare(String(right?.name ?? ""), undefined, {
     numeric: true,
@@ -584,11 +635,86 @@ const emoticonPattern = new RegExp(
 );
 
 const inlineTokenSource = [
+  "\\[[^\\]\\n]+\\]\\([^\\s)]+\\)",
+  "https?:\\/\\/[^\\s<>()]+",
   "`[^`\\n]+`",
   "\\*\\*[^*\\n]+\\*\\*",
   "__[^_\\n]+__",
+  "~~[^~\\n]+~~",
+  "\\*[^*\\n]+\\*",
   ...emoticonTokens.map(([code]) => escapeRegExp(code))
 ].join("|");
+
+const markdownLinkPattern = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/;
+const internalMentionProtocols = new Set(["plugin", "app", "skill"]);
+
+function protocolForHref(href) {
+  const match = String(href ?? "").trim().match(/^([a-z][a-z0-9+.-]*):/i);
+  return match ? match[1].toLowerCase() : "";
+}
+
+function isSafeExternalHref(href) {
+  const protocol = protocolForHref(href);
+  return protocol === "http" || protocol === "https" || protocol === "mailto";
+}
+
+function internalMentionKind(href) {
+  const protocol = protocolForHref(href);
+  return internalMentionProtocols.has(protocol) ? protocol : "";
+}
+
+function splitTrailingUrlPunctuation(value) {
+  let href = String(value ?? "");
+  let suffix = "";
+  while (href.length > 0 && /[.,!?;:]$/.test(href)) {
+    suffix = `${href.slice(-1)}${suffix}`;
+    href = href.slice(0, -1);
+  }
+  return { href, suffix };
+}
+
+function renderMarkdownLinkToken(token, keyPrefix) {
+  const match = String(token ?? "").match(markdownLinkPattern);
+  if (!match) return null;
+  const label = match[1].trim();
+  const href = match[2].trim();
+  const mentionKind = internalMentionKind(href);
+  if (mentionKind) {
+    return (
+      <span
+        className={`message-mention ${mentionKind}`}
+        data-kind={mentionKind}
+        key={`${keyPrefix}-mention`}
+        title={href}
+      >
+        {renderInlineFormattedText(label, `${keyPrefix}-mention-label`)}
+      </span>
+    );
+  }
+  if (!isSafeExternalHref(href)) {
+    return (
+      <span className="message-link disabled" key={`${keyPrefix}-link-disabled`} title={href}>
+        {renderInlineFormattedText(label, `${keyPrefix}-link-disabled-label`)}
+      </span>
+    );
+  }
+  return (
+    <a className="message-link" key={`${keyPrefix}-link`} href={href} target="_blank" rel="noreferrer noopener">
+      {renderInlineFormattedText(label, `${keyPrefix}-link-label`)}
+    </a>
+  );
+}
+
+function renderUrlToken(token, keyPrefix) {
+  const { href, suffix } = splitTrailingUrlPunctuation(token);
+  if (!isSafeExternalHref(href)) return token;
+  return [
+    <a className="message-link" key={`${keyPrefix}-url`} href={href} target="_blank" rel="noreferrer noopener">
+      {href}
+    </a>,
+    suffix
+  ].filter(Boolean);
+}
 
 function renderInlineFormattedText(text, keyPrefix = "inline") {
   const source = String(text ?? "");
@@ -601,7 +727,11 @@ function renderInlineFormattedText(text, keyPrefix = "inline") {
     const token = match[0];
     if (match.index > lastIndex) nodes.push(source.slice(lastIndex, match.index));
     const emoticon = emoticonByToken[token];
-    if (emoticon) {
+    if (markdownLinkPattern.test(token)) {
+      nodes.push(renderMarkdownLinkToken(token, `${keyPrefix}-mdlink-${match.index}`));
+    } else if (/^https?:\/\//i.test(token)) {
+      nodes.push(renderUrlToken(token, `${keyPrefix}-url-${match.index}`));
+    } else if (emoticon) {
       nodes.push(
         <img
           key={`${keyPrefix}-emoticon-${match.index}`}
@@ -616,6 +746,10 @@ function renderInlineFormattedText(text, keyPrefix = "inline") {
       nodes.push(<code className="message-code" key={`${keyPrefix}-code-${match.index}`}>{token.slice(1, -1)}</code>);
     } else if ((token.startsWith("**") && token.endsWith("**")) || (token.startsWith("__") && token.endsWith("__"))) {
       nodes.push(<strong key={`${keyPrefix}-strong-${match.index}`}>{renderInlineFormattedText(token.slice(2, -2), `${keyPrefix}-strong-${match.index}`)}</strong>);
+    } else if (token.startsWith("~~") && token.endsWith("~~")) {
+      nodes.push(<del key={`${keyPrefix}-del-${match.index}`}>{renderInlineFormattedText(token.slice(2, -2), `${keyPrefix}-del-${match.index}`)}</del>);
+    } else if (token.startsWith("*") && token.endsWith("*")) {
+      nodes.push(<em key={`${keyPrefix}-em-${match.index}`}>{renderInlineFormattedText(token.slice(1, -1), `${keyPrefix}-em-${match.index}`)}</em>);
     } else {
       nodes.push(token);
     }
@@ -770,6 +904,10 @@ function generatedAvatarKind(contact = {}) {
   if (["lens", "brush", "terminal"].includes(contact.avatar)) return contact.avatar;
   if (contact.custom || contact.kind === "agent") return "agent";
   return "buddy";
+}
+
+function isCodexHistoryContact(contact = {}) {
+  return Boolean(contact.kind === "project" || contact.kind === "thread" || contact.cwd || contact.threadId);
 }
 
 const avatarCache = new Map();
@@ -1132,6 +1270,7 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   const [status, setStatus] = useState(initialProfile.status);
   const [language, setLanguage] = useState(normalizeLanguage(initialProfile.language ?? initialSettings?.language ?? "fr"));
   const [codexPath, setCodexPath] = useState(initialSettings?.codexPath ?? "");
+  const [autoSignIn, setAutoSignIn] = useState(initialSettings?.autoSignIn !== false);
   const [codexStatus, setCodexStatus] = useState(initialCodexStatus);
   const [state, setState] = useState("idle");
   const [setupState, setSetupState] = useState("idle");
@@ -1180,6 +1319,7 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         status,
         language,
         codexPath,
+        autoSignIn,
         unreadWizzDelayMs: normalizeWizzDelaySeconds((initialSettings?.unreadWizzDelayMs ?? 60_000) / 1000) * 1000,
         displayPicturePath: initialProfile.displayPicturePath ?? "",
         displayPictureAsset: initialProfile.displayPictureAsset ?? ""
@@ -1283,7 +1423,7 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         <img className="msn-login-watermark" src={brandPeopleLogo} alt="" aria-hidden="true" draggable="false" />
         <header className="msn-login-brand">
           <Logo small />
-          <strong>msn</strong>
+          <strong>Codex</strong>
           <span>Messenger</span>
         </header>
 
@@ -1329,7 +1469,14 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         <fieldset className="msn-login-options">
           <label><input type="checkbox" defaultChecked /> {text.remember}</label>
           <label><input type="checkbox" defaultChecked /> {text.rememberPassword}</label>
-          <label><input type="checkbox" /> {text.signAutomatically}</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={autoSignIn}
+              onChange={(event) => setAutoSignIn(event.target.checked)}
+            />
+            {text.signAutomatically}
+          </label>
         </fieldset>
 
         <button className="msn-signin-button" disabled={state !== "idle" || !canConnect}>
@@ -1337,38 +1484,40 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
         </button>
         <div className={state === "idle" ? "progress msn-login-progress" : "progress msn-login-progress active"}><span /></div>
 
-        <section className="msn-service-panel" aria-label={text.serviceStatus}>
-          <div className="msn-service-title">
+        <details className="msn-service-panel" aria-label={text.serviceStatus} open={!canConnect}>
+          <summary className="msn-service-title">
             <span>{text.serviceStatus}</span>
             <strong className={canConnect ? "online" : "offline"}>{canConnect ? text.online : text.offline}</strong>
+          </summary>
+          <div className="msn-service-body">
+            <label className="msn-login-field compact">
+              <span>{text.codexPath}</span>
+              <input value={codexPath} onChange={(event) => setCodexPath(event.target.value)} placeholder={text.autoPath} />
+            </label>
+            <div className="codex-path-actions">
+              <button className={pressedPathAction === "browse" ? "pressed" : ""} type="button" onClick={chooseCodex}>{text.browse}</button>
+              <button className={pressedPathAction === "test" ? "pressed" : ""} type="button" onClick={testCodex}>{text.test}</button>
+            </div>
+            <p className={canConnect ? "codex-status ok" : "codex-status"}>
+              {codexStatusText()}
+            </p>
+            <div className="codex-setup-actions">
+              {npmMissing ? (
+                <button type="button" onClick={openNodeDownload}>{text.openNode}</button>
+              ) : null}
+              {!npmMissing && codexMissing ? (
+                <button type="button" onClick={installCodexCli} disabled={setupState !== "idle"}>
+                  {setupState === "installing" ? text.installingCodex : text.installCodex}
+                </button>
+              ) : null}
+              {loginMissing ? (
+                <button type="button" onClick={loginCodexCli} disabled={setupState !== "idle"}>
+                  {text.loginCodex}
+                </button>
+              ) : null}
+            </div>
           </div>
-          <label className="msn-login-field compact">
-            <span>{text.codexPath}</span>
-            <input value={codexPath} onChange={(event) => setCodexPath(event.target.value)} placeholder={text.autoPath} />
-          </label>
-          <div className="codex-path-actions">
-            <button className={pressedPathAction === "browse" ? "pressed" : ""} type="button" onClick={chooseCodex}>{text.browse}</button>
-            <button className={pressedPathAction === "test" ? "pressed" : ""} type="button" onClick={testCodex}>{text.test}</button>
-          </div>
-          <p className={canConnect ? "codex-status ok" : "codex-status"}>
-            {codexStatusText()}
-          </p>
-          <div className="codex-setup-actions">
-            {npmMissing ? (
-              <button type="button" onClick={openNodeDownload}>{text.openNode}</button>
-            ) : null}
-            {!npmMissing && codexMissing ? (
-              <button type="button" onClick={installCodexCli} disabled={setupState !== "idle"}>
-                {setupState === "installing" ? text.installingCodex : text.installCodex}
-              </button>
-            ) : null}
-            {loginMissing ? (
-              <button type="button" onClick={loginCodexCli} disabled={setupState !== "idle"}>
-                {text.loginCodex}
-              </button>
-            ) : null}
-          </div>
-        </section>
+        </details>
 
         <nav className="msn-login-links" aria-label="Login help">
           <button type="button" onClick={loginCodexCli} disabled={setupState !== "idle"}>{text.loginCodex}</button>
@@ -1554,6 +1703,7 @@ function SettingsDialog({ settings, onSave, onClose }) {
         notificationsEnabled: draft.notificationsEnabled,
         newMessageSoundEnabled: draft.newMessageSoundEnabled,
         unreadWizzEnabled: draft.unreadWizzEnabled,
+        autoSignIn: draft.autoSignIn,
         unreadWizzDelayMs: normalizeWizzDelaySeconds(draft.unreadWizzDelaySeconds) * 1000,
         closeBehavior: draft.closeBehavior
       });
@@ -1596,6 +1746,14 @@ function SettingsDialog({ settings, onSave, onClose }) {
               onChange={(event) => update("unreadWizzEnabled", event.target.checked)}
             />
             <span>Wizz de rappel quand un message reste non lu</span>
+          </label>
+          <label className="settings-check">
+            <input
+              type="checkbox"
+              checked={draft.autoSignIn}
+              onChange={(event) => update("autoSignIn", event.target.checked)}
+            />
+            <span>Connexion automatique au demarrage</span>
           </label>
           <label className="settings-row">
             <span>Delai du Wizz de rappel (secondes)</span>
@@ -1817,8 +1975,10 @@ function RosterView({
   const [projectSort, setProjectSort] = useState(() => normalizeProjectSort(bootstrap.settings?.projectSort));
   const [projectSortMenu, setProjectSortMenu] = useState(null);
   const [contactMenu, setContactMenu] = useState(null);
+  const [expandedContacts, setExpandedContacts] = useState({});
   const [renameDraft, setRenameDraft] = useState(null);
   const [addContactPressed, setAddContactPressed] = useState(false);
+  const [loadingMoreThreads, setLoadingMoreThreads] = useState(false);
   const rosterRef = useRef(null);
   const addContactPressTimerRef = useRef(null);
 
@@ -1894,14 +2054,16 @@ function RosterView({
         mail: `${project.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@project.local`,
         group: "Projets",
         mood: project.cwd,
-        status: project.threads.length ? "online" : "offline",
+        status: projectThreadCount(project) ? "online" : "offline",
         color: "#1f8fcf",
         avatar: "terminal",
         kind: "project",
         cwd: project.cwd,
         createdAt: project.createdAt,
         modifiedAt: project.modifiedAt,
-        threadCount: projectThreadCount(project)
+        threadCount: projectThreadCount(project),
+        threads: project.threads ?? [],
+        hiddenThreads: project.hiddenThreads ?? []
       };
       return {
         ...contact,
@@ -1934,7 +2096,7 @@ function RosterView({
           ...contact,
           statusText: thread.projectName,
           contact,
-          onOpen: () => api.openThread(thread.id)
+          onOpen: () => openThreadFromRoster(thread.id)
         };
       });
     if (threadItems.length) byGroup.push({ id: "threads", title: "Conversations recentes", items: threadItems });
@@ -1947,6 +2109,33 @@ function RosterView({
 
   function toggleGroup(groupId) {
     setCollapsed((current) => ({ ...current, [groupId]: !current[groupId] }));
+  }
+
+  function toggleExpandedContact(item) {
+    if (!item?.id) return;
+    setExpandedContacts((current) => ({ ...current, [item.id]: !current[item.id] }));
+  }
+
+  function expandedThreadsFor(item) {
+    if (!item || !expandedContacts[item.id]) return [];
+    return combinedProjectThreads(item);
+  }
+
+  async function openThreadFromRoster(threadId) {
+    const result = await api.openThread(threadId);
+    if (result?.conversations) setConversations(result.conversations);
+  }
+
+  async function loadMoreThreads() {
+    const cursor = conversations?.nextCursor;
+    if (!cursor || loadingMoreThreads) return;
+    setLoadingMoreThreads(true);
+    try {
+      const next = await api.listConversations({ cursor, limit: 20 });
+      setConversations((current) => mergeConversationPages(current, next));
+    } finally {
+      setLoadingMoreThreads(false);
+    }
   }
 
   function openProjectSortMenu(event) {
@@ -1975,7 +2164,7 @@ function RosterView({
     const top = bounds ? event.clientY - bounds.top : event.clientY;
     setContactMenu({
       x: Math.max(4, Math.min(left, width - 218)),
-      y: Math.max(4, Math.min(top, height - 118)),
+      y: Math.max(4, Math.min(top, height - 154)),
       item
     });
   }
@@ -2117,28 +2306,57 @@ function RosterView({
             </button>
             {!collapsed[group.id] ? group.items.map((item) => {
               const pending = unread[item.id] ?? 0;
+              const expandedThreads = expandedThreadsFor(item);
+              const expanded = expandedThreads.length > 0;
               return (
-                <button
-                  className={pending ? "contact-line has-unread" : "contact-line"}
-                  type="button"
-                  key={item.id}
-                  onClick={item.onOpen}
-                  onContextMenu={(event) => openContactMenu(event, item)}
-                >
-                  <span className={`msn-presence ${item.status}`} />
-                  <span className="contact-mini-avatar"><Avatar contact={item.contact ?? item} /></span>
-                  <span className="contact-line-copy">
-                    <span className="contact-name">{item.name}</span>
-                    <span className="contact-state">({item.statusText})</span>
-                    <span className="contact-mood">{item.mood}</span>
-                  </span>
-                  {pending ? <span className="contact-unread-bubble" title={`${pending} message${pending > 1 ? "s" : ""} en attente`}>{pending > 9 ? "9+" : pending}</span> : <span className="contact-unread-spacer" />}
-                </button>
+                <React.Fragment key={item.id}>
+                  <button
+                    className={[
+                      "contact-line",
+                      pending ? "has-unread" : "",
+                      expandedContacts[item.id] ? "expanded" : ""
+                    ].filter(Boolean).join(" ")}
+                    type="button"
+                    onClick={item.onOpen}
+                    onContextMenu={(event) => openContactMenu(event, item)}
+                  >
+                    <span className={`msn-presence ${item.status}`} />
+                    <span className="contact-mini-avatar"><Avatar contact={item.contact ?? item} /></span>
+                    <span className="contact-line-copy">
+                      <span className="contact-name">{item.name}</span>
+                      <span className="contact-state">({item.statusText})</span>
+                      <span className="contact-mood">{item.mood}</span>
+                    </span>
+                    {pending ? <span className="contact-unread-bubble" title={`${pending} message${pending > 1 ? "s" : ""} en attente`}>{pending > 9 ? "9+" : pending}</span> : <span className="contact-unread-spacer" />}
+                  </button>
+                  {expanded ? (
+                    <div className="contact-thread-list" role="group" aria-label={`Fils de ${item.name}`}>
+                      {expandedThreads.map((thread) => (
+                        <button
+                          className={item.hiddenThreads?.some((hidden) => hidden.id === thread.id) ? "contact-thread-line hidden" : "contact-thread-line"}
+                          type="button"
+                          key={thread.id}
+                          onClick={() => openThreadFromRoster(thread.id)}
+                          title={thread.preview}
+                        >
+                          <span className="contact-thread-bullet" aria-hidden="true" />
+                          <span>{thread.preview || "Nouveau fil Codex"}</span>
+                          {item.hiddenThreads?.some((hidden) => hidden.id === thread.id) ? <small>masque</small> : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </React.Fragment>
               );
             }) : null}
           </section>
         );})}
       </div>
+      {conversations?.hasMore ? (
+        <button className="load-more-threads" type="button" onClick={loadMoreThreads} disabled={loadingMoreThreads}>
+          {loadingMoreThreads ? "Chargement..." : "Afficher plus de conversations"}
+        </button>
+      ) : null}
       {projectSortMenu ? (
         <div
           className="group-context-menu"
@@ -2172,6 +2390,18 @@ function RosterView({
           onContextMenu={(event) => event.preventDefault()}
         >
           <div className="group-context-title">{contactMenu.item.name}</div>
+          {combinedProjectThreads(contactMenu.item).length ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                toggleExpandedContact(contactMenu.item);
+                setContactMenu(null);
+              }}
+            >
+              <span>{expandedContacts[contactMenu.item.id] ? "Reduire" : "Developper"}</span>
+            </button>
+          ) : null}
           <button
             type="button"
             role="menuitem"
@@ -2276,6 +2506,21 @@ function MainWindow() {
       alive = false;
     };
   }, []);
+
+  useEffect(() => api.on("codex:status", (status) => {
+    if (status?.kind === "ready") {
+      setUserAgent(status.userAgent || status.text || "Codex local connecte");
+      setRefreshTick((tick) => tick + 1);
+      return;
+    }
+    if (status?.kind === "error") {
+      setCodexStatus((current) => ({
+        ...current,
+        ready: false,
+        error: status.text
+      }));
+    }
+  }), []);
 
   if (!bootstrap || !profile) return <div className="loading">Connexion...</div>;
 
@@ -2682,10 +2927,43 @@ function CameraPanel({ videoRef, cameraStream, mediaError, onSnapshot, onStop })
   );
 }
 
-function ThreadTabs({ project, contact, activeThreadId, onOpenProject, onOpenThread, onDeleteThread, onReorderThreads }) {
+function ThreadTabs({
+  project,
+  contact,
+  activeThreadId,
+  loading = false,
+  loadingError = "",
+  onOpenProject,
+  onOpenThread,
+  onDeleteThread,
+  onReorderThreads
+}) {
   const [dragThreadId, setDragThreadId] = useState("");
+  const [hiddenMenuOpen, setHiddenMenuOpen] = useState(false);
+  const [hiddenMenuPosition, setHiddenMenuPosition] = useState({ left: 0, top: 0 });
+  const hiddenMenuRef = useRef(null);
   const threads = project?.threads ?? [];
-  if (!project) {
+  const hiddenThreads = project?.hiddenThreads ?? [];
+  const projectName = project?.name ?? contact.name;
+  const projectCwd = project?.cwd ?? contact.cwd;
+
+  useEffect(() => {
+    if (!hiddenMenuOpen) return undefined;
+    const close = (event) => {
+      if (!hiddenMenuRef.current?.contains(event.target)) setHiddenMenuOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setHiddenMenuOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [hiddenMenuOpen]);
+
+  if (!project && !isCodexHistoryContact(contact)) {
     return <div className="to-line">A: {contact.name}</div>;
   }
 
@@ -2701,11 +2979,41 @@ function ThreadTabs({ project, contact, activeThreadId, onOpenProject, onOpenThr
     onReorderThreads(next);
   }
 
+  function threadLoadingStatus() {
+    if (loading) {
+      return <span className="thread-tab-loading"><i aria-hidden="true" />Anciens fils...</span>;
+    }
+    if (loadingError) {
+      return <span className="thread-tab-loading error">Fils indisponibles</span>;
+    }
+    return null;
+  }
+
+  function toggleHiddenMenu(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setHiddenMenuPosition({
+      left: Math.max(6, Math.min(rect.left, window.innerWidth - 248)),
+      top: Math.max(6, rect.bottom - 1)
+    });
+    setHiddenMenuOpen((open) => !open);
+  }
+
   return (
     <div className="thread-tab-bar">
-      <span className="thread-to-label" title={project.cwd}>A: {project.name}</span>
+      <span className="thread-to-label" title={projectCwd || projectName}>A: {projectName}</span>
       <div className="thread-tab-strip" aria-label="Fils Codex">
-        {threads.length ? threads.map((thread) => (
+        {projectCwd ? (
+          <button
+            className="new-thread-button"
+            type="button"
+            title="Nouveau fil"
+            aria-label="Demarrer un nouveau fil"
+            onClick={() => onOpenProject(projectCwd)}
+          >
+            <span aria-hidden="true">+</span>
+          </button>
+        ) : null}
+        {threads.map((thread) => (
           <div
             className={[
               "thread-tab-wrap",
@@ -2751,11 +3059,42 @@ function ThreadTabs({ project, contact, activeThreadId, onOpenProject, onOpenThr
               x
             </button>
           </div>
-        )) : (
-          <button className="thread-tab active new-thread-tab" type="button" onClick={() => onOpenProject(project.cwd)}>
-            <span>Nouveau fil</span>
-          </button>
-        )}
+        ))}
+        {threadLoadingStatus()}
+        {hiddenThreads.length ? (
+          <div className="thread-hidden-wrap" ref={hiddenMenuRef}>
+            <button
+              className={hiddenMenuOpen ? "thread-tab thread-hidden-toggle active" : "thread-tab thread-hidden-toggle"}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={hiddenMenuOpen}
+              title="Afficher les fils masques"
+              onClick={toggleHiddenMenu}
+            >
+              <span>Autres ({hiddenThreads.length})</span>
+            </button>
+            {hiddenMenuOpen ? (
+              <div className="thread-hidden-menu" role="menu" style={{ left: hiddenMenuPosition.left, top: hiddenMenuPosition.top }}>
+                <div className="thread-hidden-title">Fils masques</div>
+                {hiddenThreads.map((thread) => (
+                  <button
+                    type="button"
+                    key={thread.id}
+                    role="menuitem"
+                    title={thread.preview}
+                    onClick={() => {
+                      setHiddenMenuOpen(false);
+                      onOpenThread(thread.id);
+                    }}
+                  >
+                    <span>{thread.preview || "Nouveau fil Codex"}</span>
+                    <small>{thread.timestamp ? new Date(thread.timestamp).toLocaleDateString() : "Codex"}</small>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -3055,9 +3394,19 @@ function ChatWindow({ bootstrap }) {
   const conversationAgentName = contact.kind === "project" || contact.kind === "thread" ? "Codex" : contact.name;
   const [profile, setProfile] = useState(bootstrap.profile);
   const [messages, setMessages] = useState(bootstrap.historyMessages ?? []);
+  const [historyCursor, setHistoryCursor] = useState(bootstrap.historyCursor ?? (bootstrap.historyMessages?.length ?? 0));
+  const [historyHasMore, setHistoryHasMore] = useState(Boolean(bootstrap.historyHasMore));
+  const [loadingPreviousMessages, setLoadingPreviousMessages] = useState(false);
+  const [transcriptRenderLimit, setTranscriptRenderLimit] = useState(transcriptInitialRenderLimit);
   const [draft, setDraft] = useState("");
+  const [promptHistory, setPromptHistory] = useState([]);
+  const [historySearchOpen, setHistorySearchOpen] = useState(false);
+  const [historySearchQuery, setHistorySearchQuery] = useState("");
+  const [draftAttachments, setDraftAttachments] = useState([]);
   const [typing, setTyping] = useState(false);
   const [conversations, setConversations] = useState(bootstrap.conversations);
+  const [threadsLoading, setThreadsLoading] = useState(() => isCodexHistoryContact(contact) && !bootstrap.conversations);
+  const [threadsLoadError, setThreadsLoadError] = useState("");
   const [chatSettings, setChatSettings] = useState(bootstrap.settings ?? {});
   const [codexModels, setCodexModels] = useState([]);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
@@ -3078,6 +3427,12 @@ function ChatWindow({ bootstrap }) {
   const [approvalRequests, setApprovalRequests] = useState(bootstrap.approvalRequests ?? []);
   const scrollRef = useRef(null);
   const stickToBottomRef = useRef(true);
+  const previousMessagesScrollRef = useRef(null);
+  const loadingPreviousMessagesRef = useRef(false);
+  const deltaQueueRef = useRef([]);
+  const deltaFlushTimerRef = useRef(null);
+  const deltaFirstQueuedAtRef = useRef(0);
+  const playedStreamingSoundRef = useRef(false);
   const videoRef = useRef(null);
   const textareaRef = useRef(null);
   const recorderRef = useRef(null);
@@ -3126,6 +3481,22 @@ function ChatWindow({ bootstrap }) {
   );
   const primaryApproval = pendingApprovals[0] ?? null;
   const approvalMenuTarget = primaryApproval?.kind === "file" ? "modification" : "commande";
+  const hiddenRenderedMessages = Math.max(0, messages.length - transcriptRenderLimit);
+  const visibleMessages = useMemo(
+    () => messages.slice(Math.max(0, messages.length - transcriptRenderLimit)),
+    [messages, transcriptRenderLimit]
+  );
+  const promptHistoryKey = `codexMessenger.promptHistory.${contact.id}`;
+  const draftStorageKey = `codexMessenger.draft.${contact.id}`;
+  const filteredPromptHistory = useMemo(() => {
+    const search = historySearchQuery.trim().toLowerCase();
+    return promptHistory.filter((entry) => !search || entry.toLowerCase().includes(search)).slice(0, 8);
+  }, [historySearchQuery, promptHistory]);
+  const slashMatches = useMemo(() => {
+    const clean = draft.trim().toLowerCase();
+    if (!clean.startsWith("/")) return [];
+    return slashCommandCatalog.filter((command) => command.label.startsWith(clean)).slice(0, 6);
+  }, [draft]);
 
   useEffect(() => {
     setActiveContact(initialContact);
@@ -3133,7 +3504,35 @@ function ChatWindow({ bootstrap }) {
 
   useEffect(() => {
     setActiveThreadId(contact.threadId ?? "");
+    setTranscriptRenderLimit(transcriptInitialRenderLimit);
+    deltaQueueRef.current = [];
+    deltaFirstQueuedAtRef.current = 0;
+    playedStreamingSoundRef.current = false;
+    if (deltaFlushTimerRef.current) {
+      window.clearTimeout(deltaFlushTimerRef.current);
+      deltaFlushTimerRef.current = null;
+    }
   }, [contact.id, contact.threadId]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(promptHistoryKey) || "[]");
+      setPromptHistory(Array.isArray(stored) ? stored.filter(Boolean).slice(0, 80) : []);
+    } catch {
+      setPromptHistory([]);
+    }
+    setHistorySearchOpen(false);
+    setHistorySearchQuery("");
+    setDraft(window.localStorage.getItem(draftStorageKey) || "");
+  }, [draftStorageKey, promptHistoryKey]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(draftStorageKey, draft);
+    } catch {
+      // Draft recovery is best effort.
+    }
+  }, [draft, draftStorageKey]);
 
   useEffect(() => {
     setProfile(bootstrap.profile);
@@ -3162,8 +3561,26 @@ function ChatWindow({ bootstrap }) {
   }, [contact.id]);
 
   useEffect(() => {
-    api.listConversations().then(setConversations).catch(() => {});
-  }, [contact.id]);
+    let alive = true;
+    const showThreadLoader = isCodexHistoryContact(contact);
+    if (showThreadLoader) {
+      setThreadsLoading(true);
+      setThreadsLoadError("");
+    }
+    api.listConversations()
+      .then((nextConversations) => {
+        if (alive) setConversations(nextConversations);
+      })
+      .catch((error) => {
+        if (alive && showThreadLoader) setThreadsLoadError(error.message || "Fils indisponibles");
+      })
+      .finally(() => {
+        if (alive && showThreadLoader) setThreadsLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [contact.id, contact.kind, contact.cwd]);
 
   useEffect(() => {
     let alive = true;
@@ -3219,6 +3636,7 @@ function ChatWindow({ bootstrap }) {
 
   useEffect(() => () => {
     if (winkAnimationTimerRef.current) window.clearTimeout(winkAnimationTimerRef.current);
+    if (deltaFlushTimerRef.current) window.clearTimeout(deltaFlushTimerRef.current);
   }, []);
 
   useEffect(() => {
@@ -3236,19 +3654,59 @@ function ChatWindow({ bootstrap }) {
     };
   }, []);
 
+  function flushAgentDeltas() {
+    if (deltaFlushTimerRef.current) {
+      window.clearTimeout(deltaFlushTimerRef.current);
+      deltaFlushTimerRef.current = null;
+    }
+    const delta = deltaQueueRef.current.join("");
+    deltaQueueRef.current = [];
+    deltaFirstQueuedAtRef.current = 0;
+    if (!delta) return;
+    setTyping(false);
+    setMessages((current) => {
+      const notice = codexConnectionNotice(delta);
+      if (notice) return appendSystemNotice(current, notice);
+      if (!current[current.length - 1]?.streaming && !playedStreamingSoundRef.current) {
+        playedStreamingSoundRef.current = true;
+        playNewMessageIfEnabled();
+      }
+      return appendAgentDelta(current, conversationAgentName, delta);
+    });
+  }
+
+  function queueAgentDelta(delta) {
+    const cleanDelta = String(delta ?? "");
+    if (!cleanDelta) return;
+    const notice = codexConnectionNotice(cleanDelta);
+    if (notice) {
+      flushAgentDeltas();
+      setTyping(false);
+      setMessages((current) => appendSystemNotice(current, notice));
+      return;
+    }
+    if (!deltaQueueRef.current.length) deltaFirstQueuedAtRef.current = Date.now();
+    deltaQueueRef.current.push(cleanDelta);
+    const queuedChars = deltaQueueRef.current.reduce((total, item) => total + item.length, 0);
+    const queuedAge = Date.now() - deltaFirstQueuedAtRef.current;
+    const shouldCatchUp = deltaQueueRef.current.length >= 8 || queuedChars >= 2200 || queuedAge >= 120;
+    if (shouldCatchUp) {
+      flushAgentDeltas();
+      return;
+    }
+    if (!deltaFlushTimerRef.current) {
+      deltaFlushTimerRef.current = window.setTimeout(flushAgentDeltas, 16);
+    }
+  }
+
   useEffect(() => {
     const offDelta = api.on("codex:delta", ({ contactId, delta }) => {
       if (contactId !== contact.id) return;
-      setTyping(false);
-      setMessages((current) => {
-        const notice = codexConnectionNotice(delta);
-        if (notice) return appendSystemNotice(current, notice);
-        if (!current[current.length - 1]?.streaming) playNewMessageIfEnabled();
-        return appendAgentDelta(current, conversationAgentName, delta);
-      });
+      queueAgentDelta(delta);
     });
     const offCompleted = api.on("codex:completed-item", ({ contactId, text }) => {
       if (contactId !== contact.id || !text) return;
+      flushAgentDeltas();
       const notice = codexConnectionNotice(text);
       if (notice) {
         setTyping(false);
@@ -3263,23 +3721,57 @@ function ChatWindow({ bootstrap }) {
       setTyping(false);
       setMessages((current) => {
         if (!current[current.length - 1]?.streaming && !incomingWink) playNewMessageIfEnabled();
+        playedStreamingSoundRef.current = false;
         return finishAgentMessage(current, conversationAgentName, text);
       });
+    });
+    const offItemCompleted = api.on("codex:item-completed", ({ contactId, message }) => {
+      if (contactId !== contact.id || !message) return;
+      flushAgentDeltas();
+      setMessages((current) => [...current, message]);
     });
     const offTyping = api.on("codex:typing", ({ contactId }) => {
       if (contactId === contact.id) setTyping(true);
     });
     const offDone = api.on("codex:done", ({ contactId }) => {
-      if (contactId === contact.id) setTyping(false);
+      if (contactId === contact.id) {
+        flushAgentDeltas();
+        playedStreamingSoundRef.current = false;
+        setTyping(false);
+      }
     });
     const offError = api.on("codex:error", ({ contactId, text }) => {
       if (contactId !== contact.id) return;
+      flushAgentDeltas();
+      playedStreamingSoundRef.current = false;
       setTyping(false);
       setMessages((current) => appendSystemNotice(current, codexConnectionNotice(text) || { kind: "offline", text }));
     });
     const offStatus = api.on("codex:status", (status) => {
+      if (status?.kind === "ready") {
+        flushAgentDeltas();
+        setTyping(false);
+        const showThreadLoader = isCodexHistoryContact(contact);
+        if (showThreadLoader) {
+          setThreadsLoading(true);
+          setThreadsLoadError("");
+        }
+        api.listConversations()
+          .then(setConversations)
+          .catch((error) => {
+            if (showThreadLoader) setThreadsLoadError(error.message || "Fils indisponibles");
+          })
+          .finally(() => {
+            if (showThreadLoader) setThreadsLoading(false);
+          });
+        api.listCodexModels()
+          .then((result) => setCodexModels(Array.isArray(result?.models) ? result.models : []))
+          .catch(() => setCodexModels([]));
+        return;
+      }
       const notice = codexConnectionNotice(status?.text);
       if (!notice) return;
+      flushAgentDeltas();
       setTyping(false);
       setMessages((current) => appendSystemNotice(current, notice));
     });
@@ -3298,12 +3790,22 @@ function ChatWindow({ bootstrap }) {
       playWizz();
     });
     return () => {
-      offDelta(); offCompleted(); offTyping(); offDone(); offError(); offStatus(); offApprovalRequest(); offApprovalResolved(); offWizz();
+      if (deltaFlushTimerRef.current) window.clearTimeout(deltaFlushTimerRef.current);
+      deltaFlushTimerRef.current = null;
+      deltaQueueRef.current = [];
+      deltaFirstQueuedAtRef.current = 0;
+      offDelta(); offCompleted(); offItemCompleted(); offTyping(); offDone(); offError(); offStatus(); offApprovalRequest(); offApprovalResolved(); offWizz();
     };
-  }, [contact.id, conversationAgentName]);
+  }, [contact.id, contact.kind, contact.cwd, conversationAgentName]);
 
   useEffect(() => {
     const element = scrollRef.current;
+    if (previousMessagesScrollRef.current && element) {
+      const previous = previousMessagesScrollRef.current;
+      previousMessagesScrollRef.current = null;
+      element.scrollTop = element.scrollHeight - previous.scrollHeight + previous.scrollTop;
+      return;
+    }
     if (!element || !stickToBottomRef.current) return;
     element.scrollTo({ top: element.scrollHeight, behavior: "auto" });
   }, [messages, typing]);
@@ -3314,11 +3816,19 @@ function ChatWindow({ bootstrap }) {
     const updateStickiness = () => {
       const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
       stickToBottomRef.current = distanceFromBottom < 48;
+      if (element.scrollTop < 24 && element.scrollHeight > element.clientHeight + 24) {
+        if (hiddenRenderedMessages > 0) {
+          previousMessagesScrollRef.current = { scrollHeight: element.scrollHeight, scrollTop: element.scrollTop };
+          setTranscriptRenderLimit((current) => Math.min(messages.length, current + transcriptRenderStep));
+        } else {
+          loadPreviousMessages();
+        }
+      }
     };
     element.addEventListener("scroll", updateStickiness, { passive: true });
     updateStickiness();
     return () => element.removeEventListener("scroll", updateStickiness);
-  }, []);
+  }, [activeThreadId, contact.id, historyCursor, historyHasMore, hiddenRenderedMessages, loadingPreviousMessages, messages.length]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -3338,6 +3848,40 @@ function ChatWindow({ bootstrap }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [conversationZoom]);
 
+  async function loadPreviousMessages() {
+    if (!activeThreadId || !historyHasMore || loadingPreviousMessagesRef.current) return;
+    const element = scrollRef.current;
+    previousMessagesScrollRef.current = element
+      ? { scrollHeight: element.scrollHeight, scrollTop: element.scrollTop }
+      : null;
+    loadingPreviousMessagesRef.current = true;
+    setLoadingPreviousMessages(true);
+    try {
+      const result = await api.loadPreviousMessages({
+        contactId: contact.id,
+        threadId: activeThreadId,
+        cursor: historyCursor,
+        limit: 10
+      });
+      if (result?.messages?.length) {
+        stickToBottomRef.current = false;
+        setTranscriptRenderLimit((current) => current + result.messages.length);
+        setMessages((current) => [...result.messages, ...current]);
+      } else {
+        previousMessagesScrollRef.current = null;
+      }
+      setHistoryCursor(result?.historyCursor ?? historyCursor);
+      setHistoryHasMore(Boolean(result?.historyHasMore));
+    } catch (error) {
+      previousMessagesScrollRef.current = null;
+      setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
+      setHistoryHasMore(false);
+    } finally {
+      loadingPreviousMessagesRef.current = false;
+      setLoadingPreviousMessages(false);
+    }
+  }
+
   async function sendItems(items, displayText, options = {}) {
     const cleanText = String(displayText ?? "").trim();
     if (!items.length || !cleanText) return;
@@ -3347,7 +3891,13 @@ function ChatWindow({ bootstrap }) {
     api.markRead(contact.id);
     try {
       const result = await api.sendItems(contact.id, items);
-      if (result?.threadId) setActiveThreadId(result.threadId);
+      if (result?.threadId) {
+        setActiveThreadId(result.threadId);
+        if (!activeThreadId) {
+          setHistoryCursor(messages.length + 1);
+          setHistoryHasMore(false);
+        }
+      }
       if (result?.conversations) setConversations(result.conversations);
     } catch (error) {
       setTyping(false);
@@ -3359,8 +3909,146 @@ function ChatWindow({ bootstrap }) {
     event.preventDefault();
     const clean = draft.trim();
     if (!clean) return;
-    sendItems([{ type: "text", text: clean }], clean);
+    const slash = slashCommandCatalog.find((command) => command.label === clean.split(/\s+/)[0].toLowerCase());
+    if (slash) {
+      runSlashCommand(slash.id);
+      setDraft("");
+      return;
+    }
+    rememberPrompt(clean);
+    const attachments = draftAttachments;
+    const itemAttachments = attachments.map((attachment) => ({ type: "localImage", path: attachment.path }));
+    sendItems(
+      [{ type: "text", text: clean }, ...itemAttachments],
+      clean,
+      attachments[0] ? { attachment: { type: "image", src: attachments[0].src, name: attachments[0].name } } : {}
+    );
     setDraft("");
+    setDraftAttachments([]);
+  }
+
+  function rememberPrompt(text) {
+    const clean = String(text || "").trim();
+    if (!clean) return;
+    setPromptHistory((current) => {
+      const next = [clean, ...current.filter((entry) => entry !== clean)].slice(0, 80);
+      try {
+        window.localStorage.setItem(promptHistoryKey, JSON.stringify(next));
+      } catch {
+        // Prompt history is a convenience only.
+      }
+      return next;
+    });
+  }
+
+  function useHistoryEntry(text) {
+    setDraft(text);
+    setHistorySearchOpen(false);
+    window.requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(text.length, text.length);
+    });
+  }
+
+  async function interruptCurrentTurn() {
+    if (!activeThreadId) return;
+    const result = await api.interruptTurn({ contactId: contact.id, threadId: activeThreadId });
+    if (!result?.ok) {
+      setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Interruption impossible.")]);
+    }
+  }
+
+  async function runSlashCommand(commandId) {
+    setHistorySearchOpen(false);
+    if (commandId === "status" || commandId === "model") {
+      setMessages((current) => [...current, makeMessage("system", "system", `Codex: ${codexOptionsSummary}`)]);
+      return;
+    }
+    if (commandId === "new") {
+      if (contact.cwd) await openProjectTab(contact.cwd);
+      return;
+    }
+    if (commandId === "review") {
+      const result = await api.reviewThread({ contactId: contact.id, threadId: activeThreadId });
+      if (result?.ok) {
+        setActiveThreadId(result.threadId ?? activeThreadId);
+        setTyping(true);
+      } else {
+        setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Review impossible.")]);
+      }
+      return;
+    }
+    if (commandId === "compact") {
+      const result = await api.compactThread({ contactId: contact.id, threadId: activeThreadId });
+      if (result?.ok) {
+        setActiveThreadId(result.threadId ?? activeThreadId);
+        setTyping(true);
+      } else {
+        setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Compact impossible.")]);
+      }
+      return;
+    }
+    if (commandId === "fork") {
+      if (!activeThreadId) {
+        setMessages((current) => [...current, makeMessage("system", "system", "Aucun fil a dupliquer.")]);
+        return;
+      }
+      const result = await api.forkThread({ contactId: contact.id, threadId: activeThreadId });
+      if (result?.threadId) {
+        if (result.conversations) setConversations(result.conversations);
+        await openThreadTab(result.threadId);
+      } else {
+        setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Duplication impossible.")]);
+      }
+    }
+  }
+
+  function handleComposerKeyDown(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r") {
+      event.preventDefault();
+      setHistorySearchOpen(true);
+      setHistorySearchQuery("");
+      return;
+    }
+    if (event.key === "Escape" && historySearchOpen) {
+      event.preventDefault();
+      setHistorySearchOpen(false);
+      return;
+    }
+    if (event.key === "ArrowUp" && !draft && promptHistory[0]) {
+      event.preventDefault();
+      useHistoryEntry(promptHistory[0]);
+      return;
+    }
+    if (event.key === "Tab" && slashMatches[0]) {
+      event.preventDefault();
+      setDraft(slashMatches[0].label);
+      return;
+    }
+    if (event.key === "Enter" && !event.shiftKey) submit(event);
+  }
+
+  async function handleComposerPaste(event) {
+    const files = Array.from(event.clipboardData?.files ?? []).filter((file) => file.type.startsWith("image/"));
+    if (!files.length) return;
+    event.preventDefault();
+    const savedAttachments = [];
+    for (const file of files.slice(0, 4)) {
+      const dataUrl = await blobToDataUrl(file);
+      const saved = await api.saveDataUrl({ dataUrl, name: file.name || "clipboard-image.png" });
+      if (saved?.ok) {
+        savedAttachments.push({
+          path: saved.path,
+          name: saved.name || file.name || "clipboard-image.png",
+          src: localFileUrl(saved.path)
+        });
+      }
+    }
+    if (!savedAttachments.length) return;
+    const start = draftAttachments.length + 1;
+    const labels = savedAttachments.map((_, index) => `[Image #${start + index}]`).join(" ");
+    setDraftAttachments((current) => [...current, ...savedAttachments].slice(0, 8));
+    setDraft((value) => `${value}${value && !value.endsWith(" ") ? " " : ""}${labels} `);
   }
 
   function replaceDraft(start, end, replacement, cursorStart = start + replacement.length, cursorEnd = cursorStart) {
@@ -3701,7 +4389,10 @@ function ChatWindow({ bootstrap }) {
       }
       if (result?.messages) {
         stickToBottomRef.current = true;
+        setTranscriptRenderLimit(transcriptInitialRenderLimit);
         setMessages(result.messages);
+        setHistoryCursor(result.historyCursor ?? result.messages.length);
+        setHistoryHasMore(Boolean(result.historyHasMore));
         setTyping(false);
       }
       if (result?.conversations) setConversations(result.conversations);
@@ -4125,6 +4816,8 @@ function ChatWindow({ bootstrap }) {
             project={currentProject}
             contact={contact}
             activeThreadId={activeThreadId}
+            loading={threadsLoading}
+            loadingError={threadsLoadError}
             onOpenProject={openProjectTab}
             onOpenThread={openThreadTab}
             onDeleteThread={deleteThreadTab}
@@ -4141,7 +4834,24 @@ function ChatWindow({ bootstrap }) {
               "--message-me-bubble": textStyle.meBubble
             }}
           >
-            {messages.map((message) => <Message key={message.id} message={message} />)}
+            {hiddenRenderedMessages > 0 ? (
+              <div className="history-load-row">
+                <button
+                  type="button"
+                  onClick={() => setTranscriptRenderLimit((current) => Math.min(messages.length, current + transcriptRenderStep))}
+                >
+                  Afficher {Math.min(transcriptRenderStep, hiddenRenderedMessages)} messages precedents
+                </button>
+              </div>
+            ) : null}
+            {historyHasMore ? (
+              <div className="history-load-row">
+                <button type="button" onClick={loadPreviousMessages} disabled={loadingPreviousMessages}>
+                  {loadingPreviousMessages ? "Chargement..." : "Load previous"}
+                </button>
+              </div>
+            ) : null}
+            {visibleMessages.map((message) => <Message key={message.id} message={message} />)}
             {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} ecrit...</div> : null}
           </div>
           <ApprovalRequestsPanel requests={pendingApprovals} onRespond={respondToApproval} />
@@ -4157,10 +4867,54 @@ function ChatWindow({ bootstrap }) {
             {!recording && mediaError && !openFlyout ? <span className="format-status error">{mediaError}</span> : null}
           </div>
           <form className="composer" onSubmit={submit}>
-            <textarea ref={textareaRef} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) submit(event);
-            }} />
-            <div><button type="submit">Send</button><button type="button" onClick={handleSearch}>Search</button></div>
+            {(historySearchOpen || slashMatches.length) ? (
+              <div className="composer-popup">
+                {historySearchOpen ? (
+                  <>
+                    <input
+                      autoFocus
+                      value={historySearchQuery}
+                      onChange={(event) => setHistorySearchQuery(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Escape") setHistorySearchOpen(false);
+                        if (event.key === "Enter" && filteredPromptHistory[0]) useHistoryEntry(filteredPromptHistory[0]);
+                      }}
+                      placeholder="Search message history"
+                    />
+                    {filteredPromptHistory.length ? filteredPromptHistory.map((entry) => (
+                      <button type="button" key={entry} onClick={() => useHistoryEntry(entry)}>
+                        <span>{entry}</span>
+                      </button>
+                    )) : <small>Aucun message</small>}
+                  </>
+                ) : slashMatches.map((command) => (
+                  <button type="button" key={command.id} onClick={() => runSlashCommand(command.id)}>
+                    <span>{command.label}</span>
+                    <small>{command.detail}</small>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {draftAttachments.length ? (
+              <div className="composer-attachments">
+                {draftAttachments.map((attachment, index) => (
+                  <button
+                    type="button"
+                    key={`${attachment.path}-${index}`}
+                    onClick={() => setDraftAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                    title="Retirer cette image"
+                  >
+                    <img src={attachment.src} alt="" draggable="false" />
+                    <span>[Image #{index + 1}]</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <textarea ref={textareaRef} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={handleComposerKeyDown} onPaste={handleComposerPaste} />
+            <div>
+              <button type="submit">Send</button>
+              {typing ? <button type="button" onClick={interruptCurrentTurn}>Stop</button> : <button type="button" onClick={handleSearch}>Search</button>}
+            </div>
           </form>
         </div>
         <aside className="chat-side">
@@ -4267,6 +5021,34 @@ function ApprovalRequestsPanel({ requests, onRespond }) {
 }
 
 function Message({ message }) {
+  if (message.itemType === "commandExecution") {
+    return (
+      <article className={`codex-item command ${message.status ?? ""}`}>
+        <header><strong>Commande Codex</strong><time>{message.time}</time></header>
+        <code>{message.command || message.text}</code>
+        {message.cwd ? <small>{message.cwd}</small> : null}
+        {message.text && message.text !== message.command ? <pre>{message.text.replace(message.command ?? "", "").trim()}</pre> : null}
+        <footer>{message.status || "termine"}{message.exitCode !== null && message.exitCode !== undefined ? ` / exit ${message.exitCode}` : ""}</footer>
+      </article>
+    );
+  }
+  if (message.itemType === "fileChange") {
+    return (
+      <article className={`codex-item file ${message.status ?? ""}`}>
+        <header><strong>Fichiers modifies</strong><time>{message.time}</time></header>
+        <pre>{message.text}</pre>
+        <footer>{message.status || "termine"}</footer>
+      </article>
+    );
+  }
+  if (message.itemType === "mcpToolCall" || message.itemType === "dynamicToolCall") {
+    return (
+      <article className="codex-item tool">
+        <header><strong>Outil Codex</strong><time>{message.time}</time></header>
+        <p>{message.text}</p>
+      </article>
+    );
+  }
   if (message.from === "system") {
     return <p className={message.noticeKind ? `system notice-${message.noticeKind}` : "system"}><span>{message.time}</span> {message.text}</p>;
   }
@@ -4291,11 +5073,15 @@ function Message({ message }) {
 
 function App() {
   const [bootstrap, setBootstrap] = useState(null);
+  const [bootstrapError, setBootstrapError] = useState("");
 
   useEffect(() => {
-    api.bootstrap().then(setBootstrap);
+    api.bootstrap()
+      .then(setBootstrap)
+      .catch((error) => setBootstrapError(error.message || "Chargement impossible."));
   }, []);
 
+  if (bootstrapError) return <div className="loading error">{bootstrapError}</div>;
   if (!bootstrap) return <div className="loading">Chargement...</div>;
   return bootstrap.view === "chat" ? <ChatWindow bootstrap={bootstrap} /> : <MainWindow />;
 }

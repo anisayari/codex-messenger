@@ -238,14 +238,22 @@
       z-index: 30;
       display: grid;
       place-items: center;
+      min-height: 100dvh;
+      box-sizing: border-box;
+      overflow: auto;
       padding: 20px;
       background:
         radial-gradient(circle at 50% 38%, rgba(255, 255, 255, .64), rgba(255, 255, 255, 0) 34%),
         rgba(8, 26, 98, .46);
     }
 
+    body.download-modal-open {
+      overflow: hidden;
+    }
+
     .download-modal-panel {
       width: min(460px, calc(100vw - 34px));
+      max-height: calc(100dvh - 40px);
       overflow: hidden;
       color: #142857;
       border: 2px solid #0a35d7;
@@ -604,12 +612,13 @@
       }
 
       .download-modal {
-        align-items: end;
-        padding: 12px;
+        place-items: center;
+        padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
       }
 
       .download-modal-panel {
         width: min(100%, 430px);
+        max-height: calc(100dvh - 24px);
       }
 
       .download-modal-body {
@@ -804,7 +813,7 @@
       }
     }
   </style>
-  <script src="./assets/site.js?v=download-modal-20260423-1" defer></script>
+  <script src="./assets/site.js?v=download-modal-20260424-2" defer></script>
 </head>
 <body>
   <main class="site" aria-label="Codex Messenger landing page">
@@ -1089,8 +1098,8 @@
         </g>
       </a>
       <text id="desktopDownloadNote" x="772" y="606" text-anchor="middle" fill="#0861ff" font-size="24" font-style="italic" filter="url(#copyTextRelief)">Get Codex Messenger Now !</text>
-      <a class="download-version-link pressable" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal" aria-label="Choose Codex Messenger version v0.0.2.1 download">
-        <text x="772" y="635" text-anchor="middle" fill="#071fd0" font-size="20" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">download version v0.0.2.1</text>
+      <a class="download-version-link pressable" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal" aria-label="Choose Codex Messenger version v0.0.2.2 download">
+        <text x="772" y="635" text-anchor="middle" fill="#071fd0" font-size="20" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">download version v0.0.2.2</text>
       </a>
 
       <g transform="translate(81 679)" filter="url(#panelShadow)">
@@ -1194,21 +1203,21 @@
         <h2 id="downloadModalTitle">Download Codex Messenger</h2>
         <p id="downloadModalSubtitle">Choose the installer for your computer.</p>
         <div id="download-options" class="download-options">
-          <a class="download-option" href="./downloads/CodexMessenger-mac-arm64.dmg?v=v0.0.2.1" download="CodexMessenger-mac-arm64.dmg" data-download-link aria-label="Download Codex Messenger for macOS version v0.0.2.1">
+          <a class="download-option" href="./downloads/CodexMessenger-mac-arm64.dmg?v=v0.0.2.2" download="CodexMessenger-mac-arm64.dmg" data-download-link aria-label="Download Codex Messenger for macOS version v0.0.2.2">
             <span class="download-option-icon" aria-hidden="true">Mac</span>
             <span class="download-option-copy">
               <strong id="downloadMacLabel">Download for macOS</strong>
               <span id="downloadMacNote">Apple Silicon DMG</span>
             </span>
-            <span class="download-version">v0.0.2.1</span>
+            <span class="download-version">v0.0.2.2</span>
           </a>
-          <a class="download-option" href="./downloads/CodexMessenger.exe?v=v0.0.2.1" download="CodexMessenger.exe" data-download-link aria-label="Download Codex Messenger for Windows version v0.0.2.1">
+          <a class="download-option" href="./downloads/CodexMessenger.exe?v=v0.0.2.2" download="CodexMessenger.exe" data-download-link aria-label="Download Codex Messenger for Windows version v0.0.2.2">
             <span class="download-option-icon" aria-hidden="true">Win</span>
             <span class="download-option-copy">
               <strong id="downloadWindowsLabel">Download for Windows</strong>
               <span id="downloadWindowsNote">Windows installer</span>
             </span>
-            <span class="download-version">v0.0.2.1</span>
+            <span class="download-version">v0.0.2.2</span>
           </a>
         </div>
       </div>
@@ -1234,7 +1243,7 @@
 
     <a class="mobile-download pressable-ui" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">DOWNLOAD</a>
     <p id="mobileDownloadNote" class="mobile-download-note">Get Codex Messenger Now !</p>
-    <a class="mobile-version-link pressable-ui" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">download version v0.0.2.1</a>
+    <a class="mobile-version-link pressable-ui" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">download version v0.0.2.2</a>
 
     <ul class="mobile-features">
       <li id="mobileFeatureOne">Classic look &amp; feel from the 2000s</li>
