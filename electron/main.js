@@ -1667,9 +1667,7 @@ class CodexAppServer extends EventEmitter {
       config: null,
       baseInstructions: null,
       developerInstructions: localizedInstructions(contact),
-      personality: "pragmatic",
-      persistExtendedHistory: true,
-      experimentalRawEvents: false
+      personality: "pragmatic"
     });
     loadedThreads.add(result.thread.id);
     logDebug("codex.thread.start.ok", { threadId: result.thread.id, cwd });
@@ -1692,8 +1690,7 @@ class CodexAppServer extends EventEmitter {
       baseInstructions: null,
       developerInstructions: overrides.developerInstructions ?? null,
       personality: "pragmatic",
-      excludeTurns: overrides.excludeTurns !== false,
-      persistExtendedHistory: true
+      excludeTurns: overrides.excludeTurns !== false
     });
     if (result.thread?.id) {
       loadedThreads.add(result.thread.id);
@@ -1813,8 +1810,7 @@ class CodexAppServer extends EventEmitter {
       baseInstructions: null,
       developerInstructions: contact ? localizedInstructions(contact) : null,
       ephemeral: false,
-      excludeTurns: true,
-      persistExtendedHistory: true
+      excludeTurns: true
     });
     if (result.thread?.id) {
       loadedThreads.add(result.thread.id);
