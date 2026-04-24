@@ -97,17 +97,30 @@ button { cursor: default; }
   display: flex;
   align-items: center;
   flex: 1 1 auto;
-  height: 22px;
+  height: 23px;
   min-width: 0;
-  gap: 6px;
+  gap: 7px;
   font-weight: 700;
   text-shadow: 0 1px 1px rgba(0,0,0,.45);
 }
-.title-left span:last-child {
+.titlebar-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+.titlebar-logo .logo.small {
+  width: 22px;
+  height: 19px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.55));
+}
+.title-left > span:last-child {
   font-size: 13px;
 }
 
-.title-left span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.title-left > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .window-buttons {
   -webkit-app-region: no-drag;
   position: relative;
@@ -2635,6 +2648,72 @@ button { cursor: default; }
   margin-bottom: 4px;
   color: #244a83;
 }
+.codex-item.command {
+  padding: 0;
+  overflow: hidden;
+}
+.codex-item.command summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 6px 8px;
+  color: #244a83;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.codex-item.command summary::-webkit-details-marker {
+  display: none;
+}
+.codex-item.command summary::before {
+  content: ">";
+  display: inline-grid;
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+  place-items: center;
+  border: 1px solid #9eb4d1;
+  border-radius: 2px;
+  color: #315c99;
+  background: linear-gradient(#ffffff, #dbeaff);
+  font-size: 13px;
+  line-height: 1;
+}
+.codex-item.command[open] summary::before {
+  content: "v";
+}
+.command-summary-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.command-summary-status {
+  color: #667791;
+  white-space: nowrap;
+  font-size: 10px;
+}
+.codex-item.command time {
+  color: #244a83;
+  white-space: nowrap;
+  font-size: 10px;
+}
+.codex-item.command code,
+.codex-item.command pre,
+.codex-item.command small,
+.codex-item.command footer {
+  margin-right: 7px;
+  margin-left: 7px;
+}
+.codex-item.command small:last-child,
+.codex-item.command pre:last-child {
+  margin-bottom: 7px;
+}
 .codex-item code,
 .codex-item pre {
   display: block;
@@ -3182,6 +3261,32 @@ button { cursor: default; }
     inset 0 0 0 3px #eef7ff,
     inset 0 18px 26px rgba(255,255,255,.25),
     inset 0 -18px 28px rgba(0,22,80,.18);
+}
+.display-frame-caption {
+  display: grid;
+  gap: 1px;
+  padding: 3px 20px 0 2px;
+}
+.display-frame-caption button {
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: #163c73;
+  background: transparent;
+  font: 10px Tahoma, Arial, sans-serif;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.display-frame-caption button:first-child {
+  font-weight: 700;
+}
+.display-frame-caption button:hover,
+.display-frame-caption button:focus-visible {
+  outline: 1px dotted #315d94;
+  background: rgba(223,239,255,.72);
 }
 .chat-side .display-frame {
   justify-self: end;

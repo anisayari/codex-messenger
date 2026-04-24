@@ -169,7 +169,7 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
     };
     thread.turns.push(turn);
     thread.updatedAt = Date.now() / 1000;
-    send({ id, result: { turn } });
+    send({ id, result: method === "turn/steer" ? { turnId: turn.id } : { turn } });
     send({ method: "turn/started", params: { threadId: params.threadId, turn: { ...turn, status: "inProgress", items: [] } } });
     send({ method: "item/agentMessage/delta", params: { threadId: params.threadId, delta: "received" } });
     send({ method: "item/completed", params: { threadId: params.threadId, item: turn.items[1] } });
@@ -286,7 +286,7 @@ test("Codex app-server contract covers auth, thread read/write, resume, steer, r
     input: [{ type: "text", text: "ajoute les tests" }],
     expectedTurnId: firstTurn.turn.id
   });
-  assert.equal(steered.turn.items[1].text, "received: ajoute les tests");
+  assert.match(steered.turnId, /^turn_/);
 
   const turns = await client.request("thread/turns/list", {
     threadId: started.thread.id,

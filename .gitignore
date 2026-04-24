@@ -4,6 +4,7 @@ dist/
 *.log
 artifacts/
 tmp/
+.tmp/
 uploads/
 release/
 public/reference/

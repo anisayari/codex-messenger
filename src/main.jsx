@@ -10,39 +10,21 @@ import {
   normalizeCodexOptions,
   optionLabel
 } from "../shared/codexOptions.js";
-import { loginCopyFor, normalizeLanguage, supportedLanguages } from "../shared/languages.js";
+import { appCopyFor, loginCopyFor, normalizeLanguage, supportedLanguages } from "../shared/languages.js";
+import {
+  applyLanguageDirection,
+  contactStatusFor,
+  localizedStatusLabel,
+  statusLabels,
+  statusOptions,
+  statusOptionsFor
+} from "./i18n.js";
 import msnDisplayPictures from "./msnDisplayPictures.js";
 import msnEmoticons from "./msnEmoticons.js";
+import { brandPeopleLogo, Logo, Menu, ResizeGrip, Titlebar } from "./windowChrome.jsx";
 import "./styles.css";
 
 const api = window.codexMsn;
-const statusLabels = {
-  online: "En ligne",
-  busy: "Occupe",
-  brb: "De retour bientot",
-  away: "Absent",
-  phone: "Au telephone",
-  lunch: "Parti manger",
-  offline: "Hors ligne"
-};
-const statusOptions = [
-  ["online", "En ligne"],
-  ["busy", "Occupe"],
-  ["brb", "De retour bientot"],
-  ["away", "Absent"],
-  ["phone", "Au telephone"],
-  ["lunch", "Parti manger"],
-  ["offline", "Apparaitre hors ligne"]
-];
-function localizedStatusLabel(status, text = {}) {
-  const labels = {
-    online: text.online || statusLabels.online,
-    busy: text.busy || statusLabels.busy,
-    away: text.away || statusLabels.away,
-    offline: text.offline || statusLabels.offline
-  };
-  return labels[status] || statusLabels[status] || status;
-}
 const audioFiles = {
   wizz: "./msn-assets/sounds/nudge.wav",
   message: "./msn-assets/sounds/type.wav",
@@ -53,7 +35,6 @@ const audioFiles = {
   type: "./msn-assets/sounds/newalert.wav",
   done: "./msn-assets/sounds/vimdone.wav"
 };
-const brandPeopleLogo = new URL("./icons/codex-messenger-people.png", window.location.href).href;
 const toolbarIcons = {
   invite: "./icons/toolbar/invite.png",
   files: "./icons/toolbar/files.png",
@@ -519,6 +500,7 @@ function normalizeMessengerSettings(settings = {}) {
   const source = settings ?? {};
   const closeBehavior = source.closeBehavior === "close" ? "quit" : source.closeBehavior;
   return {
+    language: normalizeLanguage(source.language ?? source.profile?.language ?? "fr"),
     notificationsEnabled: source.notificationsEnabled !== false,
     newMessageSoundEnabled: source.newMessageSoundEnabled !== false,
     unreadWizzEnabled: source.unreadWizzEnabled !== false,
@@ -960,14 +942,6 @@ function presenceClass(status) {
   return "online";
 }
 
-function Logo({ small = false }) {
-  return (
-    <span className={small ? "logo small" : "logo"} aria-hidden="true">
-      <img src={brandPeopleLogo} alt="" draggable="false" />
-    </span>
-  );
-}
-
 function Avatar({ contact, large = false }) {
   const picturePath = contact.displayPicturePath || contact.picturePath;
   const pictureAsset = contact.displayPictureAsset || contact.pictureAsset;
@@ -990,9 +964,10 @@ function Avatar({ contact, large = false }) {
   );
 }
 
-function DisplayFrame({ contact, position, menuItems = [] }) {
+function DisplayFrame({ contact, position, menuItems = [], statusCopy = statusLabels, onNameDoubleClick, onStatusDoubleClick }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const statusText = statusCopy[contact.status] ?? contact.status ?? statusCopy.online ?? statusLabels.online;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -1019,6 +994,14 @@ function DisplayFrame({ contact, position, menuItems = [] }) {
   return (
     <div className={`display-frame ${position ?? ""}`} ref={ref}>
       <Avatar contact={contact} large />
+      <div className="display-frame-caption">
+        <button type="button" title="Double-clic pour renommer" onDoubleClick={onNameDoubleClick}>
+          {contact.name ?? "Codex"}
+        </button>
+        <button type="button" title="Double-clic pour changer le statut" onDoubleClick={onStatusDoubleClick}>
+          {statusText}
+        </button>
+      </div>
       <button
         className="display-frame-menu-button"
         type="button"
@@ -1088,171 +1071,6 @@ function WinkAnimationOverlay({ animation }) {
   );
 }
 
-function Titlebar({ title }) {
-  return (
-    <header className="titlebar">
-      <div className="title-left">
-        <Logo small />
-        <span>{title}</span>
-      </div>
-      <div className="window-buttons">
-        <button type="button" aria-label="Minimiser" onClick={() => api.window.minimize()}><span /></button>
-        <button type="button" aria-label="Maximiser" onClick={() => api.window.maximize()}><span /></button>
-        <button type="button" aria-label="Fermer" onClick={() => api.window.close()}><span /></button>
-      </div>
-    </header>
-  );
-}
-
-function ResizeGrip() {
-  const dragRef = useRef(null);
-
-  function startResize(event) {
-    if (event.button !== 0 || !api.window?.getBounds || !api.window?.resizeTo) return;
-    event.preventDefault();
-    event.stopPropagation();
-
-    const target = event.currentTarget;
-    const state = {
-      active: true,
-      startX: event.screenX,
-      startY: event.screenY,
-      bounds: null,
-      frame: 0,
-      latest: null,
-      pendingEvent: null
-    };
-    dragRef.current = state;
-    target.classList.add("resizing");
-    try {
-      target.setPointerCapture(event.pointerId);
-    } catch {
-      // Pointer capture can fail on older embedded Chromium builds; resize still works inside the window.
-    }
-
-    const flush = () => {
-      state.frame = 0;
-      if (!state.active || !state.latest) return;
-      api.window.resizeTo(state.latest).catch?.(() => {});
-    };
-
-    const scheduleResize = (moveEvent) => {
-      if (!state.bounds) {
-        state.pendingEvent = moveEvent;
-        return;
-      }
-      state.latest = {
-        width: state.bounds.width + moveEvent.screenX - state.startX,
-        height: state.bounds.height + moveEvent.screenY - state.startY
-      };
-      if (!state.frame) state.frame = window.requestAnimationFrame(flush);
-    };
-
-    const cleanup = (moveEvent) => {
-      if (!state.active) return;
-      if (moveEvent?.screenX !== undefined) scheduleResize(moveEvent);
-      state.active = false;
-      if (state.frame) window.cancelAnimationFrame(state.frame);
-      if (state.latest) api.window.resizeTo(state.latest).catch?.(() => {});
-      target.classList.remove("resizing");
-      target.removeEventListener("pointermove", scheduleResize);
-      target.removeEventListener("pointerup", cleanup);
-      target.removeEventListener("pointercancel", cleanup);
-      target.removeEventListener("lostpointercapture", cleanup);
-      if (dragRef.current === state) dragRef.current = null;
-    };
-
-    target.addEventListener("pointermove", scheduleResize);
-    target.addEventListener("pointerup", cleanup, { once: true });
-    target.addEventListener("pointercancel", cleanup, { once: true });
-    target.addEventListener("lostpointercapture", cleanup, { once: true });
-
-    api.window.getBounds()
-      .then((bounds) => {
-        if (!state.active || !bounds) return;
-        state.bounds = bounds;
-        if (state.pendingEvent) scheduleResize(state.pendingEvent);
-      })
-      .catch(cleanup);
-  }
-
-  return (
-    <button
-      type="button"
-      className="resize-grip"
-      aria-label="Redimensionner la fenetre"
-      onPointerDown={startResize}
-    />
-  );
-}
-
-function Menu({ items }) {
-  const [open, setOpen] = useState(null);
-  const ref = useRef(null);
-  const normalized = items.map((item) => typeof item === "string" ? { label: item, entries: [] } : item);
-
-  useEffect(() => {
-    const close = (event) => {
-      if (!ref.current?.contains(event.target)) setOpen(null);
-    };
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") setOpen(null);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, []);
-
-  async function runEntry(entry) {
-    if (entry.disabled) return;
-    setOpen(null);
-    try {
-      await entry.action?.();
-    } catch (error) {
-      window.alert(error.message ?? "Action impossible");
-    }
-  }
-
-  return (
-    <nav className="menu" ref={ref}>
-      {normalized.map((menu, index) => (
-        <div className="menu-item" key={menu.label} onMouseEnter={() => open !== null && setOpen(index)}>
-          <button
-            className={open === index ? "menu-button active" : "menu-button"}
-            type="button"
-            onClick={() => setOpen(open === index ? null : index)}
-          >
-            {menu.label}
-          </button>
-          {open === index ? (
-            <div className="menu-dropdown">
-              {(menu.entries?.length ? menu.entries : [{ label: "Aucune action", disabled: true }]).map((entry, entryIndex) => (
-                entry.separator ? (
-                  <div className="menu-separator" key={`separator-${entryIndex}`} />
-                ) : (
-                  <button
-                    className="menu-entry"
-                    type="button"
-                    disabled={entry.disabled}
-                    key={entry.label}
-                    onClick={() => runEntry(entry)}
-                  >
-                    <span>{entry.label}</span>
-                    {entry.shortcut ? <small>{entry.shortcut}</small> : null}
-                  </button>
-                )
-              ))}
-            </div>
-          ) : null}
-        </div>
-      ))}
-    </nav>
-  );
-}
-
 function displayNameFromEmail(email) {
   const localPart = String(email || "").split("@")[0] || "user";
   return String(localPart)
@@ -1288,6 +1106,10 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   useEffect(() => () => {
     if (pathActionTimer.current) window.clearTimeout(pathActionTimer.current);
   }, []);
+
+  useEffect(() => {
+    applyLanguageDirection(language);
+  }, [language]);
 
   function pulsePathAction(action) {
     if (pathActionTimer.current) window.clearTimeout(pathActionTimer.current);
@@ -1532,7 +1354,7 @@ function LoginView({ initialProfile, initialSettings, initialCodexStatus, onSign
   );
 }
 
-function ProfilePictureDialog({ draft, selecting, onSelectDefault, onImport, onClear, onClose }) {
+function ProfilePictureDialog({ draft, selecting, onSelectDefault, onImport, onClear, onClose, copy = appCopyFor("fr") }) {
   return (
     <div className="settings-dialog-backdrop profile-picture-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section className="settings-dialog profile-picture-dialog" role="dialog" aria-modal="true" aria-label="Choisir une image perso">
@@ -1565,15 +1387,15 @@ function ProfilePictureDialog({ draft, selecting, onSelectDefault, onImport, onC
         </section>
         <footer>
           <button type="button" onClick={onImport} disabled={selecting}>{selecting ? "Import..." : "Importer une photo..."}</button>
-          <button type="button" onClick={onClear}>Defaut</button>
-          <button type="button" onClick={onClose}>Fermer</button>
+          <button type="button" onClick={onClear}>{copy.chat.defaultPicture}</button>
+          <button type="button" onClick={onClose}>{copy.common.close}</button>
         </footer>
       </section>
     </div>
   );
 }
 
-function ProfileEditor({ profile, onChange, onChoosePicture, onClose }) {
+function ProfileEditor({ profile, onChange, onChoosePicture, onClose, copy = appCopyFor("fr") }) {
   const [draft, setDraft] = useState(profile);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -1644,28 +1466,28 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClose }) {
       <div className="profile-editor-picture">
         <Avatar contact={{ ...draft, avatar: "butterfly", color: "#11a77a" }} />
         <div className="profile-picture-tools">
-          <button type="button" onClick={() => setPictureDialogOpen(true)}>Choisir...</button>
-          <button type="button" onClick={clearDraftPicture}>Defaut</button>
+          <button type="button" onClick={() => setPictureDialogOpen(true)}>{copy.chat.changePicture}</button>
+          <button type="button" onClick={clearDraftPicture}>{copy.chat.defaultPicture}</button>
         </div>
       </div>
       <label>
-        <span>Nom affiche</span>
+        <span>{loginCopyFor(profile.language).displayName}</span>
         <input value={draft.displayName ?? ""} onChange={(event) => update("displayName", event.target.value)} />
       </label>
       <label>
-        <span>Message personnel</span>
+        <span>{loginCopyFor(profile.language).personalMessage}</span>
         <input value={draft.personalMessage ?? ""} onChange={(event) => update("personalMessage", event.target.value)} maxLength={140} />
       </label>
       <label>
-        <span>Statut</span>
+        <span>{loginCopyFor(profile.language).status}</span>
         <select value={draft.status ?? "online"} onChange={(event) => update("status", event.target.value)}>
-          {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+          {statusOptionsFor(copy).map(([value, label]) => <option value={value} key={value}>{label}</option>)}
         </select>
       </label>
       {error ? <p className="profile-editor-error">{error}</p> : null}
       <div className="profile-editor-actions">
-        <button type="submit" disabled={saving}>{saving ? "Enregistrement..." : "Appliquer"}</button>
-        <button type="button" disabled={saving} onClick={onClose}>Fermer</button>
+        <button type="submit" disabled={saving}>{saving ? copy.settings.saving : copy.common.apply}</button>
+        <button type="button" disabled={saving} onClick={onClose}>{copy.common.close}</button>
       </div>
       {pictureDialogOpen ? (
         <ProfilePictureDialog
@@ -1675,13 +1497,90 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClose }) {
           onImport={importPicture}
           onClear={clearDraftPicture}
           onClose={() => setPictureDialogOpen(false)}
+          copy={copy}
         />
       ) : null}
     </form>
   );
 }
 
-function SettingsDialog({ settings, onSave, onClose }) {
+function PromptDialog({ title, initialValue = "", inputType = "text", okLabel = "OK", cancelLabel = "Annuler", onSubmit, onCancel }) {
+  const [value, setValue] = useState(initialValue);
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  function submit(event) {
+    event.preventDefault();
+    onSubmit(value);
+  }
+
+  return (
+    <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onCancel()}>
+      <form className="settings-dialog rename-contact-dialog" onSubmit={submit} role="dialog" aria-modal="true" aria-label={title}>
+        <header>
+          <strong>{title}</strong>
+          <button type="button" aria-label={cancelLabel} onClick={onCancel}>x</button>
+        </header>
+        <section>
+          <label className="settings-row">
+            <span>{title}</span>
+            <input
+              autoFocus
+              type={inputType}
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") onCancel();
+              }}
+            />
+          </label>
+        </section>
+        <footer>
+          <button type="submit">{okLabel}</button>
+          <button type="button" onClick={onCancel}>{cancelLabel}</button>
+        </footer>
+      </form>
+    </div>
+  );
+}
+
+function usePromptDialog({ okLabel = "OK", cancelLabel = "Annuler" } = {}) {
+  const [promptState, setPromptState] = useState(null);
+  const resolverRef = useRef(null);
+
+  function askPrompt(options = {}) {
+    return new Promise((resolve) => {
+      resolverRef.current = resolve;
+      setPromptState({
+        title: options.title ?? "",
+        initialValue: String(options.initialValue ?? ""),
+        inputType: options.inputType ?? "text",
+        okLabel: options.okLabel ?? okLabel,
+        cancelLabel: options.cancelLabel ?? cancelLabel
+      });
+    });
+  }
+
+  function resolvePrompt(value) {
+    const resolve = resolverRef.current;
+    resolverRef.current = null;
+    setPromptState(null);
+    resolve?.(value);
+  }
+
+  const promptDialog = promptState ? (
+    <PromptDialog
+      {...promptState}
+      onSubmit={(value) => resolvePrompt(value)}
+      onCancel={() => resolvePrompt(null)}
+    />
+  ) : null;
+
+  return [askPrompt, promptDialog];
+}
+
+function SettingsDialog({ settings, onSave, onClose, copy = appCopyFor("fr") }) {
   const [draft, setDraft] = useState(() => normalizeMessengerSettings(settings));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -1700,6 +1599,7 @@ function SettingsDialog({ settings, onSave, onClose }) {
     setError("");
     try {
       await onSave({
+        language: normalizeLanguage(draft.language),
         notificationsEnabled: draft.notificationsEnabled,
         newMessageSoundEnabled: draft.newMessageSoundEnabled,
         unreadWizzEnabled: draft.unreadWizzEnabled,
@@ -1715,12 +1615,12 @@ function SettingsDialog({ settings, onSave, onClose }) {
     }
   }
 
-  return (
+ return (
     <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <form className="settings-dialog" onSubmit={submit} role="dialog" aria-modal="true" aria-label="Parametres Codex Messenger">
+      <form className="settings-dialog" onSubmit={submit} role="dialog" aria-modal="true" aria-label={`${copy.settings.title} Codex Messenger`}>
         <header>
-          <strong>Parametres</strong>
-          <button type="button" aria-label="Fermer" onClick={onClose}>x</button>
+          <strong>{copy.settings.title}</strong>
+          <button type="button" aria-label={copy.common.close} onClick={onClose}>x</button>
         </header>
         <section>
           <label className="settings-check">
@@ -1729,7 +1629,7 @@ function SettingsDialog({ settings, onSave, onClose }) {
               checked={draft.notificationsEnabled}
               onChange={(event) => update("notificationsEnabled", event.target.checked)}
             />
-            <span>Notifications de nouveau message</span>
+            <span>{copy.settings.notifications}</span>
           </label>
           <label className="settings-check">
             <input
@@ -1737,7 +1637,7 @@ function SettingsDialog({ settings, onSave, onClose }) {
               checked={draft.newMessageSoundEnabled}
               onChange={(event) => update("newMessageSoundEnabled", event.target.checked)}
             />
-            <span>Son a chaque nouveau message</span>
+            <span>{copy.settings.sound}</span>
           </label>
           <label className="settings-check">
             <input
@@ -1745,7 +1645,7 @@ function SettingsDialog({ settings, onSave, onClose }) {
               checked={draft.unreadWizzEnabled}
               onChange={(event) => update("unreadWizzEnabled", event.target.checked)}
             />
-            <span>Wizz de rappel quand un message reste non lu</span>
+            <span>{copy.settings.unreadWizz}</span>
           </label>
           <label className="settings-check">
             <input
@@ -1753,10 +1653,18 @@ function SettingsDialog({ settings, onSave, onClose }) {
               checked={draft.autoSignIn}
               onChange={(event) => update("autoSignIn", event.target.checked)}
             />
-            <span>Connexion automatique au demarrage</span>
+            <span>{copy.settings.autoSignIn}</span>
           </label>
           <label className="settings-row">
-            <span>Delai du Wizz de rappel (secondes)</span>
+            <span>{copy.settings.language}</span>
+            <select value={draft.language} onChange={(event) => update("language", normalizeLanguage(event.target.value))}>
+              {supportedLanguages.map((language) => (
+                <option value={language.code} key={language.code}>{language.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="settings-row">
+            <span>{copy.settings.unreadDelay}</span>
             <input
               type="number"
               min="10"
@@ -1768,18 +1676,18 @@ function SettingsDialog({ settings, onSave, onClose }) {
             />
           </label>
           <label className="settings-row">
-            <span>Quand je ferme la fenetre principale</span>
+            <span>{copy.settings.closeBehavior}</span>
             <select value={draft.closeBehavior} onChange={(event) => update("closeBehavior", event.target.value)}>
-              <option value="ask">Demander</option>
-              <option value="hide">Laisser en arriere-plan</option>
-              <option value="quit">Fermer definitivement</option>
+              <option value="ask">{copy.settings.closeAsk}</option>
+              <option value="hide">{copy.settings.closeHide}</option>
+              <option value="quit">{copy.settings.closeQuit}</option>
             </select>
           </label>
         </section>
         {error ? <p className="settings-error">{error}</p> : null}
         <footer>
-          <button type="button" onClick={onClose}>Annuler</button>
-          <button type="submit" disabled={saving}>{saving ? "Enregistrement..." : "Appliquer"}</button>
+          <button type="button" onClick={onClose}>{copy.common.cancel}</button>
+          <button type="submit" disabled={saving}>{saving ? copy.settings.saving : copy.common.apply}</button>
         </footer>
       </form>
     </div>
@@ -1969,7 +1877,8 @@ function RosterView({
   onProfileEditorOpenChange,
   onAgentEditorOpenChange,
   onProfileChange,
-  onAgentsChange
+  onAgentsChange,
+  copy = appCopyFor("fr")
 }) {
   const [finished, setFinished] = useState(null);
   const [conversations, setConversations] = useState(bootstrap.conversations);
@@ -2040,13 +1949,13 @@ function RosterView({
 
     byGroup.push({
       id: "agents",
-      title: "Codex Agents",
+      title: copy.roster.codexAgents,
       items: bootstrap.contacts.map((contact) => ({
         id: contact.id,
         name: contact.name,
         mood: contact.mood,
         status: contact.status,
-        statusText: statusLabels[contact.status] ?? contact.status,
+        statusText: copy.status[contact.status] ?? contact.status,
         contact,
         onOpen: () => api.openConversation(contact.id)
       }))
@@ -2057,9 +1966,9 @@ function RosterView({
         id: project.id,
         name: project.name,
         mail: `${project.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@project.local`,
-        group: "Projets",
+        group: copy.roster.projects,
         mood: project.cwd,
-        status: projectThreadCount(project) ? "online" : "offline",
+        status: contactStatusFor(bootstrap.settings, project.id, projectThreadCount(project) ? "online" : "offline"),
         color: "#1f8fcf",
         avatar: "terminal",
         kind: "project",
@@ -2072,12 +1981,12 @@ function RosterView({
       };
       return {
         ...contact,
-        statusText: projectThreadCount(project) ? `${projectThreadCount(project)} conversation${projectThreadCount(project) > 1 ? "s" : ""}` : "nouveau",
+        statusText: projectThreadCount(project) ? `${projectThreadCount(project)} ${copy.chat.conversation}${projectThreadCount(project) > 1 ? "s" : ""}` : copy.roster.newThread,
         contact,
         onOpen: () => api.openProject(project.cwd)
       };
     });
-    if (projectItems.length) byGroup.push({ id: "projects", title: "Projects", items: projectItems });
+    if (projectItems.length) byGroup.push({ id: "projects", title: copy.roster.projects, items: projectItems });
 
     const threadItems = (conversations?.projects ?? [])
       .flatMap((project) => project.threads.map((thread) => ({ ...thread, projectName: project.name, cwd: project.cwd })))
@@ -2090,7 +1999,7 @@ function RosterView({
           mail: `${thread.projectName.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@thread.local`,
           group: thread.projectName,
           mood: thread.cwd,
-          status: "online",
+          status: contactStatusFor(bootstrap.settings, thread.contactId, "online"),
           color: "#2874d9",
           avatar: "terminal",
           kind: "thread",
@@ -2104,13 +2013,13 @@ function RosterView({
           onOpen: () => openThreadFromRoster(thread.id)
         };
       });
-    if (threadItems.length) byGroup.push({ id: "threads", title: "Conversations recentes", items: threadItems });
+    if (threadItems.length) byGroup.push({ id: "threads", title: copy.roster.recentConversations, items: threadItems });
 
     return byGroup.map((group) => ({
       ...group,
       items: search ? group.items.filter(match) : group.items
     })).filter((group) => group.items.length);
-  }, [bootstrap.contacts, conversations, projectSort, query]);
+  }, [bootstrap.contacts, bootstrap.settings, conversations, copy, projectSort, query]);
 
   function toggleGroup(groupId) {
     setCollapsed((current) => ({ ...current, [groupId]: !current[groupId] }));
@@ -2263,11 +2172,11 @@ function RosterView({
           <div className="me-line">
             <strong>{profile.displayName || profile.email}</strong>
             <select value={profile.status} onChange={(event) => changeStatus(event.target.value)}>
-              {statusOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+              {statusOptionsFor(copy).map(([value, label]) => <option value={value} key={value}>{label}</option>)}
             </select>
           </div>
           <small className="me-email">{profile.email}</small>
-          <p>{profile.personalMessage || userAgent || "Codex local connecte"}</p>
+          <p>{profile.personalMessage || userAgent || copy.roster.localConnected}</p>
         </div>
       </div>
       {profileEditorOpen ? (
@@ -2276,13 +2185,14 @@ function RosterView({
           onChange={saveProfile}
           onChoosePicture={chooseProfilePicture}
           onClose={() => onProfileEditorOpenChange(false)}
+          copy={copy}
         />
       ) : null}
       {agentEditorOpen ? (
         <AgentCreator
           error={agentError}
           onCreate={createAgent}
-          onChooseRunFolder={() => api.chooseDirectory({ title: "Choisir le dossier de run Codex" })}
+          onChooseRunFolder={() => api.chooseDirectory({ title: copy.menu.openProject })}
           onClose={() => {
             setAgentError("");
             onAgentEditorOpenChange(false);
@@ -2290,9 +2200,9 @@ function RosterView({
         />
       ) : null}
       <div className="msn-tabs">
-        <button type="button" onClick={() => api.openConversation(bootstrap.contacts[0]?.id ?? "codex")}><Logo small /> Codex Today</button>
+        <button type="button" onClick={() => api.openConversation(bootstrap.contacts[0]?.id ?? "codex")}><Logo small /> {copy.menu.codexToday}</button>
       </div>
-      <div className="search"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." /></div>
+      <div className="search"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={copy.roster.search} /></div>
       <div className="groups">
         {groups.map((group) => {
           const online = group.items.filter((item) => item.status !== "offline").length;
@@ -2301,7 +2211,7 @@ function RosterView({
             <button
               className="group-heading"
               type="button"
-              title={group.id === "projects" ? "Clic droit pour trier les projets" : undefined}
+              title={group.id === "projects" ? copy.roster.sortProjects : undefined}
               onClick={() => toggleGroup(group.id)}
               onContextMenu={group.id === "projects" ? openProjectSortMenu : undefined}
             >
@@ -2345,7 +2255,7 @@ function RosterView({
                           title={thread.preview}
                         >
                           <span className="contact-thread-bullet" aria-hidden="true" />
-                          <span>{thread.preview || "Nouveau fil Codex"}</span>
+                          <span>{thread.preview || copy.roster.newThread}</span>
                           {item.hiddenThreads?.some((hidden) => hidden.id === thread.id) ? <small>masque</small> : null}
                         </button>
                       ))}
@@ -2359,7 +2269,7 @@ function RosterView({
       </div>
       {conversations?.hasMore ? (
         <button className="load-more-threads" type="button" onClick={loadMoreThreads} disabled={loadingMoreThreads}>
-          {loadingMoreThreads ? "Chargement..." : "Afficher plus de conversations"}
+          {loadingMoreThreads ? copy.roster.loading : copy.roster.loadMore}
         </button>
       ) : null}
       {projectSortMenu ? (
@@ -2370,7 +2280,7 @@ function RosterView({
           onClick={(event) => event.stopPropagation()}
           onContextMenu={(event) => event.preventDefault()}
         >
-          <div className="group-context-title">Trier Projects par</div>
+          <div className="group-context-title">{copy.roster.sortProjects}</div>
           {projectSortOptions.map((option) => (
             <button
               className={normalizeProjectSort(projectSort) === option.id ? "active" : ""}
@@ -2404,7 +2314,7 @@ function RosterView({
                 setContactMenu(null);
               }}
             >
-              <span>{expandedContacts[contactMenu.item.id] ? "Reduire" : "Developper"}</span>
+              <span>{expandedContacts[contactMenu.item.id] ? copy.roster.reduce : copy.roster.expand}</span>
             </button>
           ) : null}
           <button
@@ -2415,34 +2325,34 @@ function RosterView({
               setContactMenu(null);
             }}
           >
-            <span>Renommer...</span>
+            <span>{copy.roster.renameAction}</span>
           </button>
           {contactMenu.item.cwd ? (
             <button type="button" role="menuitem" onClick={() => api.app.openPath(contactMenu.item.cwd)}>
-              <span>Ouvrir le dossier</span>
+              <span>{copy.roster.openFolder}</span>
             </button>
           ) : null}
           <button type="button" role="menuitem" onClick={() => resetContactName(contactMenu.item)}>
-            <span>Nom original</span>
+            <span>{copy.roster.originalName}</span>
           </button>
         </div>
       ) : null}
       {renameDraft ? (
         <div className="settings-dialog-backdrop rename-contact-backdrop">
-          <form className="settings-dialog rename-contact-dialog" onSubmit={saveContactRename} role="dialog" aria-modal="true" aria-label="Renommer la conversation">
+          <form className="settings-dialog rename-contact-dialog" onSubmit={saveContactRename} role="dialog" aria-modal="true" aria-label={copy.roster.rename}>
             <header>
-              <strong>Renommer</strong>
+              <strong>{copy.roster.rename}</strong>
               <button type="button" onClick={() => setRenameDraft(null)}>x</button>
             </header>
             <section>
               <label className="settings-row">
-                <span>Nouveau nom</span>
+                <span>{copy.roster.newName}</span>
                 <input autoFocus value={renameDraft.name} onChange={(event) => setRenameDraft((current) => ({ ...current, name: event.target.value }))} />
               </label>
             </section>
             <footer>
               <button type="submit" disabled={!renameDraft.name.trim()}>OK</button>
-              <button type="button" onClick={() => setRenameDraft(null)}>Annuler</button>
+              <button type="button" onClick={() => setRenameDraft(null)}>{copy.common.cancel}</button>
             </footer>
           </form>
         </div>
@@ -2452,9 +2362,9 @@ function RosterView({
         type="button"
         disabled={bootstrap.settings?.demoMode}
         onClick={handleAddContactClick}
-        title={bootstrap.settings?.demoMode ? "Creation indisponible dans cet espace." : undefined}
+        title={bootstrap.settings?.demoMode ? copy.menu.openDemo : undefined}
       >
-        <span className="mini plus" /> Add a Contact
+        <span className="mini plus" /> {copy.menu.addContact}
       </button>
       <div className="wordmark"><span>Codex</span><Logo small /><strong>Messenger</strong></div>
       {finished ? <div className="toast"><Logo small /><span>{finished}</span></div> : null}
@@ -2477,6 +2387,7 @@ function MainWindow() {
   const [checkingUpdates, setCheckingUpdates] = useState(false);
   const [installingUpdateTarget, setInstallingUpdateTarget] = useState("");
   const [updateActionMessage, setUpdateActionMessage] = useState("");
+  const [askPrompt, promptDialog] = usePromptDialog();
 
   useEffect(() => {
     api.bootstrap().then((data) => {
@@ -2527,7 +2438,14 @@ function MainWindow() {
     }
   }), []);
 
+  useEffect(() => {
+    const language = settings?.language ?? profile?.language;
+    if (language) applyLanguageDirection(language);
+  }, [profile?.language, settings?.language]);
+
   if (!bootstrap || !profile) return <div className="loading">Connexion...</div>;
+  const copy = appCopyFor(settings?.language ?? profile.language);
+  const localizedStatusOptions = statusOptionsFor(copy);
 
   async function saveProfilePatch(patch) {
     const nextProfile = { ...profile, ...patch };
@@ -2546,7 +2464,12 @@ function MainWindow() {
 
   async function changeWizzDelay() {
     const currentSeconds = normalizeWizzDelaySeconds((settings?.unreadWizzDelayMs ?? 60_000) / 1000);
-    const value = window.prompt("Delai Wizz de rappel (secondes)", String(currentSeconds));
+    const value = await askPrompt({
+      title: copy.settings.unreadDelay,
+      initialValue: String(currentSeconds),
+      inputType: "number",
+      cancelLabel: copy.common.cancel
+    });
     if (value === null) return;
     const seconds = normalizeWizzDelaySeconds(value);
     const result = await api.setSettings({ unreadWizzDelayMs: seconds * 1000 });
@@ -2557,6 +2480,7 @@ function MainWindow() {
   async function saveMessengerSettings(patch) {
     const result = await api.setSettings(patch);
     setSettings(result.settings);
+    if (result.settings?.profile) setProfile(result.settings.profile);
     setBootstrap((current) => current ? { ...current, settings: result.settings } : current);
   }
 
@@ -2630,43 +2554,43 @@ function MainWindow() {
   const primaryContactId = bootstrap.contacts[0]?.id ?? "codex";
   const mainMenus = [
     {
-      label: "Fichier",
+      label: copy.menu.file,
       entries: [
-        { label: "Nouvelle conversation Codex", action: () => api.openConversation(primaryContactId) },
-        { label: settings?.demoMode ? "Ouvrir l'espace de presentation..." : "Ouvrir un projet...", action: () => api.openProjectPicker() },
-        { label: "Modifier mon profil...", action: () => setProfileEditorOpen(true) },
+        { label: copy.menu.newConversation, action: () => api.openConversation(primaryContactId) },
+        { label: settings?.demoMode ? copy.menu.openDemo : copy.menu.openProject, action: () => api.openProjectPicker() },
+        { label: copy.menu.editProfile, action: () => setProfileEditorOpen(true) },
         { separator: true },
-        { label: "A propos de Codex Messenger...", action: () => setUpdateDialogOpen(true) },
-        { label: "Verifier mise a jour", action: () => checkForUpdates({ force: true }) },
+        { label: copy.menu.about, action: () => setUpdateDialogOpen(true) },
+        { label: copy.menu.checkUpdates, action: () => checkForUpdates({ force: true }) },
         { separator: true },
-        { label: "Ouvrir le dossier de l'app", action: () => api.app.openPath(bootstrap.cwd) },
-        { label: "Quitter", shortcut: "Alt+F4", action: () => api.app.quit() }
+        { label: copy.menu.openAppFolder, action: () => api.app.openPath(bootstrap.cwd) },
+        { label: copy.menu.quit, shortcut: "Alt+F4", action: () => api.app.quit() }
       ]
     },
     {
-      label: "Contacts",
+      label: copy.menu.contacts,
       entries: [
         ...bootstrap.contacts.map((contact) => ({
-          label: `${contact.name} (${statusLabels[contact.status] ?? contact.status})`,
+          label: `${contact.name} (${copy.status[contact.status] ?? contact.status})`,
           action: () => api.openConversation(contact.id)
         })),
         { separator: true },
-        { label: "Add a Contact", disabled: settings?.demoMode, action: openAgentCreator }
+        { label: copy.menu.addContact, disabled: settings?.demoMode, action: openAgentCreator }
       ]
     },
     {
-      label: "Actions",
+      label: copy.menu.actions,
       entries: [
-        { label: "Codex Today", action: () => api.openConversation(primaryContactId) },
-        { label: "Rafraichir la liste", shortcut: "F5", action: () => setRefreshTick((tick) => tick + 1) },
+        { label: copy.menu.codexToday, action: () => api.openConversation(primaryContactId) },
+        { label: copy.menu.refreshList, shortcut: "F5", action: () => setRefreshTick((tick) => tick + 1) },
         { separator: true },
-        ...statusOptions.map(([status, label]) => ({
-          label: `Statut: ${label}`,
+        ...localizedStatusOptions.map(([status, label]) => ({
+          label: `${copy.menu.statusPrefix}: ${label}`,
           action: () => saveProfilePatch({ status })
         })),
         { separator: true },
         {
-          label: "Wizz Codex",
+          label: copy.menu.wizzCodex,
           action: async () => {
             await api.openConversation(primaryContactId);
             window.setTimeout(() => api.wizz(primaryContactId), 250);
@@ -2675,44 +2599,44 @@ function MainWindow() {
       ]
     },
     {
-      label: "Outils",
+      label: copy.menu.tools,
       entries: [
-        { label: "Dossier uploads", action: () => api.app.openPath(uploadsPath) },
-        { label: "Relancer cette fenetre", shortcut: "Ctrl+R", action: () => api.app.reload() },
+        { label: copy.menu.uploadsFolder, action: () => api.app.openPath(uploadsPath) },
+        { label: copy.menu.reloadWindow, shortcut: "Ctrl+R", action: () => api.app.reload() },
         { separator: true },
-        { label: "Minimiser", action: () => api.window.minimize() },
-        { label: "Maximiser / restaurer", action: () => api.window.maximize() }
+        { label: copy.menu.minimize, action: () => api.window.minimize() },
+        { label: copy.menu.maximize, action: () => api.window.maximize() }
       ]
     },
     {
-      label: "Parametres",
+      label: copy.menu.settings,
       entries: [
-        { label: "Ouvrir les parametres...", action: () => setSettingsDialogOpen(true) },
+        { label: copy.menu.openSettings, action: () => setSettingsDialogOpen(true) },
         { separator: true },
-        { label: "Delai Wizz rappel...", action: changeWizzDelay },
+        { label: copy.menu.wizzDelay, action: changeWizzDelay },
         {
-          label: `Notifications: ${settings?.notificationsEnabled === false ? "desactivees" : "activees"}`,
+          label: `${copy.menu.notificationsState}: ${settings?.notificationsEnabled === false ? copy.common.disabled : copy.common.enabled}`,
           action: () => saveMessengerSettings({ notificationsEnabled: settings?.notificationsEnabled === false })
         },
         {
-          label: `Son nouveau message: ${settings?.newMessageSoundEnabled === false ? "desactive" : "active"}`,
+          label: `${copy.menu.soundState}: ${settings?.newMessageSoundEnabled === false ? copy.common.disabled : copy.common.enabled}`,
           action: () => saveMessengerSettings({ newMessageSoundEnabled: settings?.newMessageSoundEnabled === false })
         },
         {
-          label: `Wizz de rappel: ${settings?.unreadWizzEnabled === false ? "desactive" : "active"}`,
+          label: `${copy.menu.unreadWizzState}: ${settings?.unreadWizzEnabled === false ? copy.common.disabled : copy.common.enabled}`,
           action: () => saveMessengerSettings({ unreadWizzEnabled: settings?.unreadWizzEnabled === false })
         }
       ]
     },
     {
-      label: "Aide",
+      label: copy.menu.help,
       entries: [
         {
-          label: "A propos de Codex Messenger",
+          label: copy.menu.about,
           action: () => setUpdateDialogOpen(true)
         },
-        { label: "Verifier mise a jour", action: () => checkForUpdates({ force: true }) },
-        { label: "Serveur Codex", action: () => window.alert(userAgent || "Serveur Codex non connecte.") }
+        { label: copy.menu.checkUpdates, action: () => checkForUpdates({ force: true }) },
+        { label: copy.menu.server, action: () => window.alert(userAgent || copy.roster.localConnected) }
       ]
     }
   ];
@@ -2722,12 +2646,14 @@ function MainWindow() {
       <Titlebar title="Codex Messenger" />
       <Menu items={mainMenus} />
       <ResizeGrip />
+      {promptDialog}
       {hasAvailableUpdates(updateState) ? (
         <button className="top-update-button" type="button" onClick={() => setUpdateDialogOpen(true)}>Update</button>
       ) : null}
       {settingsDialogOpen ? (
         <SettingsDialog
           settings={settings}
+          copy={copy}
           onSave={saveMessengerSettings}
           onClose={() => setSettingsDialogOpen(false)}
         />
@@ -2757,6 +2683,7 @@ function MainWindow() {
           onProfileEditorOpenChange={setProfileEditorOpen}
           onAgentEditorOpenChange={setAgentEditorOpen}
           onAgentsChange={updateAgents}
+          copy={copy}
           onProfileChange={(nextProfile, nextUserAgent, nextSettings) => {
             setProfile(nextProfile);
             setUserAgent(nextUserAgent);
@@ -3432,6 +3359,12 @@ function ChatWindow({ bootstrap }) {
   const [activeThreadId, setActiveThreadId] = useState(contact.threadId ?? "");
   const [activeWinkAnimation, setActiveWinkAnimation] = useState(null);
   const [approvalRequests, setApprovalRequests] = useState(bootstrap.approvalRequests ?? []);
+  const [askPrompt, promptDialog] = usePromptDialog();
+  const copy = appCopyFor(chatSettings?.language ?? profile.language);
+  const localizedStatusOptions = statusOptionsFor(copy);
+  useEffect(() => {
+    applyLanguageDirection(chatSettings?.language ?? profile.language);
+  }, [chatSettings?.language, profile.language]);
   const scrollRef = useRef(null);
   const stickToBottomRef = useRef(true);
   const previousMessagesScrollRef = useRef(null);
@@ -3462,6 +3395,17 @@ function ChatWindow({ bootstrap }) {
     if (contact.cwd) return projects.find((project) => project.cwd === contact.cwd) ?? null;
     return null;
   }, [contact.cwd, conversations]);
+  const currentThread = useMemo(() => {
+    if (!activeThreadId || !currentProject) return null;
+    return [...(currentProject.threads ?? []), ...(currentProject.hiddenThreads ?? [])].find((thread) => thread.id === activeThreadId) ?? null;
+  }, [activeThreadId, currentProject]);
+  const sessionContactId = activeThreadId ? `thread:${activeThreadId}` : contact.id;
+  const displayContact = {
+    ...contact,
+    id: sessionContactId,
+    name: activeThreadId ? (currentThread?.preview || contact.name) : contact.name,
+    status: contactStatusFor(chatSettings, sessionContactId, contact.status ?? "online")
+  };
   const codexOptions = useMemo(
     () => normalizeCodexOptions(chatSettings?.codexOptionsByContact?.[contact.id] ?? defaultCodexOptions),
     [chatSettings?.codexOptionsByContact, contact.id]
@@ -3548,11 +3492,11 @@ function ChatWindow({ bootstrap }) {
   useEffect(() => {
     const projectName = contact.cwd ? (currentProject?.name ?? contact.name) : "";
     document.title = contact.kind === "project"
-      ? `${contact.name} - Codex Messenger`
+      ? `${displayContact.name} - Codex Messenger`
       : contact.kind === "thread"
-        ? `${contact.name} - ${projectName || "Codex"}`
-        : `${contact.name} - Conversation`;
-  }, [contact.kind, contact.name, contact.cwd, currentProject?.name]);
+        ? `${displayContact.name} - ${projectName || "Codex"}`
+        : `${displayContact.name} - Conversation`;
+  }, [contact.kind, contact.cwd, currentProject?.name, displayContact.name]);
 
   useEffect(() => {
     const markRead = () => {
@@ -4197,8 +4141,8 @@ function ChatWindow({ bootstrap }) {
     openPanel(name, event);
   }
 
-  function handleSearch() {
-    const query = window.prompt("Search transcript", "");
+  async function handleSearch() {
+    const query = await askPrompt({ title: copy.menu.searchTranscript, initialValue: "", cancelLabel: copy.common.cancel });
     const clean = String(query ?? "").trim();
     if (!clean) return;
     const match = [...messages].reverse().find((message) => message.text?.toLowerCase().includes(clean.toLowerCase()));
@@ -4236,8 +4180,13 @@ function ChatWindow({ bootstrap }) {
     }
   }
 
-  function changeConversationFontSize() {
-    const value = window.prompt("Taille du texte (9-18)", String(textStyle.fontSize));
+  async function changeConversationFontSize() {
+    const value = await askPrompt({
+      title: copy.menu.textSize,
+      initialValue: String(textStyle.fontSize),
+      inputType: "number",
+      cancelLabel: copy.common.cancel
+    });
     if (value === null) return;
     saveConversationTextStyle({ ...textStyle, fontSize: value });
   }
@@ -4436,9 +4385,9 @@ function ChatWindow({ bootstrap }) {
 
   function showContactInfo() {
     const lines = [
-      contact.name,
+      displayContact.name,
       contact.email,
-      `Statut: ${statusLabels[contact.status] ?? contact.status}`,
+      `${copy.menu.statusPrefix}: ${copy.status[displayContact.status] ?? displayContact.status}`,
       contact.kind ? `Type: ${contact.kind}` : "",
       contact.cwd ? `Projet: ${contact.cwd}` : "",
       contact.instructions ? `Instructions: ${contact.instructions}` : ""
@@ -4450,7 +4399,7 @@ function ChatWindow({ bootstrap }) {
     const lines = [
       profile.displayName || profile.email,
       profile.email,
-      `Statut: ${statusLabels[profile.status] ?? profile.status}`,
+      `${copy.menu.statusPrefix}: ${copy.status[profile.status] ?? profile.status}`,
       profile.personalMessage ? `Message: ${profile.personalMessage}` : ""
     ].filter(Boolean);
     window.alert(lines.join("\n"));
@@ -4478,6 +4427,76 @@ function ChatWindow({ bootstrap }) {
     });
     setProfile(result.settings.profile);
     setChatSettings(result.settings);
+  }
+
+  async function promptForStatus(currentStatus) {
+    const value = await askPrompt({
+      title: `${copy.menu.statusPrefix} (${localizedStatusOptions.map(([, label]) => label).join(", ")})`,
+      initialValue: copy.status[currentStatus] ?? currentStatus ?? copy.status.online,
+      cancelLabel: copy.common.cancel
+    });
+    if (value === null) return "";
+    const clean = value.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    const aliases = {
+      online: "online",
+      "en ligne": "online",
+      busy: "busy",
+      occupe: "busy",
+      away: "away",
+      absent: "away",
+      offline: "offline",
+      "hors ligne": "offline"
+    };
+    return aliases[clean] ?? "";
+  }
+
+  async function renameCurrentSession() {
+    const currentName = displayContact.name || contact.name || "Codex";
+    const name = await askPrompt({ title: copy.chat.renameSession, initialValue: currentName, cancelLabel: copy.common.cancel });
+    if (name === null) return;
+    const cleanName = name.trim();
+    if (!cleanName || cleanName === currentName) return;
+    const result = await api.renameContact({ contactId: sessionContactId, name: cleanName });
+    if (!result?.ok) {
+      window.alert(result?.error || copy.chat.renameSession);
+      return;
+    }
+    if (result.settings) setChatSettings(result.settings);
+    if (result.conversations) setConversations(result.conversations);
+    if (sessionContactId === contact.id) setActiveContact((current) => current ? { ...current, name: cleanName } : current);
+  }
+
+  async function changeCurrentSessionStatus(nextStatus = null) {
+    const status = nextStatus || await promptForStatus(displayContact.status);
+    if (!status || status === displayContact.status) return;
+    const result = await api.setContactStatus({ contactId: sessionContactId, status });
+    if (!result?.ok) {
+      window.alert(result?.error || copy.menu.statusPrefix);
+      return;
+    }
+    if (result.settings) setChatSettings(result.settings);
+    if (result.conversations) setConversations(result.conversations);
+    if (sessionContactId === contact.id) setActiveContact((current) => current ? { ...current, status } : current);
+  }
+
+  async function renameSelfDisplayName() {
+    const currentName = profile.displayName || profile.email || "";
+    const name = await askPrompt({ title: loginCopyFor(profile.language).displayName, initialValue: currentName, cancelLabel: copy.common.cancel });
+    if (name === null) return;
+    const cleanName = name.trim();
+    if (!cleanName || cleanName === currentName) return;
+    const result = await api.setSettings({
+      language: profile.language,
+      profile: { ...profile, displayName: cleanName }
+    });
+    setProfile(result.settings.profile);
+    setChatSettings(result.settings);
+  }
+
+  async function changeSelfStatusFromFrame() {
+    const status = await promptForStatus(profile.status);
+    if (!status || status === profile.status) return;
+    await changeSelfStatus(status);
   }
 
   async function checkForUpdates({ force = true } = {}) {
@@ -4554,13 +4573,20 @@ function ChatWindow({ bootstrap }) {
   }
 
   const contactFrameMenu = [
-    { label: "Infos du contact", action: showContactInfo },
-    contact.cwd ? { label: "Ouvrir le projet", action: () => api.app.openPath(contact.cwd) } : null,
+    { label: copy.chat.contactInfo, action: showContactInfo },
+    { label: copy.chat.renameSession, action: renameCurrentSession },
+    contact.cwd ? { label: copy.chat.openProject, action: () => api.app.openPath(contact.cwd) } : null,
+    { separator: true },
+    ...localizedStatusOptions.map(([status, label]) => ({
+      label: `${copy.chat.sessionPrefix}: ${label}`,
+      disabled: displayContact.status === status,
+      action: () => changeCurrentSessionStatus(status)
+    })),
     { separator: true },
     { type: "status", label: `Codex: ${codexOptionsSummary}` },
     {
       type: "select",
-      label: "Modele",
+      label: copy.chat.model,
       value: codexOptions.model,
       options: modelMenuOptions,
       onChange: (value) => {
@@ -4574,45 +4600,45 @@ function ChatWindow({ bootstrap }) {
     },
     {
       type: "select",
-      label: "Reflexion",
+      label: copy.chat.reasoning,
       value: codexOptions.reasoningEffort,
       options: reasoningMenuOptions,
       onChange: (value) => saveContactCodexOptions({ reasoningEffort: value })
     },
     {
       type: "select",
-      label: "Execution",
+      label: copy.chat.execution,
       value: codexOptions.cwdMode,
       options: codexCwdOptions,
       onChange: (value) => saveContactCodexOptions({ cwdMode: value })
     },
     {
       type: "select",
-      label: "Zone d'autorisation",
+      label: copy.chat.sandbox,
       value: codexOptions.sandbox,
       options: codexSandboxOptions,
       onChange: (value) => saveContactCodexOptions({ sandbox: value })
     },
     {
       type: "select",
-      label: "Confirmation",
+      label: copy.chat.confirmation,
       value: codexOptions.approvalPolicy,
       options: codexApprovalOptions,
       onChange: (value) => saveContactCodexOptions({ approvalPolicy: value })
     },
     { separator: true },
     {
-      label: "Demander le contexte a Codex",
+      label: copy.chat.askContext,
       action: () => sendQuickPrompt(`Resume le contexte de cette conversation avec ${contact.name}.`)
     }
   ].filter(Boolean);
   const selfFrameMenu = [
-    { label: "Mon profil", action: showSelfInfo },
-    { label: "Changer mon image...", action: chooseSelfPicture },
-    { label: "Image par defaut", action: clearSelfPicture },
+    { label: copy.chat.myProfile, action: showSelfInfo },
+    { label: copy.chat.changePicture, action: chooseSelfPicture },
+    { label: copy.chat.defaultPicture, action: clearSelfPicture },
     { separator: true },
-    ...statusOptions.map(([status, label]) => ({
-      label: `Statut: ${label}`,
+    ...localizedStatusOptions.map(([status, label]) => ({
+      label: `${copy.menu.statusPrefix}: ${label}`,
       disabled: profile.status === status,
       action: () => changeSelfStatus(status)
     }))
@@ -4620,51 +4646,51 @@ function ChatWindow({ bootstrap }) {
 
   const chatMenus = [
     {
-      label: "File",
+      label: copy.menu.file,
       entries: [
-        { label: "Send Files...", action: handleSendFile },
-        { label: "Open Project...", action: () => api.openProjectPicker() },
-        { label: "Save Conversation...", action: saveTranscript },
+        { label: copy.menu.sendFiles, action: handleSendFile },
+        { label: copy.menu.openProject, action: () => api.openProjectPicker() },
+        { label: copy.menu.saveConversation, action: saveTranscript },
         { separator: true },
-        { label: "About Codex Messenger...", action: () => setUpdateDialogOpen(true) },
-        { label: "Check for updates", action: () => checkForUpdates({ force: true }) },
+        { label: copy.menu.about, action: () => setUpdateDialogOpen(true) },
+        { label: copy.menu.checkUpdates, action: () => checkForUpdates({ force: true }) },
         { separator: true },
-        { label: "Close", shortcut: "Alt+F4", action: () => api.window.close() }
+        { label: copy.menu.closeWindow, shortcut: "Alt+F4", action: () => api.window.close() }
       ]
     },
     {
-      label: "Edit",
+      label: copy.menu.edit,
       entries: [
-        { label: "Undo", shortcut: "Ctrl+Z", action: () => document.execCommand("undo") },
+        { label: copy.menu.undo, shortcut: "Ctrl+Z", action: () => document.execCommand("undo") },
         { separator: true },
-        { label: "Cut", shortcut: "Ctrl+X", action: () => copyDraft(true) },
-        { label: "Copy", shortcut: "Ctrl+C", action: () => copyDraft(false) },
-        { label: "Paste", shortcut: "Ctrl+V", action: pasteDraft },
-        { label: "Select All", shortcut: "Ctrl+A", action: selectAllDraft },
+        { label: copy.menu.cut, shortcut: "Ctrl+X", action: () => copyDraft(true) },
+        { label: copy.menu.copy, shortcut: "Ctrl+C", action: () => copyDraft(false) },
+        { label: copy.menu.paste, shortcut: "Ctrl+V", action: pasteDraft },
+        { label: copy.menu.selectAll, shortcut: "Ctrl+A", action: selectAllDraft },
         { separator: true },
-        { label: "Clear Text", action: () => setDraft("") }
+        { label: copy.menu.clearText, action: () => setDraft("") }
       ]
     },
     {
-      label: "Format",
+      label: copy.menu.format,
       entries: [
-        { label: "Text Appearance...", action: () => openPanel("text") },
+        { label: copy.menu.textAppearance, action: () => openPanel("text") },
         { label: "Font: Tahoma", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Tahoma" }) },
         { label: "Font: Verdana", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Verdana" }) },
         { label: "Font: Comic Sans MS", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Comic Sans MS" }) },
-        { label: "Text Size...", action: changeConversationFontSize },
+        { label: copy.menu.textSize, action: changeConversationFontSize },
         { separator: true },
-        { label: "Reset Conversation Text", action: resetConversationTextStyle }
+        { label: copy.menu.resetText, action: resetConversationTextStyle }
       ]
     },
     {
-      label: "Actions",
+      label: copy.menu.actions,
       entries: [
-        { label: "Invite", action: () => toggleFlyout("invite") },
+        { label: copy.menu.invite, action: () => toggleFlyout("invite") },
         { label: "Wizz", action: () => api.wizz(contact.id) },
-        { label: "Send Wink", action: () => toggleFlyout("activities") },
-        { label: "Emoticons", action: () => toggleFlyout("emoticons") },
-        { label: "Search Transcript...", action: handleSearch },
+        { label: copy.menu.sendWink, action: () => toggleFlyout("activities") },
+        { label: copy.menu.emoticons, action: () => toggleFlyout("emoticons") },
+        { label: copy.menu.searchTranscript, action: handleSearch },
         ...(primaryApproval ? [
           { separator: true },
           { label: `Autoriser la ${approvalMenuTarget} Codex`, action: () => respondToApproval(primaryApproval, "approved") },
@@ -4676,37 +4702,37 @@ function ChatWindow({ bootstrap }) {
         { separator: true },
         { label: `Zoom + (${Math.round(conversationZoom * 100)}%)`, shortcut: "Ctrl++", disabled: conversationZoom >= 1.6, action: zoomConversationIn },
         { label: "Zoom -", shortcut: "Ctrl+-", disabled: conversationZoom <= 0.7, action: zoomConversationOut },
-        { label: "Zoom par defaut", shortcut: "Ctrl+0", disabled: conversationZoom === 1, action: resetConversationZoom },
+        { label: copy.menu.zoomDefault, shortcut: "Ctrl+0", disabled: conversationZoom === 1, action: resetConversationZoom },
         { separator: true },
-        { label: "Activities", action: () => toggleFlyout("activities") },
-        { label: "Games", action: () => toggleFlyout("games") },
+        { label: copy.menu.activities, action: () => toggleFlyout("activities") },
+        { label: copy.menu.games, action: () => toggleFlyout("games") },
         { label: "Play Morpion", action: () => { setActiveGame("morpion"); openPanel("games"); } },
         { label: "Play Memory", action: () => { setActiveGame("memory"); openPanel("games"); } },
         { label: "Play Wizz Reflex", action: () => { setActiveGame("wizz"); openPanel("games"); } }
       ]
     },
     {
-      label: "Tools",
+      label: copy.menu.tools,
       entries: [
-        { label: "Start Camera", action: startCamera },
-        { label: recording ? "Stop Voice Clip" : "Voice Clip", action: toggleVoiceClip },
-        { label: "Send Image/File...", action: handleSendFile },
+        { label: copy.menu.startCamera, action: startCamera },
+        { label: recording ? copy.menu.stopVoiceClip : copy.menu.voiceClip, action: toggleVoiceClip },
+        { label: copy.menu.sendImageFile, action: handleSendFile },
         { separator: true },
-        { label: "Open App Folder", action: () => api.app.openPath(bootstrap.cwd) },
-        { label: "Open Uploads Folder", action: () => api.app.openPath(`${bootstrap.cwd}\\uploads`) },
-        { label: "Reload Window", shortcut: "Ctrl+R", action: () => api.app.reload() }
+        { label: copy.menu.openAppFolder, action: () => api.app.openPath(bootstrap.cwd) },
+        { label: copy.menu.openUploadsFolder, action: () => api.app.openPath(`${bootstrap.cwd}\\uploads`) },
+        { label: copy.menu.reloadWindow, shortcut: "Ctrl+R", action: () => api.app.reload() }
       ]
     },
     {
-      label: "Help",
+      label: copy.menu.help,
       entries: [
         {
-          label: "About Codex Messenger",
+          label: copy.menu.about,
           action: () => setUpdateDialogOpen(true)
         },
-        { label: "Check for updates", action: () => checkForUpdates({ force: true }) },
+        { label: copy.menu.checkUpdates, action: () => checkForUpdates({ force: true }) },
         {
-          label: "Keyboard Shortcuts",
+          label: copy.menu.keyboardShortcuts,
           action: () => window.alert("Enter: envoyer\nShift+Enter: nouvelle ligne\nCtrl+A/C/X/V: edition du message\nWizz: secoue la fenetre et joue le son.")
         }
       ]
@@ -4715,9 +4741,10 @@ function ChatWindow({ bootstrap }) {
 
   return (
     <main className="msn-window chat" ref={chatWindowRef}>
-      <Titlebar title={`${contact.name} - Conversation`} />
+      <Titlebar title={`${displayContact.name} - ${copy.chat.conversation}`} />
       <Menu items={chatMenus} />
       <ResizeGrip />
+      {promptDialog}
       {hasAvailableUpdates(updateState) ? (
         <button className="top-update-button" type="button" onClick={() => setUpdateDialogOpen(true)}>Update</button>
       ) : null}
@@ -4737,12 +4764,12 @@ function ChatWindow({ bootstrap }) {
       ) : null}
       <div className="toolbar-shell">
         <div className="toolbar">
-          <Tool icon="invite" label="Invite" active={openFlyout === "invite"} onClick={(event) => toggleFlyout("invite", event)} />
-          <Tool icon="files" label="Send Files" active={openFlyout === "files"} onClick={(event) => toggleFlyout("files", event)} />
-          <Tool icon="video" label="Video" active={openFlyout === "camera"} onClick={startCamera} />
-          <Tool icon="voice" label={recording ? "Stop" : "Voice"} active={openFlyout === "voice" || recording} onClick={(event) => toggleFlyout("voice", event)} />
-          <Tool icon="activities" label="Activities" active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
-          <Tool icon="games" label="Games" active={openFlyout === "games"} onClick={(event) => toggleFlyout("games", event)} />
+          <Tool icon="invite" label={copy.toolbar.invite} active={openFlyout === "invite"} onClick={(event) => toggleFlyout("invite", event)} />
+          <Tool icon="files" label={copy.toolbar.files} active={openFlyout === "files"} onClick={(event) => toggleFlyout("files", event)} />
+          <Tool icon="video" label={copy.toolbar.video} active={openFlyout === "camera"} onClick={startCamera} />
+          <Tool icon="voice" label={recording ? copy.toolbar.stop : copy.toolbar.voice} active={openFlyout === "voice" || recording} onClick={(event) => toggleFlyout("voice", event)} />
+          <Tool icon="activities" label={copy.toolbar.activities} active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
+          <Tool icon="games" label={copy.toolbar.games} active={openFlyout === "games"} onClick={(event) => toggleFlyout("games", event)} />
           <div className="toolbar-brand"><span>Codex</span><Logo small /></div>
         </div>
       </div>
@@ -4861,7 +4888,7 @@ function ChatWindow({ bootstrap }) {
               </div>
             ) : null}
             {visibleMessages.map((message) => <Message key={message.id} message={message} />)}
-            {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} ecrit...</div> : null}
+            {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} {copy.chat.typing}</div> : null}
           </div>
           <ApprovalRequestsPanel requests={pendingApprovals} onRespond={respondToApproval} />
           <div className="format-strip">
@@ -4921,14 +4948,28 @@ function ChatWindow({ bootstrap }) {
             ) : null}
             <textarea ref={textareaRef} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={handleComposerKeyDown} onPaste={handleComposerPaste} />
             <div>
-              <button type="submit">Send</button>
-              {typing ? <button type="button" onClick={interruptCurrentTurn}>Stop</button> : <button type="button" onClick={handleSearch}>Search</button>}
+              <button type="submit">{copy.chat.send}</button>
+              {typing ? <button type="button" onClick={interruptCurrentTurn}>{copy.chat.stop}</button> : <button type="button" onClick={handleSearch}>{copy.chat.search}</button>}
             </div>
           </form>
         </div>
         <aside className="chat-side">
-          <DisplayFrame contact={contact} position="top" menuItems={contactFrameMenu} />
-          <DisplayFrame contact={selfContact} position="bottom" menuItems={selfFrameMenu} />
+          <DisplayFrame
+            contact={displayContact}
+            position="top"
+            menuItems={contactFrameMenu}
+            statusCopy={copy.status}
+            onNameDoubleClick={renameCurrentSession}
+            onStatusDoubleClick={() => changeCurrentSessionStatus()}
+          />
+          <DisplayFrame
+            contact={selfContact}
+            position="bottom"
+            menuItems={selfFrameMenu}
+            statusCopy={copy.status}
+            onNameDoubleClick={renameSelfDisplayName}
+            onStatusDoubleClick={changeSelfStatusFromFrame}
+          />
         </aside>
       </section>
       <footer className="chat-ad" aria-hidden="true">Codex App Server active</footer>
@@ -5031,14 +5072,21 @@ function ApprovalRequestsPanel({ requests, onRespond }) {
 
 function Message({ message }) {
   if (message.itemType === "commandExecution") {
+    const commandText = message.command || message.text || "Commande Codex";
+    const outputText = message.text && message.text !== message.command
+      ? message.text.replace(message.command ?? "", "").trim()
+      : "";
+    const statusText = `${message.status || "completed"}${message.exitCode !== null && message.exitCode !== undefined ? ` / exit ${message.exitCode}` : ""}`;
     return (
-      <article className={`codex-item command ${message.status ?? ""}`}>
-        <header><strong>Commande Codex</strong><time>{message.time}</time></header>
-        <code>{message.command || message.text}</code>
+      <details className={`codex-item command ${message.status ?? ""}`}>
+        <summary>
+          <span className="command-summary-title">{commandText}</span>
+          <span className="command-summary-status">{statusText}</span>
+          <time>{message.time}</time>
+        </summary>
         {message.cwd ? <small>{message.cwd}</small> : null}
-        {message.text && message.text !== message.command ? <pre>{message.text.replace(message.command ?? "", "").trim()}</pre> : null}
-        <footer>{message.status || "termine"}{message.exitCode !== null && message.exitCode !== undefined ? ` / exit ${message.exitCode}` : ""}</footer>
-      </article>
+        {outputText ? <pre>{outputText}</pre> : null}
+      </details>
     );
   }
   if (message.itemType === "fileChange") {

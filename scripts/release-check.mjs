@@ -36,6 +36,8 @@ assertIncludes("codexmessenger.net/index.html", `?v=${releaseTag}`);
 const main = read("electron/main.js");
 assert.ok(main.includes('capabilities: {\n        experimentalApi: true\n      }'), "initialize should opt into app-server capabilities");
 assert.ok(!/persistExtendedHistory|experimentalRawEvents|persistFullHistory/.test(main), "release must not send experimental thread history fields");
+assert.ok(!main.includes("acceptSettings"), "release must not send non-protocol approval acceptSettings");
+assert.ok(main.includes("acceptForSession"), "release must support protocol approval acceptForSession decisions");
 assert.ok(main.includes("codex-messenger.log"), "release must keep the debug log file");
 assert.ok(main.includes("ensureLoadedThread"), "release must resume existing threads before sending turns");
 

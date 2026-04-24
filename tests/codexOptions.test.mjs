@@ -9,7 +9,7 @@ import {
   optionLabel,
   sandboxPolicyForMode
 } from "../shared/codexOptions.js";
-import { codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
+import { appCopyFor, codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
 
 test("normalizes Codex option aliases used by saved settings", () => {
   assert.deepEqual(normalizeCodexOptions({
@@ -61,7 +61,10 @@ test("labels option values for toolbar summaries", () => {
 
 test("normalizes language choices and returns Codex language instructions", () => {
   assert.equal(normalizeLanguage("fr"), "fr");
+  assert.equal(normalizeLanguage("ar"), "ar");
   assert.equal(normalizeLanguage("xx", "es"), "es");
   assert.match(codexLanguageInstruction("fr"), /français/i);
   assert.match(codexLanguageInstruction("en"), /English/i);
+  assert.match(codexLanguageInstruction("ar"), /العربية/);
+  assert.equal(appCopyFor("ar").menu.file, "ملف");
 });

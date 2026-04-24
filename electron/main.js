@@ -224,6 +224,7 @@ const defaultSettings = {
   profile: defaultProfile,
   customAgents: [],
   contactAliases: {},
+  contactStatuses: {},
   threadTabs: defaultThreadTabs,
   projectSort: defaultProjectSort,
   textStyles: {},
@@ -361,14 +362,35 @@ function normalizeContactAliases(value = {}) {
   return aliases;
 }
 
+function normalizeContactStatuses(value = {}) {
+  const statuses = {};
+  const allowed = new Set(["online", "busy", "away", "offline"]);
+  if (!value || typeof value !== "object") return statuses;
+  for (const [contactId, status] of Object.entries(value)) {
+    const key = String(contactId ?? "").trim();
+    const clean = String(status ?? "").trim();
+    if (key && allowed.has(clean)) statuses[key] = clean;
+  }
+  return statuses;
+}
+
 function contactAliasFor(contactId, settings = settingsCache) {
   return normalizeContactAliases(settings?.contactAliases)[String(contactId ?? "").trim()] ?? "";
 }
 
-function applyContactAlias(contact, settings = settingsCache) {
+function contactStatusFor(contactId, settings = settingsCache) {
+  return normalizeContactStatuses(settings?.contactStatuses)[String(contactId ?? "").trim()] ?? "";
+}
+
+function applyContactOverrides(contact, settings = settingsCache) {
   if (!contact?.id) return contact;
   const alias = contactAliasFor(contact.id, settings);
-  return alias ? { ...contact, name: alias } : contact;
+  const status = contactStatusFor(contact.id, settings);
+  return {
+    ...contact,
+    ...(alias ? { name: alias } : {}),
+    ...(status ? { status } : {})
+  };
 }
 
 function applyThreadAlias(thread, settings = settingsCache) {
@@ -701,7 +723,7 @@ function normalizeThreadTabs(value = {}) {
 
 function contactsForSettings(settings = settingsCache) {
   const source = demoModeIsEnabled(settings) ? demoContacts() : [...contacts, ...normalizeCustomAgents(settings?.customAgents ?? [])];
-  return source.map((contact) => applyContactAlias(contact, settings));
+  return source.map((contact) => applyContactOverrides(contact, settings));
 }
 
 async function loadSettings() {
@@ -721,6 +743,7 @@ async function loadSettings() {
   });
   settingsCache.customAgents = normalizeCustomAgents(settingsCache.customAgents);
   settingsCache.contactAliases = normalizeContactAliases(settingsCache.contactAliases);
+  settingsCache.contactStatuses = normalizeContactStatuses(settingsCache.contactStatuses);
   settingsCache.threadTabs = normalizeThreadTabs(settingsCache.threadTabs);
   settingsCache.projectSort = normalizeProjectSort(settingsCache.projectSort);
   settingsCache.textStyles = normalizeTextStyles(settingsCache.textStyles);
@@ -754,6 +777,7 @@ async function saveSettings(nextSettings = {}) {
     profile: nextProfile,
     customAgents: normalizeCustomAgents(nextSettings.customAgents ?? current.customAgents),
     contactAliases: normalizeContactAliases(nextSettings.contactAliases ?? current.contactAliases),
+    contactStatuses: normalizeContactStatuses(nextSettings.contactStatuses ?? current.contactStatuses),
     threadTabs: normalizeThreadTabs(nextSettings.threadTabs ?? current.threadTabs),
     projectSort: normalizeProjectSort(nextSettings.projectSort ?? current.projectSort),
     textStyles: normalizeTextStyles(nextSettings.textStyles ?? current.textStyles),
@@ -1859,7 +1883,7 @@ function projectNameFor(cwd) {
 function contactFromProject(cwd) {
   const name = projectNameFor(cwd);
   const isDemo = isDemoProjectPath(cwd);
-  return applyContactAlias({
+  return applyContactOverrides({
     id: encodeProjectId(cwd),
     name,
     mail: `${name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@${isDemo ? "codex.local" : "project.local"}`,
@@ -1885,7 +1909,7 @@ function contactFromThread(threadId) {
   const preview = String(thread?.preview ?? "").trim();
   const name = preview ? preview.slice(0, 44) : `Fil ${threadId.slice(0, 8)}`;
   const isDemo = isDemoProjectPath(cwd);
-  return applyContactAlias({
+  return applyContactOverrides({
     id: `thread:${threadId}`,
     name,
     mail: `${projectNameFor(cwd).toLowerCase().replace(/[^a-z0-9]+/g, ".")}@thread.local`,
@@ -1968,6 +1992,13 @@ function isoFromMs(value) {
 function threadTimeMs(thread) {
   const value = Date.parse(thread?.timestamp ?? "");
   return Number.isFinite(value) ? value : 0;
+}
+
+function newestThreadForProject(project) {
+  const threads = [...(project?.threads ?? []), ...(project?.hiddenThreads ?? [])];
+  return threads
+    .filter((thread) => thread?.id)
+    .sort((a, b) => threadTimeMs(b) - threadTimeMs(a))[0] ?? null;
 }
 
 async function projectMetadata(cwd, threads) {
@@ -2483,7 +2514,7 @@ function createChatWindow(contactId) {
     title
   });
   win.on("focus", () => {
-    clearUnread(contactId, { clearReminder: false });
+    clearUnread(contactId);
   });
   win.on("closed", () => clearUnreadReminder(contactId));
   win.loadURL(rendererUrl({ view: "chat", contactId }));
@@ -2704,12 +2735,11 @@ function approvalResponseFor(record, decision) {
   const approve = approveForSession || decision === "approved" || decision === "allow" || decision === "accept";
   if (record.protocol === "v2-command") {
     return {
-      decision: approve ? "accept" : "decline",
-      acceptSettings: approve ? { forSession: approveForSession } : null
+      decision: approveForSession ? "acceptForSession" : approve ? "accept" : "decline"
     };
   }
   if (record.protocol === "v2-file") {
-    return { decision: approve ? "accept" : "decline" };
+    return { decision: approveForSession ? "acceptForSession" : approve ? "accept" : "decline" };
   }
   return { decision: approveForSession ? "approved_for_session" : approve ? "approved" : "denied" };
 }
@@ -2814,14 +2844,18 @@ function scheduleUnreadReminder(contactId) {
     return;
   }
   const win = windows.get(`chat:${contactId}`);
+  if (win && !win.isDestroyed() && win.isFocused()) {
+    clearUnreadReminder(contactId);
+    return;
+  }
   clearUnreadReminder(contactId);
   unreadReminderByContact.set(contactId, setTimeout(() => {
     unreadReminderByContact.delete(contactId);
     const target = windows.get(`chat:${contactId}`);
-    if (target && !target.isDestroyed() && !target.isFocused()) {
-      wizz(target, { focus: false });
+    if (target && !target.isDestroyed() && target.isFocused()) {
+      clearUnread(contactId);
     } else if (target && !target.isDestroyed()) {
-      wizz(target);
+      wizz(target, { focus: false });
     }
   }, currentUnreadWizzDelayMs()));
 }
@@ -2900,9 +2934,9 @@ function avatarPathForToast(contact) {
 
 function positionToastWindows() {
   if (!app.isReady()) return;
-  const width = 430;
-  const height = 170;
-  const gap = 12;
+  const width = 340;
+  const height = 118;
+  const gap = 8;
   const margin = 18;
   const { workArea } = screen.getPrimaryDisplay();
   toastWindows.forEach((win, index) => {
@@ -2935,13 +2969,13 @@ function messengerToastHtml({ contact, preview, playSound = false }) {
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;font-family:"Segoe UI",Tahoma,Arial,sans-serif;color:#3c3c3c}
-.toast{position:absolute;inset:8px;display:grid;grid-template-rows:48px minmax(0,1fr) 31px;overflow:hidden;border:1px solid #61cce8;border-radius:18px;background:linear-gradient(135deg,#f7fcff 0%,#e6f7ff 53%,#ccecff 100%);box-shadow:0 9px 24px rgba(31,47,72,.38),inset 0 1px 0 rgba(255,255,255,.95)}
-.head{position:relative;z-index:2;display:grid;grid-template-columns:31px minmax(0,1fr) 30px;align-items:center;gap:9px;padding:14px 18px 5px 20px;color:#515151;text-shadow:0 1px 0 white}
-.head img{display:block;width:28px;height:28px;object-fit:contain}.head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:23px}.close{display:grid;width:30px;height:30px;place-items:center;color:#717171;text-decoration:none;font-size:28px;line-height:1}.close:hover{color:#333}
-.body{position:relative;z-index:2;display:grid;grid-template-columns:98px minmax(0,1fr);gap:16px;min-height:0;padding:2px 24px 0 28px;pointer-events:none}
-.avatar{width:94px;height:94px;padding:6px;border:1px solid #9eb8c7;border-radius:16px;background:linear-gradient(#fff,#d7ecf9);box-shadow:0 7px 12px rgba(42,65,83,.28),inset 0 0 0 4px rgba(239,248,255,.95)}
-.avatar img{display:block;width:100%;height:100%;border-radius:8px;object-fit:cover;background:#b8dcf5}.copy{min-width:0;padding-top:11px;line-height:1.14}.copy strong{display:block;overflow:hidden;margin-bottom:5px;color:#3a3a3a;font-size:23px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.copy span{display:-webkit-box;overflow:hidden;color:#414141;font-size:21px;line-height:1.18;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.options{position:relative;z-index:3;justify-self:end;align-self:start;margin-right:26px;color:#0a73da;text-decoration:none;font-size:22px;line-height:26px}.options:hover{text-decoration:underline}.open{position:absolute;inset:49px 0 31px 0;z-index:1}
+.toast{position:absolute;inset:6px;display:grid;grid-template-rows:32px minmax(0,1fr);overflow:hidden;border:1px solid #61cce8;border-radius:14px;background:linear-gradient(135deg,#f7fcff 0%,#e6f7ff 53%,#ccecff 100%);box-shadow:0 7px 18px rgba(31,47,72,.34),inset 0 1px 0 rgba(255,255,255,.95)}
+.head{position:relative;z-index:2;display:grid;grid-template-columns:24px minmax(0,1fr) 24px;align-items:center;gap:7px;padding:8px 13px 2px 15px;color:#515151;text-shadow:0 1px 0 white}
+.head img{display:block;width:22px;height:22px;object-fit:contain}.head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:18px}.close{display:grid;width:24px;height:24px;place-items:center;color:#717171;text-decoration:none;font-size:22px;line-height:1}.close:hover{color:#333}
+.body{position:relative;z-index:2;display:grid;grid-template-columns:62px minmax(0,1fr);gap:11px;min-height:0;padding:5px 15px 12px 17px;pointer-events:none}
+.avatar{width:58px;height:58px;padding:4px;border:1px solid #9eb8c7;border-radius:12px;background:linear-gradient(#fff,#d7ecf9);box-shadow:0 5px 9px rgba(42,65,83,.22),inset 0 0 0 3px rgba(239,248,255,.95)}
+.avatar img{display:block;width:100%;height:100%;border-radius:7px;object-fit:cover;background:#b8dcf5}.copy{min-width:0;padding-top:2px;line-height:1.15}.copy strong{display:block;overflow:hidden;margin-bottom:2px;color:#3a3a3a;font-size:18px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.copy span{display:-webkit-box;overflow:hidden;color:#414141;font-size:15px;line-height:1.2;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.open{position:absolute;inset:38px 0 0 0;z-index:1}
 </style>
 </head>
 <body>
@@ -2949,7 +2983,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent
   <div class="head"><img src="${logo}" alt=""> <span>Codex Messenger</span><a class="close" href="codex-messenger://toast/close">x</a></div>
   <a class="open" href="codex-messenger://toast/open"></a>
   <div class="body"><div class="avatar"><img src="${avatar}" alt=""></div><div class="copy"><strong>${name}</strong><span>${message}</span></div></div>
-  <a class="options" href="codex-messenger://toast/open">Options</a>
 </div>
 ${playSound ? `<audio src="${sound}" autoplay></audio>` : ""}
 </body>
@@ -2960,8 +2993,8 @@ function showMessengerToast(contactId, text, options = {}) {
   if (smokeTest || isQuitting) return;
   const contact = contactFor(contactId);
   const preview = toastPreview(text);
-  const width = 430;
-  const height = 170;
+  const width = 340;
+  const height = 118;
   const toastWin = new BrowserWindow({
     width,
     height,
@@ -3014,9 +3047,8 @@ function registerIncomingMessage(contactId, text) {
   recentIncomingByContact.set(contactId, signature);
 
   const chatWin = windows.get(`chat:${contactId}`);
-  if (chatWin?.isFocused()) {
-    clearUnread(contactId, { clearReminder: false });
-    scheduleUnreadReminder(contactId);
+  if (chatWin && !chatWin.isDestroyed() && chatWin.isFocused()) {
+    clearUnread(contactId);
     return false;
   }
 
@@ -3217,6 +3249,7 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
 
   const contactId = String(params.contactId ?? "");
   let contact = contactFor(contactId);
+  let bootstrapConversations = null;
   let historyMessages = [];
   let historyCursor = null;
   let historyHasMore = false;
@@ -3225,6 +3258,12 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
     try {
       const directThreadId = threadIdFromContactId(contactId);
       let threadId = directThreadId || (contact.kind === "project" ? null : threadByContact.get(contactId) || null);
+      if (!threadId && contact.kind === "project") {
+        bootstrapConversations = await conversationBrowser({ startCodex: true, cwd: contact.cwd });
+        const project = bootstrapConversations.projects.find((item) => item.cwd === contact.cwd);
+        const latestThread = newestThreadForProject(project);
+        if (latestThread?.id) threadId = latestThread.id;
+      }
 
       if (threadId) {
         attemptedThreadResume = true;
@@ -3236,8 +3275,8 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
           contact = { ...contact, threadId };
         }
         if (!isDemoSeedThreadId(threadId)) {
-          threadByContact.set(contactId, threadId);
-          contactByThread.set(threadId, contactId);
+          threadByContact.set(contact.id, threadId);
+          contactByThread.set(threadId, contact.id);
         }
         const historyPage = thread
           ? threadHistoryPageFromThread(thread, contact)
@@ -3278,7 +3317,7 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
     unread: unreadState(),
     codexStatus: startupCodexStatus,
     userAgent: startupUserAgent,
-    conversations: null,
+    conversations: bootstrapConversations,
     historyMessages,
     historyCursor,
     historyHasMore,
@@ -3384,6 +3423,23 @@ ipcMain.handle("contacts:rename", async (_event, payload = {}) => {
     }
   }
   const settings = await saveSettings({ contactAliases });
+  return {
+    ok: true,
+    contacts: contactsForSettings(settings),
+    conversations: await conversationBrowser(),
+    settings
+  };
+});
+
+ipcMain.handle("contacts:set-status", async (_event, payload = {}) => {
+  const contactId = String(payload.contactId || "").trim();
+  const status = String(payload.status || "").trim();
+  if (!contactId) return { ok: false, error: "Contact invalide" };
+  if (!["online", "busy", "away", "offline"].includes(status)) return { ok: false, error: "Statut invalide" };
+  const current = await loadSettings();
+  const contactStatuses = normalizeContactStatuses(current.contactStatuses);
+  contactStatuses[contactId] = status;
+  const settings = await saveSettings({ contactStatuses });
   return {
     ok: true,
     contacts: contactsForSettings(settings),
@@ -3844,7 +3900,7 @@ ipcMain.handle("app:save-text", async (event, { title = "Save", defaultPath = "c
 });
 
 ipcMain.handle("conversation:read", (_event, contactId) => {
-  clearUnread(contactId, { clearReminder: false });
+  clearUnread(contactId);
   return { ok: true };
 });
 
@@ -3894,6 +3950,10 @@ ipcMain.handle("window:set-zoom-factor", (event, factor = 1) => {
 });
 
 app.whenReady().then(() => {
+  if (process.platform === "darwin" && app.dock) {
+    const dockIcon = nativeImage.createFromPath(appIconPath);
+    if (!dockIcon.isEmpty()) app.dock.setIcon(dockIcon);
+  }
   createTray();
   createMainWindow();
   app.on("activate", () => {

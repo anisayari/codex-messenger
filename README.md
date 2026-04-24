@@ -21,8 +21,8 @@ Important: Codex Messenger is only a local front-end client for `codex app-serve
 
 Official downloads are available from [codexmessenger.net](https://codexmessenger.net/). Click `DOWNLOAD` and choose the platform in the popup:
 
-- macOS `v0.0.2.4`: `CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.4`: `CodexMessenger.exe`.
+- macOS `v0.0.2.5`: `CodexMessenger-mac-arm64.dmg`.
+- Windows `v0.0.2.5`: `CodexMessenger.exe`.
 
 The website download popup is backed by GitHub release assets. A release must include both the Windows `.exe` and macOS `.dmg`; otherwise the site deployment should fail instead of publishing a broken download button.
 
@@ -78,8 +78,17 @@ npm run setup:codex
 # Check Codex CLI, npm, and login state without changing the machine
 npm run setup:codex:check
 
+# Run the Node test suite
+npm test
+
+# Run release metadata checks
+npm run test:release
+
 # Build the Vite renderer
 npm run build
+
+# Run tests, release checks, renderer build, and Electron smoke test
+npm run ci
 
 # Start the Electron app
 npm run electron:start
@@ -96,11 +105,19 @@ npm run package:win
 # Build unsigned macOS DMG and ZIP for the current architecture
 npm run package:mac
 
+# Build unsigned macOS DMG and ZIP for both x64 and arm64
+npm run package:mac:all
+
 # Build signed/notarized macOS DMG and ZIP for release
 npm run package:mac:release
 
 # Build an unpacked macOS .app for local testing
 npm run package:mac:dir
+
+# Distribution aliases
+npm run dist:win
+npm run dist:mac
+npm run dist:mac:release
 ```
 
 Launchers are organized by platform:
@@ -288,8 +305,8 @@ npm run package:win
 
 Generated Windows files are written to `release/windows/`:
 
-- `Codex Messenger Setup 0.0.2-4.exe`: Windows installer.
-- `Codex Messenger 0.0.2-4.exe`: portable build.
+- `Codex Messenger Setup 0.0.2-5.exe`: Windows installer.
+- `Codex Messenger 0.0.2-5.exe`: portable build.
 - `win-unpacked/`: unpacked folder for local testing.
 
 The build is not signed. For broad public distribution, add Windows code signing.
@@ -303,8 +320,8 @@ npm run package:mac
 
 Generated macOS files are written to `release/macos/`:
 
-- `Codex-Messenger-0.0.2-4-arm64.dmg` or `Codex-Messenger-0.0.2-4-x64.dmg`.
-- `Codex-Messenger-0.0.2-4-arm64.zip` or `Codex-Messenger-0.0.2-4-x64.zip`.
+- `Codex-Messenger-0.0.2-5-arm64.dmg` or `Codex-Messenger-0.0.2-5-x64.dmg`.
+- `Codex-Messenger-0.0.2-5-arm64.zip` or `Codex-Messenger-0.0.2-5-x64.zip`.
 - `mac-arm64/` or `mac/`: unpacked app folder for local testing.
 
 The unsigned macOS build includes camera and microphone usage descriptions for the snapshot and voice clip features, but it is not notarized or Developer ID signed.
@@ -338,8 +355,8 @@ The static showcase site lives in `codexmessenger.net/`.
 
 Its `DOWNLOAD` button opens a platform chooser popup with:
 
-- macOS `v0.0.2.4`: `downloads/CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.4`: `downloads/CodexMessenger.exe`.
+- macOS `v0.0.2.5`: `downloads/CodexMessenger-mac-arm64.dmg`.
+- Windows `v0.0.2.5`: `downloads/CodexMessenger.exe`.
 
 The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, resolves one Windows `.exe` asset and one macOS `.dmg` asset, patches the cache-buster in `codexmessenger.net/index.html`, uploads the static files to the VPS, then downloads the two release assets into `/downloads/` and writes `.sha256` files.
 
@@ -356,8 +373,16 @@ Before publishing or making release changes:
 
 ```powershell
 npm run check:codex
+npm test
+npm run test:release
 npm run build
 npm run electron:smoke
+```
+
+For the same checks in one command:
+
+```powershell
+npm run ci
 ```
 
 To verify a generated executable:

@@ -35,5 +35,7 @@ test("release build keeps Codex app-server integration stable", () => {
   assert.match(main, /method === "thread\/started"/);
   assert.match(main, /method === "turn\/completed"/);
   assert.match(main, /async function ensureLoadedThread/);
+  assert.match(main, /acceptForSession/);
+  assert.doesNotMatch(main, /acceptSettings/);
   assert.doesNotMatch(main, /persistExtendedHistory|experimentalRawEvents|persistFullHistory/);
 });

@@ -65,6 +65,7 @@ contextBridge.exposeInMainWorld("codexMsn", {
   listCodexModels: () => ipcRenderer.invoke("models:list"),
   createAgent: (agent) => ipcRenderer.invoke("contacts:create-agent", agent),
   renameContact: (payload) => ipcRenderer.invoke("contacts:rename", payload),
+  setContactStatus: (payload) => ipcRenderer.invoke("contacts:set-status", payload),
   chooseDirectory: (options) => ipcRenderer.invoke("app:choose-directory", options),
   chooseCodex: () => ipcRenderer.invoke("settings:choose-codex"),
   testCodex: (candidatePath) => ipcRenderer.invoke("settings:test-codex", candidatePath),
