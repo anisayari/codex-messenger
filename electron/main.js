@@ -191,6 +191,7 @@ const knownThreads = new Map();
 const threadItemsByThread = new Map();
 const activeTurnByThread = new Map();
 const approvalRequests = new Map();
+const loadedThreads = new Set();
 let tray = null;
 let isQuitting = false;
 let updateCheckCache = null;
@@ -256,6 +257,35 @@ function demoProjectCwd() {
 
 function settingsFilePath() {
   return path.join(app.getPath("userData"), "settings.json");
+}
+
+function logFilePath() {
+  return path.join(app.getPath("userData"), "codex-messenger.log");
+}
+
+function redactForLog(value, depth = 0) {
+  if (depth > 5) return "[depth-limit]";
+  if (typeof value === "string") return value.length > 800 ? `${value.slice(0, 800)}...` : value;
+  if (!value || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.slice(0, 20).map((item) => redactForLog(item, depth + 1));
+  const result = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (/token|authorization|password|secret|cookie/i.test(key)) {
+      result[key] = "[redacted]";
+    } else {
+      result[key] = redactForLog(item, depth + 1);
+    }
+  }
+  return result;
+}
+
+function logDebug(event, details = {}) {
+  const line = JSON.stringify({
+    time: new Date().toISOString(),
+    event,
+    ...redactForLog(details)
+  });
+  fs.appendFile(logFilePath(), `${line}\n`, "utf8").catch(() => {});
 }
 
 function migrateLegacyDefaultProfile(nextProfile = {}) {
@@ -1480,6 +1510,7 @@ class CodexAppServer extends EventEmitter {
 
   async start() {
     const codexCommand = await resolveCodexCommand();
+    logDebug("codex.app-server.start", { command: codexCommand.command, cwd: defaultCwd() });
     this.child = spawnCodex(codexCommand.command, ["app-server", "--analytics-default-enabled"], {
       cwd: defaultCwd(),
       stdio: ["pipe", "pipe", "pipe"],
@@ -1491,21 +1522,26 @@ class CodexAppServer extends EventEmitter {
     });
 
     this.child.on("error", (error) => {
+      logDebug("codex.app-server.error", { error: error.message });
       this.emit("status", { kind: "error", text: error.message });
       this.child = null;
       this.ready = null;
+      loadedThreads.clear();
       for (const [, pending] of this.pending) pending.reject(error);
       this.pending.clear();
     });
     this.child.stdout.on("data", (chunk) => this.readStdout(chunk));
     this.child.stderr.on("data", (chunk) => {
+      logDebug("codex.app-server.stderr", { text: chunk.toString() });
       this.emit("status", { kind: "stderr", text: chunk.toString() });
     });
     this.child.on("exit", (code) => {
+      logDebug("codex.app-server.exit", { code });
       this.emit("status", { kind: "exit", text: `codex app-server exited with ${code ?? "unknown"}` });
       this.child = null;
       this.ready = null;
       this.userAgent = null;
+      loadedThreads.clear();
       for (const [, pending] of this.pending) pending.reject(new Error("codex app-server stopped"));
       this.pending.clear();
     });
@@ -1515,10 +1551,14 @@ class CodexAppServer extends EventEmitter {
         name: "codex-messenger",
         title: "Codex Messenger",
         version: app.getVersion()
+      },
+      capabilities: {
+        experimentalApi: true
       }
     });
     this.userAgent = init.userAgent;
     this.notify("initialized");
+    logDebug("codex.initialize.ok", { userAgent: init.userAgent, codexHome: init.codexHome, platformFamily: init.platformFamily, platformOs: init.platformOs });
     return init;
   }
 
@@ -1547,6 +1587,7 @@ class CodexAppServer extends EventEmitter {
       const pending = this.pending.get(message.id);
       this.pending.delete(message.id);
       if (message.error) {
+        logDebug("codex.rpc.error", { id: message.id, error: message.error });
         pending.reject(new Error(message.error.message ?? "Codex request failed"));
       } else {
         pending.resolve(message.result);
@@ -1563,10 +1604,14 @@ class CodexAppServer extends EventEmitter {
     if (!this.child) throw new Error("codex app-server is not running");
     const id = this.nextId++;
     const payload = { id, method, params };
+    if (/^(thread|turn|review)\//.test(method) || method === "initialize") {
+      logDebug("codex.rpc.request", { id, method, params });
+    }
     this.child.stdin.write(`${JSON.stringify(payload)}\n`);
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.pending.delete(id);
+        logDebug("codex.rpc.timeout", { id, method });
         reject(new Error(`Timed out waiting for ${method}`));
       }, 120000);
       this.pending.set(id, {
@@ -1593,6 +1638,8 @@ class CodexAppServer extends EventEmitter {
     this.child = null;
     this.ready = null;
     this.userAgent = null;
+    loadedThreads.clear();
+    logDebug("codex.app-server.stop", { reason });
     for (const [, pending] of this.pending) pending.reject(new Error(reason));
     this.pending.clear();
     if (child && !child.killed) child.kill();
@@ -1624,6 +1671,8 @@ class CodexAppServer extends EventEmitter {
       persistExtendedHistory: true,
       experimentalRawEvents: false
     });
+    loadedThreads.add(result.thread.id);
+    logDebug("codex.thread.start.ok", { threadId: result.thread.id, cwd });
     return result.thread.id;
   }
 
@@ -1646,6 +1695,10 @@ class CodexAppServer extends EventEmitter {
       excludeTurns: overrides.excludeTurns !== false,
       persistExtendedHistory: true
     });
+    if (result.thread?.id) {
+      loadedThreads.add(result.thread.id);
+      logDebug("codex.thread.resume.ok", { threadId: result.thread.id, cwd: overrides.cwd ?? null });
+    }
     return result.thread;
   }
 
@@ -1703,7 +1756,7 @@ class CodexAppServer extends EventEmitter {
     await this.ensureReady();
     const items = typeof input === "string" ? [{ type: "text", text: input }] : input;
     const codexOptions = normalizeCodexOptions(options);
-    return this.request("turn/start", {
+    const result = await this.request("turn/start", {
       threadId,
       input: items,
       cwd: null,
@@ -1713,6 +1766,8 @@ class CodexAppServer extends EventEmitter {
       effort: codexOptions.reasoningEffort || null,
       summary: null
     });
+    logDebug("codex.turn.start.ok", { threadId, turnId: result?.turn?.id });
+    return result;
   }
 
   async interruptTurn(threadId, turnId) {
@@ -1761,6 +1816,10 @@ class CodexAppServer extends EventEmitter {
       excludeTurns: true,
       persistExtendedHistory: true
     });
+    if (result.thread?.id) {
+      loadedThreads.add(result.thread.id);
+      logDebug("codex.thread.fork.ok", { sourceThreadId: threadId, threadId: result.thread.id });
+    }
     return result.thread;
   }
 
@@ -2988,20 +3047,18 @@ function normalizeMessageTextForDedupe(text) {
 }
 
 async function ensureThread(contactId) {
-  if (threadByContact.has(contactId)) return threadByContact.get(contactId);
   const settings = await loadSettings();
   const contact = contactFor(contactId);
   const codexOptions = codexOptionsForContact(contactId, settings);
+  const mappedThreadId = threadByContact.get(contactId);
+  if (mappedThreadId) {
+    await ensureLoadedThread(contactId, mappedThreadId, contact, codexOptions);
+    return mappedThreadId;
+  }
 
   const existingThreadId = threadIdFromContactId(contactId);
   if (existingThreadId && !isDemoSeedThreadId(existingThreadId)) {
-    const thread = await codex.resumeThread(existingThreadId, {
-      cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(existingThreadId)?.cwd),
-      developerInstructions: localizedInstructions(contact),
-      codexOptions,
-      excludeTurns: true
-    });
-    knownThreads.set(existingThreadId, thread);
+    await ensureLoadedThread(contactId, existingThreadId, contact, codexOptions);
     threadByContact.set(contactId, existingThreadId);
     contactByThread.set(existingThreadId, contactId);
     return existingThreadId;
@@ -3012,6 +3069,20 @@ async function ensureThread(contactId) {
   threadByContact.set(contactId, threadId);
   contactByThread.set(threadId, contactId);
   return threadId;
+}
+
+async function ensureLoadedThread(contactId, threadId, contact = contactFor(contactId), codexOptions = codexOptionsForContact(contactId)) {
+  const cleanThreadId = String(threadId || "").trim();
+  if (!cleanThreadId || isDemoSeedThreadId(cleanThreadId) || loadedThreads.has(cleanThreadId)) return null;
+  logDebug("codex.thread.resume.before-turn", { contactId, threadId: cleanThreadId });
+  const thread = await codex.resumeThread(cleanThreadId, {
+    cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(cleanThreadId)?.cwd),
+    developerInstructions: localizedInstructions(contact),
+    codexOptions,
+    excludeTurns: true
+  });
+  if (thread) knownThreads.set(cleanThreadId, thread);
+  return thread;
 }
 
 function textFromCompletedItem(item) {
@@ -3043,9 +3114,19 @@ codex.on("request", (message) => {
 });
 
 codex.on("notification", (message) => {
+  if (message.method === "thread/started") {
+    const threadId = message.params?.thread?.id;
+    if (threadId) {
+      loadedThreads.add(threadId);
+      logDebug("codex.thread.started", { threadId, status: message.params?.thread?.status });
+    }
+    return;
+  }
+
   if (message.method === "turn/started") {
     if (message.params?.threadId && message.params?.turn?.id) {
       activeTurnByThread.set(message.params.threadId, message.params.turn.id);
+      logDebug("codex.turn.started", { threadId: message.params.threadId, turnId: message.params.turn.id });
     }
     return;
   }
@@ -3081,6 +3162,12 @@ codex.on("notification", (message) => {
   if (message.method === "turn/completed") {
     const contactId = contactByThread.get(message.params.threadId);
     if (message.params?.threadId) activeTurnByThread.delete(message.params.threadId);
+    logDebug("codex.turn.completed", {
+      threadId: message.params?.threadId,
+      turnId: message.params?.turn?.id,
+      status: message.params?.turn?.status,
+      error: message.params?.turn?.error
+    });
     if (contactId) {
       sendToChat(contactId, "codex:done", { contactId });
       sendToMain("conversation:finished", { contactId });
@@ -3447,14 +3534,7 @@ ipcMain.handle("conversation:load-thread", async (event, { contactId, threadId }
     ? threadHistoryPageFromThread(thread, hydratedContact)
     : await threadHistoryPageFromServer(cleanThreadId, hydratedContact, { limit: codexHistoryPageSize });
   if (!thread && !isDemoSeedThreadId(cleanThreadId)) {
-    codex.resumeThread(cleanThreadId, {
-      cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(cleanThreadId)?.cwd),
-      developerInstructions: localizedInstructions(contact),
-      codexOptions,
-      excludeTurns: true
-    }).then((resumedThread) => {
-      if (resumedThread) knownThreads.set(cleanThreadId, resumedThread);
-    }).catch(() => {});
+    await ensureLoadedThread(targetContactId, cleanThreadId, contact, codexOptions);
   }
   retargetChatWindow(event, targetContactId);
   return {
@@ -3642,6 +3722,7 @@ ipcMain.handle("conversation:fork", async (_event, { contactId, threadId } = {})
 });
 
 async function sendConversationItems(contactId, items) {
+  const cleanContactId = String(contactId || "").trim();
   const cleanItems = items.filter((item) => {
     if (item?.type === "text") return String(item.text ?? "").trim();
     if (item?.type === "localImage") return String(item.path ?? "").trim();
@@ -3649,11 +3730,17 @@ async function sendConversationItems(contactId, items) {
   });
   if (!cleanItems.length) return { ok: false };
   try {
-    clearUnread(contactId);
-    sendToChat(contactId, "codex:typing", { contactId });
+    clearUnread(cleanContactId);
+    sendToChat(cleanContactId, "codex:typing", { contactId: cleanContactId });
     const settings = await loadSettings();
-    const codexOptions = codexOptionsForContact(contactId, settings);
-    const threadId = await ensureThread(contactId);
+    const codexOptions = codexOptionsForContact(cleanContactId, settings);
+    const threadId = await ensureThread(cleanContactId);
+    logDebug("conversation.send", {
+      contactId: cleanContactId,
+      threadId,
+      itemTypes: cleanItems.map((item) => item.type),
+      textPreview: cleanItems.find((item) => item.type === "text")?.text ?? ""
+    });
     const activeTurnId = activeTurnByThread.get(threadId);
     if (activeTurnId) {
       await codex.steerTurn(threadId, activeTurnId, cleanItems);
@@ -3663,7 +3750,8 @@ async function sendConversationItems(contactId, items) {
     if (result?.turn?.id) activeTurnByThread.set(threadId, result.turn.id);
     return { ok: true, threadId, conversations: await conversationBrowser() };
   } catch (error) {
-    sendToChat(contactId, "codex:error", { contactId, text: error.message });
+    logDebug("conversation.send.error", { contactId: cleanContactId, error: error.message });
+    sendToChat(cleanContactId, "codex:error", { contactId: cleanContactId, text: error.message });
     return { ok: false, error: error.message };
   }
 }
