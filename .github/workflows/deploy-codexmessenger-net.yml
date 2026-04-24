@@ -45,6 +45,8 @@ jobs:
         run: npm ci
 
       - name: Release preflight
+        env:
+          ELECTRON_DISABLE_SANDBOX: 1
         run: |
           npm run test
           npm run test:release
@@ -61,11 +63,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          EVENT_RELEASE_TAG: ${{ github.event.release.tag_name || '' }}
         run: |
           set -euo pipefail
 
           release_json="$RUNNER_TEMP/latest-release.json"
-          gh api "repos/$GH_REPO/releases/latest" > "$release_json"
+          if [[ -n "$EVENT_RELEASE_TAG" ]]; then
+            gh api "repos/$GH_REPO/releases/tags/$EVENT_RELEASE_TAG" > "$release_json"
+          else
+            gh api "repos/$GH_REPO/releases/latest" > "$release_json"
+          fi
 
           tag="$(jq -r '.tag_name // empty' "$release_json")"
           if [[ -z "$tag" ]]; then

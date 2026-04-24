@@ -39,3 +39,13 @@ test("release build keeps Codex app-server integration stable", () => {
   assert.doesNotMatch(main, /acceptSettings/);
   assert.doesNotMatch(main, /persistExtendedHistory|experimentalRawEvents|persistFullHistory/);
 });
+
+test("GitHub workflows keep release and Electron smoke checks stable", () => {
+  const ci = read(".github/workflows/ci.yml");
+  const deploy = read(".github/workflows/deploy-codexmessenger-net.yml");
+  assert.match(ci, /ELECTRON_DISABLE_SANDBOX: 1/);
+  assert.match(deploy, /ELECTRON_DISABLE_SANDBOX: 1/);
+  assert.match(deploy, /github\.event\.release\.tag_name/);
+  assert.match(deploy, /releases\/tags\/\$EVENT_RELEASE_TAG/);
+  assert.match(deploy, /npm run test:release/);
+});

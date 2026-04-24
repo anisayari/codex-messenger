@@ -34,10 +34,12 @@ assertIncludes("codexmessenger.net/index.html", releaseTag);
 assertIncludes("codexmessenger.net/index.html", `?v=${releaseTag}`);
 
 const main = read("electron/main.js");
-assert.ok(main.includes('capabilities: {\n        experimentalApi: true\n      }'), "initialize should opt into app-server capabilities");
-assert.ok(!/persistExtendedHistory|experimentalRawEvents|persistFullHistory/.test(main), "release must not send experimental thread history fields");
-assert.ok(!main.includes("acceptSettings"), "release must not send non-protocol approval acceptSettings");
-assert.ok(main.includes("acceptForSession"), "release must support protocol approval acceptForSession decisions");
+const appServerClient = read("electron/codexAppServerClient.js");
+const protocolSource = `${main}\n${appServerClient}`;
+assert.ok(protocolSource.includes("experimentalApi: true"), "initialize should opt into app-server capabilities");
+assert.ok(!/persistExtendedHistory|experimentalRawEvents|persistFullHistory/.test(protocolSource), "release must not send experimental thread history fields");
+assert.ok(!protocolSource.includes("acceptSettings"), "release must not send non-protocol approval acceptSettings");
+assert.ok(protocolSource.includes("acceptForSession"), "release must support protocol approval acceptForSession decisions");
 assert.ok(main.includes("codex-messenger.log"), "release must keep the debug log file");
 assert.ok(main.includes("ensureLoadedThread"), "release must resume existing threads before sending turns");
 
@@ -50,5 +52,7 @@ const workflow = read(".github/workflows/deploy-codexmessenger-net.yml");
 assert.ok(workflow.includes("Release preflight"), "deploy workflow must run release preflight before deployment");
 assert.ok(workflow.includes("npm run test:release"), "deploy workflow must verify release metadata");
 assert.ok(workflow.includes("npm run test"), "deploy workflow must run API/formatting tests");
+assert.ok(workflow.includes("ELECTRON_DISABLE_SANDBOX: 1"), "deploy workflow must disable Electron sandbox only for Linux smoke tests");
+assert.ok(workflow.includes("github.event.release.tag_name"), "deploy workflow must use the triggering release tag when available");
 
 console.log(`Release check OK for ${packageJson.version} (${releaseTag})`);

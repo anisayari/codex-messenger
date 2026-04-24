@@ -216,7 +216,12 @@ function threadStartParams(cwd) {
     cwd,
     approvalPolicy: "never",
     permissionProfile: null,
-    config: null,
+    config: {
+      "mcp_servers": {},
+      "features.apps": false,
+      "features.plugins": false,
+      "include_apps_instructions": false
+    },
     baseInstructions: null,
     developerInstructions: "Test developer instruction",
     personality: "pragmatic"
@@ -226,7 +231,7 @@ function threadStartParams(cwd) {
 function turnStartParams(threadId, text) {
   return {
     threadId,
-    input: [{ type: "text", text }],
+    input: [{ type: "text", text, text_elements: [] }],
     cwd: null,
     approvalPolicy: "never",
     sandboxPolicy: sandboxPolicyForMode("workspaceWrite"),
@@ -272,7 +277,7 @@ test("Codex app-server contract covers auth, thread read/write, resume, steer, r
     cwd: tmp,
     approvalPolicy: "never",
     permissionProfile: null,
-    config: null,
+    config: threadStartParams(tmp).config,
     baseInstructions: null,
     developerInstructions: "resume instruction",
     personality: "pragmatic",
@@ -283,7 +288,7 @@ test("Codex app-server contract covers auth, thread read/write, resume, steer, r
 
   const steered = await client.request("turn/steer", {
     threadId: started.thread.id,
-    input: [{ type: "text", text: "ajoute les tests" }],
+    input: [{ type: "text", text: "ajoute les tests", text_elements: [] }],
     expectedTurnId: firstTurn.turn.id
   });
   assert.match(steered.turnId, /^turn_/);
@@ -310,7 +315,7 @@ test("Codex app-server contract covers auth, thread read/write, resume, steer, r
     cwd: tmp,
     approvalPolicy: "never",
     permissionProfile: null,
-    config: null,
+    config: threadStartParams(tmp).config,
     baseInstructions: null,
     developerInstructions: "fork instruction",
     ephemeral: false,

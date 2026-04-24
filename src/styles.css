@@ -712,6 +712,56 @@ button { cursor: default; }
 .setup-box { border-color: #9eb8dc; color: #174a84; background: #f1f7ff; }
 .server-hint { color: #4f6079; font-size: 11px; line-height: 1.35; }
 .loading { display: grid; height: 100vh; place-items: center; color: #174a93; background: #edf6ff; font-weight: 700; }
+.loading.error {
+  padding: 18px;
+  color: #1d2b42;
+}
+.debug-error-card {
+  display: grid;
+  gap: 8px;
+  width: min(520px, 100%);
+  padding: 14px;
+  border: 1px solid #c55d5d;
+  border-radius: 4px;
+  background: #fff8f8;
+  box-shadow: 0 8px 22px rgba(24,56,92,.18);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.debug-error-card strong {
+  color: #8a1717;
+  font-size: 14px;
+}
+.debug-error-card p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.debug-error-card code {
+  max-height: 150px;
+  overflow: auto;
+  padding: 7px;
+  border: 1px solid #e0b6b6;
+  background: #fff;
+  color: #27364c;
+  white-space: pre-wrap;
+  font-family: "Courier New", monospace;
+  font-weight: 400;
+}
+.debug-error-card small {
+  color: #53627a;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.debug-error-card button {
+  justify-self: start;
+  min-width: 96px;
+  padding: 5px 12px;
+  border: 1px solid #8aa9d0;
+  border-radius: 3px;
+  color: #133b72;
+  background: linear-gradient(#ffffff, #d8eaff);
+  font-weight: 700;
+}
 
 .roster {
   position: relative;
@@ -1224,6 +1274,45 @@ button { cursor: default; }
     radial-gradient(circle at 35% 18%, rgba(255,255,255,1), rgba(255,255,255,0) 38%),
     linear-gradient(#fff9ad, #ffd32e);
 }
+.update-progress {
+  display: grid;
+  gap: 3px;
+  margin-top: 2px;
+}
+.update-progress-track {
+  position: relative;
+  height: 13px;
+  overflow: hidden;
+  border: 1px solid #7f9cc2;
+  border-radius: 2px;
+  background:
+    linear-gradient(#ffffff, #dcecff);
+  box-shadow: inset 1px 1px 2px rgba(44,74,115,.18);
+}
+.update-progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  background:
+    linear-gradient(90deg, #2f86dd, #8ac9ff 52%, #2d88df);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+  transition: width .18s ease;
+}
+.update-progress-track.indeterminate .update-progress-fill {
+  position: absolute;
+  width: 38%;
+  animation: update-progress-sweep 1.05s linear infinite;
+}
+.update-progress small {
+  min-height: 0;
+  color: #31445d;
+  font-size: 10px;
+  line-height: 1.2;
+}
+@keyframes update-progress-sweep {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(270%); }
+}
 .update-card button:active,
 .settings-dialog footer button:active {
   transform: translateY(1px);
@@ -1253,6 +1342,12 @@ button { cursor: default; }
   background: #f7fbff;
   font-size: 11px;
   line-height: 1.35;
+}
+.settings-dialog footer .primary-footer-button {
+  border-color: #a77400;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255,255,255,1), rgba(255,255,255,0) 38%),
+    linear-gradient(#fff9ad, #ffd32e);
 }
 @media (max-width: 440px) {
   .update-grid {

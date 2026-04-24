@@ -10,9 +10,11 @@ const listeners = new Set([
   "codex:approval-resolved",
   "codex:typing",
   "codex:status",
+  "codex:status-note",
   "conversation:finished",
   "conversation:notify",
   "conversation:unread",
+  "updates:progress",
   "window:wizz"
 ]);
 
@@ -36,6 +38,7 @@ contextBridge.exposeInMainWorld("codexMsn", {
   checkUpdates: (options) => ipcRenderer.invoke("updates:check", options),
   openUpdateTarget: (target) => ipcRenderer.invoke("updates:open", target),
   installUpdateTarget: (target) => ipcRenderer.invoke("updates:install", target),
+  restartForUpdate: () => ipcRenderer.invoke("updates:restart"),
   signIn: (profile) => ipcRenderer.invoke("auth:sign-in", profile),
   openConversation: (contactId) => ipcRenderer.invoke("conversation:open", contactId),
   openThread: (threadId) => ipcRenderer.invoke("conversation:open-thread", threadId),
@@ -60,6 +63,7 @@ contextBridge.exposeInMainWorld("codexMsn", {
   pickFile: (options) => ipcRenderer.invoke("media:pick-file", options),
   saveDataUrl: (payload) => ipcRenderer.invoke("media:save-data-url", payload),
   saveText: (payload) => ipcRenderer.invoke("app:save-text", payload),
+  log: (event, details) => ipcRenderer.invoke("app:log", { event, details }),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   setSettings: (settings) => ipcRenderer.invoke("settings:set", settings),
   listCodexModels: () => ipcRenderer.invoke("models:list"),

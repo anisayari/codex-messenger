@@ -1,18 +1,22 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, screen, shell, Tray } from "electron";
 import { execFile, spawn } from "node:child_process";
-import { createHash } from "node:crypto";
-import { EventEmitter } from "node:events";
-import { createWriteStream, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import fs from "node:fs/promises";
-import https from "node:https";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { resolveExecutableCandidate } from "../shared/codexExecutable.js";
 import { defaultCodexOptions, normalizeCodexOptions, sandboxPolicyForMode } from "../shared/codexOptions.js";
-import { codexLoginStatus, findNpmCommand, installCodexCli, nodeDownloadUrl } from "../shared/codexSetup.js";
+import { codexLoginStatus, findCodexCommand, findNpmCommand, installCodexCli, nodeDownloadUrl, quoteWindowsArg, spawnCommand } from "../shared/codexSetup.js";
 import { codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
+import { newestThreadForProject, threadTimeMs } from "../shared/threadSelection.js";
+import { CodexAppServerClient } from "./codexAppServerClient.js";
+import { registerUpdateIpcHandlers, registerWindowIpcHandlers } from "./ipcHandlers.js";
+import { createNotificationService, toastPreview } from "./notifications.js";
+import { assertEnum, assertObject, assertString, isSafeExternalUrl } from "./security.js";
+import { createSettingsStore } from "./settingsStore.js";
+import { codexNpmUrl, createUpdateService, frontReleasesUrl } from "./updateService.js";
+import { createBaseWindowFactory, setStableWindowTitle } from "./windowManager.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -29,14 +33,6 @@ const appIconPath = path.join(
 const macTrayTemplateIconPath = path.join(rootDir, "public", "icons", "codex-messenger-menubarTemplate.png");
 const macTrayTemplateIcon2xPath = path.join(rootDir, "public", "icons", "codex-messenger-menubarTemplate@2x.png");
 const toastIconPath = path.join(rootDir, "public", "icons", "codex-messenger-people-256.png");
-const repositoryUrl = "https://github.com/anisayari/codex-messenger";
-const frontPackageUrl = "https://raw.githubusercontent.com/anisayari/codex-messenger/main/package.json";
-const frontReleasesUrl = `${repositoryUrl}/releases`;
-const frontLatestReleaseApiUrl = "https://api.github.com/repos/anisayari/codex-messenger/releases/latest";
-const codexNpmPackageName = "@openai/codex";
-const codexNpmRegistryUrl = "https://registry.npmjs.org/@openai%2Fcodex/latest";
-const codexNpmUrl = "https://www.npmjs.com/package/@openai/codex";
-const updateCheckCacheMs = 10 * 60_000;
 const threadListPageSize = 20;
 const codexHistoryPageSize = 10;
 
@@ -186,19 +182,19 @@ const contactByThread = new Map();
 const unreadReminderByContact = new Map();
 const unreadByContact = new Map();
 const recentIncomingByContact = new Map();
-const toastWindows = [];
 const knownThreads = new Map();
 const threadItemsByThread = new Map();
 const activeTurnByThread = new Map();
+const activeTurnMetaByThread = new Map();
 const approvalRequests = new Map();
 const loadedThreads = new Set();
 let tray = null;
 let isQuitting = false;
-let updateCheckCache = null;
-let updateCheckPromise = null;
 let codexWarmupPromise = null;
 let nextApprovalRequestId = 1;
 const defaultUnreadWizzDelayMs = Math.max(10_000, Number(process.env.MSN_UNREAD_WIZZ_MS ?? "") || 60_000);
+const turnNoResponseNoticeMs = 25_000;
+const turnStalledNoticeMs = 120_000;
 const defaultThreadTabs = { orderByCwd: {}, hiddenIds: [] };
 const defaultProjectSort = "name-asc";
 const defaultTextStyle = {
@@ -238,6 +234,7 @@ const defaultSettings = {
   signedIn: false,
   autoSignIn: true
 };
+const settingsStore = createSettingsStore({ settingsFilePath, defaultSettings });
 let settingsCache = null;
 
 function defaultCwd() {
@@ -264,6 +261,13 @@ function logFilePath() {
   return path.join(app.getPath("userData"), "codex-messenger.log");
 }
 
+async function ensureDebugLogFile() {
+  const filePath = logFilePath();
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.appendFile(filePath, "", "utf8");
+  return filePath;
+}
+
 function redactForLog(value, depth = 0) {
   if (depth > 5) return "[depth-limit]";
   if (typeof value === "string") return value.length > 800 ? `${value.slice(0, 800)}...` : value;
@@ -287,6 +291,25 @@ function logDebug(event, details = {}) {
     ...redactForLog(details)
   });
   fs.appendFile(logFilePath(), `${line}\n`, "utf8").catch(() => {});
+}
+
+function openExternalUrl(url) {
+  if (!isSafeExternalUrl(url)) {
+    logDebug("security.openExternal.blocked", { url });
+    return { ok: false, error: "External URL blocked" };
+  }
+  shell.openExternal(url);
+  return { ok: true, url };
+}
+
+function sendUpdateProgress(payload = {}) {
+  const eventPayload = {
+    at: new Date().toISOString(),
+    ...payload
+  };
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) win.webContents.send("updates:progress", eventPayload);
+  }
 }
 
 function migrateLegacyDefaultProfile(nextProfile = {}) {
@@ -728,14 +751,9 @@ function contactsForSettings(settings = settingsCache) {
 
 async function loadSettings() {
   if (settingsCache) return settingsCache;
-  let loadedStoredSettings = false;
-  try {
-    const raw = await fs.readFile(settingsFilePath(), "utf8");
-    settingsCache = { ...defaultSettings, ...JSON.parse(raw) };
-    loadedStoredSettings = true;
-  } catch {
-    settingsCache = { ...defaultSettings };
-  }
+  const rawSettings = await settingsStore.loadRaw();
+  const loadedStoredSettings = rawSettings.loadedStoredSettings;
+  settingsCache = rawSettings.settings;
   settingsCache.language = normalizeLanguage(settingsCache.language);
   settingsCache.profile = normalizeProfile({
     ...settingsCache.profile,
@@ -791,16 +809,13 @@ async function saveSettings(nextSettings = {}) {
     signedIn: normalizeBoolean(nextSettings.signedIn ?? current.signedIn, false),
     autoSignIn: normalizeBoolean(nextSettings.autoSignIn ?? current.autoSignIn, true)
   };
-  await fs.mkdir(path.dirname(settingsFilePath()), { recursive: true });
-  await fs.writeFile(settingsFilePath(), JSON.stringify(settingsCache, null, 2), "utf8");
+  await settingsStore.save(settingsCache);
   Object.assign(profile, settingsCache.profile);
   if (!settingsCache.unreadWizzEnabled) {
     for (const contactId of unreadReminderByContact.keys()) clearUnreadReminder(contactId);
   }
   if (!settingsCache.notificationsEnabled) {
-    for (const win of [...toastWindows]) {
-      if (!win.isDestroyed()) win.close();
-    }
+    notifications.closeAllToasts();
   }
   if (settingsCache.demoMode !== previousDemoMode) {
     setTimeout(closeChatWindowsForModeSwitch, 80);
@@ -808,103 +823,18 @@ async function saveSettings(nextSettings = {}) {
   return settingsCache;
 }
 
-async function fileExists(filePath) {
-  if (!filePath) return false;
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function findCodexOnPath() {
-  try {
-    const command = process.platform === "win32" ? "where.exe" : "which";
-    const { stdout } = await execFileAsync(command, ["codex"], { windowsHide: true, timeout: 7000 });
-    const matches = stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-    if (process.platform === "win32") {
-      return matches.find((line) => [".cmd", ".bat"].includes(path.extname(line).toLowerCase()))
-        || matches.find((line) => path.extname(line).toLowerCase() === ".exe")
-        || matches[0]
-        || "";
-    }
-    return matches[0] || "";
-  } catch {
-    return firstExistingCodexFallback();
-  }
-}
-
-async function firstExistingCodexFallback() {
-  const npm = await findNpmCommand();
-  const npmBinDir = npm.ok && npm.command ? path.dirname(npm.command) : "";
-  const candidates = process.platform === "win32"
-    ? [
-      process.env.APPDATA ? path.join(process.env.APPDATA, "npm", "codex.cmd") : "",
-      process.env.APPDATA ? path.join(process.env.APPDATA, "npm", "codex.exe") : "",
-      npmBinDir ? path.join(npmBinDir, "codex.cmd") : "",
-      npmBinDir ? path.join(npmBinDir, "codex.exe") : "",
-      npmBinDir ? path.join(npmBinDir, "codex") : ""
-    ]
-    : [
-      "/Applications/Codex.app/Contents/Resources/codex",
-      "/opt/homebrew/bin/codex",
-      "/usr/local/bin/codex",
-      path.join(os.homedir(), ".nvm", "current", "bin", "codex"),
-      npmBinDir ? path.join(npmBinDir, "codex") : ""
-    ];
-  for (const candidate of candidates) {
-    if (await fileExists(candidate)) return candidate;
-  }
-  return "";
-}
-
-function shouldUseShell(command) {
-  if (process.platform !== "win32") return false;
-  const ext = path.extname(command).toLowerCase();
-  return !path.isAbsolute(command) && ext !== ".cmd" && ext !== ".bat";
-}
-
-function quoteWindowsArg(value) {
-  return `"${String(value).replace(/"/g, '""')}"`;
-}
-
-function spawnCodex(command, args, options) {
-  const ext = path.extname(command).toLowerCase();
-  if (process.platform === "win32" && (ext === ".cmd" || ext === ".bat")) {
-    return spawn(quoteWindowsArg(command), args, {
-      ...options,
-      shell: true
-    });
-  }
-  return spawn(command, args, {
-    ...options,
-    shell: shouldUseShell(command)
-  });
-}
-
 async function resolveCodexCommand(candidatePath = null) {
   const settings = await loadSettings();
-  const configuredPath = String(candidatePath ?? settings.codexPath ?? "").trim();
-  const envPath = String(process.env.CODEX_MESSENGER_CODEX_PATH ?? "").trim();
-  const pathMatch = await findCodexOnPath();
-  const candidates = [
-    configuredPath ? { command: configuredPath, source: "manual" } : null,
-    envPath ? { command: envPath, source: "env" } : null,
-    pathMatch ? { command: pathMatch, source: "path" } : null
-  ].filter(Boolean);
-
-  for (const candidate of candidates) {
-    const command = await resolveExecutableCandidate(candidate.command);
-    if (!path.isAbsolute(command) || await fileExists(command)) return { ...candidate, command };
+  try {
+    return await findCodexCommand(candidatePath ?? settings.codexPath ?? "");
+  } catch {
+    throw new Error("Codex CLI introuvable. Installez Codex puis relancez l'app, ou indiquez le chemin vers le binaire codex dans l'ecran de connexion.");
   }
-
-  throw new Error("Codex CLI introuvable. Installez Codex puis relancez l'app, ou indiquez le chemin vers le binaire codex dans l'ecran de connexion.");
 }
 
 function runCodexCommand(command, args = []) {
   return new Promise((resolve, reject) => {
-    const child = spawnCodex(command, args, {
+    const child = spawnCommand(command, args, {
       cwd: defaultCwd(),
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"]
@@ -927,530 +857,6 @@ function runCodexCommand(command, args = []) {
       else reject(new Error((stderr || stdout || `codex exited with ${code}`).trim()));
     });
   });
-}
-
-function fetchJson(url, timeoutMs = 6500) {
-  return new Promise((resolve, reject) => {
-    const request = https.get(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": `Codex-Messenger/${app.getVersion()}`
-      },
-      timeout: timeoutMs
-    }, (response) => {
-      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        response.resume();
-        fetchJson(new URL(response.headers.location, url).toString(), timeoutMs).then(resolve, reject);
-        return;
-      }
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        response.resume();
-        reject(new Error(`HTTP ${response.statusCode}`));
-        return;
-      }
-      let raw = "";
-      response.setEncoding("utf8");
-      response.on("data", (chunk) => { raw += chunk; });
-      response.on("end", () => {
-        try {
-          resolve(JSON.parse(raw));
-        } catch (error) {
-          reject(error);
-        }
-      });
-    });
-    request.on("timeout", () => {
-      request.destroy(new Error("Update check timeout"));
-    });
-    request.on("error", reject);
-  });
-}
-
-function downloadFile(url, targetPath, options = {}) {
-  const expectedSha256 = String(options.expectedSha256 || "").trim().toLowerCase();
-  const timeoutMs = Math.max(30_000, Number(options.timeoutMs) || 10 * 60_000);
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const fail = (error) => {
-      if (settled) return;
-      settled = true;
-      fs.unlink(targetPath).catch(() => {});
-      reject(error);
-    };
-
-    const request = https.get(url, {
-      headers: {
-        Accept: "application/octet-stream",
-        "User-Agent": `Codex-Messenger/${app.getVersion()}`
-      },
-      timeout: timeoutMs
-    }, (response) => {
-      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        response.resume();
-        downloadFile(new URL(response.headers.location, url).toString(), targetPath, options).then(resolve, reject);
-        return;
-      }
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        response.resume();
-        fail(new Error(`Download failed with HTTP ${response.statusCode}`));
-        return;
-      }
-
-      const hash = createHash("sha256");
-      const file = createWriteStream(targetPath);
-      let bytes = 0;
-      response.on("data", (chunk) => {
-        bytes += chunk.length;
-        hash.update(chunk);
-      });
-      response.on("error", fail);
-      file.on("error", fail);
-      file.on("finish", () => {
-        file.close(() => {
-          if (settled) return;
-          const sha256 = hash.digest("hex");
-          if (expectedSha256 && sha256 !== expectedSha256) {
-            fail(new Error(`Downloaded update checksum mismatch: expected ${expectedSha256}, got ${sha256}`));
-            return;
-          }
-          settled = true;
-          resolve({ path: targetPath, bytes, sha256 });
-        });
-      });
-      response.pipe(file);
-    });
-    request.on("timeout", () => {
-      request.destroy(new Error("Update download timeout"));
-    });
-    request.on("error", fail);
-  });
-}
-
-function parseVersion(value) {
-  const match = String(value ?? "").match(/v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+)|-(\d+))?(?:[-+][0-9A-Za-z.-]+)?/);
-  if (!match) return null;
-  const revision = Number(match[4] ?? match[5] ?? 0);
-  return {
-    major: Number(match[1]),
-    minor: Number(match[2]),
-    patch: Number(match[3]),
-    revision,
-    raw: revision > 0 ? `${match[1]}.${match[2]}.${match[3]}.${revision}` : `${match[1]}.${match[2]}.${match[3]}`
-  };
-}
-
-function displayVersion(value) {
-  return parseVersion(value)?.raw || String(value ?? "").trim();
-}
-
-function compareVersions(left, right) {
-  const a = parseVersion(left);
-  const b = parseVersion(right);
-  if (!a || !b) return 0;
-  for (const key of ["major", "minor", "patch", "revision"]) {
-    if (a[key] > b[key]) return 1;
-    if (a[key] < b[key]) return -1;
-  }
-  return 0;
-}
-
-function updateAvailable(latestVersion, currentVersion) {
-  return compareVersions(latestVersion, currentVersion) > 0;
-}
-
-function updateCheckError(error) {
-  return String(error?.message || error || "Update check failed");
-}
-
-function formatCommandForDisplay(command, args = []) {
-  return [command, ...args].join(" ");
-}
-
-function compactUpdateOutput(stdout = "", stderr = "") {
-  const combined = [stdout, stderr].filter(Boolean).join("\n").trim();
-  if (!combined) return "";
-  return combined.length > 4000 ? `${combined.slice(-4000)}` : combined;
-}
-
-function spawnableUpdateCommand(command, args = []) {
-  if (process.platform === "win32" && [".cmd", ".bat"].includes(path.extname(command).toLowerCase())) {
-    return {
-      command: "cmd.exe",
-      args: ["/d", "/s", "/c", command, ...args]
-    };
-  }
-  return { command, args };
-}
-
-function runUpdateCommand(command, args = [], { timeoutMs = 5 * 60_000 } = {}) {
-  return new Promise((resolve, reject) => {
-    const spawnable = spawnableUpdateCommand(command, args);
-    const child = spawn(spawnable.command, spawnable.args, {
-      cwd: defaultCwd(),
-      env: process.env,
-      windowsHide: true,
-      stdio: ["ignore", "pipe", "pipe"]
-    });
-    let stdout = "";
-    let stderr = "";
-    const timeout = setTimeout(() => {
-      child.kill();
-      reject(new Error(`${formatCommandForDisplay(command, args)} timed out`));
-    }, timeoutMs);
-    child.stdout.on("data", (chunk) => {
-      stdout += chunk.toString();
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr += chunk.toString();
-    });
-    child.on("error", (error) => {
-      clearTimeout(timeout);
-      reject(error);
-    });
-    child.on("exit", (code) => {
-      clearTimeout(timeout);
-      if (code === 0) {
-        resolve({ stdout, stderr });
-        return;
-      }
-      const output = compactUpdateOutput(stdout, stderr);
-      reject(new Error(output || `${formatCommandForDisplay(command, args)} exited with ${code}`));
-    });
-  });
-}
-
-async function installCodexUpdate() {
-  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-  const args = ["install", "-g", `${codexNpmPackageName}@latest`];
-  const command = formatCommandForDisplay("npm", args);
-  const before = await checkCodexUpdate();
-  const output = await runUpdateCommand(npmCommand, args);
-  updateCheckCache = null;
-  const after = await checkCodexUpdate();
-  const currentLabel = versionLabelForResult(after.currentVersion || after.latestVersion);
-  const message = after.error
-    ? `Codex app-server update command finished, but verification failed: ${after.error}`
-    : after.updateAvailable
-      ? `Codex app-server update command finished, but detected version is still ${currentLabel}.`
-      : `Codex app-server is up to date (${currentLabel}).`;
-  return {
-    ok: true,
-    target: "codex",
-    command,
-    before,
-    after,
-    message,
-    output: compactUpdateOutput(output.stdout, output.stderr)
-  };
-}
-
-function releaseVersionLabel(release = {}) {
-  return displayVersion(release.tag_name || release.name || "");
-}
-
-function assetDigestSha256(asset = {}) {
-  const digest = String(asset.digest || "").trim();
-  return digest.toLowerCase().startsWith("sha256:") ? digest.slice("sha256:".length).toLowerCase() : "";
-}
-
-function safeAssetFileName(name = "CodexMessenger-update") {
-  return String(name || "CodexMessenger-update").replace(/[\\/:\n\r\t]/g, "-").slice(0, 180);
-}
-
-function selectFrontReleaseAsset(release = {}) {
-  const assets = Array.isArray(release.assets) ? release.assets : [];
-  const named = assets.filter((asset) => asset?.name && asset?.browser_download_url);
-  if (process.platform === "win32") {
-    const exeAssets = named.filter((asset) => /\.exe$/i.test(asset.name) && !/\.blockmap$/i.test(asset.name));
-    return exeAssets.find((asset) => /setup|installer/i.test(asset.name)) ?? exeAssets[0] ?? null;
-  }
-  if (process.platform === "darwin") {
-    const dmgAssets = named.filter((asset) => /\.dmg$/i.test(asset.name) && !/\.blockmap$/i.test(asset.name));
-    const arch = process.arch === "x64" ? "x64" : "arm64";
-    return dmgAssets.find((asset) => asset.name.toLowerCase().includes(arch))
-      ?? dmgAssets.find((asset) => asset.name.toLowerCase().includes("arm64"))
-      ?? dmgAssets[0]
-      ?? null;
-  }
-  return null;
-}
-
-async function latestFrontRelease() {
-  return fetchJson(frontLatestReleaseApiUrl, 15_000);
-}
-
-function currentMacAppBundlePath() {
-  if (process.platform !== "darwin") return "";
-  const marker = `${path.sep}Contents${path.sep}MacOS${path.sep}`;
-  const [bundlePath] = process.execPath.split(marker);
-  return bundlePath && bundlePath.endsWith(".app")
-    ? bundlePath
-    : path.join("/Applications", "Codex Messenger.app");
-}
-
-async function scheduleWindowsInstaller(installerPath, latestVersion) {
-  const updateDir = path.join(app.getPath("userData"), "updates");
-  await fs.mkdir(updateDir, { recursive: true });
-  const scriptPath = path.join(updateDir, "install-codex-messenger-update.cmd");
-  const logPath = path.join(updateDir, "install-codex-messenger-update.log");
-  const appExe = process.execPath;
-  const script = [
-    "@echo off",
-    "setlocal",
-    "set \"APP_PID=%~1\"",
-    "set \"INSTALLER=%~2\"",
-    "set \"APP_EXE=%~3\"",
-    `set "LOG_PATH=${logPath}"`,
-    "echo Installing Codex Messenger update > \"%LOG_PATH%\"",
-    ":wait_app",
-    "tasklist /FI \"PID eq %APP_PID%\" 2>NUL | find \"%APP_PID%\" >NUL",
-    "if \"%ERRORLEVEL%\"==\"0\" (",
-    "  timeout /t 1 /nobreak >NUL",
-    "  goto wait_app",
-    ")",
-    "\"%INSTALLER%\" /S >> \"%LOG_PATH%\" 2>&1",
-    "if exist \"%APP_EXE%\" start \"\" \"%APP_EXE%\"",
-    "endlocal"
-  ].join("\r\n");
-  await fs.writeFile(scriptPath, script, "utf8");
-  const command = [
-    "start",
-    "\"\"",
-    quoteWindowsArg(scriptPath),
-    quoteWindowsArg(String(process.pid)),
-    quoteWindowsArg(installerPath),
-    quoteWindowsArg(appExe)
-  ].join(" ");
-  const child = spawn("cmd.exe", ["/d", "/s", "/c", command], {
-    detached: true,
-    windowsHide: false,
-    stdio: "ignore"
-  });
-  child.unref();
-  setTimeout(() => quitApplication(), 500);
-  return {
-    quitStarted: true,
-    message: `Mise a jour ${latestVersion} telechargee. Codex Messenger va se fermer puis lancer l'installeur automatiquement.`
-  };
-}
-
-async function scheduleMacDmgInstaller(dmgPath, latestVersion) {
-  if (!app.isPackaged) {
-    const openError = await shell.openPath(dmgPath);
-    if (openError) throw new Error(openError);
-    return {
-      quitStarted: false,
-      message: `Mise a jour ${latestVersion} telechargee. Le DMG a ete ouvert; l'installation automatique complete est disponible depuis l'app packagee.`
-    };
-  }
-
-  const updateDir = path.join(app.getPath("userData"), "updates");
-  await fs.mkdir(updateDir, { recursive: true });
-  const scriptPath = path.join(updateDir, "install-codex-messenger-update.zsh");
-  const logPath = path.join(updateDir, "install-codex-messenger-update.log");
-  const targetApp = currentMacAppBundlePath();
-  const script = `#!/bin/zsh
-set -euo pipefail
-APP_PID="$1"
-DMG_PATH="$2"
-TARGET_APP="$3"
-LOG_PATH="$4"
-exec >> "$LOG_PATH" 2>&1
-echo "Installing Codex Messenger update at $(date)"
-while kill -0 "$APP_PID" 2>/dev/null; do
-  sleep 0.25
-done
-MOUNT_DIR="$(mktemp -d /tmp/codex-messenger-update.XXXXXX)"
-cleanup() {
-  hdiutil detach "$MOUNT_DIR" -quiet >/dev/null 2>&1 || true
-  rmdir "$MOUNT_DIR" >/dev/null 2>&1 || true
-}
-trap cleanup EXIT
-hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_DIR" -nobrowse -readonly -quiet
-APP_SOURCE="$MOUNT_DIR/Codex Messenger.app"
-if [[ ! -d "$APP_SOURCE" ]]; then
-  APP_SOURCE="$(find "$MOUNT_DIR" -maxdepth 2 -name "Codex Messenger.app" -type d -print -quit)"
-fi
-if [[ -z "$APP_SOURCE" || ! -d "$APP_SOURCE" ]]; then
-  echo "Codex Messenger.app not found in mounted update."
-  exit 1
-fi
-TARGET_PARENT="$(dirname "$TARGET_APP")"
-TMP_TARGET="$TARGET_PARENT/.Codex Messenger.app.update.$$"
-rm -rf "$TMP_TARGET"
-ditto "$APP_SOURCE" "$TMP_TARGET"
-rm -rf "$TARGET_APP"
-mv "$TMP_TARGET" "$TARGET_APP"
-xattr -dr com.apple.quarantine "$TARGET_APP" >/dev/null 2>&1 || true
-open "$TARGET_APP"
-`;
-  await fs.writeFile(scriptPath, script, { encoding: "utf8", mode: 0o755 });
-  await fs.chmod(scriptPath, 0o755);
-  const child = spawn("/bin/zsh", [scriptPath, String(process.pid), dmgPath, targetApp, logPath], {
-    detached: true,
-    stdio: "ignore"
-  });
-  child.unref();
-  setTimeout(() => quitApplication(), 500);
-  return {
-    quitStarted: true,
-    message: `Mise a jour ${latestVersion} telechargee. Codex Messenger va se fermer, installer l'app, puis se relancer.`
-  };
-}
-
-async function launchDownloadedFrontUpdate(filePath, latestVersion) {
-  if (process.platform === "win32") return scheduleWindowsInstaller(filePath, latestVersion);
-  if (process.platform === "darwin") return scheduleMacDmgInstaller(filePath, latestVersion);
-  const openError = await shell.openPath(filePath);
-  if (openError) throw new Error(openError);
-  return {
-    quitStarted: false,
-    message: `Mise a jour ${latestVersion} telechargee. Ouvre le fichier pour terminer l'installation.`
-  };
-}
-
-async function installFrontUpdate() {
-  const before = await checkFrontUpdate();
-  if (!before.updateAvailable) {
-    return {
-      ok: true,
-      target: "front",
-      before,
-      after: before,
-      alreadyCurrent: true,
-      message: `Codex Messenger est deja a jour (${versionLabelForResult(before.currentVersion)}).`
-    };
-  }
-
-  const release = await latestFrontRelease();
-  const latestVersion = releaseVersionLabel(release) || versionLabelForResult(before.latestVersion);
-  const asset = selectFrontReleaseAsset(release);
-  if (!asset) {
-    throw new Error("Aucun installeur compatible trouve dans la derniere release Codex Messenger.");
-  }
-
-  const updateDir = path.join(app.getPath("userData"), "updates");
-  await fs.mkdir(updateDir, { recursive: true });
-  const targetPath = path.join(updateDir, safeAssetFileName(asset.name));
-  const expectedSha256 = assetDigestSha256(asset);
-  const download = await downloadFile(asset.browser_download_url, targetPath, {
-    expectedSha256,
-    timeoutMs: 15 * 60_000
-  });
-  const launch = await launchDownloadedFrontUpdate(download.path, latestVersion);
-  updateCheckCache = null;
-  return {
-    ok: true,
-    target: "front",
-    before,
-    latestVersion,
-    assetName: asset.name,
-    filePath: download.path,
-    bytes: download.bytes,
-    sha256: download.sha256,
-    quitStarted: launch.quitStarted,
-    message: launch.message
-  };
-}
-
-function versionLabelForResult(value) {
-  return displayVersion(value) || "unknown";
-}
-
-async function checkFrontUpdate() {
-  const currentVersion = app.getVersion();
-  const result = {
-    id: "front",
-    name: "Codex Messenger",
-    currentVersion,
-    latestVersion: "",
-    updateAvailable: false,
-    source: "github",
-    url: frontReleasesUrl,
-    error: ""
-  };
-
-  try {
-    const release = await latestFrontRelease();
-    result.latestVersion = releaseVersionLabel(release);
-    result.url = release.html_url || frontReleasesUrl;
-    result.updateAvailable = updateAvailable(result.latestVersion, currentVersion);
-  } catch (error) {
-    try {
-      const remotePackage = await fetchJson(frontPackageUrl);
-      result.latestVersion = displayVersion(remotePackage.version);
-      result.updateAvailable = updateAvailable(result.latestVersion, currentVersion);
-      result.error = `Latest release unavailable: ${updateCheckError(error)}`;
-    } catch (fallbackError) {
-      result.error = `${updateCheckError(error)}; package fallback unavailable: ${updateCheckError(fallbackError)}`;
-    }
-  }
-  return result;
-}
-
-async function checkCodexUpdate() {
-  const result = {
-    id: "codex",
-    name: "Codex app-server",
-    packageName: codexNpmPackageName,
-    command: "",
-    currentVersion: "",
-    latestVersion: "",
-    updateAvailable: false,
-    source: "npm",
-    url: codexNpmUrl,
-    installHint: `npm install -g ${codexNpmPackageName}`,
-    error: ""
-  };
-
-  try {
-    const status = await codexStatus();
-    result.command = status.command || "";
-    if (!status.ok) {
-      result.error = status.error || "Codex CLI not detected";
-    } else {
-      const current = await runCodexCommand(status.command, ["--version"]);
-      result.currentVersion = displayVersion(current.stdout || current.stderr);
-    }
-  } catch (error) {
-    result.error = updateCheckError(error);
-  }
-
-  try {
-    const latestPackage = await fetchJson(codexNpmRegistryUrl);
-    result.latestVersion = displayVersion(latestPackage.version);
-  } catch (error) {
-    result.error = result.error
-      ? `${result.error}; latest version unavailable: ${updateCheckError(error)}`
-      : updateCheckError(error);
-  }
-
-  result.updateAvailable = Boolean(result.currentVersion && result.latestVersion)
-    && updateAvailable(result.latestVersion, result.currentVersion);
-  return result;
-}
-
-async function checkUpdates({ force = false } = {}) {
-  const now = Date.now();
-  if (!force && updateCheckCache && now - updateCheckCache.checkedAtMs < updateCheckCacheMs) {
-    return updateCheckCache.payload;
-  }
-  if (!force && updateCheckPromise) return updateCheckPromise;
-
-  updateCheckPromise = Promise.all([checkFrontUpdate(), checkCodexUpdate()])
-    .then(([front, codex]) => {
-      const payload = {
-        checkedAt: new Date().toISOString(),
-        front,
-        codex
-      };
-      updateCheckCache = { checkedAtMs: Date.now(), payload };
-      return payload;
-    })
-    .finally(() => {
-      updateCheckPromise = null;
-    });
-  return updateCheckPromise;
 }
 
 async function codexStatus(candidatePath = null) {
@@ -1518,345 +924,38 @@ function localizedInstructions(contact) {
   return `${contact.instructions}\n\n${languageInstruction}\n\n${winkInstruction}`;
 }
 
-class CodexAppServer extends EventEmitter {
-  child = null;
-  buffer = "";
-  nextId = 1;
-  pending = new Map();
-  ready = null;
-  userAgent = null;
+const codex = new CodexAppServerClient({
+  appVersion: () => app.getVersion(),
+  defaultCwd,
+  resolveCodexCommand,
+  localizedInstructions,
+  logDebug,
+  loadedThreads,
+  threadListPageSize,
+  codexHistoryPageSize
+});
 
-  async ensureReady() {
-    if (this.ready) return this.ready;
-    this.ready = this.start();
-    return this.ready;
-  }
+const updates = createUpdateService({
+  app,
+  shell,
+  defaultCwd,
+  codexStatus,
+  runCodexCommand,
+  quitApplication,
+  sendProgress: sendUpdateProgress
+});
 
-  async start() {
-    const codexCommand = await resolveCodexCommand();
-    logDebug("codex.app-server.start", { command: codexCommand.command, cwd: defaultCwd() });
-    this.child = spawnCodex(codexCommand.command, ["app-server", "--analytics-default-enabled"], {
-      cwd: defaultCwd(),
-      stdio: ["pipe", "pipe", "pipe"],
-      windowsHide: true,
-      env: {
-        ...process.env,
-        CODEX_INTERNAL_ORIGINATOR_OVERRIDE: "Codex Messenger"
-      }
-    });
-
-    this.child.on("error", (error) => {
-      logDebug("codex.app-server.error", { error: error.message });
-      this.emit("status", { kind: "error", text: error.message });
-      this.child = null;
-      this.ready = null;
-      loadedThreads.clear();
-      for (const [, pending] of this.pending) pending.reject(error);
-      this.pending.clear();
-    });
-    this.child.stdout.on("data", (chunk) => this.readStdout(chunk));
-    this.child.stderr.on("data", (chunk) => {
-      logDebug("codex.app-server.stderr", { text: chunk.toString() });
-      this.emit("status", { kind: "stderr", text: chunk.toString() });
-    });
-    this.child.on("exit", (code) => {
-      logDebug("codex.app-server.exit", { code });
-      this.emit("status", { kind: "exit", text: `codex app-server exited with ${code ?? "unknown"}` });
-      this.child = null;
-      this.ready = null;
-      this.userAgent = null;
-      loadedThreads.clear();
-      for (const [, pending] of this.pending) pending.reject(new Error("codex app-server stopped"));
-      this.pending.clear();
-    });
-
-    const init = await this.request("initialize", {
-      clientInfo: {
-        name: "codex-messenger",
-        title: "Codex Messenger",
-        version: app.getVersion()
-      },
-      capabilities: {
-        experimentalApi: true
-      }
-    });
-    this.userAgent = init.userAgent;
-    this.notify("initialized");
-    logDebug("codex.initialize.ok", { userAgent: init.userAgent, codexHome: init.codexHome, platformFamily: init.platformFamily, platformOs: init.platformOs });
-    return init;
-  }
-
-  readStdout(chunk) {
-    this.buffer += chunk.toString();
-    let newline;
-    while ((newline = this.buffer.indexOf("\n")) >= 0) {
-      const line = this.buffer.slice(0, newline).trim();
-      this.buffer = this.buffer.slice(newline + 1);
-      if (!line) continue;
-      try {
-        this.handleMessage(JSON.parse(line));
-      } catch (error) {
-        this.emit("status", { kind: "parse-error", text: `${error.message}: ${line}` });
-      }
-    }
-  }
-
-  handleMessage(message) {
-    if (message.id !== undefined && message.method) {
-      this.emit("request", message);
-      return;
-    }
-
-    if (message.id !== undefined && this.pending.has(message.id)) {
-      const pending = this.pending.get(message.id);
-      this.pending.delete(message.id);
-      if (message.error) {
-        logDebug("codex.rpc.error", { id: message.id, error: message.error });
-        pending.reject(new Error(message.error.message ?? "Codex request failed"));
-      } else {
-        pending.resolve(message.result);
-      }
-      return;
-    }
-
-    if (message.method) {
-      this.emit("notification", message);
-    }
-  }
-
-  request(method, params) {
-    if (!this.child) throw new Error("codex app-server is not running");
-    const id = this.nextId++;
-    const payload = { id, method, params };
-    if (/^(thread|turn|review)\//.test(method) || method === "initialize") {
-      logDebug("codex.rpc.request", { id, method, params });
-    }
-    this.child.stdin.write(`${JSON.stringify(payload)}\n`);
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        this.pending.delete(id);
-        logDebug("codex.rpc.timeout", { id, method });
-        reject(new Error(`Timed out waiting for ${method}`));
-      }, 120000);
-      this.pending.set(id, {
-        resolve: (value) => {
-          clearTimeout(timeout);
-          resolve(value);
-        },
-        reject: (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        }
-      });
-    });
-  }
-
-  notify(method, params) {
-    if (!this.child) return;
-    const payload = params === undefined ? { method } : { method, params };
-    this.child.stdin.write(`${JSON.stringify(payload)}\n`);
-  }
-
-  stop(reason = "codex app-server stopped") {
-    const child = this.child;
-    this.child = null;
-    this.ready = null;
-    this.userAgent = null;
-    loadedThreads.clear();
-    logDebug("codex.app-server.stop", { reason });
-    for (const [, pending] of this.pending) pending.reject(new Error(reason));
-    this.pending.clear();
-    if (child && !child.killed) child.kill();
-  }
-
-  respond(id, result) {
-    if (!this.child) throw new Error("codex app-server is not running");
-    this.child.stdin.write(`${JSON.stringify({ id, result })}\n`);
-  }
-
-  respondError(id, message, code = -32000) {
-    if (!this.child) return;
-    this.child.stdin.write(`${JSON.stringify({ id, error: { code, message } })}\n`);
-  }
-
-  async startThread(contact, cwd = defaultCwd(), options = defaultCodexOptions) {
-    await this.ensureReady();
-    const codexOptions = normalizeCodexOptions(options);
-    const result = await this.request("thread/start", {
-      model: codexOptions.model || null,
-      modelProvider: null,
-      cwd,
-      approvalPolicy: codexOptions.approvalPolicy,
-      permissionProfile: null,
-      config: null,
-      baseInstructions: null,
-      developerInstructions: localizedInstructions(contact),
-      personality: "pragmatic"
-    });
-    loadedThreads.add(result.thread.id);
-    logDebug("codex.thread.start.ok", { threadId: result.thread.id, cwd });
-    return result.thread.id;
-  }
-
-  async resumeThread(threadId, overrides = {}) {
-    await this.ensureReady();
-    const codexOptions = normalizeCodexOptions(overrides.codexOptions);
-    const result = await this.request("thread/resume", {
-      threadId,
-      history: null,
-      path: null,
-      model: codexOptions.model || null,
-      modelProvider: null,
-      cwd: overrides.cwd ?? null,
-      approvalPolicy: codexOptions.approvalPolicy,
-      permissionProfile: null,
-      config: null,
-      baseInstructions: null,
-      developerInstructions: overrides.developerInstructions ?? null,
-      personality: "pragmatic",
-      excludeTurns: overrides.excludeTurns !== false
-    });
-    if (result.thread?.id) {
-      loadedThreads.add(result.thread.id);
-      logDebug("codex.thread.resume.ok", { threadId: result.thread.id, cwd: overrides.cwd ?? null });
-    }
-    return result.thread;
-  }
-
-  async listThreads(options = {}) {
-    await this.ensureReady();
-    return this.request("thread/list", {
-      cursor: options.cursor ?? null,
-      limit: Math.max(1, Math.min(100, Number(options.limit) || threadListPageSize)),
-      sortKey: options.sortKey ?? "updated_at",
-      sortDirection: options.sortDirection ?? "desc",
-      modelProviders: options.modelProviders ?? null,
-      sourceKinds: options.sourceKinds ?? null,
-      archived: options.archived ?? null,
-      cwd: options.cwd ?? null,
-      useStateDbOnly: options.useStateDbOnly !== false,
-      searchTerm: options.searchTerm ?? null
-    });
-  }
-
-  async readThread(threadId, options = {}) {
-    await this.ensureReady();
-    const result = await this.request("thread/read", {
-      threadId,
-      includeTurns: options.includeTurns === true
-    });
-    return result.thread ?? null;
-  }
-
-  async listThreadTurns(threadId, options = {}) {
-    await this.ensureReady();
-    return this.request("thread/turns/list", {
-      threadId,
-      cursor: options.cursor ?? null,
-      limit: Math.max(1, Math.min(50, Number(options.limit) || codexHistoryPageSize)),
-      sortDirection: options.sortDirection ?? "desc"
-    });
-  }
-
-  async listModels() {
-    await this.ensureReady();
-    const data = [];
-    let cursor = null;
-    do {
-      const result = await this.request("model/list", {
-        cursor,
-        limit: 100
-      });
-      data.push(...(result.data ?? []));
-      cursor = result.nextCursor ?? null;
-    } while (cursor);
-    return data;
-  }
-
-  async startTurn(threadId, input, options = defaultCodexOptions) {
-    await this.ensureReady();
-    const items = typeof input === "string" ? [{ type: "text", text: input }] : input;
-    const codexOptions = normalizeCodexOptions(options);
-    const result = await this.request("turn/start", {
-      threadId,
-      input: items,
-      cwd: null,
-      approvalPolicy: codexOptions.approvalPolicy,
-      sandboxPolicy: sandboxPolicyForMode(codexOptions.sandbox),
-      model: codexOptions.model || null,
-      effort: codexOptions.reasoningEffort || null,
-      summary: null
-    });
-    logDebug("codex.turn.start.ok", { threadId, turnId: result?.turn?.id });
-    return result;
-  }
-
-  async interruptTurn(threadId, turnId) {
-    await this.ensureReady();
-    return this.request("turn/interrupt", { threadId, turnId });
-  }
-
-  async steerTurn(threadId, turnId, input) {
-    await this.ensureReady();
-    const items = typeof input === "string" ? [{ type: "text", text: input }] : input;
-    return this.request("turn/steer", {
-      threadId,
-      input: items,
-      expectedTurnId: turnId
-    });
-  }
-
-  async compactThread(threadId) {
-    await this.ensureReady();
-    return this.request("thread/compact/start", { threadId });
-  }
-
-  async reviewThread(threadId) {
-    await this.ensureReady();
-    return this.request("review/start", {
-      threadId,
-      target: { type: "uncommittedChanges" },
-      delivery: "inline"
-    });
-  }
-
-  async forkThread(threadId, contact, options = defaultCodexOptions) {
-    await this.ensureReady();
-    const codexOptions = normalizeCodexOptions(options);
-    const result = await this.request("thread/fork", {
-      threadId,
-      model: codexOptions.model || null,
-      modelProvider: null,
-      cwd: contact?.cwd ?? null,
-      approvalPolicy: codexOptions.approvalPolicy,
-      permissionProfile: null,
-      config: null,
-      baseInstructions: null,
-      developerInstructions: contact ? localizedInstructions(contact) : null,
-      ephemeral: false,
-      excludeTurns: true
-    });
-    if (result.thread?.id) {
-      loadedThreads.add(result.thread.id);
-      logDebug("codex.thread.fork.ok", { sourceThreadId: threadId, threadId: result.thread.id });
-    }
-    return result.thread;
-  }
-
-  async setThreadName(threadId, name) {
-    await this.ensureReady();
-    return this.request("thread/name/set", { threadId, name });
-  }
-
-  dispose() {
-    if (this.child) {
-      this.child.kill();
-      this.child = null;
-    }
-  }
-}
-
-const codex = new CodexAppServer();
+const notifications = createNotificationService({
+  app,
+  rootDir,
+  appIconPath,
+  toastIconPath,
+  displayPictureAssetSet,
+  displayPictureAssetByAvatar,
+  contactFor,
+  createChatWindow,
+  isSuppressed: () => smokeTest || isQuitting
+});
 
 function encodeProjectId(cwd) {
   return `project:${Buffer.from(cwd, "utf8").toString("base64url")}`;
@@ -1987,18 +1086,6 @@ function sortThreadsForCwd(threads, cwd, threadTabs) {
 
 function isoFromMs(value) {
   return Number.isFinite(value) && value > 0 ? new Date(value).toISOString() : null;
-}
-
-function threadTimeMs(thread) {
-  const value = Date.parse(thread?.timestamp ?? "");
-  return Number.isFinite(value) ? value : 0;
-}
-
-function newestThreadForProject(project) {
-  const threads = [...(project?.threads ?? []), ...(project?.hiddenThreads ?? [])];
-  return threads
-    .filter((thread) => thread?.id)
-    .sort((a, b) => threadTimeMs(b) - threadTimeMs(a))[0] ?? null;
 }
 
 async function projectMetadata(cwd, threads) {
@@ -2362,51 +1449,15 @@ function chatWindowTitle(contact) {
   return `${contact?.name || "Codex"} - Conversation`;
 }
 
-function setStableWindowTitle(win, title) {
-  if (!win || win.isDestroyed()) return;
-  win.codexMessengerTitle = title;
-  win.setTitle(title);
-}
-
-function createBaseWindow(key, options) {
-  const initialTitle = options.title ?? "Codex Messenger";
-  const win = new BrowserWindow({
-    frame: false,
-    show: false,
-    resizable: true,
-    backgroundColor: "#edf6ff",
-    titleBarStyle: "hidden",
-    icon: appIconPath,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.cjs"),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    },
-    ...options
-  });
-  win.codexMessengerTitle = initialTitle;
-  windows.set(key, win);
-  win.setMenuBarVisibility(false);
-  win.on("page-title-updated", (event) => {
-    if (!win.codexMessengerTitle) return;
-    event.preventDefault();
-    win.setTitle(win.codexMessengerTitle);
-  });
-  win.once("ready-to-show", () => {
-    showDockIcon();
-    win.show();
-    if (smokeTest) setTimeout(() => app.quit(), 500);
-  });
-  win.on("closed", () => {
-    windows.delete(key);
-  });
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
-    return { action: "deny" };
-  });
-  return win;
-}
+const createBaseWindow = createBaseWindowFactory({
+  dirname: __dirname,
+  appIconPath,
+  windows,
+  showDockIcon,
+  smokeTest,
+  onSmokeReady: () => app.quit(),
+  openExternalUrl
+});
 
 function showMainWindow() {
   showDockIcon();
@@ -2621,6 +1672,139 @@ function sendToMain(channel, payload) {
   const win = windows.get("main");
   if (!win || win.isDestroyed()) return;
   win.webContents.send(channel, payload);
+}
+
+function clearTurnTimers(meta) {
+  if (!meta) return;
+  if (meta.noResponseTimer) clearTimeout(meta.noResponseTimer);
+  if (meta.stalledTimer) clearTimeout(meta.stalledTimer);
+  meta.noResponseTimer = null;
+  meta.stalledTimer = null;
+}
+
+function notifyTurnStatus(threadId, text, kind = "warning") {
+  const meta = activeTurnMetaByThread.get(threadId);
+  if (!meta?.contactId || !text) return;
+  logDebug("codex.turn.status-note", {
+    contactId: meta.contactId,
+    threadId,
+    turnId: meta.turnId,
+    kind,
+    text
+  });
+  sendToChat(meta.contactId, "codex:status-note", { contactId: meta.contactId, text, kind });
+}
+
+function markTurnStalled(threadId) {
+  const meta = activeTurnMetaByThread.get(threadId);
+  if (!meta) return;
+  const elapsedSeconds = Math.max(1, Math.round((Date.now() - meta.startedAt) / 1000));
+  const text = `Codex ne renvoie aucune sortie depuis ${elapsedSeconds}s. Le tour est probablement bloque cote Codex/app-server ou reseau. Tu peux cliquer Stop puis renvoyer le message.`;
+  logDebug("codex.turn.stalled", {
+    contactId: meta.contactId,
+    threadId,
+    turnId: meta.turnId,
+    elapsedSeconds
+  });
+  sendToChat(meta.contactId, "codex:status-note", { contactId: meta.contactId, text, kind: "warning" });
+}
+
+function armTurnTimers(meta) {
+  clearTurnTimers(meta);
+  meta.noResponseTimer = setTimeout(() => {
+    notifyTurnStatus(
+      meta.threadId,
+      "Codex a bien recu le message, mais aucune sortie n'est encore revenue. Je continue d'attendre le flux app-server.",
+      "reconnecting"
+    );
+  }, turnNoResponseNoticeMs);
+  meta.stalledTimer = setTimeout(() => markTurnStalled(meta.threadId), turnStalledNoticeMs);
+}
+
+function trackActiveTurn(threadId, contactId, turnId) {
+  const cleanThreadId = String(threadId || "").trim();
+  const cleanContactId = String(contactId || "").trim();
+  const cleanTurnId = String(turnId || "").trim();
+  if (!cleanThreadId || !cleanContactId || !cleanTurnId) return;
+  clearTurnTimers(activeTurnMetaByThread.get(cleanThreadId));
+  const meta = {
+    threadId: cleanThreadId,
+    contactId: cleanContactId,
+    turnId: cleanTurnId,
+    startedAt: Date.now(),
+    lastActivityAt: Date.now(),
+    noResponseTimer: null,
+    stalledTimer: null
+  };
+  activeTurnMetaByThread.set(cleanThreadId, meta);
+  armTurnTimers(meta);
+}
+
+function noteTurnActivity(threadId) {
+  const meta = activeTurnMetaByThread.get(threadId);
+  if (!meta) return;
+  meta.lastActivityAt = Date.now();
+  if (meta.noResponseTimer) {
+    clearTimeout(meta.noResponseTimer);
+    meta.noResponseTimer = null;
+  }
+  if (meta.stalledTimer) {
+    clearTimeout(meta.stalledTimer);
+    meta.stalledTimer = setTimeout(() => markTurnStalled(meta.threadId), turnStalledNoticeMs);
+  }
+}
+
+function clearActiveTurn(threadId) {
+  const meta = activeTurnMetaByThread.get(threadId);
+  clearTurnTimers(meta);
+  activeTurnMetaByThread.delete(threadId);
+}
+
+function codexRuntimeWarnings(stderrText) {
+  const warnings = [];
+  for (const rawLine of String(stderrText || "").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    let message = line;
+    try {
+      message = JSON.parse(line)?.fields?.message || line;
+    } catch {
+      // Some stderr chunks are plain text or truncated JSON.
+    }
+    if (/stream disconnected - retrying sampling request/i.test(message)) {
+      const retry = message.match(/\((\d+\/\d+)[^)]+\)/)?.[1] ?? "";
+      warnings.push({
+        key: `stream:${retry || message}`,
+        kind: "reconnecting",
+        text: `Flux Codex interrompu, nouvelle tentative${retry ? ` ${retry}` : ""}. La reponse peut prendre plus longtemps.`
+      });
+    } else if (/failed to refresh available models/i.test(message)) {
+      warnings.push({
+        key: "models-refresh",
+        kind: "warning",
+        text: "Codex n'arrive pas a rafraichir la liste des modeles pour l'instant. Le message reste envoye, mais la reponse peut etre retardee."
+      });
+    } else if (/invalid_token|Missing or invalid access token/i.test(message) && /mcp|oauth|Bearer/i.test(message)) {
+      warnings.push({
+        key: "mcp-invalid-token",
+        kind: "warning",
+        text: "Un connecteur MCP configure dans Codex a un token expire ou invalide. Si la reponse bloque, desactive ou reconnecte ce connecteur dans Codex."
+      });
+    }
+  }
+  return warnings;
+}
+
+function logCodexRuntimeDiagnostics(stderrText) {
+  const warnings = codexRuntimeWarnings(stderrText);
+  if (!warnings.length) return;
+  for (const warning of warnings) {
+    logDebug("codex.runtime.warning", {
+      key: warning.key,
+      kind: warning.kind,
+      text: warning.text
+    });
+  }
 }
 
 function storeThreadItem(threadId, item) {
@@ -2881,164 +2065,6 @@ async function wizz(win, options = {}) {
   if (!win.isDestroyed()) win.setPosition(x, y, false);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function toastPreview(text) {
-  return String(text ?? "")
-    .replace(/\[(?:wink|clin|clin-doeil|nudge):[a-z0-9-]+\]/gi, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 120) || "sent you a message.";
-}
-
-function publicAssetPath(assetPath) {
-  const relativePath = String(assetPath || "").replace(/^\.\//, "");
-  return path.join(rootDir, "public", relativePath);
-}
-
-function mimeTypeForFile(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  if (ext === ".png") return "image/png";
-  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
-  if (ext === ".gif") return "image/gif";
-  if (ext === ".webp") return "image/webp";
-  if (ext === ".avif") return "image/avif";
-  if (ext === ".ico") return "image/x-icon";
-  if (ext === ".wav") return "audio/wav";
-  if (ext === ".mp3") return "audio/mpeg";
-  return "application/octet-stream";
-}
-
-function dataUrlForFile(filePath) {
-  try {
-    const data = readFileSync(filePath);
-    return `data:${mimeTypeForFile(filePath)};base64,${data.toString("base64")}`;
-  } catch {
-    return "";
-  }
-}
-
-function avatarPathForToast(contact) {
-  if (contact?.displayPicturePath) return contact.displayPicturePath;
-  if (contact?.displayPictureAsset && displayPictureAssetSet.has(contact.displayPictureAsset)) return publicAssetPath(contact.displayPictureAsset);
-  const defaultPicture = displayPictureAssetByAvatar.get(contact?.avatar);
-  if (defaultPicture) return publicAssetPath(defaultPicture);
-  return toastIconPath;
-}
-
-function positionToastWindows() {
-  if (!app.isReady()) return;
-  const width = 340;
-  const height = 118;
-  const gap = 8;
-  const margin = 18;
-  const { workArea } = screen.getPrimaryDisplay();
-  toastWindows.forEach((win, index) => {
-    if (win.isDestroyed()) return;
-    win.setBounds({
-      width,
-      height,
-      x: workArea.x + workArea.width - width - margin,
-      y: workArea.y + workArea.height - height - margin - index * (height + gap)
-    }, false);
-  });
-}
-
-function removeToastWindow(win) {
-  const index = toastWindows.indexOf(win);
-  if (index >= 0) toastWindows.splice(index, 1);
-  positionToastWindows();
-}
-
-function messengerToastHtml({ contact, preview, playSound = false }) {
-  const name = escapeHtml(contact.name || "Codex");
-  const message = escapeHtml(preview);
-  const avatar = escapeHtml(dataUrlForFile(avatarPathForToast(contact)) || dataUrlForFile(toastIconPath));
-  const logo = escapeHtml(dataUrlForFile(toastIconPath));
-  const sound = escapeHtml(dataUrlForFile(path.join(rootDir, "public", "msn-assets", "sounds", "type.wav")));
-  return `<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;font-family:"Segoe UI",Tahoma,Arial,sans-serif;color:#3c3c3c}
-.toast{position:absolute;inset:6px;display:grid;grid-template-rows:32px minmax(0,1fr);overflow:hidden;border:1px solid #61cce8;border-radius:14px;background:linear-gradient(135deg,#f7fcff 0%,#e6f7ff 53%,#ccecff 100%);box-shadow:0 7px 18px rgba(31,47,72,.34),inset 0 1px 0 rgba(255,255,255,.95)}
-.head{position:relative;z-index:2;display:grid;grid-template-columns:24px minmax(0,1fr) 24px;align-items:center;gap:7px;padding:8px 13px 2px 15px;color:#515151;text-shadow:0 1px 0 white}
-.head img{display:block;width:22px;height:22px;object-fit:contain}.head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:18px}.close{display:grid;width:24px;height:24px;place-items:center;color:#717171;text-decoration:none;font-size:22px;line-height:1}.close:hover{color:#333}
-.body{position:relative;z-index:2;display:grid;grid-template-columns:62px minmax(0,1fr);gap:11px;min-height:0;padding:5px 15px 12px 17px;pointer-events:none}
-.avatar{width:58px;height:58px;padding:4px;border:1px solid #9eb8c7;border-radius:12px;background:linear-gradient(#fff,#d7ecf9);box-shadow:0 5px 9px rgba(42,65,83,.22),inset 0 0 0 3px rgba(239,248,255,.95)}
-.avatar img{display:block;width:100%;height:100%;border-radius:7px;object-fit:cover;background:#b8dcf5}.copy{min-width:0;padding-top:2px;line-height:1.15}.copy strong{display:block;overflow:hidden;margin-bottom:2px;color:#3a3a3a;font-size:18px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.copy span{display:-webkit-box;overflow:hidden;color:#414141;font-size:15px;line-height:1.2;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.open{position:absolute;inset:38px 0 0 0;z-index:1}
-</style>
-</head>
-<body>
-<div class="toast">
-  <div class="head"><img src="${logo}" alt=""> <span>Codex Messenger</span><a class="close" href="codex-messenger://toast/close">x</a></div>
-  <a class="open" href="codex-messenger://toast/open"></a>
-  <div class="body"><div class="avatar"><img src="${avatar}" alt=""></div><div class="copy"><strong>${name}</strong><span>${message}</span></div></div>
-</div>
-${playSound ? `<audio src="${sound}" autoplay></audio>` : ""}
-</body>
-</html>`;
-}
-
-function showMessengerToast(contactId, text, options = {}) {
-  if (smokeTest || isQuitting) return;
-  const contact = contactFor(contactId);
-  const preview = toastPreview(text);
-  const width = 340;
-  const height = 118;
-  const toastWin = new BrowserWindow({
-    width,
-    height,
-    frame: false,
-    show: false,
-    resizable: false,
-    minimizable: false,
-    maximizable: false,
-    skipTaskbar: true,
-    alwaysOnTop: true,
-    transparent: true,
-    backgroundColor: "#00000000",
-    title: "Codex Messenger",
-    icon: appIconPath,
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true
-    }
-  });
-  toastWindows.unshift(toastWin);
-  while (toastWindows.length > 3) toastWindows.pop()?.close();
-  toastWin.on("closed", () => removeToastWindow(toastWin));
-  toastWin.webContents.on("will-navigate", (event, url) => {
-    if (!url.startsWith("codex-messenger://toast/")) return;
-    event.preventDefault();
-    if (url.endsWith("/open")) createChatWindow(contactId);
-    toastWin.close();
-  });
-  toastWin.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith("codex-messenger://toast/open")) createChatWindow(contactId);
-    toastWin.close();
-    return { action: "deny" };
-  });
-  toastWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(messengerToastHtml({ contact, preview, playSound: Boolean(options.playSound) }))}`);
-  toastWin.once("ready-to-show", () => {
-    positionToastWindows();
-    toastWin.showInactive();
-  });
-  setTimeout(() => {
-    if (!toastWin.isDestroyed()) toastWin.close();
-  }, 8500);
-}
-
 function registerIncomingMessage(contactId, text) {
   if (!contactId || !String(text ?? "").trim()) return false;
   const now = Date.now();
@@ -3062,7 +2088,7 @@ function registerIncomingMessage(contactId, text) {
   const mainWin = windows.get("main");
   const mainCanPlaySound = mainWin && !mainWin.isDestroyed();
   if (notificationsAreEnabled()) {
-    showMessengerToast(contactId, text, { playSound: needsMainSound && !mainCanPlaySound });
+    notifications.showMessengerToast(contactId, text, { playSound: needsMainSound && !mainCanPlaySound });
   }
   if (needsMainSound && mainCanPlaySound) {
     sendToMain("conversation:notify", { contactId, contact: contactFor(contactId), text: toastPreview(text) });
@@ -3125,6 +2151,11 @@ function textFromCompletedItem(item) {
   return "";
 }
 
+function isUserMessageItem(item) {
+  const type = String(item?.type ?? "").toLowerCase();
+  return ["usermessage", "user_message", "user"].includes(type);
+}
+
 codex.on("request", (message) => {
   if (
     message.method !== "execCommandApproval" &&
@@ -3154,6 +2185,8 @@ codex.on("notification", (message) => {
   if (message.method === "turn/started") {
     if (message.params?.threadId && message.params?.turn?.id) {
       activeTurnByThread.set(message.params.threadId, message.params.turn.id);
+      const contactId = contactByThread.get(message.params.threadId);
+      if (contactId) trackActiveTurn(message.params.threadId, contactId, message.params.turn.id);
       logDebug("codex.turn.started", { threadId: message.params.threadId, turnId: message.params.turn.id });
     }
     return;
@@ -3162,6 +2195,7 @@ codex.on("notification", (message) => {
   if (message.method === "item/agentMessage/delta") {
     const contactId = contactByThread.get(message.params.threadId);
     if (contactId) {
+      noteTurnActivity(message.params.threadId);
       sendToChat(contactId, "codex:delta", { contactId, delta: message.params.delta });
     }
     return;
@@ -3174,7 +2208,9 @@ codex.on("notification", (message) => {
 
   if (message.method === "item/completed") {
     storeThreadItem(message.params?.threadId, message.params?.item);
+    noteTurnActivity(message.params?.threadId);
     const contactId = contactByThread.get(message.params.threadId);
+    if (isUserMessageItem(message.params?.item)) return;
     const text = textFromCompletedItem(message.params.item);
     if (contactId && text) {
       registerIncomingMessage(contactId, text);
@@ -3190,6 +2226,7 @@ codex.on("notification", (message) => {
   if (message.method === "turn/completed") {
     const contactId = contactByThread.get(message.params.threadId);
     if (message.params?.threadId) activeTurnByThread.delete(message.params.threadId);
+    if (message.params?.threadId) clearActiveTurn(message.params.threadId);
     logDebug("codex.turn.completed", {
       threadId: message.params?.threadId,
       turnId: message.params?.turn?.id,
@@ -3205,6 +2242,8 @@ codex.on("notification", (message) => {
 
   if (message.method === "error") {
     const text = message.params?.message ?? "Erreur Codex";
+    for (const threadId of activeTurnByThread.keys()) clearActiveTurn(threadId);
+    activeTurnByThread.clear();
     for (const contact of contactsForSettings()) sendToChat(contact.id, "codex:error", { contactId: contact.id, text });
     return;
   }
@@ -3214,12 +2253,15 @@ codex.on("notification", (message) => {
     const contactId = contactByThread.get(message.params?.conversationId);
     if (!event || !contactId) return;
     if (event.type === "agent_message_delta") {
+      noteTurnActivity(message.params?.conversationId);
       sendToChat(contactId, "codex:delta", { contactId, delta: event.delta });
     } else if (event.type === "agent_message" && event.message) {
+      noteTurnActivity(message.params?.conversationId);
       registerIncomingMessage(contactId, event.message);
       sendToChat(contactId, "codex:completed-item", { contactId, text: event.message });
     } else if (event.type === "task_complete") {
       if (message.params?.conversationId) activeTurnByThread.delete(message.params.conversationId);
+      if (message.params?.conversationId) clearActiveTurn(message.params.conversationId);
       if (event.last_agent_message) {
         registerIncomingMessage(contactId, event.last_agent_message);
         sendToChat(contactId, "codex:completed-item", { contactId, text: event.last_agent_message });
@@ -3227,6 +2269,7 @@ codex.on("notification", (message) => {
       sendToChat(contactId, "codex:done", { contactId });
       sendToMain("conversation:finished", { contactId });
     } else if (event.type === "stream_error" || event.type === "error") {
+      if (message.params?.conversationId) clearActiveTurn(message.params.conversationId);
       sendToChat(contactId, "codex:error", { contactId, text: event.message ?? "Erreur Codex" });
     }
   }
@@ -3234,110 +2277,127 @@ codex.on("notification", (message) => {
 
 codex.on("status", (status) => {
   if (status.kind === "exit" || status.kind === "error") clearApprovalRequests(status.text);
+  if (status.kind === "stderr") logCodexRuntimeDiagnostics(status.text);
   sendToMain("codex:status", status);
   sendToOpenChats("codex:status", status);
 });
 
 ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
-  const settings = await loadSettings();
-  let startupCodexStatus = await codexStatus();
-  let startupUserAgent = codex.userAgent;
-  if (!startupUserAgent && shouldAutoSignIn(settings, startupCodexStatus)) {
-    startupUserAgent = startupCodexStatus.login?.text || "Codex local connecte";
-    setTimeout(() => scheduleCodexWarmup("startup"), 250);
-  }
-
-  const contactId = String(params.contactId ?? "");
-  let contact = contactFor(contactId);
-  let bootstrapConversations = null;
-  let historyMessages = [];
-  let historyCursor = null;
-  let historyHasMore = false;
-  if (params.view === "chat") {
-    let attemptedThreadResume = false;
-    try {
-      const directThreadId = threadIdFromContactId(contactId);
-      let threadId = directThreadId || (contact.kind === "project" ? null : threadByContact.get(contactId) || null);
-      if (!threadId && contact.kind === "project") {
-        bootstrapConversations = await conversationBrowser({ startCodex: true, cwd: contact.cwd });
-        const project = bootstrapConversations.projects.find((item) => item.cwd === contact.cwd);
-        const latestThread = newestThreadForProject(project);
-        if (latestThread?.id) threadId = latestThread.id;
-      }
-
-      if (threadId) {
-        attemptedThreadResume = true;
-        const codexOptions = codexOptionsForContact(contactId, settings);
-        const thread = isDemoSeedThreadId(threadId) ? demoSeedThreadById(threadId) : null;
-        if (threadIdFromContactId(contactId)) {
-          contact = contactFromThread(threadId);
-        } else {
-          contact = { ...contact, threadId };
-        }
-        if (!isDemoSeedThreadId(threadId)) {
-          threadByContact.set(contact.id, threadId);
-          contactByThread.set(threadId, contact.id);
-        }
-        const historyPage = thread
-          ? threadHistoryPageFromThread(thread, contact)
-          : await threadHistoryPageFromServer(threadId, contact, { limit: codexHistoryPageSize });
-        if (historyPage?.messages?.length || historyPage?.historyHasMore) {
-          historyMessages = historyPage.messages;
-          historyCursor = historyPage.historyCursor;
-          historyHasMore = historyPage.historyHasMore;
-        } else {
-          codex.resumeThread(threadId, {
-            cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(threadId)?.cwd),
-            developerInstructions: localizedInstructions(contact),
-            codexOptions,
-            excludeTurns: true
-          }).then((resumedThread) => {
-            if (resumedThread) knownThreads.set(threadId, resumedThread);
-          }).catch(() => {});
-        }
-      }
-    } catch (error) {
-      historyMessages = attemptedThreadResume
-        ? [{ id: "resume-error", from: "system", author: "system", text: error.message, time: "--:--" }]
-        : [];
-      historyCursor = null;
-      historyHasMore = false;
+  try {
+    params = assertObject(params, "bootstrap params");
+    const settings = await loadSettings();
+    let startupCodexStatus = await codexStatus();
+    let startupUserAgent = codex.userAgent;
+    if (!startupUserAgent && shouldAutoSignIn(settings, startupCodexStatus)) {
+      startupUserAgent = startupCodexStatus.login?.text || "Codex local connecte";
+      setTimeout(() => scheduleCodexWarmup("startup"), 250);
     }
+
+    const contactId = String(params.contactId ?? "");
+    let contact = contactFor(contactId);
+    let bootstrapConversations = null;
+    let historyMessages = [];
+    let historyCursor = null;
+    let historyHasMore = false;
+    if (params.view === "chat") {
+      let attemptedThreadResume = false;
+      try {
+        const directThreadId = threadIdFromContactId(contactId);
+        let threadId = directThreadId || (contact.kind === "project" ? null : threadByContact.get(contactId) || null);
+        if (!threadId && contact.kind === "project") {
+          bootstrapConversations = await conversationBrowser({ startCodex: true, cwd: contact.cwd });
+          const project = bootstrapConversations.projects.find((item) => item.cwd === contact.cwd);
+          const latestThread = newestThreadForProject(project);
+          if (latestThread?.id) threadId = latestThread.id;
+        }
+
+        if (threadId) {
+          attemptedThreadResume = true;
+          const codexOptions = codexOptionsForContact(contactId, settings);
+          const thread = isDemoSeedThreadId(threadId) ? demoSeedThreadById(threadId) : null;
+          if (threadIdFromContactId(contactId)) {
+            contact = contactFromThread(threadId);
+          } else {
+            contact = { ...contact, threadId };
+          }
+          if (!isDemoSeedThreadId(threadId)) {
+            threadByContact.set(contact.id, threadId);
+            contactByThread.set(threadId, contact.id);
+          }
+          const historyPage = thread
+            ? threadHistoryPageFromThread(thread, contact)
+            : await threadHistoryPageFromServer(threadId, contact, { limit: codexHistoryPageSize });
+          if (historyPage?.messages?.length || historyPage?.historyHasMore) {
+            historyMessages = historyPage.messages;
+            historyCursor = historyPage.historyCursor;
+            historyHasMore = historyPage.historyHasMore;
+          } else {
+            codex.resumeThread(threadId, {
+              cwd: cwdForCodexContact(contact, codexOptions, knownThreads.get(threadId)?.cwd),
+              developerInstructions: localizedInstructions(contact),
+              codexOptions,
+              excludeTurns: true
+            }).then((resumedThread) => {
+              if (resumedThread) knownThreads.set(threadId, resumedThread);
+            }).catch(() => {});
+          }
+        }
+      } catch (error) {
+        logDebug("app.bootstrap.history.error", {
+          contactId,
+          attemptedThreadResume,
+          error: error.message,
+          stack: error.stack
+        });
+        historyMessages = attemptedThreadResume
+          ? [{ id: "resume-error", from: "system", author: "system", text: error.message, time: "--:--" }]
+          : [];
+        historyCursor = null;
+        historyHasMore = false;
+      }
+    }
+
+    return {
+      view: params.view,
+      contactId,
+      contacts: contactsForSettings(settings),
+      contact,
+      profile,
+      cwd: defaultCwd(),
+      appVersion: app.getVersion(),
+      settings,
+      unread: unreadState(),
+      codexStatus: startupCodexStatus,
+      userAgent: startupUserAgent,
+      conversations: bootstrapConversations,
+      historyMessages,
+      historyCursor,
+      historyHasMore,
+      logPath: logFilePath(),
+      approvalRequests: params.view === "chat" ? approvalPayloadsForContact(contactId) : []
+    };
+  } catch (error) {
+    logDebug("app.bootstrap.error", {
+      view: params?.view,
+      contactId: params?.contactId,
+      error: error.message,
+      stack: error.stack
+    });
+    throw error;
   }
-
-  return {
-    view: params.view,
-    contactId,
-    contacts: contactsForSettings(settings),
-    contact,
-    profile,
-    cwd: defaultCwd(),
-    appVersion: app.getVersion(),
-    settings,
-    unread: unreadState(),
-    codexStatus: startupCodexStatus,
-    userAgent: startupUserAgent,
-    conversations: bootstrapConversations,
-    historyMessages,
-    historyCursor,
-    historyHasMore,
-    approvalRequests: params.view === "chat" ? approvalPayloadsForContact(contactId) : []
-  };
 });
 
-ipcMain.handle("updates:check", async (_event, options = {}) => {
-  return checkUpdates({ force: Boolean(options.force) });
-});
-
-ipcMain.handle("updates:open", (_event, target = "front") => {
-  const url = target === "codex" ? codexNpmUrl : frontReleasesUrl;
-  shell.openExternal(url);
-  return { ok: true, url };
-});
-
-ipcMain.handle("updates:install", async (_event, target = "codex") => {
-  if (target === "front") return installFrontUpdate();
-  return installCodexUpdate();
+registerUpdateIpcHandlers({
+  ipcMain,
+  updates,
+  assertEnum,
+  openExternalUrl,
+  frontReleasesUrl,
+  codexNpmUrl,
+  restartApp: () => {
+    app.relaunch();
+    quitApplication();
+  }
 });
 
 ipcMain.handle("auth:sign-in", async (_event, nextProfile) => {
@@ -3488,8 +2548,7 @@ ipcMain.handle("setup:login-codex", async (_event, candidatePath = null) => {
 });
 
 ipcMain.handle("setup:open-node-download", () => {
-  shell.openExternal(nodeDownloadUrl);
-  return { ok: true, url: nodeDownloadUrl };
+  return openExternalUrl(nodeDownloadUrl);
 });
 
 ipcMain.handle("profile:choose-picture", async (event, options = {}) => {
@@ -3699,14 +2758,17 @@ ipcMain.handle("conversation:delete-thread", async (_event, threadId) => {
   return { ok: true, conversations: await conversationBrowser() };
 });
 
-ipcMain.handle("conversation:send", async (_event, { contactId, text }) => {
-  const clean = String(text ?? "").trim();
+ipcMain.handle("conversation:send", async (_event, payload = {}) => {
+  const { contactId, text } = assertObject(payload, "send payload");
+  const cleanContactId = assertString(contactId, "contactId", { maxLength: 500 }).trim();
+  const clean = assertString(text, "text", { maxLength: 200_000 }).trim();
   if (!clean) return { ok: false };
-  return sendConversationItems(contactId, [{ type: "text", text: clean }]);
+  return sendConversationItems(cleanContactId, [{ type: "text", text: clean }]);
 });
 
-ipcMain.handle("conversation:send-items", async (_event, { contactId, items }) => {
-  return sendConversationItems(contactId, Array.isArray(items) ? items : []);
+ipcMain.handle("conversation:send-items", async (_event, payload = {}) => {
+  const { contactId, items } = assertObject(payload, "send-items payload");
+  return sendConversationItems(assertString(contactId, "contactId", { maxLength: 500 }).trim(), Array.isArray(items) ? items : []);
 });
 
 function resolvedThreadIdForContact(contactId, threadId = "") {
@@ -3795,11 +2857,15 @@ async function sendConversationItems(contactId, items) {
     });
     const activeTurnId = activeTurnByThread.get(threadId);
     if (activeTurnId) {
+      noteTurnActivity(threadId);
       await codex.steerTurn(threadId, activeTurnId, cleanItems);
       return { ok: true, threadId, steered: true, conversations: await conversationBrowser() };
     }
     const result = await codex.startTurn(threadId, cleanItems, codexOptions);
-    if (result?.turn?.id) activeTurnByThread.set(threadId, result.turn.id);
+    if (result?.turn?.id) {
+      activeTurnByThread.set(threadId, result.turn.id);
+      trackActiveTurn(threadId, cleanContactId, result.turn.id);
+    }
     return { ok: true, threadId, conversations: await conversationBrowser() };
   } catch (error) {
     logDebug("conversation.send.error", { contactId: cleanContactId, error: error.message });
@@ -3877,6 +2943,14 @@ ipcMain.handle("app:show-item", (_event, targetPath = defaultCwd()) => {
   return { ok: true };
 });
 
+ipcMain.handle("app:log", (_event, payload = {}) => {
+  const event = String(payload?.event || "log")
+    .replace(/[^a-zA-Z0-9:._-]+/g, ".")
+    .slice(0, 100) || "log";
+  logDebug(`renderer.${event}`, payload?.details ?? {});
+  return { ok: true, logPath: logFilePath() };
+});
+
 ipcMain.handle("app:reload", (event) => {
   BrowserWindow.fromWebContents(event.sender)?.reload();
   return { ok: true };
@@ -3909,47 +2983,16 @@ ipcMain.handle("conversation:wizz", (_event, contactId) => {
   return { ok: true };
 });
 
-ipcMain.handle("window:minimize", (event) => {
-  BrowserWindow.fromWebContents(event.sender)?.minimize();
-});
+registerWindowIpcHandlers({ ipcMain, BrowserWindow });
 
-ipcMain.handle("window:maximize", (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender);
-  if (!win) return;
-  if (win.isMaximized()) win.unmaximize();
-  else win.maximize();
-});
-
-ipcMain.handle("window:close", (event) => {
-  BrowserWindow.fromWebContents(event.sender)?.close();
-});
-
-ipcMain.handle("window:get-bounds", (event) => {
-  const win = BrowserWindow.fromWebContents(event.sender);
-  if (!win || win.isDestroyed()) return null;
-  return win.getBounds();
-});
-
-ipcMain.handle("window:resize-to", (event, nextBounds = {}) => {
-  const win = BrowserWindow.fromWebContents(event.sender);
-  if (!win || win.isDestroyed() || win.isMaximized() || win.isFullScreen()) return { ok: false };
-  const current = win.getBounds();
-  const [minWidth, minHeight] = win.getMinimumSize();
-  const width = Math.max(minWidth || 320, Math.round(Number(nextBounds.width) || current.width));
-  const height = Math.max(minHeight || 320, Math.round(Number(nextBounds.height) || current.height));
-  win.setBounds({ ...current, width, height }, false);
-  return { ok: true, bounds: win.getBounds() };
-});
-
-ipcMain.handle("window:set-zoom-factor", (event, factor = 1) => {
-  const win = BrowserWindow.fromWebContents(event.sender);
-  if (!win) return { ok: false, zoomFactor: 1 };
-  const zoomFactor = Math.max(0.7, Math.min(1.6, Number(factor) || 1));
-  win.webContents.setZoomFactor(zoomFactor);
-  return { ok: true, zoomFactor: win.webContents.getZoomFactor() };
-});
-
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  const debugLogPath = await ensureDebugLogFile();
+  logDebug("app.start", {
+    version: app.getVersion(),
+    packaged: app.isPackaged,
+    dev: isDev,
+    logPath: debugLogPath
+  });
   if (process.platform === "darwin" && app.dock) {
     const dockIcon = nativeImage.createFromPath(appIconPath);
     if (!dockIcon.isEmpty()) app.dock.setIcon(dockIcon);

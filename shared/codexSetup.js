@@ -76,11 +76,11 @@ function shouldUseShell(command) {
   return !path.isAbsolute(command) && ext !== ".cmd" && ext !== ".bat";
 }
 
-function quoteWindowsArg(value) {
+export function quoteWindowsArg(value) {
   return `"${String(value).replace(/"/g, '""')}"`;
 }
 
-function spawnCommand(command, args, options = {}) {
+export function spawnCommand(command, args, options = {}) {
   const ext = path.extname(command).toLowerCase();
   if (process.platform === "win32" && (ext === ".cmd" || ext === ".bat")) {
     return spawn(quoteWindowsArg(command), args, {

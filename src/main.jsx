@@ -21,54 +21,108 @@ import {
 } from "./i18n.js";
 import msnDisplayPictures from "./msnDisplayPictures.js";
 import msnEmoticons from "./msnEmoticons.js";
+import { animatedInlineEmoticons, renderFormattedMessageText } from "./messageFormatting.jsx";
+import {
+  bubbleColorOptions,
+  defaultTextStyle,
+  normalizeConversationZoom,
+  normalizeTextStyle,
+  textColorOptions,
+  textFontOptions,
+  textStyleForContact,
+  transcriptInitialRenderLimit,
+  transcriptRenderStep
+} from "./chatTextStyle.js";
+import { playNewMessage, playSoundKey, playWink, playWizz, soundCatalog } from "./soundEffects.js";
+import { extractWinkFromText, winkCatalog } from "./winks.js";
+import UpdateDialog from "./updateDialog.jsx";
+import Composer from "./composer.jsx";
+import { ApprovalRequestsPanel, Message } from "./chatParts.jsx";
+import GamesPanel from "./gamesPanel.jsx";
+import {
+  ActivitiesPanel,
+  CameraPanel,
+  EmoticonsPanel,
+  FilesPanel,
+  FormatButton,
+  InvitePanel,
+  TextStylePanel,
+  Tool,
+  VoicePanel
+} from "./mediaPanels.jsx";
+import ThreadTabs from "./threadTabs.jsx";
+import RosterView from "./rosterView.jsx";
+import { useCodexEvents } from "./useCodexEvents.js";
+import { usePromptDialog } from "./usePromptDialog.jsx";
+import { useUpdates } from "./useUpdates.js";
 import { brandPeopleLogo, Logo, Menu, ResizeGrip, Titlebar } from "./windowChrome.jsx";
 import "./styles.css";
 
 const api = window.codexMsn;
-const audioFiles = {
-  wizz: "./msn-assets/sounds/nudge.wav",
-  message: "./msn-assets/sounds/type.wav",
-  newEmail: "./msn-assets/sounds/newemail.wav",
-  online: "./msn-assets/sounds/online.wav",
-  phone: "./msn-assets/sounds/phone.wav",
-  ring: "./msn-assets/sounds/ring.wav",
-  type: "./msn-assets/sounds/newalert.wav",
-  done: "./msn-assets/sounds/vimdone.wav"
-};
-const toolbarIcons = {
-  invite: "./icons/toolbar/invite.png",
-  files: "./icons/toolbar/files.png",
-  video: "./icons/toolbar/video.png",
-  voice: "./icons/toolbar/voice.png",
-  activities: "./icons/toolbar/activities.png",
-  games: "./icons/toolbar/games.png",
-  wizz: "./icons/toolbar/wizz.png"
-};
-const formatIcons = {
-  font: "./icons/format/font.png",
-  smile: "./icons/format/smile.png",
-  voice: "./icons/format/voice.png",
-  wink: "./icons/format/wink.png",
-  image: "./icons/format/image.png",
-  gift: "./icons/format/gift.png",
-  wizz: "./icons/toolbar/wizz.png"
-};
+
+function errorMessage(error, fallback = "Erreur inconnue") {
+  if (!error) return fallback;
+  return error.message || String(error) || fallback;
+}
+
+function reportRendererError(event, error, details = {}) {
+  const message = errorMessage(error);
+  const logResult = api?.log?.(event, {
+    ...details,
+    message,
+    stack: error?.stack
+  });
+  logResult?.catch?.(() => {});
+}
+
+function ErrorScreen({ title = "Erreur Codex Messenger", message, logPath, details }) {
+  return (
+    <div className="loading error">
+      <section className="debug-error-card" role="alert">
+        <strong>{title}</strong>
+        <p>{message}</p>
+        {details ? <code>{details}</code> : null}
+        {logPath ? <small>Log: {logPath}</small> : null}
+        <button type="button" onClick={() => api?.app?.reload?.()}>{appCopyFor("fr").common.reload ?? "Recharger"}</button>
+      </section>
+    </div>
+  );
+}
+
+class RendererErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null, info: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error, info) {
+    this.setState({ info });
+    reportRendererError("react.render.error", error, { componentStack: info?.componentStack });
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <ErrorScreen
+          title="Erreur interface"
+          message={errorMessage(this.state.error, "L'interface a plante pendant le rendu.")}
+          details={this.state.info?.componentStack?.trim()}
+        />
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const activityPrompts = [
   ["Plan", "Fais un plan de travail court pour ce projet, puis propose la premiere action concrete."],
   ["Review", "Fais une revue pragmatique du projet courant: bugs probables, risques, tests manquants, priorites."],
   ["Tests", "Inspecte le projet et propose les commandes de test/build pertinentes. Si c'est raisonnable, lance-les."],
   ["Design", "Analyse l'interface actuelle et propose les modifications visuelles prioritaires pour coller a MSN 7."]
-];
-const gamePrompts = [
-  ["Bug Hunt", "Lance un mini-jeu Bug Hunt: donne-moi un fichier ou une zone a inspecter, puis guide-moi pour trouver le bug avant de proposer la correction."],
-  ["20 Questions", "Lance un jeu de 20 questions pour clarifier une feature du projet avant implementation."],
-  ["Code Golf", "Choisis une petite amelioration du projet et transforme-la en defi code golf lisible, puis propose la solution propre."],
-  ["XP Polish", "Lance un defi XP Polish: trouve trois details visuels qui trahissent une UI moderne et corrige-les un par un."]
-];
-const gameCatalog = [
-  { id: "morpion", label: "Morpion" },
-  { id: "memory", label: "Memory" },
-  { id: "wizz", label: "Wizz" }
 ];
 const slashCommandCatalog = [
   { id: "status", label: "/status", detail: "etat du fil" },
@@ -77,223 +131,6 @@ const slashCommandCatalog = [
   { id: "compact", label: "/compact", detail: "compacter" },
   { id: "fork", label: "/fork", detail: "dupliquer" },
   { id: "model", label: "/model", detail: "modele actif" }
-];
-const soundCatalog = [
-  ["message", "Nouveau message", audioFiles.message],
-  ["wizz", "Wizz / Nudge", audioFiles.wizz],
-  ["newEmail", "Nouvel e-mail", audioFiles.newEmail],
-  ["online", "Contact en ligne", audioFiles.online],
-  ["ring", "Sonnerie", audioFiles.ring],
-  ["phone", "Telephone", audioFiles.phone],
-  ["type", "Alerte", audioFiles.type],
-  ["done", "Invite terminee", audioFiles.done]
-];
-const projectSortOptions = [
-  { id: "modified-desc", label: "Date de modification", detail: "recent d'abord", short: "modifie" },
-  { id: "modified-asc", label: "Date de modification", detail: "ancien d'abord", short: "modifie" },
-  { id: "created-desc", label: "Date de creation", detail: "recent d'abord", short: "cree" },
-  { id: "created-asc", label: "Date de creation", detail: "ancien d'abord", short: "cree" },
-  { id: "name-asc", label: "Alphabet montant", detail: "A a Z", short: "A-Z" },
-  { id: "name-desc", label: "Alphabet descendant", detail: "Z a A", short: "Z-A" },
-  { id: "threads-desc", label: "Nombre de fils", detail: "plus d'abord", short: "fils +" },
-  { id: "threads-asc", label: "Nombre de fils", detail: "moins d'abord", short: "fils -" }
-];
-const projectSortIds = new Set(projectSortOptions.map((option) => option.id));
-const defaultTextStyle = {
-  fontFamily: "Tahoma",
-  fontSize: 11,
-  color: "#182337",
-  bubble: "#f0f6ff",
-  meBubble: "#eefaf1"
-};
-const transcriptInitialRenderLimit = 160;
-const transcriptRenderStep = 80;
-const textFontOptions = ["Tahoma", "Verdana", "Arial", "Segoe UI", "Times New Roman", "Courier New", "Comic Sans MS"];
-const textColorOptions = ["#182337", "#123f82", "#0b7747", "#7a1c1c", "#4b347a", "#111111"];
-const bubbleColorOptions = ["#f0f6ff", "#fffbd0", "#eefaf1", "#fff0f0", "#f2edff", "#ffffff"];
-const winkCatalog = [
-  {
-    id: "water-balloon",
-    label: "Water Balloon",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/water_balloon.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/water_balloon.swf",
-    sound: "wizz"
-  },
-  {
-    id: "bouncy-ball",
-    label: "Bouncy Ball",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/bouncy_ball.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/bouncy_ball.swf",
-    sound: "online"
-  },
-  {
-    id: "lightbulb",
-    label: "Lightbulb",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.jpg",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.swf",
-    sound: "type"
-  },
-  {
-    id: "crying",
-    label: "Crying",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/crying.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/crying.swf",
-    sound: "ring"
-  },
-  {
-    id: "ufo",
-    label: "UFO",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/ufo.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/ufo.swf",
-    sound: "wizz"
-  },
-  {
-    id: "frog",
-    label: "Frog",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/frog.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/frog.swf",
-    sound: "online"
-  },
-  {
-    id: "dancer",
-    label: "Dancer",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/dancer.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/dancer.swf",
-    sound: "done"
-  },
-  {
-    id: "bow",
-    label: "Bow",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/bow.jpg",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/bow.swf",
-    sound: "done"
-  },
-  {
-    id: "heart",
-    label: "Heart",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.swf",
-    sound: "ring"
-  },
-  {
-    id: "silly-face",
-    label: "Silly Face",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/silly_face.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/silly_face.swf",
-    sound: "type"
-  },
-  {
-    id: "dancing-pig",
-    label: "Dancing Pig",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/dancing_pig.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/dancing_pig.swf",
-    sound: "done"
-  },
-  {
-    id: "kiss",
-    label: "Kiss",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/kiss.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/kiss.swf",
-    sound: "ring"
-  },
-  {
-    id: "guitar-smash",
-    label: "Guitar Smash",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/guitar_smash.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/guitar_smash.swf",
-    sound: "wizz"
-  },
-  {
-    id: "knock",
-    label: "Knock",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.swf",
-    sound: "wizz"
-  },
-  {
-    id: "laughing-girl",
-    label: "Laughing Girl",
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/laughing_girl.png",
-    swf: "./msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/laughing_girl.swf",
-    sound: "done"
-  },
-  { id: "butterfly", label: "Papillon", src: "./msn-assets/winks/butterfly.gif", sound: "wizz" },
-  { id: "butterfly-small", label: "Mini papillon", src: "./msn-assets/winks/butterfly-small.gif", sound: "online" },
-  { id: "surprise", label: "Surprise", src: "./msn-assets/winks/surprise.gif", sound: "ring" },
-  { id: "nudge", label: "Secousse", src: "./msn-assets/winks/nudge-burst.gif", sound: "wizz" },
-  { id: "flash", label: "Flash", src: "./msn-assets/winks/flash.gif", sound: "type" },
-  { id: "msn-flow", label: "MSN", src: "./msn-assets/winks/msn-flow.gif", sound: "done" }
-];
-const winkById = Object.fromEntries(winkCatalog.map((wink) => [wink.id, wink]));
-const animatedInlineEmoticons = [
-  { id: "animated-butterfly", label: "Papillon animé", code: ":butterfly:", aliases: ["[emoji:butterfly]", "[emote:butterfly]"], src: "./msn-assets/winks/butterfly-small.gif" },
-  { id: "animated-surprise", label: "Surprise animée", code: ":surprise:", aliases: ["[emoji:surprise]", "[emote:surprise]"], src: "./msn-assets/winks/surprise.gif" },
-  { id: "animated-flash", label: "Flash animé", code: ":flash:", aliases: ["[emoji:flash]", "[emote:flash]"], src: "./msn-assets/winks/flash.gif" },
-  { id: "animated-wizz", label: "Wizz animé", code: ":wizz:", aliases: ["[emoji:wizz]", "[emote:wizz]"], src: "./msn-assets/winks/nudge-burst.gif" },
-  { id: "animated-flow", label: "MSN animé", code: ":msn-flow:", aliases: ["[emoji:msn-flow]", "[emote:msn-flow]"], src: "./msn-assets/winks/msn-flow.gif" }
-];
-const msnEmoticonById = Object.fromEntries(msnEmoticons.map((emoticon) => [emoticon.id, emoticon]));
-const unicodeEmojiEmoticons = [
-  ["big-smile", "Sourire", "\u{1F600}", ["\u{1F603}", "\u{1F604}", "\u{1F601}", "\u{1F642}"]],
-  ["smile", "Sourire doux", "\u{1F60A}", ["\u263A\uFE0F", "\u263A"]],
-  ["laughing", "Rire", "\u{1F602}", ["\u{1F923}"]],
-  ["wink", "Clin d'oeil", "\u{1F609}", []],
-  ["kiss", "Bisou", "\u{1F618}", ["\u{1F617}", "\u{1F619}", "\u{1F61A}", "\u{1F48B}"]],
-  ["sad", "Triste", "\u{1F622}", ["\u{1F62D}", "\u2639\uFE0F", "\u2639", "\u{1F641}", "\u{1F61E}"]],
-  ["surprised", "Surpris", "\u{1F62E}", ["\u{1F62F}", "\u{1F632}", "\u{1F631}"]],
-  ["cool", "Cool", "\u{1F60E}", []],
-  ["blank-face", "Neutre", "\u{1F610}", ["\u{1F611}", "\u{1F636}"]],
-  ["thinking", "Pensif", "\u{1F914}", ["\u{1F615}"]],
-  ["angry-soft", "Fache", "\u{1F620}", ["\u{1F621}"]],
-  ["angel", "Ange", "\u{1F607}", []],
-  ["sleep", "Sommeil", "\u{1F634}", []],
-  ["rose", "Rose", "\u{1F339}", []],
-  ["star", "Etoile", "\u2B50", ["\u{1F31F}"]],
-  ["gift", "Cadeau", "\u{1F381}", []],
-  ["butterfly", "Papillon", "\u{1F98B}", []],
-  ["sun", "Soleil", "\u2600\uFE0F", ["\u2600", "\u{1F31E}"]],
-  ["cloud", "Nuage", "\u2601\uFE0F", ["\u2601"]],
-  ["rain", "Pluie", "\u{1F327}\uFE0F", ["\u{1F327}"]],
-  ["umbrella", "Parapluie", "\u2614", ["\u2602\uFE0F", "\u2602"]],
-  ["storm", "Orage", "\u26C8\uFE0F", ["\u26C8"]],
-  ["moon-happy", "Lune", "\u{1F319}", ["\u{1F31B}", "\u{1F31C}"]]
-].map(([sourceId, label, code, aliases]) => ({
-  id: `unicode-${sourceId}-${code.codePointAt(0).toString(16)}`,
-  label,
-  code,
-  aliases,
-  src: msnEmoticonById[sourceId]?.src
-})).filter((emoticon) => emoticon.src);
-const extraUnicodeEmojiEmoticons = [
-  {
-    id: "unicode-heart",
-    label: "Coeur",
-    code: "\u2764\uFE0F",
-    aliases: ["\u2764", "\u2665\uFE0F", "\u2665", "\u{1F496}", "\u{1F499}", "\u{1F49A}", "\u{1F49B}", "\u{1F49C}"],
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.png"
-  },
-  {
-    id: "unicode-lightbulb",
-    label: "Idee",
-    code: "\u{1F4A1}",
-    aliases: [],
-    src: "./msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.jpg"
-  }
-];
-const inlineEmoticons = [...msnEmoticons, ...animatedInlineEmoticons, ...unicodeEmojiEmoticons, ...extraUnicodeEmojiEmoticons];
-const gameAssets = {
-  x: "./msn-assets/games/piece-x.png",
-  o: "./msn-assets/games/piece-o.png",
-  bell: "./msn-assets/games/bell.png",
-  play: "./msn-assets/games/play.png"
-};
-const memorySymbols = [
-  { id: "smile", label: "Smile", src: "./msn-assets/games/smile.png" },
-  { id: "gift", label: "Gift", src: "./msn-assets/games/gift.png" },
-  { id: "butterfly", label: "Butterfly", src: "./msn-assets/games/butterfly.png" },
-  { id: "bell", label: "Wizz", src: "./msn-assets/games/bell.png" },
-  { id: "person", label: "Buddy", src: "./msn-assets/games/person.png" },
-  { id: "group", label: "Group", src: "./msn-assets/games/group.png" }
 ];
 const agentAvatarOptions = [
   ["lens", "Loupe"],
@@ -312,17 +149,29 @@ const generatedAvatarPalettes = [
   ["#c64b65", "#ffd1dc", "#842849", "#fff8fb"],
   ["#22827f", "#afeae6", "#2157a5", "#f8ffff"]
 ];
-const ticLines = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6]
-];
 function now() {
   return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
 }
 
 function makeMessage(from, author, text, options = {}) {
-  return { id: crypto.randomUUID(), from, author, text, time: now(), ...options };
+  return { id: crypto.randomUUID(), from, author, text, time: now(), createdAtMs: Date.now(), ...options };
+}
+
+function hasRecentSameOutgoing(messages, text) {
+  const cleanText = normalizeMessageText(text);
+  if (!cleanText) return false;
+  const currentTime = Date.now();
+  return messages.slice(-8).some((message) => (
+    message.from === "me" &&
+    Number.isFinite(message.createdAtMs) &&
+    currentTime - message.createdAtMs < 5000 &&
+    normalizeMessageText(message.text) === cleanText
+  ));
+}
+
+function appendOutgoingMessage(messages, author, text, options = {}) {
+  if (hasRecentSameOutgoing(messages, text)) return messages;
+  return [...messages, makeMessage("me", author, text, options)];
 }
 
 function codexConnectionNotice(text) {
@@ -351,87 +200,6 @@ function appendSystemNotice(messages, notice) {
     return [...messages.slice(0, -1), { ...last, text: notice.text, time: now() }];
   }
   return [...messages, makeMessage("system", "system", notice.text, { noticeKind: notice.kind })];
-}
-
-function playAudio(src, fallback) {
-  const audio = new Audio(src);
-  audio.currentTime = 0;
-  audio.play().catch(() => fallback?.());
-}
-
-function playNewMessage() {
-  playAudio(audioFiles.message);
-}
-
-function playSyntheticWizz() {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
-  const ctx = new AudioContext();
-  const master = ctx.createGain();
-  master.gain.setValueAtTime(0.0001, ctx.currentTime);
-  master.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.01);
-  master.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.72);
-  master.connect(ctx.destination);
-
-  [[0, 620], [0.1, 880], [0.2, 540], [0.3, 980], [0.46, 720]].forEach(([offset, hz]) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "square";
-    osc.frequency.setValueAtTime(hz, ctx.currentTime + offset);
-    osc.frequency.exponentialRampToValueAtTime(hz * 1.28, ctx.currentTime + offset + 0.12);
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime + offset);
-    gain.gain.exponentialRampToValueAtTime(0.13, ctx.currentTime + offset + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + offset + 0.14);
-    osc.connect(gain);
-    gain.connect(master);
-    osc.start(ctx.currentTime + offset);
-    osc.stop(ctx.currentTime + offset + 0.16);
-  });
-
-  window.setTimeout(() => ctx.close(), 900);
-}
-
-function playWizz() {
-  playAudio(audioFiles.wizz, playSyntheticWizz);
-}
-
-function playSoundKey(soundKey) {
-  playAudio(audioFiles[soundKey] ?? audioFiles.message);
-}
-
-function playWink(wink) {
-  playSoundKey(wink?.sound ?? "wizz");
-}
-
-function extractWinkFromText(text) {
-  const source = String(text ?? "");
-  const match = source.match(/\[(?:wink|clin|clin-doeil|nudge):([a-z0-9-]+)\]/i);
-  if (!match) return { text: source, wink: null };
-  const wink = winkById[match[1]] ?? null;
-  if (!wink) return { text: source, wink: null };
-  const cleanText = source.replace(match[0], "").replace(/\n{3,}/g, "\n\n").trim();
-  return { text: cleanText || `Clin d'oeil: ${wink.label}`, wink };
-}
-
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function normalizeProjectSort(value) {
-  return projectSortIds.has(value) ? value : "name-asc";
-}
-
-function normalizeTextStyle(style = {}) {
-  const fontFamily = textFontOptions.includes(style.fontFamily) ? style.fontFamily : defaultTextStyle.fontFamily;
-  const fontSize = Math.max(9, Math.min(18, Math.round(Number(style.fontSize) || defaultTextStyle.fontSize)));
-  const color = textColorOptions.includes(style.color) ? style.color : defaultTextStyle.color;
-  const bubble = bubbleColorOptions.includes(style.bubble) ? style.bubble : defaultTextStyle.bubble;
-  const meBubble = bubbleColorOptions.includes(style.meBubble) ? style.meBubble : defaultTextStyle.meBubble;
-  return { fontFamily, fontSize, color, bubble, meBubble };
-}
-
-function textStyleForContact(settings, contactId) {
-  return normalizeTextStyle(settings?.textStyles?.[contactId]);
 }
 
 function codexModelValue(model) {
@@ -515,335 +283,18 @@ function hasAvailableUpdates(updateState) {
   return Boolean(updateState?.front?.updateAvailable || updateState?.codex?.updateAvailable);
 }
 
-function versionLabel(value) {
-  return String(value || "inconnue");
+function versionLabel(value, unknown = "inconnue") {
+  return String(value || unknown);
 }
 
-function normalizeConversationZoom(value) {
-  return Math.max(0.7, Math.min(1.6, Math.round((Number(value) || 1) * 10) / 10));
-}
-
-function updateLineState(item) {
-  if (!item) return "Non verifie";
-  if (item.updateAvailable) return `Mise a jour disponible: ${versionLabel(item.latestVersion)}`;
-  if (item.error) return `Verification incomplete: ${item.error}`;
-  if (item.latestVersion) return "A jour";
-  return "Non verifie";
-}
-
-function projectSortOption(sort) {
-  return projectSortOptions.find((option) => option.id === normalizeProjectSort(sort)) ?? projectSortOptions[4];
-}
-
-function projectDateMs(project, key) {
-  const value = Date.parse(project?.[key] ?? "");
-  return Number.isFinite(value) ? value : 0;
-}
-
-function projectThreadCount(project) {
-  return Number(project?.threadCount ?? project?.threads?.length ?? 0) || 0;
-}
-
-function combinedProjectThreads(project = {}) {
-  const seen = new Set();
-  return [...(project.threads ?? []), ...(project.hiddenThreads ?? [])].filter((thread) => {
-    if (!thread?.id || seen.has(thread.id)) return false;
-    seen.add(thread.id);
-    return true;
-  });
-}
-
-function mergeThreadArrays(left = [], right = []) {
-  const byId = new Map();
-  for (const thread of [...left, ...right]) {
-    if (thread?.id) byId.set(thread.id, { ...(byId.get(thread.id) ?? {}), ...thread });
-  }
-  return Array.from(byId.values()).sort((a, b) => String(b.timestamp ?? "").localeCompare(String(a.timestamp ?? "")));
-}
-
-function mergeConversationPages(current, next) {
-  if (!current) return next;
-  if (!next) return current;
-  const projects = new Map();
-  for (const project of current.projects ?? []) projects.set(project.cwd || project.id, { ...project });
-  for (const project of next.projects ?? []) {
-    const key = project.cwd || project.id;
-    const existing = projects.get(key);
-    projects.set(key, existing ? {
-      ...existing,
-      ...project,
-      threads: mergeThreadArrays(existing.threads, project.threads),
-      hiddenThreads: mergeThreadArrays(existing.hiddenThreads, project.hiddenThreads),
-      threadCount: Math.max(projectThreadCount(existing), projectThreadCount(project))
-    } : { ...project });
-  }
-  return {
-    ...current,
-    ...next,
-    projects: Array.from(projects.values()).sort((a, b) => String(a.name ?? "").localeCompare(String(b.name ?? "")))
-  };
-}
-
-function compareProjectNames(left, right) {
-  return String(left?.name ?? "").localeCompare(String(right?.name ?? ""), undefined, {
-    numeric: true,
-    sensitivity: "base"
-  });
-}
-
-function sortProjects(projects, sort) {
-  const mode = normalizeProjectSort(sort);
-  return [...projects].sort((left, right) => {
-    let result = 0;
-    if (mode === "name-asc") result = compareProjectNames(left, right);
-    if (mode === "name-desc") result = compareProjectNames(right, left);
-    if (mode === "created-desc") result = projectDateMs(right, "createdAt") - projectDateMs(left, "createdAt");
-    if (mode === "created-asc") result = projectDateMs(left, "createdAt") - projectDateMs(right, "createdAt");
-    if (mode === "modified-desc") result = projectDateMs(right, "modifiedAt") - projectDateMs(left, "modifiedAt");
-    if (mode === "modified-asc") result = projectDateMs(left, "modifiedAt") - projectDateMs(right, "modifiedAt");
-    if (mode === "threads-desc") result = projectThreadCount(right) - projectThreadCount(left);
-    if (mode === "threads-asc") result = projectThreadCount(left) - projectThreadCount(right);
-    return result || compareProjectNames(left, right) || String(left?.cwd ?? "").localeCompare(String(right?.cwd ?? ""));
-  });
-}
-
-const emoticonTokens = inlineEmoticons
-  .flatMap((emoticon) => [emoticon.code, ...(emoticon.aliases ?? [])].map((code) => [code, emoticon]))
-  .filter(([code]) => code);
-const emoticonByToken = Object.fromEntries(emoticonTokens);
-const emoticonPattern = new RegExp(
-  `(${emoticonTokens.map(([code]) => code).sort((left, right) => right.length - left.length).map(escapeRegExp).join("|")})`,
-  "g"
-);
-
-const inlineTokenSource = [
-  "\\[[^\\]\\n]+\\]\\([^\\s)]+\\)",
-  "https?:\\/\\/[^\\s<>()]+",
-  "`[^`\\n]+`",
-  "\\*\\*[^*\\n]+\\*\\*",
-  "__[^_\\n]+__",
-  "~~[^~\\n]+~~",
-  "\\*[^*\\n]+\\*",
-  ...emoticonTokens.map(([code]) => escapeRegExp(code))
-].join("|");
-
-const markdownLinkPattern = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/;
-const internalMentionProtocols = new Set(["plugin", "app", "skill"]);
-
-function protocolForHref(href) {
-  const match = String(href ?? "").trim().match(/^([a-z][a-z0-9+.-]*):/i);
-  return match ? match[1].toLowerCase() : "";
-}
-
-function isSafeExternalHref(href) {
-  const protocol = protocolForHref(href);
-  return protocol === "http" || protocol === "https" || protocol === "mailto";
-}
-
-function internalMentionKind(href) {
-  const protocol = protocolForHref(href);
-  return internalMentionProtocols.has(protocol) ? protocol : "";
-}
-
-function splitTrailingUrlPunctuation(value) {
-  let href = String(value ?? "");
-  let suffix = "";
-  while (href.length > 0 && /[.,!?;:]$/.test(href)) {
-    suffix = `${href.slice(-1)}${suffix}`;
-    href = href.slice(0, -1);
-  }
-  return { href, suffix };
-}
-
-function renderMarkdownLinkToken(token, keyPrefix) {
-  const match = String(token ?? "").match(markdownLinkPattern);
-  if (!match) return null;
-  const label = match[1].trim();
-  const href = match[2].trim();
-  const mentionKind = internalMentionKind(href);
-  if (mentionKind) {
-    return (
-      <span
-        className={`message-mention ${mentionKind}`}
-        data-kind={mentionKind}
-        key={`${keyPrefix}-mention`}
-        title={href}
-      >
-        {renderInlineFormattedText(label, `${keyPrefix}-mention-label`)}
-      </span>
-    );
-  }
-  if (!isSafeExternalHref(href)) {
-    return (
-      <span className="message-link disabled" key={`${keyPrefix}-link-disabled`} title={href}>
-        {renderInlineFormattedText(label, `${keyPrefix}-link-disabled-label`)}
-      </span>
-    );
-  }
-  return (
-    <a className="message-link" key={`${keyPrefix}-link`} href={href} target="_blank" rel="noreferrer noopener">
-      {renderInlineFormattedText(label, `${keyPrefix}-link-label`)}
-    </a>
-  );
-}
-
-function renderUrlToken(token, keyPrefix) {
-  const { href, suffix } = splitTrailingUrlPunctuation(token);
-  if (!isSafeExternalHref(href)) return token;
-  return [
-    <a className="message-link" key={`${keyPrefix}-url`} href={href} target="_blank" rel="noreferrer noopener">
-      {href}
-    </a>,
-    suffix
-  ].filter(Boolean);
-}
-
-function renderInlineFormattedText(text, keyPrefix = "inline") {
-  const source = String(text ?? "");
-  if (!source) return null;
-  const pattern = new RegExp(inlineTokenSource, "g");
-  const nodes = [];
-  let lastIndex = 0;
-  let match;
-  while ((match = pattern.exec(source))) {
-    const token = match[0];
-    if (match.index > lastIndex) nodes.push(source.slice(lastIndex, match.index));
-    const emoticon = emoticonByToken[token];
-    if (markdownLinkPattern.test(token)) {
-      nodes.push(renderMarkdownLinkToken(token, `${keyPrefix}-mdlink-${match.index}`));
-    } else if (/^https?:\/\//i.test(token)) {
-      nodes.push(renderUrlToken(token, `${keyPrefix}-url-${match.index}`));
-    } else if (emoticon) {
-      nodes.push(
-        <img
-          key={`${keyPrefix}-emoticon-${match.index}`}
-          className="message-emoticon"
-          src={emoticon.src}
-          alt={token}
-          title={`${emoticon.label} ${emoticon.code}`}
-          draggable="false"
-        />
-      );
-    } else if (token.startsWith("`") && token.endsWith("`")) {
-      nodes.push(<code className="message-code" key={`${keyPrefix}-code-${match.index}`}>{token.slice(1, -1)}</code>);
-    } else if ((token.startsWith("**") && token.endsWith("**")) || (token.startsWith("__") && token.endsWith("__"))) {
-      nodes.push(<strong key={`${keyPrefix}-strong-${match.index}`}>{renderInlineFormattedText(token.slice(2, -2), `${keyPrefix}-strong-${match.index}`)}</strong>);
-    } else if (token.startsWith("~~") && token.endsWith("~~")) {
-      nodes.push(<del key={`${keyPrefix}-del-${match.index}`}>{renderInlineFormattedText(token.slice(2, -2), `${keyPrefix}-del-${match.index}`)}</del>);
-    } else if (token.startsWith("*") && token.endsWith("*")) {
-      nodes.push(<em key={`${keyPrefix}-em-${match.index}`}>{renderInlineFormattedText(token.slice(1, -1), `${keyPrefix}-em-${match.index}`)}</em>);
-    } else {
-      nodes.push(token);
-    }
-    lastIndex = match.index + token.length;
-  }
-  if (lastIndex < source.length) nodes.push(source.slice(lastIndex));
-  return nodes;
-}
-
-function renderFormattedMessageText(text) {
-  const lines = String(text ?? "").replace(/\r\n?/g, "\n").split("\n");
-  const blocks = [];
-  let paragraph = [];
-  let list = null;
-  let codeBlock = null;
-
-  function flushParagraph() {
-    if (!paragraph.length) return;
-    blocks.push({ type: "paragraph", text: paragraph.join("\n") });
-    paragraph = [];
-  }
-
-  function flushList() {
-    if (!list) return;
-    blocks.push(list);
-    list = null;
-  }
-
-  function flushCodeBlock() {
-    if (!codeBlock) return;
-    blocks.push({ type: "code", text: codeBlock.join("\n") });
-    codeBlock = null;
-  }
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("```")) {
-      flushParagraph();
-      flushList();
-      if (codeBlock) flushCodeBlock();
-      else codeBlock = [];
-      continue;
-    }
-    if (codeBlock) {
-      codeBlock.push(line);
-      continue;
-    }
-    if (!trimmed) {
-      flushParagraph();
-      flushList();
-      continue;
-    }
-
-    const headingMatch = line.match(/^\s{0,3}(#{1,4})\s+(.+)$/);
-    if (headingMatch) {
-      flushParagraph();
-      flushList();
-      blocks.push({ type: "heading", level: headingMatch[1].length, text: headingMatch[2] });
-      continue;
-    }
-
-    const quoteMatch = line.match(/^\s*>\s+(.+)$/);
-    if (quoteMatch) {
-      flushParagraph();
-      flushList();
-      blocks.push({ type: "quote", text: quoteMatch[1] });
-      continue;
-    }
-
-    const bulletMatch = line.match(/^\s*[-*]\s+(.+)$/);
-    const orderedMatch = line.match(/^\s*\d+[.)]\s+(.+)$/);
-    if (bulletMatch || orderedMatch) {
-      flushParagraph();
-      const type = orderedMatch ? "ordered-list" : "list";
-      if (!list || list.type !== type) flushList();
-      if (!list) list = { type, items: [] };
-      list.items.push((bulletMatch ?? orderedMatch)[1]);
-      continue;
-    }
-
-    flushList();
-    paragraph.push(line);
-  }
-
-  flushParagraph();
-  flushList();
-  flushCodeBlock();
-
-  if (!blocks.length) return null;
-  return blocks.map((block, index) => {
-    if (block.type === "paragraph") {
-      return <p key={`p-${index}`}>{renderInlineFormattedText(block.text, `p-${index}`)}</p>;
-    }
-    if (block.type === "code") {
-      return <pre key={`code-${index}`}><code>{block.text}</code></pre>;
-    }
-    if (block.type === "heading") {
-      const HeadingTag = `h${Math.min(4, block.level + 2)}`;
-      return <HeadingTag key={`heading-${index}`}>{renderInlineFormattedText(block.text, `heading-${index}`)}</HeadingTag>;
-    }
-    if (block.type === "quote") {
-      return <blockquote key={`quote-${index}`}>{renderInlineFormattedText(block.text, `quote-${index}`)}</blockquote>;
-    }
-    const ListTag = block.type === "ordered-list" ? "ol" : "ul";
-    return (
-      <ListTag key={`list-${index}`}>
-        {block.items.map((item, itemIndex) => (
-          <li key={`item-${index}-${itemIndex}`}>{renderInlineFormattedText(item, `item-${index}-${itemIndex}`)}</li>
-        ))}
-      </ListTag>
-    );
-  });
+function updateLineState(item, copy = appCopyFor("fr")) {
+  const updateCopy = copy.updates ?? {};
+  const unknown = updateCopy.unknown || "inconnue";
+  if (!item) return updateCopy.notChecked || "Non verifie";
+  if (item.updateAvailable) return (updateCopy.updateAvailableLine || "Mise a jour disponible: {version}").replace("{version}", versionLabel(item.latestVersion, unknown));
+  if (item.error) return (updateCopy.checkIncomplete || "Verification incomplete: {error}").replace("{error}", item.error);
+  if (item.latestVersion) return updateCopy.upToDate || "A jour";
+  return updateCopy.notChecked || "Non verifie";
 }
 
 function blobToDataUrl(blob) {
@@ -1504,82 +955,6 @@ function ProfileEditor({ profile, onChange, onChoosePicture, onClose, copy = app
   );
 }
 
-function PromptDialog({ title, initialValue = "", inputType = "text", okLabel = "OK", cancelLabel = "Annuler", onSubmit, onCancel }) {
-  const [value, setValue] = useState(initialValue);
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
-
-  function submit(event) {
-    event.preventDefault();
-    onSubmit(value);
-  }
-
-  return (
-    <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onCancel()}>
-      <form className="settings-dialog rename-contact-dialog" onSubmit={submit} role="dialog" aria-modal="true" aria-label={title}>
-        <header>
-          <strong>{title}</strong>
-          <button type="button" aria-label={cancelLabel} onClick={onCancel}>x</button>
-        </header>
-        <section>
-          <label className="settings-row">
-            <span>{title}</span>
-            <input
-              autoFocus
-              type={inputType}
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") onCancel();
-              }}
-            />
-          </label>
-        </section>
-        <footer>
-          <button type="submit">{okLabel}</button>
-          <button type="button" onClick={onCancel}>{cancelLabel}</button>
-        </footer>
-      </form>
-    </div>
-  );
-}
-
-function usePromptDialog({ okLabel = "OK", cancelLabel = "Annuler" } = {}) {
-  const [promptState, setPromptState] = useState(null);
-  const resolverRef = useRef(null);
-
-  function askPrompt(options = {}) {
-    return new Promise((resolve) => {
-      resolverRef.current = resolve;
-      setPromptState({
-        title: options.title ?? "",
-        initialValue: String(options.initialValue ?? ""),
-        inputType: options.inputType ?? "text",
-        okLabel: options.okLabel ?? okLabel,
-        cancelLabel: options.cancelLabel ?? cancelLabel
-      });
-    });
-  }
-
-  function resolvePrompt(value) {
-    const resolve = resolverRef.current;
-    resolverRef.current = null;
-    setPromptState(null);
-    resolve?.(value);
-  }
-
-  const promptDialog = promptState ? (
-    <PromptDialog
-      {...promptState}
-      onSubmit={(value) => resolvePrompt(value)}
-      onCancel={() => resolvePrompt(null)}
-    />
-  ) : null;
-
-  return [askPrompt, promptDialog];
-}
-
 function SettingsDialog({ settings, onSave, onClose, copy = appCopyFor("fr") }) {
   const [draft, setDraft] = useState(() => normalizeMessengerSettings(settings));
   const [saving, setSaving] = useState(false);
@@ -1694,70 +1069,6 @@ function SettingsDialog({ settings, onSave, onClose, copy = appCopyFor("fr") }) 
   );
 }
 
-function UpdateDialog({ updateState, checking, installingTarget, actionMessage, appVersion, userAgent, onCheck, onOpen, onInstall, onClose }) {
-  const front = updateState?.front ?? { currentVersion: appVersion };
-  const codex = updateState?.codex ?? {};
-  const checkedAt = updateState?.checkedAt ? new Date(updateState.checkedAt).toLocaleString() : "jamais";
-  const frontInstalling = installingTarget === "front";
-  const codexInstalling = installingTarget === "codex";
-
-  return (
-    <div className="settings-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="settings-dialog update-dialog" role="dialog" aria-modal="true" aria-label="A propos de Codex Messenger">
-        <header>
-          <strong>A propos de Codex Messenger</strong>
-          <button type="button" aria-label="Fermer" onClick={onClose}>x</button>
-        </header>
-        <section>
-          <div className="about-product">
-            <Logo />
-            <div>
-              <h2>Codex Messenger</h2>
-              <p>Developpe par Anis AYARI et Codex.</p>
-              <p>Client Electron local inspire de MSN Messenger 7, connecte a codex app-server.</p>
-            </div>
-          </div>
-          <div className="update-grid">
-            <article className={front.updateAvailable ? "update-card available" : "update-card"}>
-              <strong>Codex Messenger front</strong>
-              <span>Version actuelle: {versionLabel(front.currentVersion || appVersion)}</span>
-              <span>Derniere version: {versionLabel(front.latestVersion)}</span>
-              <small>{updateLineState(front)}</small>
-              <button
-                type="button"
-                onClick={() => front.updateAvailable ? onInstall("front") : onOpen("front")}
-                disabled={frontInstalling}
-              >
-                {frontInstalling ? "Telechargement..." : front.updateAvailable ? "Update automatiquement" : "Ouvrir les releases"}
-              </button>
-            </article>
-            <article className={codex.updateAvailable ? "update-card available" : "update-card"}>
-              <strong>Codex app-server</strong>
-              <span>Version locale: {versionLabel(codex.currentVersion || userAgent)}</span>
-              <span>Derniere version: {versionLabel(codex.latestVersion)}</span>
-              <small>{updateLineState(codex)}</small>
-              <button type="button" onClick={() => onInstall("codex")} disabled={codexInstalling}>
-                {codexInstalling ? "Update..." : "Update automatiquement"}
-              </button>
-            </article>
-          </div>
-          {actionMessage ? <p className="update-action-message">{actionMessage}</p> : null}
-          <p className="update-note">
-            Derniere verification: {checkedAt}. Codex Messenger ne stocke pas les conversations Codex:
-            l'application est seulement un front client local.
-          </p>
-        </section>
-        <footer>
-          <button type="button" onClick={() => onCheck()} disabled={checking}>
-            {checking ? "Verification..." : "Verifier mise a jour"}
-          </button>
-          <button type="button" onClick={onClose}>Fermer</button>
-        </footer>
-      </section>
-    </div>
-  );
-}
-
 function AgentCreator({ onCreate, onClose, onChooseRunFolder, error }) {
   const [draft, setDraft] = useState({
     name: "Agent Specifique",
@@ -1867,513 +1178,10 @@ function AgentCreator({ onCreate, onClose, onChooseRunFolder, error }) {
   );
 }
 
-function RosterView({
-  bootstrap,
-  profile,
-  userAgent,
-  refreshTick,
-  profileEditorOpen,
-  agentEditorOpen,
-  onProfileEditorOpenChange,
-  onAgentEditorOpenChange,
-  onProfileChange,
-  onAgentsChange,
-  copy = appCopyFor("fr")
-}) {
-  const [finished, setFinished] = useState(null);
-  const [conversations, setConversations] = useState(bootstrap.conversations);
-  const [unread, setUnread] = useState(bootstrap.unread ?? {});
-  const [collapsed, setCollapsed] = useState({});
-  const [query, setQuery] = useState("");
-  const [agentError, setAgentError] = useState("");
-  const [projectSort, setProjectSort] = useState(() => normalizeProjectSort(bootstrap.settings?.projectSort));
-  const [projectSortMenu, setProjectSortMenu] = useState(null);
-  const [contactMenu, setContactMenu] = useState(null);
-  const [expandedContacts, setExpandedContacts] = useState({});
-  const [renameDraft, setRenameDraft] = useState(null);
-  const [addContactPressed, setAddContactPressed] = useState(false);
-  const [loadingMoreThreads, setLoadingMoreThreads] = useState(false);
-  const rosterRef = useRef(null);
-  const addContactPressTimerRef = useRef(null);
-
-  useEffect(() => {
-    api.listConversations().then(setConversations).catch(() => {});
-  }, [refreshTick]);
-
-  useEffect(() => () => {
-    if (addContactPressTimerRef.current) window.clearTimeout(addContactPressTimerRef.current);
-  }, []);
-
-  useEffect(() => {
-    const closeMenu = () => {
-      setProjectSortMenu(null);
-      setContactMenu(null);
-    };
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") closeMenu();
-    };
-    window.addEventListener("click", closeMenu);
-    window.addEventListener("blur", closeMenu);
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      window.removeEventListener("click", closeMenu);
-      window.removeEventListener("blur", closeMenu);
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, []);
-
-  useEffect(() => api.on("conversation:finished", ({ contactId }) => {
-    const contact = bootstrap.contacts.find((item) => item.id === contactId);
-    if (!contact) return;
-    setFinished(`${contact.name} a termine.`);
-    window.setTimeout(() => setFinished(null), 4200);
-  }), [bootstrap.contacts]);
-
-  useEffect(() => {
-    const offUnread = api.on("conversation:unread", ({ unread: nextUnread }) => {
-      setUnread(nextUnread ?? {});
-    });
-    const offNotify = api.on("conversation:notify", () => {
-      playNewMessage();
-    });
-    return () => {
-      offUnread();
-      offNotify();
-    };
-  }, []);
-
-  const groups = useMemo(() => {
-    const search = query.trim().toLowerCase();
-    const match = (item) => `${item.name} ${item.statusText ?? ""} ${item.mood ?? ""}`.toLowerCase().includes(search);
-    const byGroup = [];
-
-    byGroup.push({
-      id: "agents",
-      title: copy.roster.codexAgents,
-      items: bootstrap.contacts.map((contact) => ({
-        id: contact.id,
-        name: contact.name,
-        mood: contact.mood,
-        status: contact.status,
-        statusText: copy.status[contact.status] ?? contact.status,
-        contact,
-        onOpen: () => api.openConversation(contact.id)
-      }))
-    });
-
-    const projectItems = sortProjects(conversations?.projects ?? [], projectSort).map((project) => {
-      const contact = {
-        id: project.id,
-        name: project.name,
-        mail: `${project.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@project.local`,
-        group: copy.roster.projects,
-        mood: project.cwd,
-        status: contactStatusFor(bootstrap.settings, project.id, projectThreadCount(project) ? "online" : "offline"),
-        color: "#1f8fcf",
-        avatar: "terminal",
-        kind: "project",
-        cwd: project.cwd,
-        createdAt: project.createdAt,
-        modifiedAt: project.modifiedAt,
-        threadCount: projectThreadCount(project),
-        threads: project.threads ?? [],
-        hiddenThreads: project.hiddenThreads ?? []
-      };
-      return {
-        ...contact,
-        statusText: projectThreadCount(project) ? `${projectThreadCount(project)} ${copy.chat.conversation}${projectThreadCount(project) > 1 ? "s" : ""}` : copy.roster.newThread,
-        contact,
-        onOpen: () => api.openProject(project.cwd)
-      };
-    });
-    if (projectItems.length) byGroup.push({ id: "projects", title: copy.roster.projects, items: projectItems });
-
-    const threadItems = (conversations?.projects ?? [])
-      .flatMap((project) => project.threads.map((thread) => ({ ...thread, projectName: project.name, cwd: project.cwd })))
-      .sort((a, b) => String(b.timestamp ?? "").localeCompare(String(a.timestamp ?? "")))
-      .slice(0, 28)
-      .map((thread) => {
-        const contact = {
-          id: thread.contactId,
-          name: thread.preview || thread.projectName,
-          mail: `${thread.projectName.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@thread.local`,
-          group: thread.projectName,
-          mood: thread.cwd,
-          status: contactStatusFor(bootstrap.settings, thread.contactId, "online"),
-          color: "#2874d9",
-          avatar: "terminal",
-          kind: "thread",
-          cwd: thread.cwd,
-          threadId: thread.id
-        };
-        return {
-          ...contact,
-          statusText: thread.projectName,
-          contact,
-          onOpen: () => openThreadFromRoster(thread.id)
-        };
-      });
-    if (threadItems.length) byGroup.push({ id: "threads", title: copy.roster.recentConversations, items: threadItems });
-
-    return byGroup.map((group) => ({
-      ...group,
-      items: search ? group.items.filter(match) : group.items
-    })).filter((group) => group.items.length);
-  }, [bootstrap.contacts, bootstrap.settings, conversations, copy, projectSort, query]);
-
-  function toggleGroup(groupId) {
-    setCollapsed((current) => ({ ...current, [groupId]: !current[groupId] }));
-  }
-
-  function toggleExpandedContact(item) {
-    if (!item?.id) return;
-    setExpandedContacts((current) => ({ ...current, [item.id]: !current[item.id] }));
-  }
-
-  function expandedThreadsFor(item) {
-    if (!item || !expandedContacts[item.id]) return [];
-    return combinedProjectThreads(item);
-  }
-
-  async function openThreadFromRoster(threadId) {
-    const result = await api.openThread(threadId);
-    if (result?.conversations) setConversations(result.conversations);
-  }
-
-  async function loadMoreThreads() {
-    const cursor = conversations?.nextCursor;
-    if (!cursor || loadingMoreThreads) return;
-    setLoadingMoreThreads(true);
-    try {
-      const next = await api.listConversations({ cursor, limit: 20 });
-      setConversations((current) => mergeConversationPages(current, next));
-    } finally {
-      setLoadingMoreThreads(false);
-    }
-  }
-
-  function openProjectSortMenu(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    setContactMenu(null);
-    const bounds = rosterRef.current?.getBoundingClientRect();
-    const width = bounds?.width ?? window.innerWidth;
-    const height = bounds?.height ?? window.innerHeight;
-    const left = bounds ? event.clientX - bounds.left : event.clientX;
-    const top = bounds ? event.clientY - bounds.top : event.clientY;
-    setProjectSortMenu({
-      x: Math.max(4, Math.min(left, width - 214)),
-      y: Math.max(4, Math.min(top, height - 272))
-    });
-  }
-
-  function openContactMenu(event, item) {
-    event.preventDefault();
-    event.stopPropagation();
-    setProjectSortMenu(null);
-    const bounds = rosterRef.current?.getBoundingClientRect();
-    const width = bounds?.width ?? window.innerWidth;
-    const height = bounds?.height ?? window.innerHeight;
-    const left = bounds ? event.clientX - bounds.left : event.clientX;
-    const top = bounds ? event.clientY - bounds.top : event.clientY;
-    setContactMenu({
-      x: Math.max(4, Math.min(left, width - 218)),
-      y: Math.max(4, Math.min(top, height - 154)),
-      item
-    });
-  }
-
-  async function changeProjectSort(sort) {
-    const nextSort = normalizeProjectSort(sort);
-    setProjectSort(nextSort);
-    setProjectSortMenu(null);
-    try {
-      await api.setSettings({ projectSort: nextSort });
-    } catch {
-      // Sorting still works for the current session if persistence fails.
-    }
-  }
-
-  function handleAddContactClick() {
-    if (bootstrap.settings?.demoMode) return;
-    if (addContactPressTimerRef.current) window.clearTimeout(addContactPressTimerRef.current);
-    setAddContactPressed(true);
-    addContactPressTimerRef.current = window.setTimeout(() => {
-      setAddContactPressed(false);
-      addContactPressTimerRef.current = null;
-    }, 180);
-    onAgentEditorOpenChange(true);
-  }
-
-  async function saveProfile(nextProfile) {
-    const result = await api.setSettings({
-      language: nextProfile.language ?? profile.language,
-      profile: nextProfile
-    });
-    onProfileChange(result.settings.profile, userAgent, result.settings);
-  }
-
-  function changeStatus(status) {
-    saveProfile({ ...profile, status });
-  }
-
-  async function chooseProfilePicture(options = {}) {
-    const result = await api.chooseProfilePicture(options);
-    if (result?.canceled) return result;
-    if (options?.save === false) return result;
-    onProfileChange(result.profile, userAgent, result.settings);
-    return result;
-  }
-
-  async function createAgent(draft) {
-    setAgentError("");
-    try {
-      const result = await api.createAgent(draft);
-      if (!result?.ok) throw new Error(result?.error || "Creation impossible.");
-      onAgentsChange(result.contacts, result.settings);
-      onAgentEditorOpenChange(false);
-      await api.openConversation(result.contact.id);
-    } catch (error) {
-      setAgentError(error.message);
-      throw error;
-    }
-  }
-
-  async function saveContactRename(event) {
-    event.preventDefault();
-    if (!renameDraft?.item?.id) return;
-    const cleanName = String(renameDraft.name || "").trim();
-    if (!cleanName) return;
-    const result = await api.renameContact({ contactId: renameDraft.item.id, name: cleanName });
-    if (!result?.ok) {
-      window.alert(result?.error || "Renommage impossible.");
-      return;
-    }
-    if (result.contacts && result.settings) onAgentsChange(result.contacts, result.settings);
-    if (result.conversations) setConversations(result.conversations);
-    setRenameDraft(null);
-  }
-
-  async function resetContactName(item) {
-    if (!item?.id) return;
-    const result = await api.renameContact({ contactId: item.id, name: "" });
-    if (result?.contacts && result?.settings) onAgentsChange(result.contacts, result.settings);
-    if (result?.conversations) setConversations(result.conversations);
-    setContactMenu(null);
-  }
-
-  return (
-    <section className="roster" ref={rosterRef}>
-      <div className="me">
-        <button className="display-picture-button" type="button" onClick={() => onProfileEditorOpenChange(!profileEditorOpen)}>
-          <Avatar contact={{ ...profile, avatar: "butterfly", color: "#11a77a" }} />
-        </button>
-        <div>
-          <div className="me-line">
-            <strong>{profile.displayName || profile.email}</strong>
-            <select value={profile.status} onChange={(event) => changeStatus(event.target.value)}>
-              {statusOptionsFor(copy).map(([value, label]) => <option value={value} key={value}>{label}</option>)}
-            </select>
-          </div>
-          <small className="me-email">{profile.email}</small>
-          <p>{profile.personalMessage || userAgent || copy.roster.localConnected}</p>
-        </div>
-      </div>
-      {profileEditorOpen ? (
-        <ProfileEditor
-          profile={profile}
-          onChange={saveProfile}
-          onChoosePicture={chooseProfilePicture}
-          onClose={() => onProfileEditorOpenChange(false)}
-          copy={copy}
-        />
-      ) : null}
-      {agentEditorOpen ? (
-        <AgentCreator
-          error={agentError}
-          onCreate={createAgent}
-          onChooseRunFolder={() => api.chooseDirectory({ title: copy.menu.openProject })}
-          onClose={() => {
-            setAgentError("");
-            onAgentEditorOpenChange(false);
-          }}
-        />
-      ) : null}
-      <div className="msn-tabs">
-        <button type="button" onClick={() => api.openConversation(bootstrap.contacts[0]?.id ?? "codex")}><Logo small /> {copy.menu.codexToday}</button>
-      </div>
-      <div className="search"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={copy.roster.search} /></div>
-      <div className="groups">
-        {groups.map((group) => {
-          const online = group.items.filter((item) => item.status !== "offline").length;
-          return (
-          <section className="roster-group" key={group.id}>
-            <button
-              className="group-heading"
-              type="button"
-              title={group.id === "projects" ? copy.roster.sortProjects : undefined}
-              onClick={() => toggleGroup(group.id)}
-              onContextMenu={group.id === "projects" ? openProjectSortMenu : undefined}
-            >
-              <span className={collapsed[group.id] ? "group-box collapsed" : "group-box"} />
-              <strong>{group.title} ({online}/{group.items.length})</strong>
-              {group.id === "projects" ? <span className="group-sort-label">tri: {projectSortOption(projectSort).short}</span> : null}
-            </button>
-            {!collapsed[group.id] ? group.items.map((item) => {
-              const pending = unread[item.id] ?? 0;
-              const expandedThreads = expandedThreadsFor(item);
-              const expanded = expandedThreads.length > 0;
-              return (
-                <React.Fragment key={item.id}>
-                  <button
-                    className={[
-                      "contact-line",
-                      pending ? "has-unread" : "",
-                      expandedContacts[item.id] ? "expanded" : ""
-                    ].filter(Boolean).join(" ")}
-                    type="button"
-                    onClick={item.onOpen}
-                    onContextMenu={(event) => openContactMenu(event, item)}
-                  >
-                    <span className={`msn-presence ${item.status}`} />
-                    <span className="contact-mini-avatar"><Avatar contact={item.contact ?? item} /></span>
-                    <span className="contact-line-copy">
-                      <span className="contact-name">{item.name}</span>
-                      <span className="contact-state">({item.statusText})</span>
-                      <span className="contact-mood">{item.mood}</span>
-                    </span>
-                    {pending ? <span className="contact-unread-bubble" title={`${pending} message${pending > 1 ? "s" : ""} en attente`}>{pending > 9 ? "9+" : pending}</span> : <span className="contact-unread-spacer" />}
-                  </button>
-                  {expanded ? (
-                    <div className="contact-thread-list" role="group" aria-label={`Fils de ${item.name}`}>
-                      {expandedThreads.map((thread) => (
-                        <button
-                          className={item.hiddenThreads?.some((hidden) => hidden.id === thread.id) ? "contact-thread-line hidden" : "contact-thread-line"}
-                          type="button"
-                          key={thread.id}
-                          onClick={() => openThreadFromRoster(thread.id)}
-                          title={thread.preview}
-                        >
-                          <span className="contact-thread-bullet" aria-hidden="true" />
-                          <span>{thread.preview || copy.roster.newThread}</span>
-                          {item.hiddenThreads?.some((hidden) => hidden.id === thread.id) ? <small>masque</small> : null}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </React.Fragment>
-              );
-            }) : null}
-          </section>
-        );})}
-      </div>
-      {conversations?.hasMore ? (
-        <button className="load-more-threads" type="button" onClick={loadMoreThreads} disabled={loadingMoreThreads}>
-          {loadingMoreThreads ? copy.roster.loading : copy.roster.loadMore}
-        </button>
-      ) : null}
-      {projectSortMenu ? (
-        <div
-          className="group-context-menu"
-          style={{ left: projectSortMenu.x, top: projectSortMenu.y }}
-          role="menu"
-          onClick={(event) => event.stopPropagation()}
-          onContextMenu={(event) => event.preventDefault()}
-        >
-          <div className="group-context-title">{copy.roster.sortProjects}</div>
-          {projectSortOptions.map((option) => (
-            <button
-              className={normalizeProjectSort(projectSort) === option.id ? "active" : ""}
-              key={option.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={normalizeProjectSort(projectSort) === option.id}
-              onClick={() => changeProjectSort(option.id)}
-            >
-              <span>{option.label}</span>
-              <small>{option.detail}</small>
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {contactMenu ? (
-        <div
-          className="group-context-menu contact-context-menu"
-          style={{ left: contactMenu.x, top: contactMenu.y }}
-          role="menu"
-          onClick={(event) => event.stopPropagation()}
-          onContextMenu={(event) => event.preventDefault()}
-        >
-          <div className="group-context-title">{contactMenu.item.name}</div>
-          {combinedProjectThreads(contactMenu.item).length ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                toggleExpandedContact(contactMenu.item);
-                setContactMenu(null);
-              }}
-            >
-              <span>{expandedContacts[contactMenu.item.id] ? copy.roster.reduce : copy.roster.expand}</span>
-            </button>
-          ) : null}
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setRenameDraft({ item: contactMenu.item, name: contactMenu.item.name ?? "" });
-              setContactMenu(null);
-            }}
-          >
-            <span>{copy.roster.renameAction}</span>
-          </button>
-          {contactMenu.item.cwd ? (
-            <button type="button" role="menuitem" onClick={() => api.app.openPath(contactMenu.item.cwd)}>
-              <span>{copy.roster.openFolder}</span>
-            </button>
-          ) : null}
-          <button type="button" role="menuitem" onClick={() => resetContactName(contactMenu.item)}>
-            <span>{copy.roster.originalName}</span>
-          </button>
-        </div>
-      ) : null}
-      {renameDraft ? (
-        <div className="settings-dialog-backdrop rename-contact-backdrop">
-          <form className="settings-dialog rename-contact-dialog" onSubmit={saveContactRename} role="dialog" aria-modal="true" aria-label={copy.roster.rename}>
-            <header>
-              <strong>{copy.roster.rename}</strong>
-              <button type="button" onClick={() => setRenameDraft(null)}>x</button>
-            </header>
-            <section>
-              <label className="settings-row">
-                <span>{copy.roster.newName}</span>
-                <input autoFocus value={renameDraft.name} onChange={(event) => setRenameDraft((current) => ({ ...current, name: event.target.value }))} />
-              </label>
-            </section>
-            <footer>
-              <button type="submit" disabled={!renameDraft.name.trim()}>OK</button>
-              <button type="button" onClick={() => setRenameDraft(null)}>{copy.common.cancel}</button>
-            </footer>
-          </form>
-        </div>
-      ) : null}
-      <button
-        className={addContactPressed ? "add-contact pressed" : "add-contact"}
-        type="button"
-        disabled={bootstrap.settings?.demoMode}
-        onClick={handleAddContactClick}
-        title={bootstrap.settings?.demoMode ? copy.menu.openDemo : undefined}
-      >
-        <span className="mini plus" /> {copy.menu.addContact}
-      </button>
-      <div className="wordmark"><span>Codex</span><Logo small /><strong>Messenger</strong></div>
-      {finished ? <div className="toast"><Logo small /><span>{finished}</span></div> : null}
-    </section>
-  );
-}
 
 function MainWindow() {
   const [bootstrap, setBootstrap] = useState(null);
+  const [bootstrapError, setBootstrapError] = useState("");
   const [profile, setProfile] = useState(null);
   const [userAgent, setUserAgent] = useState("");
   const [settings, setSettings] = useState(null);
@@ -2382,45 +1190,39 @@ function MainWindow() {
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
   const [agentEditorOpen, setAgentEditorOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [updateState, setUpdateState] = useState(null);
-  const [checkingUpdates, setCheckingUpdates] = useState(false);
-  const [installingUpdateTarget, setInstallingUpdateTarget] = useState("");
-  const [updateActionMessage, setUpdateActionMessage] = useState("");
   const [askPrompt, promptDialog] = usePromptDialog();
+  const {
+    updateDialogOpen,
+    setUpdateDialogOpen,
+    updateState,
+    checkingUpdates,
+    installingUpdateTarget,
+    updateActionMessage,
+    updateProgress,
+    checkForUpdates,
+    openUpdateTarget,
+    installUpdateTarget,
+    restartForUpdate
+  } = useUpdates({
+    api,
+    appVersion: bootstrap?.appVersion ?? "",
+    userAgent,
+    initialCheck: Boolean(bootstrap)
+  });
 
   useEffect(() => {
-    api.bootstrap().then((data) => {
-      setBootstrap(data);
-      setProfile(data.profile);
-      setUserAgent(data.userAgent ?? "");
-      setSettings(data.settings);
-      setCodexStatus(data.codexStatus);
-    });
-  }, []);
-
-  useEffect(() => {
-    let alive = true;
-    setCheckingUpdates(true);
-    api.checkUpdates({ force: false })
-      .then((result) => {
-        if (alive) setUpdateState(result);
+    api.bootstrap()
+      .then((data) => {
+        setBootstrap(data);
+        setProfile(data.profile);
+        setUserAgent(data.userAgent ?? "");
+        setSettings(data.settings);
+        setCodexStatus(data.codexStatus);
       })
       .catch((error) => {
-        if (alive) {
-          setUpdateState({
-            checkedAt: new Date().toISOString(),
-            front: { currentVersion: "", latestVersion: "", updateAvailable: false, error: error.message },
-            codex: { currentVersion: "", latestVersion: "", updateAvailable: false, error: error.message }
-          });
-        }
-      })
-      .finally(() => {
-        if (alive) setCheckingUpdates(false);
+        reportRendererError("bootstrap.main.error", error, { view: "main" });
+        setBootstrapError(errorMessage(error, "Chargement de la fenetre principale impossible."));
       });
-    return () => {
-      alive = false;
-    };
   }, []);
 
   useEffect(() => api.on("codex:status", (status) => {
@@ -2443,6 +1245,7 @@ function MainWindow() {
     if (language) applyLanguageDirection(language);
   }, [profile?.language, settings?.language]);
 
+  if (bootstrapError) return <ErrorScreen title="Chargement impossible" message={bootstrapError} />;
   if (!bootstrap || !profile) return <div className="loading">Connexion...</div>;
   const copy = appCopyFor(settings?.language ?? profile.language);
   const localizedStatusOptions = statusOptionsFor(copy);
@@ -2493,51 +1296,6 @@ function MainWindow() {
     setCodexStatus(data.codexStatus);
     setRefreshTick((tick) => tick + 1);
     return data;
-  }
-
-  async function checkForUpdates({ force = true, showDialog = true } = {}) {
-    setCheckingUpdates(true);
-    setUpdateActionMessage("");
-    try {
-      const result = await api.checkUpdates({ force });
-      setUpdateState(result);
-      if (showDialog) setUpdateDialogOpen(true);
-      return result;
-    } catch (error) {
-      const failed = {
-        checkedAt: new Date().toISOString(),
-        front: { currentVersion: bootstrap.appVersion, latestVersion: "", updateAvailable: false, error: error.message },
-        codex: { currentVersion: userAgent, latestVersion: "", updateAvailable: false, error: error.message }
-      };
-      setUpdateState(failed);
-      if (showDialog) setUpdateDialogOpen(true);
-      return failed;
-    } finally {
-      setCheckingUpdates(false);
-    }
-  }
-
-  function openUpdateTarget(target) {
-    return api.openUpdateTarget(target);
-  }
-
-  async function installUpdateTarget(target) {
-    setInstallingUpdateTarget(target);
-    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Telechargement de la mise a jour Codex Messenger...");
-    try {
-      const result = await api.installUpdateTarget(target);
-      setUpdateActionMessage(result?.message || "Mise a jour terminee.");
-      if (!result?.quitStarted) {
-        const refreshed = await api.checkUpdates({ force: true });
-        setUpdateState(refreshed);
-      }
-      return result;
-    } catch (error) {
-      setUpdateActionMessage(error.message || "Mise a jour impossible.");
-      return { ok: false, error: error.message };
-    } finally {
-      setInstallingUpdateTarget("");
-    }
   }
 
   async function toggleDemoMode() {
@@ -2664,22 +1422,32 @@ function MainWindow() {
           checking={checkingUpdates}
           installingTarget={installingUpdateTarget}
           actionMessage={updateActionMessage}
+          progress={updateProgress}
           appVersion={bootstrap.appVersion}
           userAgent={userAgent}
+          copy={copy}
+          versionLabel={(value) => versionLabel(value, copy.updates?.unknown)}
+          updateLineState={(item) => updateLineState(item, copy)}
           onCheck={() => checkForUpdates({ force: true })}
           onOpen={openUpdateTarget}
           onInstall={installUpdateTarget}
+          onRestart={restartForUpdate}
           onClose={() => setUpdateDialogOpen(false)}
         />
       ) : null}
       {userAgent ? (
         <RosterView
+          api={api}
           bootstrap={bootstrap}
           profile={profile}
           userAgent={userAgent}
           refreshTick={refreshTick}
           profileEditorOpen={profileEditorOpen}
           agentEditorOpen={agentEditorOpen}
+          AvatarComponent={Avatar}
+          ProfileEditorComponent={ProfileEditor}
+          AgentCreatorComponent={AgentCreator}
+          playNewMessage={playNewMessage}
           onProfileEditorOpenChange={setProfileEditorOpen}
           onAgentEditorOpenChange={setAgentEditorOpen}
           onAgentsChange={updateAgents}
@@ -2699,625 +1467,6 @@ function MainWindow() {
         }} />
       )}
     </main>
-  );
-}
-
-function Tool({ icon, label, onClick, active = false }) {
-  return (
-    <button className={active ? `tool ${icon} active` : `tool ${icon}`} type="button" onClick={(event) => onClick?.(event)}>
-      <span className={`tool-icon ${icon}`}><img src={toolbarIcons[icon]} alt="" draggable="false" /></span>
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function FormatButton({ icon, title, onClick, label, active = false }) {
-  return (
-    <button className={`${label ? "format-button wide" : "format-button"}${active ? " active" : ""}`} type="button" title={title} onClick={(event) => onClick?.(event)}>
-      <img src={formatIcons[icon]} alt="" draggable="false" />
-      {label ? <span>{label}</span> : null}
-    </button>
-  );
-}
-
-function PopupPanel({ title, children }) {
-  return (
-    <div className="popup-panel">
-      <h3>{title}</h3>
-      {children}
-    </div>
-  );
-}
-
-function InvitePanel({ contact, onRun, onOpenProject }) {
-  const statusText = statusLabels[contact.status] ?? contact.status ?? "En ligne";
-  return (
-    <PopupPanel title="Invite">
-      <div className="popup-contact-row">
-        <Avatar contact={contact} />
-        <div><strong>{contact.name}</strong><span>{statusText}</span></div>
-      </div>
-      <div className="popup-command-list">
-        <button type="button" onClick={() => onRun(`Invite ${contact.name} dans cette conversation Codex et resume son role.`)}>Inviter dans la conversation</button>
-        <button type="button" onClick={() => onRun(`Resume le role de ${contact.name}, puis propose la prochaine action concrete.`)}>Resume le contact</button>
-        <button type="button" onClick={onOpenProject} disabled={!contact.cwd}>Ouvrir le projet</button>
-      </div>
-    </PopupPanel>
-  );
-}
-
-function FilesPanel({ onSendFile, onCamera, onOpenProject, canOpenProject }) {
-  return (
-    <PopupPanel title="Send Files">
-      <div className="popup-command-list">
-        <button type="button" onClick={onSendFile}>Envoyer un fichier ou une image...</button>
-        <button type="button" onClick={onCamera}>Capture webcam...</button>
-        <button type="button" onClick={onOpenProject} disabled={!canOpenProject}>Ouvrir le dossier projet</button>
-      </div>
-    </PopupPanel>
-  );
-}
-
-function VoicePanel({ recording, mediaError, onToggle }) {
-  return (
-    <PopupPanel title="Voice Clip">
-      <div className="popup-command-list">
-        <button className={recording ? "recording" : ""} type="button" onClick={onToggle}>
-          {recording ? "Arreter et envoyer" : "Demarrer l'enregistrement"}
-        </button>
-      </div>
-      {mediaError ? <p className="popup-error">{mediaError}</p> : null}
-    </PopupPanel>
-  );
-}
-
-function TextStylePanel({ textStyle, onChange, onReset }) {
-  const style = normalizeTextStyle(textStyle);
-  return (
-    <PopupPanel title="Rendu du texte">
-      <label className="text-style-field">
-        <span>Police</span>
-        <select value={style.fontFamily} onChange={(event) => onChange({ fontFamily: event.target.value })}>
-          {textFontOptions.map((font) => <option value={font} key={font}>{font}</option>)}
-        </select>
-      </label>
-      <label className="text-style-field">
-        <span>Taille</span>
-        <input type="number" min="9" max="18" value={style.fontSize} onChange={(event) => onChange({ fontSize: event.target.value })} />
-      </label>
-      <div className="text-style-field">
-        <span>Texte</span>
-        <div className="text-style-swatches">
-          {textColorOptions.map((color) => (
-            <button
-              className={style.color === color ? "active" : ""}
-              type="button"
-              key={color}
-              title={color}
-              style={{ backgroundColor: color }}
-              onClick={() => onChange({ color })}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="text-style-field">
-        <span>Bulle Codex</span>
-        <div className="text-style-swatches">
-          {bubbleColorOptions.map((color) => (
-            <button
-              className={style.bubble === color ? "active" : ""}
-              type="button"
-              key={color}
-              title={color}
-              style={{ backgroundColor: color }}
-              onClick={() => onChange({ bubble: color })}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="text-style-field">
-        <span>Ma bulle</span>
-        <div className="text-style-swatches">
-          {bubbleColorOptions.map((color) => (
-            <button
-              className={style.meBubble === color ? "active" : ""}
-              type="button"
-              key={color}
-              title={color}
-              style={{ backgroundColor: color }}
-              onClick={() => onChange({ meBubble: color })}
-            />
-          ))}
-        </div>
-      </div>
-      <div
-        className="text-style-preview"
-        style={{
-          color: style.color,
-          fontFamily: style.fontFamily,
-          fontSize: `${style.fontSize}px`,
-          background: `linear-gradient(#ffffff, ${style.bubble})`
-        }}
-      >
-        Salut, je garde ce rendu pour cette conversation :)
-      </div>
-      <div className="popup-command-list">
-        <button type="button" onClick={onReset}>Revenir au rendu par defaut</button>
-      </div>
-    </PopupPanel>
-  );
-}
-
-function CameraPanel({ videoRef, cameraStream, mediaError, onSnapshot, onStop }) {
-  return (
-    <div className="media-panel camera-panel">
-      <video ref={videoRef} autoPlay muted playsInline />
-      <div className="media-actions">
-        <button type="button" onClick={onSnapshot} disabled={!cameraStream}>Snapshot</button>
-        <button type="button" onClick={onStop} disabled={!cameraStream}>Stop</button>
-      </div>
-      {mediaError ? <p>{mediaError}</p> : null}
-    </div>
-  );
-}
-
-function ThreadTabs({
-  project,
-  contact,
-  activeThreadId,
-  loading = false,
-  loadingError = "",
-  onOpenProject,
-  onOpenThread,
-  onDeleteThread,
-  onReorderThreads
-}) {
-  const [dragThreadId, setDragThreadId] = useState("");
-  const [hiddenMenuOpen, setHiddenMenuOpen] = useState(false);
-  const [hiddenMenuPosition, setHiddenMenuPosition] = useState({ left: 0, top: 0 });
-  const hiddenMenuRef = useRef(null);
-  const threads = project?.threads ?? [];
-  const hiddenThreads = project?.hiddenThreads ?? [];
-  const projectName = project?.name ?? contact.name;
-  const projectCwd = project?.cwd ?? contact.cwd;
-
-  useEffect(() => {
-    if (!hiddenMenuOpen) return undefined;
-    const close = (event) => {
-      if (!hiddenMenuRef.current?.contains(event.target)) setHiddenMenuOpen(false);
-    };
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") setHiddenMenuOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [hiddenMenuOpen]);
-
-  if (!project && !isCodexHistoryContact(contact)) {
-    return <div className="to-line">A: {contact.name}</div>;
-  }
-
-  function reorder(targetThreadId) {
-    if (!dragThreadId || dragThreadId === targetThreadId) return;
-    const ids = threads.map((thread) => thread.id);
-    const from = ids.indexOf(dragThreadId);
-    const to = ids.indexOf(targetThreadId);
-    if (from < 0 || to < 0) return;
-    const next = [...ids];
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
-    onReorderThreads(next);
-  }
-
-  function threadLoadingStatus() {
-    if (loading) {
-      return <span className="thread-tab-loading"><i aria-hidden="true" />Anciens fils...</span>;
-    }
-    if (loadingError) {
-      return <span className="thread-tab-loading error">Fils indisponibles</span>;
-    }
-    return null;
-  }
-
-  function toggleHiddenMenu(event) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setHiddenMenuPosition({
-      left: Math.max(6, Math.min(rect.left, window.innerWidth - 248)),
-      top: Math.max(6, rect.bottom - 1)
-    });
-    setHiddenMenuOpen((open) => !open);
-  }
-
-  return (
-    <div className="thread-tab-bar">
-      <span className="thread-to-label" title={projectCwd || projectName}>A: {projectName}</span>
-      <div className="thread-tab-strip" aria-label="Fils Codex">
-        {projectCwd ? (
-          <button
-            className="new-thread-button"
-            type="button"
-            title="Nouveau fil"
-            aria-label="Demarrer un nouveau fil"
-            onClick={() => onOpenProject(projectCwd)}
-          >
-            <span aria-hidden="true">+</span>
-          </button>
-        ) : null}
-        {threads.map((thread) => (
-          <div
-            className={[
-              "thread-tab-wrap",
-              activeThreadId === thread.id ? "active" : "",
-              dragThreadId === thread.id ? "dragging" : ""
-            ].filter(Boolean).join(" ")}
-            draggable
-            key={thread.id}
-            onDragStart={(event) => {
-              setDragThreadId(thread.id);
-              event.dataTransfer.effectAllowed = "move";
-              event.dataTransfer.setData("text/plain", thread.id);
-            }}
-            onDragOver={(event) => {
-              event.preventDefault();
-              event.dataTransfer.dropEffect = "move";
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              reorder(thread.id);
-              setDragThreadId("");
-            }}
-            onDragEnd={() => setDragThreadId("")}
-          >
-            <button
-              className={activeThreadId === thread.id ? "thread-tab active" : "thread-tab"}
-              type="button"
-              title={thread.preview}
-              onClick={() => onOpenThread(thread.id)}
-            >
-              <span>{thread.preview}</span>
-            </button>
-            <button
-              className="thread-tab-close"
-              type="button"
-              title="Supprimer ce fil"
-              aria-label={`Supprimer ${thread.preview}`}
-              onClick={(event) => {
-                event.stopPropagation();
-                onDeleteThread(thread);
-              }}
-            >
-              x
-            </button>
-          </div>
-        ))}
-        {threadLoadingStatus()}
-        {hiddenThreads.length ? (
-          <div className="thread-hidden-wrap" ref={hiddenMenuRef}>
-            <button
-              className={hiddenMenuOpen ? "thread-tab thread-hidden-toggle active" : "thread-tab thread-hidden-toggle"}
-              type="button"
-              aria-haspopup="menu"
-              aria-expanded={hiddenMenuOpen}
-              title="Afficher les fils masques"
-              onClick={toggleHiddenMenu}
-            >
-              <span>Autres ({hiddenThreads.length})</span>
-            </button>
-            {hiddenMenuOpen ? (
-              <div className="thread-hidden-menu" role="menu" style={{ left: hiddenMenuPosition.left, top: hiddenMenuPosition.top }}>
-                <div className="thread-hidden-title">Fils masques</div>
-                {hiddenThreads.map((thread) => (
-                  <button
-                    type="button"
-                    key={thread.id}
-                    role="menuitem"
-                    title={thread.preview}
-                    onClick={() => {
-                      setHiddenMenuOpen(false);
-                      onOpenThread(thread.id);
-                    }}
-                  >
-                    <span>{thread.preview || "Nouveau fil Codex"}</span>
-                    <small>{thread.timestamp ? new Date(thread.timestamp).toLocaleDateString() : "Codex"}</small>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function ActivitiesPanel({ onRun, onSendWink, onAskWink, onPreviewSound }) {
-  return (
-    <div className="activities-panel">
-      <section className="activity-section">
-        <h3>Clins d'oeil</h3>
-        <div className="wink-grid">
-          {winkCatalog.map((wink) => (
-            <button type="button" key={wink.id} onClick={() => onSendWink(wink)}>
-              <img src={wink.src} alt="" draggable="false" />
-              <span>{wink.label}</span>
-            </button>
-          ))}
-        </div>
-        <button className="activity-command" type="button" onClick={() => onAskWink(winkCatalog[Math.floor(Math.random() * winkCatalog.length)])}>
-          Demander a Codex
-        </button>
-      </section>
-      <section className="activity-section">
-        <h3>Sons MSN</h3>
-        <div className="sound-grid">
-          {soundCatalog.map(([id, label]) => (
-            <button type="button" key={id} onClick={() => onPreviewSound(id)}>{label}</button>
-          ))}
-        </div>
-      </section>
-      <section className="activity-section">
-        <h3>Actions</h3>
-        {activityPrompts.map(([label, prompt]) => (
-          <button className="activity-command" type="button" key={label} onClick={() => onRun(prompt)}>{label}</button>
-        ))}
-      </section>
-    </div>
-  );
-}
-
-function EmoticonsPanel({ onInsert }) {
-  return (
-    <div className="emoticons-panel">
-      <section className="activity-section">
-        <h3>Emoticones MSN 7.5</h3>
-        <div className="emoticon-grid">
-          {msnEmoticons.map((emoticon) => (
-            <button type="button" key={emoticon.id} title={`${emoticon.label} ${emoticon.code}`} onClick={() => onInsert(emoticon)}>
-              <img src={emoticon.src} alt="" draggable="false" />
-              <span>{emoticon.code}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-      <section className="activity-section">
-        <h3>Emoticones animees</h3>
-        <div className="emoticon-grid animated">
-          {animatedInlineEmoticons.map((emoticon) => (
-            <button type="button" key={emoticon.id} title={`${emoticon.label} ${emoticon.code}`} onClick={() => onInsert(emoticon)}>
-              <img src={emoticon.src} alt="" draggable="false" />
-              <span>{emoticon.code}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function gameWinner(board) {
-  for (const [a, b, c] of ticLines) {
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
-  }
-  if (board.every(Boolean)) return "draw";
-  return null;
-}
-
-function chooseCodexMove(board) {
-  const empty = board.map((cell, index) => cell ? null : index).filter((index) => index !== null);
-  const testMove = (mark) => empty.find((index) => {
-    const next = [...board];
-    next[index] = mark;
-    return gameWinner(next) === mark;
-  });
-  return testMove("O") ?? testMove("X") ?? (board[4] ? null : 4) ?? [0, 2, 6, 8].find((index) => !board[index]) ?? empty[0] ?? null;
-}
-
-function createMemoryDeck() {
-  return memorySymbols
-    .flatMap((symbol) => [symbol, symbol])
-    .sort(() => Math.random() - 0.5)
-    .map((symbol, index) => ({ id: `${symbol.id}-${index}-${Math.random()}`, symbol, matched: false }));
-}
-
-function nextReflexTarget(current = -1) {
-  let next = Math.floor(Math.random() * 9);
-  if (next === current) next = (next + 1) % 9;
-  return next;
-}
-
-function GamesPanel({ activeGame, onSelectGame, onRun, waiting }) {
-  return (
-    <div className="games-panel">
-      <div className={waiting ? "game-presence thinking" : "game-presence"}>
-        <Logo small />
-        <span>{waiting ? "Codex reflechit..." : "Codex joue aussi"}</span>
-      </div>
-      <div className="game-tabs">
-        {gameCatalog.map((game) => (
-          <button className={activeGame === game.id ? "active" : ""} type="button" key={game.id} onClick={() => onSelectGame(game.id)}>
-            {game.label}
-          </button>
-        ))}
-      </div>
-      {activeGame === "morpion" ? <TicTacToeGame /> : null}
-      {activeGame === "memory" ? <MemoryGame /> : null}
-      {activeGame === "wizz" ? <WizzReflexGame /> : null}
-      <div className="chat-game-prompts">
-        <button type="button" onClick={() => onRun(gamePrompts[Math.floor(Math.random() * gamePrompts.length)][1])}>Defi chat Codex</button>
-      </div>
-    </div>
-  );
-}
-
-function TicTacToeGame() {
-  const [board, setBoard] = useState(Array(9).fill(""));
-  const [status, setStatus] = useState("A toi de jouer.");
-  const [codexThinking, setCodexThinking] = useState(false);
-  const winner = gameWinner(board);
-
-  function reset() {
-    setBoard(Array(9).fill(""));
-    setStatus("A toi de jouer.");
-    setCodexThinking(false);
-  }
-
-  function play(index) {
-    if (board[index] || winner || codexThinking) return;
-    const playerBoard = [...board];
-    playerBoard[index] = "X";
-    const playerWinner = gameWinner(playerBoard);
-    setBoard(playerBoard);
-    if (playerWinner === "X") {
-      setStatus("Tu gagnes contre Codex.");
-      return;
-    }
-    if (playerWinner === "draw") {
-      setStatus("Match nul.");
-      return;
-    }
-    setCodexThinking(true);
-    setStatus("Codex joue...");
-    window.setTimeout(() => {
-      const move = chooseCodexMove(playerBoard);
-      const codexBoard = [...playerBoard];
-      if (move !== null) codexBoard[move] = "O";
-      const result = gameWinner(codexBoard);
-      setBoard(codexBoard);
-      setCodexThinking(false);
-      if (result === "O") setStatus("Codex gagne cette manche.");
-      else if (result === "draw") setStatus("Match nul.");
-      else setStatus("A toi de jouer.");
-    }, 380);
-  }
-
-  return (
-    <section className="game-card">
-      <div className="game-head"><strong>Morpion</strong><button type="button" onClick={reset}>New</button></div>
-      <div className="tic-grid">
-        {board.map((cell, index) => (
-          <button className={cell ? `tic-cell ${cell.toLowerCase()}` : "tic-cell"} type="button" key={index} onClick={() => play(index)} disabled={Boolean(cell) || Boolean(winner) || codexThinking}>
-            {cell === "X" ? <img src={gameAssets.x} alt="X" /> : null}
-            {cell === "O" ? <img src={gameAssets.o} alt="O" /> : null}
-          </button>
-        ))}
-      </div>
-      <p className="game-status">{status}</p>
-    </section>
-  );
-}
-
-function MemoryGame() {
-  const [deck, setDeck] = useState(createMemoryDeck);
-  const [open, setOpen] = useState([]);
-  const [moves, setMoves] = useState(0);
-  const [status, setStatus] = useState("Trouve les paires Codex.");
-
-  function reset() {
-    setDeck(createMemoryDeck());
-    setOpen([]);
-    setMoves(0);
-    setStatus("Trouve les paires Codex.");
-  }
-
-  function flip(index) {
-    if (open.length === 2 || open.includes(index) || deck[index].matched) return;
-    const nextOpen = [...open, index];
-    setOpen(nextOpen);
-    if (nextOpen.length !== 2) return;
-    setMoves((current) => current + 1);
-    const [first, second] = nextOpen;
-    if (deck[first].symbol.id === deck[second].symbol.id) {
-      const nextDeck = deck.map((card, cardIndex) => cardIndex === first || cardIndex === second ? { ...card, matched: true } : card);
-      setDeck(nextDeck);
-      setOpen([]);
-      setStatus(nextDeck.every((card) => card.matched) ? "Toutes les paires sont trouvees." : "Paire trouvee.");
-      return;
-    }
-    setStatus("Codex a vu la paire. Reessaie.");
-    window.setTimeout(() => setOpen([]), 650);
-  }
-
-  return (
-    <section className="game-card">
-      <div className="game-head"><strong>Memory</strong><button type="button" onClick={reset}>New</button></div>
-      <div className="memory-grid">
-        {deck.map((card, index) => {
-          const visible = card.matched || open.includes(index);
-          return (
-            <button className={visible ? "memory-card visible" : "memory-card"} type="button" key={card.id} onClick={() => flip(index)}>
-              {visible ? <img src={card.symbol.src} alt={card.symbol.label} /> : <img src="./msn-assets/games/game-card.png" alt="?" />}
-            </button>
-          );
-        })}
-      </div>
-      <p className="game-status">{status} Coups: {moves}</p>
-    </section>
-  );
-}
-
-function WizzReflexGame() {
-  const [target, setTarget] = useState(() => nextReflexTarget());
-  const [score, setScore] = useState({ me: 0, codex: 0 });
-  const [running, setRunning] = useState(true);
-  const [status, setStatus] = useState("Clique le Wizz avant Codex.");
-
-  useEffect(() => {
-    if (!running) return undefined;
-    const timeout = window.setTimeout(() => {
-      setScore((current) => {
-        const codex = current.codex + 1;
-        if (codex >= 10) {
-          setRunning(false);
-          setStatus("Codex gagne au reflexe.");
-        } else {
-          setStatus("Codex marque.");
-          setTarget((currentTarget) => nextReflexTarget(currentTarget));
-        }
-        return { ...current, codex };
-      });
-    }, 1900);
-    return () => window.clearTimeout(timeout);
-  }, [target, running]);
-
-  function reset() {
-    setScore({ me: 0, codex: 0 });
-    setTarget(nextReflexTarget());
-    setRunning(true);
-    setStatus("Clique le Wizz avant Codex.");
-  }
-
-  function hit(index) {
-    if (!running || index !== target) return;
-    setScore((current) => {
-      const me = current.me + 1;
-      if (me >= 10) {
-        setRunning(false);
-        setStatus("Tu gagnes le Wizz Reflex.");
-      } else {
-        setStatus("Point pour toi.");
-        setTarget((currentTarget) => nextReflexTarget(currentTarget));
-      }
-      return { ...current, me };
-    });
-  }
-
-  return (
-    <section className="game-card">
-      <div className="game-head"><strong>Wizz Reflex</strong><button type="button" onClick={reset}>New</button></div>
-      <div className="game-score"><span>Toi {score.me}</span><span>Codex {score.codex}</span></div>
-      <div className="reflex-grid">
-        {Array.from({ length: 9 }).map((_, index) => (
-          <button className={index === target && running ? "reflex-cell target" : "reflex-cell"} type="button" key={index} onClick={() => hit(index)}>
-            {index === target && running ? <img src={gameAssets.bell} alt="Wizz" /> : null}
-          </button>
-        ))}
-      </div>
-      <p className="game-status">{status}</p>
-    </section>
   );
 }
 
@@ -3343,11 +1492,6 @@ function ChatWindow({ bootstrap }) {
   const [threadsLoadError, setThreadsLoadError] = useState("");
   const [chatSettings, setChatSettings] = useState(bootstrap.settings ?? {});
   const [codexModels, setCodexModels] = useState([]);
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [updateState, setUpdateState] = useState(null);
-  const [checkingUpdates, setCheckingUpdates] = useState(false);
-  const [installingUpdateTarget, setInstallingUpdateTarget] = useState("");
-  const [updateActionMessage, setUpdateActionMessage] = useState("");
   const [conversationZoom, setConversationZoom] = useState(1);
   const [textStyle, setTextStyle] = useState(() => textStyleForContact(bootstrap.settings, contact.id));
   const [openFlyout, setOpenFlyout] = useState("");
@@ -3360,6 +1504,23 @@ function ChatWindow({ bootstrap }) {
   const [activeWinkAnimation, setActiveWinkAnimation] = useState(null);
   const [approvalRequests, setApprovalRequests] = useState(bootstrap.approvalRequests ?? []);
   const [askPrompt, promptDialog] = usePromptDialog();
+  const {
+    updateDialogOpen,
+    setUpdateDialogOpen,
+    updateState,
+    checkingUpdates,
+    installingUpdateTarget,
+    updateActionMessage,
+    updateProgress,
+    checkForUpdates,
+    installUpdateTarget,
+    restartForUpdate
+  } = useUpdates({
+    api,
+    appVersion: bootstrap.appVersion,
+    userAgent: bootstrap.userAgent ?? "",
+    initialCheck: true
+  });
   const copy = appCopyFor(chatSettings?.language ?? profile.language);
   const localizedStatusOptions = statusOptionsFor(copy);
   useEffect(() => {
@@ -3556,30 +1717,6 @@ function ChatWindow({ bootstrap }) {
     if (videoRef.current && cameraStream) videoRef.current.srcObject = cameraStream;
   }, [cameraStream, openFlyout]);
 
-  useEffect(() => {
-    let alive = true;
-    setCheckingUpdates(true);
-    api.checkUpdates({ force: false })
-      .then((result) => {
-        if (alive) setUpdateState(result);
-      })
-      .catch((error) => {
-        if (alive) {
-          setUpdateState({
-            checkedAt: new Date().toISOString(),
-            front: { currentVersion: bootstrap.appVersion, latestVersion: "", updateAvailable: false, error: error.message },
-            codex: { currentVersion: bootstrap.userAgent ?? "", latestVersion: "", updateAvailable: false, error: error.message }
-          });
-        }
-      })
-      .finally(() => {
-        if (alive) setCheckingUpdates(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [bootstrap.appVersion, bootstrap.userAgent]);
-
   useEffect(() => () => {
     cameraStream?.getTracks().forEach((track) => track.stop());
     recorderRef.current?.stream?.getTracks?.().forEach((track) => track.stop());
@@ -3650,104 +1787,33 @@ function ChatWindow({ bootstrap }) {
     }
   }
 
-  useEffect(() => {
-    const offDelta = api.on("codex:delta", ({ contactId, delta }) => {
-      if (contactId !== contact.id) return;
-      queueAgentDelta(delta);
-    });
-    const offCompleted = api.on("codex:completed-item", ({ contactId, text }) => {
-      if (contactId !== contact.id || !text) return;
-      flushAgentDeltas();
-      const notice = codexConnectionNotice(text);
-      if (notice) {
-        setTyping(false);
-        setMessages((current) => appendSystemNotice(current, notice));
-        return;
-      }
-      const incomingWink = extractWinkFromText(text).wink;
-      if (incomingWink) {
-        playWink(incomingWink);
-        triggerWinkAnimation(incomingWink, "incoming");
-      }
-      setTyping(false);
-      setMessages((current) => {
-        if (!current[current.length - 1]?.streaming && !incomingWink) playNewMessageIfEnabled();
-        playedStreamingSoundRef.current = false;
-        return finishAgentMessage(current, conversationAgentName, text);
-      });
-    });
-    const offItemCompleted = api.on("codex:item-completed", ({ contactId, message }) => {
-      if (contactId !== contact.id || !message) return;
-      flushAgentDeltas();
-      setMessages((current) => [...current, message]);
-    });
-    const offTyping = api.on("codex:typing", ({ contactId }) => {
-      if (contactId === contact.id) setTyping(true);
-    });
-    const offDone = api.on("codex:done", ({ contactId }) => {
-      if (contactId === contact.id) {
-        flushAgentDeltas();
-        playedStreamingSoundRef.current = false;
-        setTyping(false);
-      }
-    });
-    const offError = api.on("codex:error", ({ contactId, text }) => {
-      if (contactId !== contact.id) return;
-      flushAgentDeltas();
-      playedStreamingSoundRef.current = false;
-      setTyping(false);
-      setMessages((current) => appendSystemNotice(current, codexConnectionNotice(text) || { kind: "offline", text }));
-    });
-    const offStatus = api.on("codex:status", (status) => {
-      if (status?.kind === "ready") {
-        flushAgentDeltas();
-        setTyping(false);
-        const showThreadLoader = isCodexHistoryContact(contact);
-        if (showThreadLoader) {
-          setThreadsLoading(true);
-          setThreadsLoadError("");
-        }
-        api.listConversations()
-          .then(setConversations)
-          .catch((error) => {
-            if (showThreadLoader) setThreadsLoadError(error.message || "Fils indisponibles");
-          })
-          .finally(() => {
-            if (showThreadLoader) setThreadsLoading(false);
-          });
-        api.listCodexModels()
-          .then((result) => setCodexModels(Array.isArray(result?.models) ? result.models : []))
-          .catch(() => setCodexModels([]));
-        return;
-      }
-      const notice = codexConnectionNotice(status?.text);
-      if (!notice) return;
-      flushAgentDeltas();
-      setTyping(false);
-      setMessages((current) => appendSystemNotice(current, notice));
-    });
-    const offApprovalRequest = api.on("codex:approval-request", (request) => {
-      if (!request?.approvalId) return;
-      setApprovalRequests((current) => [
-        ...current.filter((item) => item.approvalId !== request.approvalId),
-        request
-      ]);
-      if (request.contactId === contact.id) setTyping(false);
-    });
-    const offApprovalResolved = api.on("codex:approval-resolved", ({ approvalId }) => {
-      setApprovalRequests((current) => current.filter((item) => item.approvalId !== approvalId));
-    });
-    const offWizz = api.on("window:wizz", () => {
-      playWizz();
-    });
-    return () => {
-      if (deltaFlushTimerRef.current) window.clearTimeout(deltaFlushTimerRef.current);
-      deltaFlushTimerRef.current = null;
-      deltaQueueRef.current = [];
-      deltaFirstQueuedAtRef.current = 0;
-      offDelta(); offCompleted(); offItemCompleted(); offTyping(); offDone(); offError(); offStatus(); offApprovalRequest(); offApprovalResolved(); offWizz();
-    };
-  }, [contact.id, contact.kind, contact.cwd, conversationAgentName]);
+  useCodexEvents({
+    api,
+    contact,
+    conversationAgentName,
+    deltaFlushTimerRef,
+    deltaQueueRef,
+    deltaFirstQueuedAtRef,
+    playedStreamingSoundRef,
+    queueAgentDelta,
+    flushAgentDeltas,
+    codexConnectionNotice,
+    appendSystemNotice,
+    finishAgentMessage,
+    extractWinkFromText,
+    isCodexHistoryContact,
+    playWink,
+    playWizz,
+    triggerWinkAnimation,
+    playNewMessageIfEnabled,
+    setMessages,
+    setTyping,
+    setThreadsLoading,
+    setThreadsLoadError,
+    setConversations,
+    setCodexModels,
+    setApprovalRequests
+  });
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -3837,7 +1903,7 @@ function ChatWindow({ bootstrap }) {
     const cleanText = String(displayText ?? "").trim();
     if (!items.length || !cleanText) return;
     stickToBottomRef.current = true;
-    setMessages((current) => [...current, makeMessage("me", profile.displayName, cleanText, options)]);
+    setMessages((current) => appendOutgoingMessage(current, profile.displayName, cleanText, options));
     setTyping(true);
     api.markRead(contact.id);
     try {
@@ -4335,9 +2401,25 @@ function ChatWindow({ bootstrap }) {
 
   async function openThreadTab(threadId) {
     if (!threadId || threadId === activeThreadId) return;
+    const previousThreadId = activeThreadId;
     setActiveThreadId(threadId);
     if (currentProject) {
-      const result = await api.loadThread({ contactId: contact.id, threadId });
+      let result = null;
+      try {
+        result = await api.loadThread({ contactId: contact.id, threadId });
+      } catch (error) {
+        reportRendererError("conversation.loadThread.error", error, { contactId: contact.id, threadId });
+        setActiveThreadId(previousThreadId);
+        setMessages((current) => [...current, makeMessage("system", "system", `Impossible de charger ce fil: ${errorMessage(error)}`)]);
+        return;
+      }
+      if (result?.ok === false) {
+        const message = result.error || "Fil indisponible";
+        reportRendererError("conversation.loadThread.rejected", new Error(message), { contactId: contact.id, threadId });
+        setActiveThreadId(previousThreadId);
+        setMessages((current) => [...current, makeMessage("system", "system", `Impossible de charger ce fil: ${message}`)]);
+        return;
+      }
       if (result?.contact) {
         setActiveContact(result.contact);
         setActiveThreadId(result.threadId ?? result.contact.threadId ?? threadId);
@@ -4497,47 +2579,6 @@ function ChatWindow({ bootstrap }) {
     const status = await promptForStatus(profile.status);
     if (!status || status === profile.status) return;
     await changeSelfStatus(status);
-  }
-
-  async function checkForUpdates({ force = true } = {}) {
-    setCheckingUpdates(true);
-    setUpdateActionMessage("");
-    try {
-      const result = await api.checkUpdates({ force });
-      setUpdateState(result);
-      setUpdateDialogOpen(true);
-      return result;
-    } catch (error) {
-      const failed = {
-        checkedAt: new Date().toISOString(),
-        front: { currentVersion: bootstrap.appVersion, latestVersion: "", updateAvailable: false, error: error.message },
-        codex: { currentVersion: bootstrap.userAgent ?? "", latestVersion: "", updateAvailable: false, error: error.message }
-      };
-      setUpdateState(failed);
-      setUpdateDialogOpen(true);
-      return failed;
-    } finally {
-      setCheckingUpdates(false);
-    }
-  }
-
-  async function installUpdateTarget(target) {
-    setInstallingUpdateTarget(target);
-    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Telechargement de la mise a jour Codex Messenger...");
-    try {
-      const result = await api.installUpdateTarget(target);
-      setUpdateActionMessage(result?.message || "Mise a jour terminee.");
-      if (!result?.quitStarted) {
-        const refreshed = await api.checkUpdates({ force: true });
-        setUpdateState(refreshed);
-      }
-      return result;
-    } catch (error) {
-      setUpdateActionMessage(error.message || "Mise a jour impossible.");
-      return { ok: false, error: error.message };
-    } finally {
-      setInstallingUpdateTarget("");
-    }
   }
 
   async function toggleDemoModeFromChat() {
@@ -4754,11 +2795,16 @@ function ChatWindow({ bootstrap }) {
           checking={checkingUpdates}
           installingTarget={installingUpdateTarget}
           actionMessage={updateActionMessage}
+          progress={updateProgress}
           appVersion={bootstrap.appVersion}
           userAgent={bootstrap.userAgent ?? ""}
+          copy={copy}
+          versionLabel={(value) => versionLabel(value, copy.updates?.unknown)}
+          updateLineState={(item) => updateLineState(item, copy)}
           onCheck={() => checkForUpdates({ force: true })}
           onOpen={(target) => api.openUpdateTarget(target)}
           onInstall={installUpdateTarget}
+          onRestart={restartForUpdate}
           onClose={() => setUpdateDialogOpen(false)}
         />
       ) : null}
@@ -4788,6 +2834,8 @@ function ChatWindow({ bootstrap }) {
           {openFlyout === "invite" ? (
             <InvitePanel
               contact={contact}
+              AvatarComponent={Avatar}
+              statusCopy={statusLabels}
               onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
               onRun={sendQuickPrompt}
             />
@@ -4806,6 +2854,10 @@ function ChatWindow({ bootstrap }) {
           {openFlyout === "text" ? (
             <TextStylePanel
               textStyle={textStyle}
+              normalizeTextStyle={normalizeTextStyle}
+              textFontOptions={textFontOptions}
+              textColorOptions={textColorOptions}
+              bubbleColorOptions={bubbleColorOptions}
               onChange={(patch) => saveConversationTextStyle({ ...textStyle, ...patch })}
               onReset={resetConversationTextStyle}
             />
@@ -4821,6 +2873,9 @@ function ChatWindow({ bootstrap }) {
           ) : null}
           {openFlyout === "activities" ? (
             <ActivitiesPanel
+              winks={winkCatalog}
+              sounds={soundCatalog}
+              prompts={activityPrompts}
               onRun={sendQuickPrompt}
               onSendWink={sendWink}
               onAskWink={askCodexWink}
@@ -4829,6 +2884,8 @@ function ChatWindow({ bootstrap }) {
           ) : null}
           {openFlyout === "emoticons" ? (
             <EmoticonsPanel
+              emoticons={msnEmoticons}
+              animatedEmoticons={animatedInlineEmoticons}
               onInsert={(emoticon) => {
                 insertDraft(`${emoticon.code} `);
                 setOpenFlyout("");
@@ -4854,6 +2911,7 @@ function ChatWindow({ bootstrap }) {
             activeThreadId={activeThreadId}
             loading={threadsLoading}
             loadingError={threadsLoadError}
+            isHistoryContact={isCodexHistoryContact(contact)}
             onOpenProject={openProjectTab}
             onOpenThread={openThreadTab}
             onDeleteThread={deleteThreadTab}
@@ -4887,7 +2945,14 @@ function ChatWindow({ bootstrap }) {
                 </button>
               </div>
             ) : null}
-            {visibleMessages.map((message) => <Message key={message.id} message={message} />)}
+            {visibleMessages.map((message) => (
+              <Message
+                key={message.id}
+                message={message}
+                extractWinkFromText={extractWinkFromText}
+                renderFormattedMessageText={renderFormattedMessageText}
+              />
+            ))}
             {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} {copy.chat.typing}</div> : null}
           </div>
           <ApprovalRequestsPanel requests={pendingApprovals} onRespond={respondToApproval} />
@@ -4902,56 +2967,28 @@ function ChatWindow({ bootstrap }) {
             {recording ? <span className="format-status recording">Recording...</span> : null}
             {!recording && mediaError && !openFlyout ? <span className="format-status error">{mediaError}</span> : null}
           </div>
-          <form className="composer" onSubmit={submit}>
-            {(historySearchOpen || slashMatches.length) ? (
-              <div className="composer-popup">
-                {historySearchOpen ? (
-                  <>
-                    <input
-                      autoFocus
-                      value={historySearchQuery}
-                      onChange={(event) => setHistorySearchQuery(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Escape") setHistorySearchOpen(false);
-                        if (event.key === "Enter" && filteredPromptHistory[0]) useHistoryEntry(filteredPromptHistory[0]);
-                      }}
-                      placeholder="Search message history"
-                    />
-                    {filteredPromptHistory.length ? filteredPromptHistory.map((entry) => (
-                      <button type="button" key={entry} onClick={() => useHistoryEntry(entry)}>
-                        <span>{entry}</span>
-                      </button>
-                    )) : <small>Aucun message</small>}
-                  </>
-                ) : slashMatches.map((command) => (
-                  <button type="button" key={command.id} onClick={() => runSlashCommand(command.id)}>
-                    <span>{command.label}</span>
-                    <small>{command.detail}</small>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-            {draftAttachments.length ? (
-              <div className="composer-attachments">
-                {draftAttachments.map((attachment, index) => (
-                  <button
-                    type="button"
-                    key={`${attachment.path}-${index}`}
-                    onClick={() => setDraftAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index))}
-                    title="Retirer cette image"
-                  >
-                    <img src={attachment.src} alt="" draggable="false" />
-                    <span>[Image #{index + 1}]</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-            <textarea ref={textareaRef} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={handleComposerKeyDown} onPaste={handleComposerPaste} />
-            <div>
-              <button type="submit">{copy.chat.send}</button>
-              {typing ? <button type="button" onClick={interruptCurrentTurn}>{copy.chat.stop}</button> : <button type="button" onClick={handleSearch}>{copy.chat.search}</button>}
-            </div>
-          </form>
+          <Composer
+            copy={copy}
+            draft={draft}
+            onDraftChange={setDraft}
+            onSubmit={submit}
+            textareaRef={textareaRef}
+            onKeyDown={handleComposerKeyDown}
+            onPaste={handleComposerPaste}
+            typing={typing}
+            onStop={interruptCurrentTurn}
+            onSearch={handleSearch}
+            historySearchOpen={historySearchOpen}
+            historySearchQuery={historySearchQuery}
+            onHistorySearchChange={setHistorySearchQuery}
+            onHistorySearchClose={() => setHistorySearchOpen(false)}
+            filteredPromptHistory={filteredPromptHistory}
+            onUseHistoryEntry={useHistoryEntry}
+            slashMatches={slashMatches}
+            onRunSlashCommand={runSlashCommand}
+            draftAttachments={draftAttachments}
+            onRemoveAttachment={(index) => setDraftAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+          />
         </div>
         <aside className="chat-side">
           <DisplayFrame
@@ -5024,110 +3061,6 @@ function normalizeMessageText(text) {
   return String(text ?? "").replace(/\s+/g, " ").trim();
 }
 
-function ApprovalRequestsPanel({ requests, onRespond }) {
-  if (!requests.length) return null;
-  return (
-    <div className="approval-stack">
-      {requests.map((request) => {
-        const disabled = Boolean(request.sendingDecision);
-        const changes = request.fileChanges ?? [];
-        const hiddenChanges = Math.max(0, changes.length - 4);
-        return (
-          <section className={`approval-card ${request.riskLevel || "unknown"}`} key={request.approvalId}>
-            <div className="approval-head">
-              <strong>{request.title}</strong>
-              <span>{request.riskLevel ? `risk: ${request.riskLevel}` : "limited access"}</span>
-            </div>
-            {request.reason ? <p className="approval-reason">{request.reason}</p> : null}
-            {request.kind === "command" ? (
-              <pre className="approval-command">{request.command || "Commande non detaillee"}</pre>
-            ) : (
-              <ul className="approval-files">
-                {changes.slice(0, 4).map((change) => (
-                  <li key={`${change.kind}:${change.path}`}><span>{change.kind}</span>{change.path}</li>
-                ))}
-                {!changes.length ? <li><span>write</span>Changements non detailles</li> : null}
-                {hiddenChanges ? <li><span>plus</span>{hiddenChanges} autre(s) fichier(s)</li> : null}
-              </ul>
-            )}
-            <div className="approval-meta">
-              {request.cwd ? <span>{request.cwd}</span> : null}
-              {request.riskDescription ? <span>{request.riskDescription}</span> : null}
-              {request.grantRoot ? <span>grant root: {request.grantRoot}</span> : null}
-            </div>
-            {request.error ? <p className="approval-error">{request.error}</p> : null}
-            <div className="approval-actions">
-              <button type="button" disabled={disabled} onClick={() => onRespond(request, "approved")}>Allow</button>
-              {request.canApproveForSession ? (
-                <button type="button" disabled={disabled} onClick={() => onRespond(request, "approved_for_session")}>Allow session</button>
-              ) : null}
-              <button type="button" disabled={disabled} className="deny" onClick={() => onRespond(request, "denied")}>Disallow</button>
-            </div>
-          </section>
-        );
-      })}
-    </div>
-  );
-}
-
-function Message({ message }) {
-  if (message.itemType === "commandExecution") {
-    const commandText = message.command || message.text || "Commande Codex";
-    const outputText = message.text && message.text !== message.command
-      ? message.text.replace(message.command ?? "", "").trim()
-      : "";
-    const statusText = `${message.status || "completed"}${message.exitCode !== null && message.exitCode !== undefined ? ` / exit ${message.exitCode}` : ""}`;
-    return (
-      <details className={`codex-item command ${message.status ?? ""}`}>
-        <summary>
-          <span className="command-summary-title">{commandText}</span>
-          <span className="command-summary-status">{statusText}</span>
-          <time>{message.time}</time>
-        </summary>
-        {message.cwd ? <small>{message.cwd}</small> : null}
-        {outputText ? <pre>{outputText}</pre> : null}
-      </details>
-    );
-  }
-  if (message.itemType === "fileChange") {
-    return (
-      <article className={`codex-item file ${message.status ?? ""}`}>
-        <header><strong>Fichiers modifies</strong><time>{message.time}</time></header>
-        <pre>{message.text}</pre>
-        <footer>{message.status || "termine"}</footer>
-      </article>
-    );
-  }
-  if (message.itemType === "mcpToolCall" || message.itemType === "dynamicToolCall") {
-    return (
-      <article className="codex-item tool">
-        <header><strong>Outil Codex</strong><time>{message.time}</time></header>
-        <p>{message.text}</p>
-      </article>
-    );
-  }
-  if (message.from === "system") {
-    return <p className={message.noticeKind ? `system notice-${message.noticeKind}` : "system"}><span>{message.time}</span> {message.text}</p>;
-  }
-  const parsed = message.wink ? { text: message.text, wink: message.wink } : extractWinkFromText(message.text);
-  const wink = message.wink ?? parsed.wink;
-  return (
-    <article className={message.from === "me" ? "message me-message" : "message"}>
-      <header><strong>{message.author}</strong><time>{message.time}</time></header>
-      <div className="message-content">{renderFormattedMessageText(parsed.text)}</div>
-      {wink ? (
-        <div className="message-wink">
-          <img src={wink.src} alt="" draggable="false" />
-          <span>{wink.label}</span>
-        </div>
-      ) : null}
-      {message.attachment?.type === "image" ? <img className="message-attachment" src={message.attachment.src} alt={message.attachment.name ?? ""} /> : null}
-      {message.attachment?.type === "audio" ? <audio className="message-audio" controls src={message.attachment.src} /> : null}
-      {message.attachment?.type === "file" ? <small className="message-file">{message.attachment.name}</small> : null}
-    </article>
-  );
-}
-
 function App() {
   const [bootstrap, setBootstrap] = useState(null);
   const [bootstrapError, setBootstrapError] = useState("");
@@ -5135,12 +3068,30 @@ function App() {
   useEffect(() => {
     api.bootstrap()
       .then(setBootstrap)
-      .catch((error) => setBootstrapError(error.message || "Chargement impossible."));
+      .catch((error) => {
+        reportRendererError("bootstrap.app.error", error, { view: "initial" });
+        setBootstrapError(errorMessage(error, "Chargement impossible."));
+      });
   }, []);
 
-  if (bootstrapError) return <div className="loading error">{bootstrapError}</div>;
+  useEffect(() => {
+    const onError = (event) => reportRendererError("window.error", event.error || event.message, { source: event.filename, line: event.lineno });
+    const onUnhandled = (event) => reportRendererError("window.unhandledrejection", event.reason, {});
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onUnhandled);
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onUnhandled);
+    };
+  }, []);
+
+  if (bootstrapError) return <ErrorScreen title="Chargement impossible" message={bootstrapError} />;
   if (!bootstrap) return <div className="loading">Chargement...</div>;
   return bootstrap.view === "chat" ? <ChatWindow bootstrap={bootstrap} /> : <MainWindow />;
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  <RendererErrorBoundary>
+    <App />
+  </RendererErrorBoundary>
+);
