@@ -130,7 +130,7 @@ Codex Messenger checks for updates on startup:
 
 When an update is available, an `Update` button appears at the top of the main window. You can also open `File -> About Codex Messenger...` or `File -> Check for updates` to see the current version and run a manual check.
 
-The app does not auto-install updates. The update buttons open the relevant release or npm page so you can choose what to install.
+The Codex Messenger front update button downloads the latest GitHub release asset for the current platform, verifies its SHA-256 digest when GitHub exposes one, then starts the installer. On Windows it runs the NSIS installer after the app exits. On macOS it installs from the downloaded DMG, replaces the current app bundle, and relaunches the app; unsigned/ad-hoc builds can still require the normal macOS security confirmation on first launch. The Codex app-server update button runs `npm install -g @openai/codex@latest`.
 
 ## Uninstall
 

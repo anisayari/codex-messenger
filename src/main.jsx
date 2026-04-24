@@ -1790,6 +1790,7 @@ function UpdateDialog({ updateState, checking, installingTarget, actionMessage, 
   const front = updateState?.front ?? { currentVersion: appVersion };
   const codex = updateState?.codex ?? {};
   const checkedAt = updateState?.checkedAt ? new Date(updateState.checkedAt).toLocaleString() : "jamais";
+  const frontInstalling = installingTarget === "front";
   const codexInstalling = installingTarget === "codex";
 
   return (
@@ -1814,8 +1815,12 @@ function UpdateDialog({ updateState, checking, installingTarget, actionMessage, 
               <span>Version actuelle: {versionLabel(front.currentVersion || appVersion)}</span>
               <span>Derniere version: {versionLabel(front.latestVersion)}</span>
               <small>{updateLineState(front)}</small>
-              <button type="button" onClick={() => onOpen("front")}>
-                {front.updateAvailable ? "Update" : "Ouvrir les releases"}
+              <button
+                type="button"
+                onClick={() => front.updateAvailable ? onInstall("front") : onOpen("front")}
+                disabled={frontInstalling}
+              >
+                {frontInstalling ? "Telechargement..." : front.updateAvailable ? "Update automatiquement" : "Ouvrir les releases"}
               </button>
             </article>
             <article className={codex.updateAvailable ? "update-card available" : "update-card"}>
@@ -2594,12 +2599,14 @@ function MainWindow() {
 
   async function installUpdateTarget(target) {
     setInstallingUpdateTarget(target);
-    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Mise a jour en cours...");
+    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Telechargement de la mise a jour Codex Messenger...");
     try {
       const result = await api.installUpdateTarget(target);
       setUpdateActionMessage(result?.message || "Mise a jour terminee.");
-      const refreshed = await api.checkUpdates({ force: true });
-      setUpdateState(refreshed);
+      if (!result?.quitStarted) {
+        const refreshed = await api.checkUpdates({ force: true });
+        setUpdateState(refreshed);
+      }
       return result;
     } catch (error) {
       setUpdateActionMessage(error.message || "Mise a jour impossible.");
@@ -4497,12 +4504,14 @@ function ChatWindow({ bootstrap }) {
 
   async function installUpdateTarget(target) {
     setInstallingUpdateTarget(target);
-    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Mise a jour en cours...");
+    setUpdateActionMessage(target === "codex" ? "Mise a jour Codex app-server en cours..." : "Telechargement de la mise a jour Codex Messenger...");
     try {
       const result = await api.installUpdateTarget(target);
       setUpdateActionMessage(result?.message || "Mise a jour terminee.");
-      const refreshed = await api.checkUpdates({ force: true });
-      setUpdateState(refreshed);
+      if (!result?.quitStarted) {
+        const refreshed = await api.checkUpdates({ force: true });
+        setUpdateState(refreshed);
+      }
       return result;
     } catch (error) {
       setUpdateActionMessage(error.message || "Mise a jour impossible.");
