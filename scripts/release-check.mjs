@@ -62,6 +62,9 @@ assert.ok(!protocolSource.includes("acceptSettings"), "release must not send non
 assert.ok(protocolSource.includes("acceptForSession"), "release must support protocol approval acceptForSession decisions");
 assert.ok(main.includes("codex-messenger.log"), "release must keep the debug log file");
 assert.ok(main.includes("ensureLoadedThread"), "release must resume existing threads before sending turns");
+assertIncludes("package.json", "\"include\": \"build/installer.nsh\"");
+assertIncludes("build/installer.nsh", "!macro customInstall");
+assertIncludes("build/installer.nsh", "IfSilent 0 +3");
 
 const siteHtml = read("codexmessenger.net/index.html");
 assert.ok(!/\.\/downloads\/CodexMessenger(?:-mac-arm64)?[^"']*\.(?:exe|dmg)/.test(siteHtml), "site must not link to local installer assets");

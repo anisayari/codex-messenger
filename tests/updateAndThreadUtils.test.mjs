@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { codexImageFromItem, imageSrcFromBase64Png, imageSrcFromPathOrUrl, isCodexImageItem } from "../shared/codexImages.js";
 import { windowsUpdateInstallerLaunch, windowsUpdateInstallerScript } from "../electron/updateService.js";
 import { appCopyFor, supportedLanguages } from "../shared/languages.js";
@@ -7,6 +10,8 @@ import { newestThreadForProject } from "../shared/threadSelection.js";
 import { assetDigestSha256, safeAssetFileName, selectFrontReleaseAsset } from "../shared/updateAssets.js";
 import { displayVersion, updateAvailable } from "../shared/versionUtils.js";
 import { versionLabel } from "../src/versionLabel.js";
+
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 test("version helpers support package and release tag formats", () => {
   assert.equal(displayVersion("0.0.2-5"), "0.0.2.5");
@@ -111,8 +116,11 @@ test("Windows update installer script avoids launching a broken root path", () =
     logPath: "C:\\Users\\Anis\\AppData\\Roaming\\Codex Messenger\\updates\\install.log"
   });
   assert.match(script, /if "%APP_EXE%"=="\\\\" set "APP_EXE="/);
+  assert.match(script, /ORIGINAL_APP_EXE/);
+  assert.ok(script.includes('if /I "%APP_EXE:~0,4%"=="\\\\?\\" set "APP_EXE=%APP_EXE:~4%"'));
   assert.match(script, /%LOCALAPPDATA%\\Programs\\codex-messenger\\Codex Messenger\.exe/);
   assert.match(script, /if defined APP_EXE if exist "%APP_EXE%"/);
+  assert.match(script, /start "" \/D "%APP_DIR%" "%APP_EXE%"/);
   assert.doesNotMatch(script, /if exist "%APP_EXE%" start/);
 
   const launch = windowsUpdateInstallerLaunch({
@@ -126,6 +134,15 @@ test("Windows update installer script avoids launching a broken root path", () =
   assert.equal(launch.args[3], "C:\\Users\\Anis\\AppData\\Roaming\\Codex Messenger\\updates\\install.cmd");
   assert.ok(!launch.args.includes("start"));
   assert.ok(!launch.args.includes("/s"));
+});
+
+test("Windows installer relaunches the app during silent legacy updates", () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf8"));
+  const nsisScript = fs.readFileSync(path.join(rootDir, "build", "installer.nsh"), "utf8");
+  assert.equal(packageJson.build?.nsis?.include, "build/installer.nsh");
+  assert.match(nsisScript, /!macro customInstall/);
+  assert.match(nsisScript, /IfSilent 0 \+3/);
+  assert.match(nsisScript, /Exec '"\$INSTDIR\\\$\{APP_EXECUTABLE_FILENAME\}"'/);
 });
 
 test("project opening chooses the newest active thread, including hidden tabs", () => {

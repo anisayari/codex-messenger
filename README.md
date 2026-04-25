@@ -29,8 +29,8 @@ Important: Codex Messenger is only a local front-end client for `codex app-serve
 
 Official downloads are available from [codexmessenger.net](https://codexmessenger.net/). Click `DOWNLOAD` and choose the platform in the popup:
 
-- macOS `v0.0.2.8`: open the GitHub release page and choose the `.dmg`.
-- Windows `v0.0.2.8`: open the GitHub release page and choose the Windows installer `.exe`.
+- macOS `v0.0.2.9`: open the GitHub release page and choose the `.dmg`.
+- Windows `v0.0.2.9`: open the GitHub release page and choose the Windows installer `.exe`.
 
 The website download popup points to the official GitHub release page instead of proxying installer files through the static site.
 
@@ -316,8 +316,8 @@ npm run package:win
 
 Generated Windows files are written to `release/windows/`:
 
-- `Codex Messenger Setup 0.0.2.8.exe`: Windows installer.
-- `Codex Messenger 0.0.2.8.exe`: portable build.
+- `Codex Messenger Setup 0.0.2.9.exe`: Windows installer.
+- `Codex Messenger 0.0.2.9.exe`: portable build.
 - `win-unpacked/`: unpacked folder for local testing.
 
 The build is not signed. For broad public distribution, add Windows code signing.
@@ -331,8 +331,8 @@ npm run package:mac
 
 Generated macOS files are written to `release/macos/`:
 
-- `Codex-Messenger-0.0.2.8-arm64.dmg` or `Codex-Messenger-0.0.2.8-x64.dmg`.
-- `Codex-Messenger-0.0.2.8-arm64.zip` or `Codex-Messenger-0.0.2.8-x64.zip`.
+- `Codex-Messenger-0.0.2.9-arm64.dmg` or `Codex-Messenger-0.0.2.9-x64.dmg`.
+- `Codex-Messenger-0.0.2.9-arm64.zip` or `Codex-Messenger-0.0.2.9-x64.zip`.
 - `mac-arm64/` or `mac/`: unpacked app folder for local testing.
 
 The unsigned macOS build includes camera and microphone usage descriptions for the snapshot and voice clip features, but it is not notarized or Developer ID signed.
@@ -366,8 +366,8 @@ The static showcase site lives in `codexmessenger.net/`.
 
 Its `DOWNLOAD` button opens a platform chooser popup with:
 
-- macOS `v0.0.2.8`: GitHub Releases.
-- Windows `v0.0.2.8`: GitHub Releases.
+- macOS `v0.0.2.9`: GitHub Releases.
+- Windows `v0.0.2.9`: GitHub Releases.
 
 The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, patches the GitHub release URL in `codexmessenger.net/index.html`, and uploads the static files to the VPS. The VPS no longer stores installer copies under `/downloads/`.
 
