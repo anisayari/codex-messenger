@@ -37,12 +37,22 @@ export function createBaseWindowFactory({
     win.codexMessengerTitle = initialTitle;
     windows.set(key, win);
     const logWindowEvent = (event, details = {}) => {
-      logDebug(`window.${event}`, {
-        key,
-        title: win.codexMessengerTitle || initialTitle,
-        url: win.webContents?.getURL?.() || "",
-        ...details
-      });
+      try {
+        const webContentsDestroyed = win.webContents?.isDestroyed?.() ?? true;
+        logDebug(`window.${event}`, {
+          key,
+          title: win.codexMessengerTitle || initialTitle,
+          url: win.isDestroyed() || webContentsDestroyed ? "" : win.webContents.getURL() || "",
+          ...details
+        });
+      } catch (error) {
+        logDebug(`window.${event}`, {
+          key,
+          title: initialTitle,
+          url: "",
+          logError: error?.message || String(error || "")
+        });
+      }
     };
     win.setMenuBarVisibility(false);
     win.on("page-title-updated", (event) => {
