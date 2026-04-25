@@ -32,7 +32,10 @@ test("release metadata is consistent across package, README, and website", () =>
   assert.match(packageJson.build?.nsis?.artifactName, /\$\{env\.CODEX_MESSENGER_RELEASE_VERSION\}/);
   assert.match(packageJson.build?.portable?.artifactName, /\$\{env\.CODEX_MESSENGER_RELEASE_VERSION\}/);
   assert.ok(read("README.md").includes(tag));
-  assert.ok(read("codexmessenger.net/index.html").includes(tag));
+  const siteHtml = read("codexmessenger.net/index.html");
+  assert.ok(siteHtml.includes(tag));
+  assert.ok(siteHtml.includes("https://github.com/anisayari/codex-messenger/releases/latest"));
+  assert.doesNotMatch(siteHtml, /\.\/downloads\/CodexMessenger(?:-mac-arm64)?[^"']*\.(?:exe|dmg)/);
 });
 
 test("release build keeps Codex app-server integration stable", () => {

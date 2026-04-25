@@ -29,10 +29,10 @@ Important: Codex Messenger is only a local front-end client for `codex app-serve
 
 Official downloads are available from [codexmessenger.net](https://codexmessenger.net/). Click `DOWNLOAD` and choose the platform in the popup:
 
-- macOS `v0.0.2.8`: `CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.8`: `CodexMessenger.exe`.
+- macOS `v0.0.2.8`: open the GitHub release page and choose the `.dmg`.
+- Windows `v0.0.2.8`: open the GitHub release page and choose the Windows installer `.exe`.
 
-The website download popup is backed by GitHub release assets. A release must include both the Windows `.exe` and macOS `.dmg`; otherwise the site deployment should fail instead of publishing a broken download button.
+The website download popup points to the official GitHub release page instead of proxying installer files through the static site.
 
 ### Option 1: Windows installer
 
@@ -366,12 +366,12 @@ The static showcase site lives in `codexmessenger.net/`.
 
 Its `DOWNLOAD` button opens a platform chooser popup with:
 
-- macOS `v0.0.2.8`: `downloads/CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.8`: `downloads/CodexMessenger.exe`.
+- macOS `v0.0.2.8`: GitHub Releases.
+- Windows `v0.0.2.8`: GitHub Releases.
 
-The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, resolves one Windows `.exe` asset and one macOS `.dmg` asset, patches the cache-buster in `codexmessenger.net/index.html`, uploads the static files to the VPS, then downloads the two release assets into `/downloads/` and writes `.sha256` files.
+The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, patches the GitHub release URL in `codexmessenger.net/index.html`, and uploads the static files to the VPS. The VPS no longer stores installer copies under `/downloads/`.
 
-Before publishing the website, verify the release contains both platform artifacts:
+Before publishing the website, verify the GitHub release page contains both platform artifacts:
 
 - Windows: a `.exe` asset, preferably a `*Setup*.exe`.
 - macOS: a `.dmg` asset, preferably the `arm64` build.

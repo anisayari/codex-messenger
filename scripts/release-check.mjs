@@ -41,7 +41,7 @@ assertIncludes("README.md", "actions/workflows/codeql.yml/badge.svg");
 assertIncludes("README.md", "actions/workflows/dependency-review.yml/badge.svg");
 assertIncludes("README.md", "npm run audit:security");
 assertIncludes("codexmessenger.net/index.html", releaseTag);
-assertIncludes("codexmessenger.net/index.html", `?v=${releaseTag}`);
+assertIncludes("codexmessenger.net/index.html", "https://github.com/anisayari/codex-messenger/releases/latest");
 
 assertIncludes("SECURITY.md", "Reporting a Vulnerability");
 assertIncludes(".github/dependabot.yml", "package-ecosystem: \"npm\"");
@@ -64,8 +64,9 @@ assert.ok(main.includes("codex-messenger.log"), "release must keep the debug log
 assert.ok(main.includes("ensureLoadedThread"), "release must resume existing threads before sending turns");
 
 const siteHtml = read("codexmessenger.net/index.html");
-assert.equal((siteHtml.match(/CodexMessenger\.exe\?v=/g) || []).length, 1, "site should expose one canonical Windows download link");
-assert.equal((siteHtml.match(/CodexMessenger-mac-arm64\.dmg\?v=/g) || []).length, 1, "site should expose one canonical macOS download link");
+assert.ok(!/\.\/downloads\/CodexMessenger(?:-mac-arm64)?[^"']*\.(?:exe|dmg)/.test(siteHtml), "site must not link to local installer assets");
+assert.ok(!/\sdownload="CodexMessenger/.test(siteHtml), "site release links must not use browser download attributes");
+assert.ok((siteHtml.match(/https:\/\/github\.com\/anisayari\/codex-messenger\/releases\/latest/g) || []).length >= 2, "site should point platform buttons to GitHub Releases");
 assert.ok(!siteHtml.includes("v0.0.2.3"), "site must not keep stale release tags");
 
 const workflow = read(".github/workflows/deploy-codexmessenger-net.yml");

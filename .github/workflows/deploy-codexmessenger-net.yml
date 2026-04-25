@@ -81,71 +81,20 @@ jobs:
             exit 1
           fi
 
-          windows_asset_name="$(
-            jq -r '
-              (
-                [.assets[]
-                  | select((.name | test("\\.exe$"; "i")) and ((.name | test("\\.blockmap$"; "i")) | not))
-                  | select(.name | test("Setup"; "i"))
-                ][0]
-                //
-                [.assets[]
-                  | select((.name | test("\\.exe$"; "i")) and ((.name | test("\\.blockmap$"; "i")) | not))
-                ][0]
-              ).name // empty
-            ' "$release_json"
-          )"
-
-          mac_asset_name="$(
-            jq -r '
-              (
-                [.assets[]
-                  | select((.name | test("\\.dmg$"; "i")) and ((.name | test("\\.blockmap$"; "i")) | not))
-                  | select(.name | test("arm64"; "i"))
-                ][0]
-                //
-                [.assets[]
-                  | select((.name | test("\\.dmg$"; "i")) and ((.name | test("\\.blockmap$"; "i")) | not))
-                ][0]
-              ).name // empty
-            ' "$release_json"
-          )"
-
-          if [[ -z "$windows_asset_name" ]]; then
-            echo "::error::Latest release $tag does not contain a Windows .exe asset."
-            exit 1
-          fi
-          if [[ -z "$mac_asset_name" ]]; then
-            echo "::error::Latest release $tag does not contain a macOS .dmg asset."
-            exit 1
-          fi
-
-          windows_asset_digest="$(jq -r --arg name "$windows_asset_name" '.assets[] | select(.name == $name) | .digest // empty' "$release_json")"
-          windows_asset_url="$(jq -r --arg name "$windows_asset_name" '.assets[] | select(.name == $name) | .browser_download_url // empty' "$release_json")"
-          mac_asset_digest="$(jq -r --arg name "$mac_asset_name" '.assets[] | select(.name == $name) | .digest // empty' "$release_json")"
-          mac_asset_url="$(jq -r --arg name "$mac_asset_name" '.assets[] | select(.name == $name) | .browser_download_url // empty' "$release_json")"
-          if [[ -z "$windows_asset_url" || -z "$mac_asset_url" ]]; then
-            echo "::error::Could not resolve browser download URL for one or more release assets."
-            exit 1
+          release_url="$(jq -r '.html_url // empty' "$release_json")"
+          if [[ -z "$release_url" ]]; then
+            release_url="https://github.com/$GH_REPO/releases/tag/$tag"
           fi
 
           {
             echo "tag=$tag"
-            echo "windows_asset_name=$windows_asset_name"
-            echo "windows_asset_digest=$windows_asset_digest"
-            echo "windows_asset_url=$windows_asset_url"
-            echo "mac_asset_name=$mac_asset_name"
-            echo "mac_asset_digest=$mac_asset_digest"
-            echo "mac_asset_url=$mac_asset_url"
+            echo "release_url=$release_url"
           } >> "$GITHUB_OUTPUT"
 
       - name: Build static deployment bundle
         env:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
-          WINDOWS_RELEASE_ASSET_NAME: ${{ steps.release.outputs.windows_asset_name }}
-          WINDOWS_RELEASE_ASSET_DIGEST: ${{ steps.release.outputs.windows_asset_digest }}
-          MAC_RELEASE_ASSET_NAME: ${{ steps.release.outputs.mac_asset_name }}
-          MAC_RELEASE_ASSET_DIGEST: ${{ steps.release.outputs.mac_asset_digest }}
+          RELEASE_URL: ${{ steps.release.outputs.release_url }}
         run: |
           set -euo pipefail
 
@@ -157,7 +106,6 @@ jobs:
 
           mkdir -p "$site_dir/downloads"
           rm -f \
-            "$site_dir/downloads/.gitkeep" \
             "$site_dir/downloads/CodexMessenger.exe" \
             "$site_dir/downloads/CodexMessenger.exe.sha256" \
             "$site_dir/downloads/CodexMessenger-mac-arm64.dmg" \
@@ -169,28 +117,23 @@ jobs:
           from pathlib import Path
 
           tag = os.environ["RELEASE_TAG"]
-          safe_tag = re.sub(r"[^0-9A-Za-z._-]", "-", tag)
-          windows_digest = os.environ.get("WINDOWS_RELEASE_ASSET_DIGEST", "")
-          mac_digest = os.environ.get("MAC_RELEASE_ASSET_DIGEST", "")
-          windows_sha = windows_digest.removeprefix("sha256:") if windows_digest.startswith("sha256:") else ""
-          mac_sha = mac_digest.removeprefix("sha256:") if mac_digest.startswith("sha256:") else ""
-          windows_name = f"CodexMessenger-{windows_sha[:8]}.exe" if windows_sha else "CodexMessenger.exe"
-          mac_name = f"CodexMessenger-mac-arm64-{mac_sha[:8]}.dmg" if mac_sha else "CodexMessenger-mac-arm64.dmg"
+          release_url = os.environ["RELEASE_URL"]
           index_path = Path(os.environ["SITE_DIR"]) / "index.html"
           html = index_path.read_text(encoding="utf-8")
           html = re.sub(
-              r"\./downloads/CodexMessenger\.exe\?v=[^\"]+",
-              f"./downloads/{windows_name}?v={safe_tag}",
+              r"https://github\.com/anisayari/codex-messenger/releases/(?:latest|tag/[^\"'<\s]+)",
+              release_url,
               html,
           )
           html = re.sub(
-              r"\./downloads/CodexMessenger-mac-arm64\.dmg\?v=[^\"]+",
-              f"./downloads/{mac_name}?v={safe_tag}",
+              r"\./downloads/CodexMessenger(?:-mac-arm64)?(?:-[0-9a-f]{8})?\.(?:exe|dmg)\?v=[^\"']+",
+              release_url,
               html,
           )
-          count = html.count(f"./downloads/{windows_name}?v={safe_tag}") + html.count(f"./downloads/{mac_name}?v={safe_tag}")
+          html = re.sub(r'\sdownload="(?:CodexMessenger\.exe|CodexMessenger-mac-arm64\.dmg)"', "", html)
+          count = html.count(release_url)
           if count < 2:
-              raise SystemExit("download link cache-buster not found in index.html")
+              raise SystemExit("GitHub release links not found in index.html")
           index_path.write_text(html, encoding="utf-8")
           PY
 
@@ -199,10 +142,7 @@ jobs:
             echo "### codexmessenger.net deployment"
             echo ""
             echo "- Release: $RELEASE_TAG"
-            echo "- Windows asset: $WINDOWS_RELEASE_ASSET_NAME"
-            echo "- Windows digest: ${WINDOWS_RELEASE_ASSET_DIGEST:-not exposed}"
-            echo "- macOS asset: $MAC_RELEASE_ASSET_NAME"
-            echo "- macOS digest: ${MAC_RELEASE_ASSET_DIGEST:-not exposed}"
+            echo "- GitHub release page: $RELEASE_URL"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Deploy to VPS
@@ -213,10 +153,6 @@ jobs:
           SSH_KEY: ${{ secrets.CODEXMESSENGER_DEPLOY_SSH_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.CODEXMESSENGER_DEPLOY_KNOWN_HOSTS }}
           SSH_WEBROOT: ${{ secrets.CODEXMESSENGER_DEPLOY_PATH }}
-          WINDOWS_RELEASE_ASSET_URL: ${{ steps.release.outputs.windows_asset_url }}
-          WINDOWS_RELEASE_ASSET_DIGEST: ${{ steps.release.outputs.windows_asset_digest }}
-          MAC_RELEASE_ASSET_URL: ${{ steps.release.outputs.mac_asset_url }}
-          MAC_RELEASE_ASSET_DIGEST: ${{ steps.release.outputs.mac_asset_digest }}
         run: |
           set -euo pipefail
 
@@ -240,14 +176,6 @@ jobs:
           )
           remote="$SSH_USER@$SSH_HOST"
           remote_tmp="/tmp/codexmessenger-net-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          expected_windows_sha=""
-          if [[ "$WINDOWS_RELEASE_ASSET_DIGEST" == sha256:* ]]; then
-            expected_windows_sha="${WINDOWS_RELEASE_ASSET_DIGEST#sha256:}"
-          fi
-          expected_mac_sha=""
-          if [[ "$MAC_RELEASE_ASSET_DIGEST" == sha256:* ]]; then
-            expected_mac_sha="${MAC_RELEASE_ASSET_DIGEST#sha256:}"
-          fi
 
           ssh "${ssh_args[@]}" "$remote" "mkdir -p '$remote_tmp'"
           rsync -az --delete -e "ssh -i ~/.ssh/codexmessenger_deploy_key -p $SSH_PORT -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
@@ -255,28 +183,6 @@ jobs:
 
           ssh "${ssh_args[@]}" "$remote" "
             set -euo pipefail
-            command -v curl >/dev/null
-            mkdir -p '$remote_tmp/downloads'
-            curl -fL --retry 5 --retry-delay 3 --connect-timeout 20 '$WINDOWS_RELEASE_ASSET_URL' -o '$remote_tmp/downloads/CodexMessenger.exe'
-            curl -fL --retry 5 --retry-delay 3 --connect-timeout 20 '$MAC_RELEASE_ASSET_URL' -o '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg'
-            windows_sha=\$(sha256sum '$remote_tmp/downloads/CodexMessenger.exe' | cut -d ' ' -f1)
-            mac_sha=\$(sha256sum '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg' | cut -d ' ' -f1)
-            windows_hashed_name=\"CodexMessenger-\${windows_sha:0:8}.exe\"
-            mac_hashed_name=\"CodexMessenger-mac-arm64-\${mac_sha:0:8}.dmg\"
-            windows_hashed_path='$remote_tmp/downloads/'\"\$windows_hashed_name\"
-            mac_hashed_path='$remote_tmp/downloads/'\"\$mac_hashed_name\"
-            cp '$remote_tmp/downloads/CodexMessenger.exe' \"\$windows_hashed_path\"
-            cp '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg' \"\$mac_hashed_path\"
-            printf '%s  CodexMessenger.exe\n' \"\$windows_sha\" > '$remote_tmp/downloads/CodexMessenger.exe.sha256'
-            printf '%s  CodexMessenger-mac-arm64.dmg\n' \"\$mac_sha\" > '$remote_tmp/downloads/CodexMessenger-mac-arm64.dmg.sha256'
-            if [ -n '$expected_windows_sha' ] && [ \"\$windows_sha\" != '$expected_windows_sha' ]; then
-              echo 'Downloaded Windows release asset checksum does not match GitHub release digest.'
-              exit 1
-            fi
-            if [ -n '$expected_mac_sha' ] && [ \"\$mac_sha\" != '$expected_mac_sha' ]; then
-              echo 'Downloaded macOS release asset checksum does not match GitHub release digest.'
-              exit 1
-            fi
             cp '$remote_tmp/nginx.codexmessenger.net.conf' /etc/nginx/sites-available/codexmessenger.net
             ln -sf /etc/nginx/sites-available/codexmessenger.net /etc/nginx/sites-enabled/codexmessenger.net
             rm -f '$remote_tmp/nginx.codexmessenger.net.conf'
