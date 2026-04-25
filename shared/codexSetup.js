@@ -4,10 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { resolveExecutableCandidate } from "./codexExecutable.js";
+import { compareVersions, displayVersion, parseVersion } from "./versionUtils.js";
 
 const execFileAsync = promisify(execFile);
 
 export const codexNpmPackageName = "@openai/codex";
+export const minimumCodexVersion = "0.125.0";
 export const nodeDownloadUrl = "https://nodejs.org/en/download";
 
 function lookupCommandForPlatform() {
@@ -186,6 +188,22 @@ export async function codexLoginStatus(command) {
 export async function codexVersion(command) {
   const result = await runCommand(command, ["--version"], { timeoutMs: 15_000 });
   return (result.stdout || result.stderr).trim();
+}
+
+export function codexVersionSupport(version, minimumVersion = minimumCodexVersion) {
+  const current = parseVersion(version);
+  const minimum = parseVersion(minimumVersion);
+  return {
+    ok: Boolean(current && minimum && compareVersions(current.raw, minimum.raw) >= 0),
+    currentVersion: current?.raw || displayVersion(version),
+    minimumVersion: minimum?.raw || displayVersion(minimumVersion)
+  };
+}
+
+export function unsupportedCodexVersionMessage(version, minimumVersion = minimumCodexVersion) {
+  const support = codexVersionSupport(version, minimumVersion);
+  const current = support.currentVersion || "unknown";
+  return `Codex CLI ${support.minimumVersion} or newer is required. Installed version: ${current}. Update Codex with: npm install -g ${codexNpmPackageName}@latest`;
 }
 
 export async function installCodexCli({ cwd = process.cwd(), stdio = ["ignore", "pipe", "pipe"] } = {}) {

@@ -264,9 +264,10 @@ export function createUpdateService({
     try {
       const status = await codexStatus();
       result.command = status.command || "";
+      result.currentVersion = displayVersion(status.version || "");
       if (!status.ok) {
         result.error = status.error || "Codex CLI not detected";
-      } else {
+      } else if (!result.currentVersion) {
         const current = await runCodexCommand(status.command, ["--version"]);
         result.currentVersion = displayVersion(current.stdout || current.stderr);
       }

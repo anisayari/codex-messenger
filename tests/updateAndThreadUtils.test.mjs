@@ -34,6 +34,12 @@ test("front release asset selection prefers platform installer assets", () => {
 });
 
 test("Codex image items expose renderable image attachments", () => {
+  const tmpCodexImageUrl = process.platform === "win32"
+    ? "file:///C:/tmp/codex%20image.png"
+    : "file:///tmp/codex%20image.png";
+  const tmpViewedUrl = process.platform === "win32"
+    ? "file:///C:/tmp/viewed.png"
+    : "file:///tmp/viewed.png";
   const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
   const pngDataUrl = `data:image/png;base64,${pngBase64}`;
   const generated = codexImageFromItem({
@@ -57,11 +63,11 @@ test("Codex image items expose renderable image attachments", () => {
     savedPath: "/tmp/codex image.png",
     result: "ignored"
   });
-  assert.equal(savedPathFallback.src, "file:///tmp/codex%20image.png");
+  assert.equal(savedPathFallback.src, tmpCodexImageUrl);
 
   const viewed = codexImageFromItem({ type: "imageView", path: "/tmp/viewed.png" });
   assert.equal(viewed.kind, "imageView");
-  assert.equal(viewed.src, "file:///tmp/viewed.png");
+  assert.equal(viewed.src, tmpViewedUrl);
   assert.equal(isCodexImageItem({ type: "imageView" }), true);
 
   const rawCall = codexImageFromItem({

@@ -42,8 +42,12 @@ assertIncludes(".github/dependabot.yml", "package-ecosystem: \"npm\"");
 
 const main = read("electron/main.js");
 const appServerClient = read("electron/codexAppServerClient.js");
+const codexSetup = read("shared/codexSetup.js");
 const protocolSource = `${main}\n${appServerClient}`;
 assert.ok(protocolSource.includes("experimentalApi: true"), "initialize should opt into app-server capabilities");
+assert.ok(protocolSource.includes("--analytics-default-enabled"), "release must use the tested app-server analytics flag");
+assert.ok(codexSetup.includes('minimumCodexVersion = "0.125.0"'), "release must declare the minimum tested Codex CLI version");
+assert.ok(read("README.md").includes("Codex CLI 0.125.0 or newer"), "README must document the minimum tested Codex CLI version");
 assert.ok(!/persistExtendedHistory|experimentalRawEvents|persistFullHistory/.test(protocolSource), "release must not send experimental thread history fields");
 assert.ok(!protocolSource.includes("acceptSettings"), "release must not send non-protocol approval acceptSettings");
 assert.ok(protocolSource.includes("acceptForSession"), "release must support protocol approval acceptForSession decisions");

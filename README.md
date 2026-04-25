@@ -213,7 +213,7 @@ The uninstaller is intended to remove only the Codex Messenger front client, sho
 Codex Messenger needs:
 
 - Node.js/npm when Codex CLI must be installed automatically.
-- Codex CLI, installed as `@openai/codex`.
+- Codex CLI 0.125.0 or newer, installed as `@openai/codex`.
 - A completed OpenAI login through `codex login`.
 
 From source, run:
@@ -228,7 +228,7 @@ For a read-only readiness check:
 npm run setup:codex:check
 ```
 
-The app login screen also checks these prerequisites. If npm is missing, it opens the Node.js download page. If Codex CLI is missing, it can run `npm install -g @openai/codex`. If OpenAI login is missing, it opens a terminal for `codex login`.
+The app login screen also checks these prerequisites. If npm is missing, it opens the Node.js download page. If Codex CLI is missing or older than 0.125.0, it can run `npm install -g @openai/codex`. If OpenAI login is missing, it opens a terminal for `codex login`.
 
 Codex Messenger looks for Codex in this order:
 
