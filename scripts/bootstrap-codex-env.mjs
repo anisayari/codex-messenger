@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { codexLoginStatus, codexVersion, findCodexCommand, findNpmCommand, installCodexCli, nodeDownloadUrl } from "../shared/codexSetup.js";
+import { codexLoginStatus, codexVersion, codexVersionSupport, findCodexCommand, findNpmCommand, installCodexCli, nodeDownloadUrl, unsupportedCodexVersionMessage } from "../shared/codexSetup.js";
 
 const mode = process.argv.includes("--check")
   ? "check"
@@ -67,6 +67,16 @@ async function ensureLoggedIn(command) {
   printStep(after.text);
 }
 
+async function ensureSupportedVersion(command) {
+  const version = await codexVersion(command);
+  const support = codexVersionSupport(version);
+  printStep(version);
+  if (!support.ok) {
+    throw new Error(unsupportedCodexVersionMessage(version, support.minimumVersion));
+  }
+  return version;
+}
+
 if (mode === "check") {
   const npm = await findNpmCommand();
   console.log(`npm: ${npm.ok ? npm.command : "missing"}`);
@@ -76,19 +86,26 @@ if (mode === "check") {
     process.exitCode = 1;
   } else {
     console.log(`codex: ${found.command}`);
-    console.log(await codexVersion(found.command));
+    const version = await codexVersion(found.command);
+    const support = codexVersionSupport(version);
+    console.log(version);
+    if (!support.ok) {
+      console.log(`version: unsupported (${unsupportedCodexVersionMessage(version, support.minimumVersion)})`);
+      process.exitCode = 1;
+    }
     const login = await codexLoginStatus(found.command);
     console.log(`login: ${login.ok ? login.text : `missing (${login.text})`}`);
-    if (!login.ok) process.exitCode = 1;
+    if (!support.ok || !login.ok) process.exitCode = 1;
   }
 } else if (mode === "install") {
   await ensureInstalled();
 } else if (mode === "login") {
   const found = await ensureInstalled();
+  await ensureSupportedVersion(found.command);
   await ensureLoggedIn(found.command);
 } else {
   const found = await ensureInstalled();
   printStep(`Codex CLI ready: ${found.command}`);
-  printStep(await codexVersion(found.command));
+  await ensureSupportedVersion(found.command);
   await ensureLoggedIn(found.command);
 }

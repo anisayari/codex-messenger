@@ -1486,6 +1486,7 @@ function ChatWindow({ bootstrap }) {
   const [historySearchQuery, setHistorySearchQuery] = useState("");
   const [draftAttachments, setDraftAttachments] = useState([]);
   const [typing, setTyping] = useState(false);
+  const [turnActive, setTurnActive] = useState(false);
   const [conversations, setConversations] = useState(bootstrap.conversations);
   const [threadsLoading, setThreadsLoading] = useState(() => isCodexHistoryContact(contact) && !bootstrap.conversations);
   const [threadsLoadError, setThreadsLoadError] = useState("");
@@ -1613,6 +1614,10 @@ function ChatWindow({ bootstrap }) {
     if (!clean.startsWith("/")) return [];
     return slashCommandCatalog.filter((command) => command.label.startsWith(clean)).slice(0, 6);
   }, [draft]);
+  const turnBusy = typing || turnActive;
+  const turnStatusText = turnActive
+    ? (copy.chat.thinking ?? "Reflexion en cours...")
+    : `${conversationAgentName} ${copy.chat.typing}`;
 
   useEffect(() => {
     setActiveContact(initialContact);
@@ -1628,6 +1633,8 @@ function ChatWindow({ bootstrap }) {
       window.clearTimeout(deltaFlushTimerRef.current);
       deltaFlushTimerRef.current = null;
     }
+    setTyping(false);
+    setTurnActive(false);
     setConfigurationOpen(false);
   }, [contact.id, contact.threadId]);
 
@@ -1766,9 +1773,13 @@ function ChatWindow({ bootstrap }) {
     deltaFirstQueuedAtRef.current = 0;
     if (!delta) return;
     setTyping(false);
+    const notice = codexConnectionNotice(delta);
+    if (notice) {
+      setTurnActive(false);
+      setMessages((current) => appendSystemNotice(current, notice));
+      return;
+    }
     setMessages((current) => {
-      const notice = codexConnectionNotice(delta);
-      if (notice) return appendSystemNotice(current, notice);
       if (!current[current.length - 1]?.streaming && !playedStreamingSoundRef.current) {
         playedStreamingSoundRef.current = true;
         playNewMessageIfEnabled();
@@ -1784,6 +1795,7 @@ function ChatWindow({ bootstrap }) {
     if (notice) {
       flushAgentDeltas();
       setTyping(false);
+      setTurnActive(false);
       setMessages((current) => appendSystemNotice(current, notice));
       return;
     }
@@ -1822,6 +1834,7 @@ function ChatWindow({ bootstrap }) {
     playNewMessageIfEnabled,
     setMessages,
     setTyping,
+    setTurnActive,
     setThreadsLoading,
     setThreadsLoadError,
     setConversations,
@@ -1919,6 +1932,7 @@ function ChatWindow({ bootstrap }) {
     stickToBottomRef.current = true;
     setMessages((current) => appendOutgoingMessage(current, profile.displayName, cleanText, options));
     setTyping(true);
+    setTurnActive(true);
     api.markRead(contact.id);
     try {
       const result = await api.sendItems(contact.id, items);
@@ -1932,6 +1946,7 @@ function ChatWindow({ bootstrap }) {
       if (result?.conversations) setConversations(result.conversations);
     } catch (error) {
       setTyping(false);
+      setTurnActive(false);
       setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
     }
   }
@@ -2029,6 +2044,7 @@ function ChatWindow({ bootstrap }) {
       if (result?.ok) {
         setActiveThreadId(result.threadId ?? activeThreadId);
         setTyping(true);
+        setTurnActive(true);
       } else {
         setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Review impossible.")]);
       }
@@ -2039,6 +2055,7 @@ function ChatWindow({ bootstrap }) {
       if (result?.ok) {
         setActiveThreadId(result.threadId ?? activeThreadId);
         setTyping(true);
+        setTurnActive(true);
       } else {
         setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Compact impossible.")]);
       }
@@ -2490,6 +2507,7 @@ function ChatWindow({ bootstrap }) {
         setHistoryCursor(result.historyCursor ?? result.messages.length);
         setHistoryHasMore(Boolean(result.historyHasMore));
         setTyping(false);
+        setTurnActive(false);
       }
       if (result?.conversations) setConversations(result.conversations);
       return;
@@ -2928,7 +2946,7 @@ function ChatWindow({ bootstrap }) {
               activeGame={activeGame}
               onSelectGame={setActiveGame}
               onRun={sendQuickPrompt}
-              waiting={typing}
+              waiting={turnBusy}
             />
           ) : null}
         </div>
@@ -2985,7 +3003,11 @@ function ChatWindow({ bootstrap }) {
                 onOpenAttachment={openMessageAttachment}
               />
             ))}
-            {typing ? <div className="typing"><i /><i /><i />{conversationAgentName} {copy.chat.typing}</div> : null}
+            {turnBusy ? (
+              <div className={turnActive ? "typing thinking" : "typing"} aria-live="polite">
+                <i /><i /><i /><span>{turnStatusText}</span>
+              </div>
+            ) : null}
           </div>
           <ApprovalRequestsPanel requests={pendingApprovals} onRespond={respondToApproval} />
           <div className="format-strip">
@@ -3007,7 +3029,7 @@ function ChatWindow({ bootstrap }) {
             textareaRef={textareaRef}
             onKeyDown={handleComposerKeyDown}
             onPaste={handleComposerPaste}
-            typing={typing}
+            typing={turnBusy}
             onStop={interruptCurrentTurn}
             onSearch={handleSearch}
             historySearchOpen={historySearchOpen}

@@ -1,7 +1,10 @@
 import { execFile, spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const defaultAppleTeamId = "T99D3SZXLB";
 const defaultNotaryProfile = "codex-messenger";
 const developerIdIdentityName = `ANIS AYARI (${defaultAppleTeamId})`;
@@ -93,8 +96,8 @@ async function assertReleasePrerequisites() {
 
 await assertReleasePrerequisites();
 await run("npm", ["run", "build"]);
-await run("npx", [
-  "electron-builder",
+await run(process.execPath, [
+  path.join(rootDir, "scripts/electron-builder-release-version.mjs"),
   "--mac",
   "dmg",
   "zip",

@@ -24,12 +24,18 @@ function assertIncludes(filePath, needle) {
 const packageJson = readJson("package.json");
 const packageLock = readJson("package-lock.json");
 const releaseTag = displayVersion(packageJson.version);
+const publicVersion = releaseTag.slice(1);
 
 assert.equal(packageLock.version, packageJson.version, "package-lock top-level version must match package.json");
 assert.equal(packageLock.packages[""].version, packageJson.version, "package-lock root package version must match package.json");
+assert.equal(packageJson.build?.buildVersion, publicVersion, "build.buildVersion must match the public dotted release version");
+assert.ok(
+  JSON.stringify(packageJson.build).includes("CODEX_MESSENGER_RELEASE_VERSION"),
+  "electron-builder artifact names must use the public dotted release version"
+);
 
 assertIncludes("README.md", releaseTag);
-assertIncludes("README.md", packageJson.version);
+assertIncludes("README.md", publicVersion);
 assertIncludes("README.md", "actions/workflows/ci.yml/badge.svg");
 assertIncludes("README.md", "actions/workflows/codeql.yml/badge.svg");
 assertIncludes("README.md", "actions/workflows/dependency-review.yml/badge.svg");
@@ -42,8 +48,15 @@ assertIncludes(".github/dependabot.yml", "package-ecosystem: \"npm\"");
 
 const main = read("electron/main.js");
 const appServerClient = read("electron/codexAppServerClient.js");
+const codexSetup = read("shared/codexSetup.js");
 const protocolSource = `${main}\n${appServerClient}`;
 assert.ok(protocolSource.includes("experimentalApi: true"), "initialize should opt into app-server capabilities");
+assert.ok(protocolSource.includes("--analytics-default-enabled"), "release must use the tested app-server analytics flag");
+assert.ok(protocolSource.includes("--disable") && protocolSource.includes("plugins"), "release must disable Codex plugin startup unless connectors are explicitly enabled");
+assert.ok(main.includes("requestSingleInstanceLock"), "release must prevent duplicate app instances on the same profile");
+assert.ok(read("electron/windowManager.js").includes("render-process-gone"), "release must log renderer process crashes");
+assert.ok(codexSetup.includes('minimumCodexVersion = "0.125.0"'), "release must declare the minimum tested Codex CLI version");
+assert.ok(read("README.md").includes("Codex CLI 0.125.0 or newer"), "README must document the minimum tested Codex CLI version");
 assert.ok(!/persistExtendedHistory|experimentalRawEvents|persistFullHistory/.test(protocolSource), "release must not send experimental thread history fields");
 assert.ok(!protocolSource.includes("acceptSettings"), "release must not send non-protocol approval acceptSettings");
 assert.ok(protocolSource.includes("acceptForSession"), "release must support protocol approval acceptForSession decisions");

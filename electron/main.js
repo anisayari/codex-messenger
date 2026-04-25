@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { defaultCodexOptions, normalizeCodexOptions, sandboxPolicyForMode } from "../shared/codexOptions.js";
 import { codexImageFromItem, isCodexImageItem } from "../shared/codexImages.js";
-import { codexLoginStatus, findCodexCommand, findNpmCommand, installCodexCli, nodeDownloadUrl, quoteWindowsArg, spawnCommand } from "../shared/codexSetup.js";
+import { codexLoginStatus, codexVersion, codexVersionSupport, findCodexCommand, findNpmCommand, installCodexCli, minimumCodexVersion, nodeDownloadUrl, quoteWindowsArg, spawnCommand, unsupportedCodexVersionMessage } from "../shared/codexSetup.js";
 import { codexLanguageInstruction, normalizeLanguage } from "../shared/languages.js";
 import { newestThreadForProject, threadTimeMs } from "../shared/threadSelection.js";
 import { CodexAppServerClient } from "./codexAppServerClient.js";
@@ -845,6 +845,25 @@ async function resolveCodexCommand(candidatePath = null) {
   }
 }
 
+async function codexVersionRequirement(command) {
+  const version = await codexVersion(command);
+  const support = codexVersionSupport(version);
+  return {
+    version,
+    minimumCodexVersion: support.minimumVersion,
+    versionSupported: support.ok
+  };
+}
+
+async function resolveSupportedCodexCommand(candidatePath = null) {
+  const resolved = await resolveCodexCommand(candidatePath);
+  const version = await codexVersionRequirement(resolved.command);
+  if (!version.versionSupported) {
+    throw new Error(unsupportedCodexVersionMessage(version.version, version.minimumCodexVersion));
+  }
+  return resolved;
+}
+
 function runCodexCommand(command, args = []) {
   return new Promise((resolve, reject) => {
     const child = spawnCommand(command, args, {
@@ -877,8 +896,26 @@ async function codexStatus(candidatePath = null) {
   const npm = await findNpmCommand();
   try {
     const resolved = await resolveCodexCommand(candidatePath);
+    const version = await codexVersionRequirement(resolved.command);
+    const base = {
+      ...resolved,
+      configured: Boolean(settings.codexPath),
+      npm,
+      version: version.version,
+      minimumCodexVersion: version.minimumCodexVersion,
+      versionSupported: version.versionSupported
+    };
+    if (!version.versionSupported) {
+      return {
+        ok: false,
+        ...base,
+        login: { ok: false, text: "Codex CLI update required" },
+        ready: false,
+        error: unsupportedCodexVersionMessage(version.version, version.minimumCodexVersion)
+      };
+    }
     const login = await codexLoginStatus(resolved.command);
-    return { ok: true, ...resolved, configured: Boolean(settings.codexPath), npm, login, ready: login.ok };
+    return { ok: true, ...base, login, ready: login.ok };
   } catch (error) {
     return {
       ok: false,
@@ -886,6 +923,9 @@ async function codexStatus(candidatePath = null) {
       source: "missing",
       configured: Boolean(settings.codexPath),
       npm,
+      version: "",
+      minimumCodexVersion,
+      versionSupported: false,
       login: { ok: false, text: "Codex CLI not available" },
       ready: false,
       error: error.message
@@ -940,7 +980,7 @@ function localizedInstructions(contact) {
 const codex = new CodexAppServerClient({
   appVersion: () => app.getVersion(),
   defaultCwd,
-  resolveCodexCommand,
+  resolveCodexCommand: resolveSupportedCodexCommand,
   localizedInstructions,
   logDebug,
   loadedThreads,
@@ -1496,8 +1536,20 @@ const createBaseWindow = createBaseWindowFactory({
   showDockIcon,
   smokeTest,
   onSmokeReady: () => app.quit(),
-  openExternalUrl
+  openExternalUrl,
+  logDebug
 });
+
+const hasSingleInstanceLock = smokeTest || app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) {
+  isQuitting = true;
+  app.quit();
+} else {
+  app.on("second-instance", (_event, commandLine = [], workingDirectory = "") => {
+    logDebug("app.second-instance", { commandLine, workingDirectory });
+    if (app.isReady()) showMainWindow();
+  });
+}
 
 function showMainWindow() {
   showDockIcon();
@@ -2729,15 +2781,20 @@ ipcMain.handle("settings:choose-codex", async (event) => {
 
 ipcMain.handle("settings:test-codex", async (_event, candidatePath = null) => {
   const resolved = await resolveCodexCommand(candidatePath);
-  const version = await runCodexCommand(resolved.command, ["--version"]);
-  const login = await codexLoginStatus(resolved.command);
+  const version = await codexVersionRequirement(resolved.command);
+  const login = version.versionSupported
+    ? await codexLoginStatus(resolved.command)
+    : { ok: false, text: "Codex CLI update required" };
   return {
-    ok: true,
+    ok: version.versionSupported,
     ...resolved,
-    version: (version.stdout || version.stderr).trim(),
+    version: version.version,
+    minimumCodexVersion: version.minimumCodexVersion,
+    versionSupported: version.versionSupported,
     npm: await findNpmCommand(),
     login,
-    ready: login.ok
+    ready: version.versionSupported && login.ok,
+    error: version.versionSupported ? "" : unsupportedCodexVersionMessage(version.version, version.minimumCodexVersion)
   };
 });
 
@@ -2747,7 +2804,7 @@ ipcMain.handle("setup:install-codex", async () => {
 });
 
 ipcMain.handle("setup:login-codex", async (_event, candidatePath = null) => {
-  const resolved = await resolveCodexCommand(candidatePath);
+  const resolved = await resolveSupportedCodexCommand(candidatePath);
   await openCodexLoginTerminal(resolved.command);
   return { ok: true, command: resolved.command, codexStatus: await codexStatus(candidatePath) };
 });
@@ -3190,7 +3247,7 @@ ipcMain.handle("conversation:wizz", (_event, contactId) => {
 
 registerWindowIpcHandlers({ ipcMain, BrowserWindow });
 
-app.whenReady().then(async () => {
+if (hasSingleInstanceLock) app.whenReady().then(async () => {
   const debugLogPath = await ensureDebugLogFile();
   logDebug("app.start", {
     version: app.getVersion(),

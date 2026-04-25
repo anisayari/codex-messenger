@@ -22,10 +22,15 @@ test("release metadata is consistent across package, README, and website", () =>
   const packageJson = readJson("package.json");
   const packageLock = readJson("package-lock.json");
   const tag = displayVersion(packageJson.version);
+  const publicVersion = tag.slice(1);
 
   assert.equal(packageLock.version, packageJson.version);
   assert.equal(packageLock.packages[""].version, packageJson.version);
   assert.match(packageJson.version, /^\d+\.\d+\.\d+(?:-\d+)?$/);
+  assert.equal(packageJson.build?.buildVersion, publicVersion);
+  assert.match(packageJson.build?.mac?.artifactName, /\$\{env\.CODEX_MESSENGER_RELEASE_VERSION\}/);
+  assert.match(packageJson.build?.nsis?.artifactName, /\$\{env\.CODEX_MESSENGER_RELEASE_VERSION\}/);
+  assert.match(packageJson.build?.portable?.artifactName, /\$\{env\.CODEX_MESSENGER_RELEASE_VERSION\}/);
   assert.ok(read("README.md").includes(tag));
   assert.ok(read("codexmessenger.net/index.html").includes(tag));
 });

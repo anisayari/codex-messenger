@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { codexImageFromItem, imageSrcFromBase64Png, imageSrcFromPathOrUrl, isCodexImageItem } from "../shared/codexImages.js";
+import { windowsUpdateInstallerLaunch, windowsUpdateInstallerScript } from "../electron/updateService.js";
 import { appCopyFor, supportedLanguages } from "../shared/languages.js";
 import { newestThreadForProject } from "../shared/threadSelection.js";
 import { assetDigestSha256, safeAssetFileName, selectFrontReleaseAsset } from "../shared/updateAssets.js";
@@ -34,6 +35,12 @@ test("front release asset selection prefers platform installer assets", () => {
 });
 
 test("Codex image items expose renderable image attachments", () => {
+  const tmpCodexImageUrl = process.platform === "win32"
+    ? "file:///C:/tmp/codex%20image.png"
+    : "file:///tmp/codex%20image.png";
+  const tmpViewedUrl = process.platform === "win32"
+    ? "file:///C:/tmp/viewed.png"
+    : "file:///tmp/viewed.png";
   const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
   const pngDataUrl = `data:image/png;base64,${pngBase64}`;
   const generated = codexImageFromItem({
@@ -57,11 +64,12 @@ test("Codex image items expose renderable image attachments", () => {
     savedPath: "/tmp/codex image.png",
     result: "ignored"
   });
-  assert.equal(savedPathFallback.src, "file:///tmp/codex%20image.png");
+  assert.equal(savedPathFallback.src, tmpCodexImageUrl);
+  assert.equal(savedPathFallback.status, "completed");
 
   const viewed = codexImageFromItem({ type: "imageView", path: "/tmp/viewed.png" });
   assert.equal(viewed.kind, "imageView");
-  assert.equal(viewed.src, "file:///tmp/viewed.png");
+  assert.equal(viewed.src, tmpViewedUrl);
   assert.equal(isCodexImageItem({ type: "imageView" }), true);
 
   const rawCall = codexImageFromItem({
@@ -96,6 +104,28 @@ test("Codex image items expose renderable image attachments", () => {
   assert.equal(isCodexImageItem({ type: "image_generation_call" }), true);
   assert.equal(isCodexImageItem({ type: "message" }), false);
   assert.equal(imageSrcFromPathOrUrl("C:\\Users\\Anis\\Pictures\\image 1.png"), "file:///C:/Users/Anis/Pictures/image%201.png");
+});
+
+test("Windows update installer script avoids launching a broken root path", () => {
+  const script = windowsUpdateInstallerScript({
+    logPath: "C:\\Users\\Anis\\AppData\\Roaming\\Codex Messenger\\updates\\install.log"
+  });
+  assert.match(script, /if "%APP_EXE%"=="\\\\" set "APP_EXE="/);
+  assert.match(script, /%LOCALAPPDATA%\\Programs\\codex-messenger\\Codex Messenger\.exe/);
+  assert.match(script, /if defined APP_EXE if exist "%APP_EXE%"/);
+  assert.doesNotMatch(script, /if exist "%APP_EXE%" start/);
+
+  const launch = windowsUpdateInstallerLaunch({
+    scriptPath: "C:\\Users\\Anis\\AppData\\Roaming\\Codex Messenger\\updates\\install.cmd",
+    appPid: 1234,
+    installerPath: "C:\\Users\\Anis\\Downloads\\Codex Messenger Setup.exe",
+    appExe: "C:\\Users\\Anis\\AppData\\Local\\Programs\\codex-messenger\\Codex Messenger.exe"
+  });
+  assert.equal(launch.command, "cmd.exe");
+  assert.deepEqual(launch.args.slice(0, 3), ["/d", "/c", "call"]);
+  assert.equal(launch.args[3], "C:\\Users\\Anis\\AppData\\Roaming\\Codex Messenger\\updates\\install.cmd");
+  assert.ok(!launch.args.includes("start"));
+  assert.ok(!launch.args.includes("/s"));
 });
 
 test("project opening chooses the newest active thread, including hidden tabs", () => {

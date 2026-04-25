@@ -1,5 +1,13 @@
 import React from "react";
 
+function imageCommandStatusLabel(status) {
+  const clean = String(status ?? "").trim().toLowerCase();
+  if (clean === "completed" || clean === "succeeded" || clean === "success") return "termine";
+  if (clean === "failed" || clean === "error") return "erreur";
+  if (clean === "pending" || clean === "queued") return "en attente";
+  return "generation";
+}
+
 export function ApprovalRequestsPanel({ requests, onRespond }) {
   if (!requests.length) return null;
   return (
@@ -92,6 +100,7 @@ export function Message({ message, extractWinkFromText, renderFormattedMessageTe
     message.attachment?.type === "image" ? message.attachment : null
   ].filter((attachment, index, all) => attachment?.src && all.findIndex((candidate) => candidate?.src === attachment.src) === index);
   const imageCommand = message.imageCommand ?? null;
+  const imageCommandStatus = imageCommand ? imageCommandStatusLabel(imageCommand.status) : "";
   return (
     <article className={message.from === "me" ? "message me-message" : "message"}>
       <header><strong>{message.author}</strong><time>{message.time}</time></header>
@@ -99,7 +108,7 @@ export function Message({ message, extractWinkFromText, renderFormattedMessageTe
         <details className={`codex-item command image-generation-call ${imageCommand.status ?? ""}`}>
           <summary>
             <span className="command-summary-title">{imageCommand.command || "image_generation_call"}</span>
-            <span className="command-summary-status">{imageCommand.status || "pending"}</span>
+            <span className="command-summary-status">{imageCommandStatus}</span>
             <time>{message.time}</time>
           </summary>
           {!message.attachment?.src ? <small>Generation d'image en cours...</small> : null}
