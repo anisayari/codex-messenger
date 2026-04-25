@@ -2802,7 +2802,7 @@ button { cursor: default; }
 }
 .codex-item.command summary {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(86px, auto) auto;
   align-items: center;
   gap: 8px;
   min-height: 30px;
@@ -2837,15 +2837,18 @@ button { cursor: default; }
   margin: 0 0 6px;
 }
 .codex-item.command.image-generation-call.generating,
-.codex-item.command.image-generation-call.pending {
+.codex-item.command.image-generation-call.pending,
+.codex-item.command.image-generation-call.in_progress {
   border-color: #caa24a;
   background: linear-gradient(#fffefa, #fff8d8);
 }
 .codex-item.command.image-generation-call.generating .command-summary-status::before,
-.codex-item.command.image-generation-call.pending .command-summary-status::before {
+.codex-item.command.image-generation-call.pending .command-summary-status::before,
+.codex-item.command.image-generation-call.in_progress .command-summary-status::before {
   content: "";
   display: inline-block;
-  width: 7px;
+  flex: 0 0 27px;
+  width: 27px;
   height: 7px;
   margin-right: 5px;
   border-radius: 50%;
@@ -2863,6 +2866,10 @@ button { cursor: default; }
   font-weight: 700;
 }
 .command-summary-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
   color: #667791;
   white-space: nowrap;
   font-size: 10px;
@@ -3005,10 +3012,12 @@ button { cursor: default; }
   content: "";
   background: radial-gradient(circle at 35% 25%, #eaffea, #35c957 58%, #16833c);
 }
-.typing { display: flex; align-items: center; gap: 5px; color: #627083; font-size: 12px; }
+.typing { display: flex; align-items: center; gap: 5px; min-height: 18px; color: #627083; font-size: 12px; }
 .typing i { width: 6px; height: 6px; border-radius: 50%; background: #2874d9; animation: typing-bounce .9s infinite ease-in-out alternate; }
 .typing i:nth-child(2) { animation-delay: .12s; }
 .typing i:nth-child(3) { animation-delay: .24s; }
+.typing span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.typing.thinking { color: #315c99; font-weight: 700; }
 .approval-stack {
   display: grid;
   gap: 5px;

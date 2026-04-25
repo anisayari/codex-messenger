@@ -64,6 +64,7 @@ test("Codex image items expose renderable image attachments", () => {
     result: "ignored"
   });
   assert.equal(savedPathFallback.src, tmpCodexImageUrl);
+  assert.equal(savedPathFallback.status, "completed");
 
   const viewed = codexImageFromItem({ type: "imageView", path: "/tmp/viewed.png" });
   assert.equal(viewed.kind, "imageView");

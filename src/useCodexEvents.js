@@ -28,6 +28,7 @@ export function useCodexEvents({
   playNewMessageIfEnabled,
   setMessages,
   setTyping,
+  setTurnActive,
   setThreadsLoading,
   setThreadsLoadError,
   setConversations,
@@ -45,6 +46,7 @@ export function useCodexEvents({
       const notice = codexConnectionNotice(text);
       if (notice) {
         setTyping(false);
+        setTurnActive(false);
         setMessages((current) => appendSystemNotice(current, notice));
         return;
       }
@@ -63,11 +65,13 @@ export function useCodexEvents({
       if (contactId !== contact.id || !message) return;
       flushAgentDeltas();
       setTyping(true);
+      setTurnActive(true);
       setMessages((current) => upsertMessageById(current, message));
     });
     const offItemCompleted = api.on("codex:item-completed", ({ contactId, message }) => {
       if (contactId !== contact.id || !message) return;
       flushAgentDeltas();
+      setTurnActive(true);
       setMessages((current) => {
         const alreadyVisible = Boolean(message.id && current.some((item) => item.id === message.id));
         if (!alreadyVisible && message.from === "them") playNewMessageIfEnabled();
@@ -75,13 +79,17 @@ export function useCodexEvents({
       });
     });
     const offTyping = api.on("codex:typing", ({ contactId }) => {
-      if (contactId === contact.id) setTyping(true);
+      if (contactId === contact.id) {
+        setTyping(true);
+        setTurnActive(true);
+      }
     });
     const offDone = api.on("codex:done", ({ contactId }) => {
       if (contactId === contact.id) {
         flushAgentDeltas();
         playedStreamingSoundRef.current = false;
         setTyping(false);
+        setTurnActive(false);
       }
     });
     const offError = api.on("codex:error", ({ contactId, text }) => {
@@ -89,12 +97,14 @@ export function useCodexEvents({
       flushAgentDeltas();
       playedStreamingSoundRef.current = false;
       setTyping(false);
+      setTurnActive(false);
       setMessages((current) => appendSystemNotice(current, codexConnectionNotice(text) || { kind: "offline", text }));
     });
     const offStatus = api.on("codex:status", (status) => {
       if (status?.kind === "ready") {
         flushAgentDeltas();
         setTyping(false);
+        setTurnActive(false);
         const showThreadLoader = isCodexHistoryContact(contact);
         if (showThreadLoader) {
           setThreadsLoading(true);
@@ -120,6 +130,7 @@ export function useCodexEvents({
       if (!notice) return;
       flushAgentDeltas();
       setTyping(false);
+      setTurnActive(false);
       setMessages((current) => appendSystemNotice(current, notice));
     });
     const offStatusNote = api.on("codex:status-note", ({ contactId, text, kind }) => {
@@ -135,7 +146,10 @@ export function useCodexEvents({
         ...current.filter((item) => item.approvalId !== request.approvalId),
         request
       ]);
-      if (request.contactId === contact.id) setTyping(false);
+      if (request.contactId === contact.id) {
+        setTyping(false);
+        setTurnActive(false);
+      }
     });
     const offApprovalResolved = api.on("codex:approval-resolved", ({ approvalId }) => {
       setApprovalRequests((current) => current.filter((item) => item.approvalId !== approvalId));

@@ -78,12 +78,15 @@ export function codexImageFromItem(item) {
 
   const savedPath = item.savedPath ?? item.saved_path ?? item.path ?? "";
   const prompt = String(item.revisedPrompt ?? item.revised_prompt ?? item.prompt ?? "").trim();
-  const status = String(item.status ?? "generating").trim() || "generating";
+  const rawStatus = String(item.status ?? "").trim();
   const src =
     imageSrcFromBase64Png(item.src) ||
     imageSrcFromPathOrUrl(item.src) ||
     imageSrcFromBase64Png(item.result) ||
     imageSrcFromPathOrUrl(savedPath);
+  const status = src && (!rawStatus || /^(generating|pending|in_progress)$/i.test(rawStatus))
+    ? "completed"
+    : rawStatus || "generating";
   if (!src && !prompt && !status) return null;
   const text = [
     src ? "Image generee" : `Image en generation (${status})`,
