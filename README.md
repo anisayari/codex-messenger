@@ -29,8 +29,8 @@ Important: Codex Messenger is only a local front-end client for `codex app-serve
 
 Official downloads are available from [codexmessenger.net](https://codexmessenger.net/). Click `DOWNLOAD` and choose the platform in the popup:
 
-- macOS `v0.0.2.7`: `CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.7`: `CodexMessenger.exe`.
+- macOS `v0.0.2.8`: `CodexMessenger-mac-arm64.dmg`.
+- Windows `v0.0.2.8`: `CodexMessenger.exe`.
 
 The website download popup is backed by GitHub release assets. A release must include both the Windows `.exe` and macOS `.dmg`; otherwise the site deployment should fail instead of publishing a broken download button.
 
@@ -316,8 +316,8 @@ npm run package:win
 
 Generated Windows files are written to `release/windows/`:
 
-- `Codex Messenger Setup 0.0.2-7.exe`: Windows installer.
-- `Codex Messenger 0.0.2-7.exe`: portable build.
+- `Codex Messenger Setup 0.0.2.8.exe`: Windows installer.
+- `Codex Messenger 0.0.2.8.exe`: portable build.
 - `win-unpacked/`: unpacked folder for local testing.
 
 The build is not signed. For broad public distribution, add Windows code signing.
@@ -331,8 +331,8 @@ npm run package:mac
 
 Generated macOS files are written to `release/macos/`:
 
-- `Codex-Messenger-0.0.2-7-arm64.dmg` or `Codex-Messenger-0.0.2-7-x64.dmg`.
-- `Codex-Messenger-0.0.2-7-arm64.zip` or `Codex-Messenger-0.0.2-7-x64.zip`.
+- `Codex-Messenger-0.0.2.8-arm64.dmg` or `Codex-Messenger-0.0.2.8-x64.dmg`.
+- `Codex-Messenger-0.0.2.8-arm64.zip` or `Codex-Messenger-0.0.2.8-x64.zip`.
 - `mac-arm64/` or `mac/`: unpacked app folder for local testing.
 
 The unsigned macOS build includes camera and microphone usage descriptions for the snapshot and voice clip features, but it is not notarized or Developer ID signed.
@@ -366,8 +366,8 @@ The static showcase site lives in `codexmessenger.net/`.
 
 Its `DOWNLOAD` button opens a platform chooser popup with:
 
-- macOS `v0.0.2.7`: `downloads/CodexMessenger-mac-arm64.dmg`.
-- Windows `v0.0.2.7`: `downloads/CodexMessenger.exe`.
+- macOS `v0.0.2.8`: `downloads/CodexMessenger-mac-arm64.dmg`.
+- Windows `v0.0.2.8`: `downloads/CodexMessenger.exe`.
 
 The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, resolves one Windows `.exe` asset and one macOS `.dmg` asset, patches the cache-buster in `codexmessenger.net/index.html`, uploads the static files to the VPS, then downloads the two release assets into `/downloads/` and writes `.sha256` files.
 

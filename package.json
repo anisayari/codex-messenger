@@ -1,6 +1,6 @@
 {
   "name": "codex-messenger",
-  "version": "0.0.2-7",
+  "version": "0.0.2-8",
   "description": "MSN Messenger-inspired Electron desktop client for running Codex locally.",
   "author": "Anis AYARI",
   "license": "MIT",
@@ -21,11 +21,11 @@
     "setup:codex:check": "node scripts/bootstrap-codex-env.mjs --check",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4174",
-    "package:win": "npm run build && electron-builder --win nsis portable --x64 -c.directories.output=release/windows",
+    "package:win": "npm run build && node scripts/electron-builder-release-version.mjs --win nsis portable --x64 -c.directories.output=release/windows",
     "package:mac": "npm run package:mac:unsigned",
-    "package:mac:unsigned": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg zip -c.directories.output=release/macos",
-    "package:mac:dir": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dir -c.directories.output=release/macos",
-    "package:mac:all": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg zip --x64 --arm64 -c.directories.output=release/macos",
+    "package:mac:unsigned": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false node scripts/electron-builder-release-version.mjs --mac dmg zip -c.directories.output=release/macos",
+    "package:mac:dir": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false node scripts/electron-builder-release-version.mjs --mac dir -c.directories.output=release/macos",
+    "package:mac:all": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false node scripts/electron-builder-release-version.mjs --mac dmg zip --x64 --arm64 -c.directories.output=release/macos",
     "package:mac:release": "node scripts/package-mac-release.mjs",
     "dist:win": "npm run package:win",
     "dist:mac": "npm run package:mac",
@@ -53,6 +53,7 @@
   "build": {
     "appId": "com.codex.messenger",
     "productName": "Codex Messenger",
+    "buildVersion": "0.0.2.8",
     "asar": true,
     "directories": {
       "output": "release"
@@ -66,6 +67,7 @@
     ],
     "win": {
       "icon": "public/icons/codex-messenger.ico",
+      "artifactName": "${productName}-${env.CODEX_MESSENGER_RELEASE_VERSION}-${arch}.${ext}",
       "target": [
         {
           "target": "nsis",
@@ -84,7 +86,7 @@
     "mac": {
       "icon": "public/icons/codex-messenger.icns",
       "category": "public.app-category.developer-tools",
-      "artifactName": "Codex-Messenger-${version}-${arch}.${ext}",
+      "artifactName": "Codex-Messenger-${env.CODEX_MESSENGER_RELEASE_VERSION}-${arch}.${ext}",
       "target": [
         {
           "target": "dmg"
@@ -99,6 +101,7 @@
       }
     },
     "nsis": {
+      "artifactName": "${productName} Setup ${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
@@ -106,6 +109,9 @@
       "createStartMenuShortcut": true,
       "deleteAppDataOnUninstall": false,
       "shortcutName": "Codex Messenger"
+    },
+    "portable": {
+      "artifactName": "${productName} ${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}"
     }
   }
 }

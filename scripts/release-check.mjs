@@ -24,12 +24,18 @@ function assertIncludes(filePath, needle) {
 const packageJson = readJson("package.json");
 const packageLock = readJson("package-lock.json");
 const releaseTag = displayVersion(packageJson.version);
+const publicVersion = releaseTag.slice(1);
 
 assert.equal(packageLock.version, packageJson.version, "package-lock top-level version must match package.json");
 assert.equal(packageLock.packages[""].version, packageJson.version, "package-lock root package version must match package.json");
+assert.equal(packageJson.build?.buildVersion, publicVersion, "build.buildVersion must match the public dotted release version");
+assert.ok(
+  JSON.stringify(packageJson.build).includes("CODEX_MESSENGER_RELEASE_VERSION"),
+  "electron-builder artifact names must use the public dotted release version"
+);
 
 assertIncludes("README.md", releaseTag);
-assertIncludes("README.md", packageJson.version);
+assertIncludes("README.md", publicVersion);
 assertIncludes("README.md", "actions/workflows/ci.yml/badge.svg");
 assertIncludes("README.md", "actions/workflows/codeql.yml/badge.svg");
 assertIncludes("README.md", "actions/workflows/dependency-review.yml/badge.svg");

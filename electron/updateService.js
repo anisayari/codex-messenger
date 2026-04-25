@@ -4,7 +4,7 @@ import { createWriteStream } from "node:fs";
 import fs from "node:fs/promises";
 import https from "node:https";
 import path from "node:path";
-import { codexNpmPackageName, quoteWindowsArg } from "../shared/codexSetup.js";
+import { codexNpmPackageName } from "../shared/codexSetup.js";
 import { assetDigestSha256, releaseVersionLabel, safeAssetFileName, selectFrontReleaseAsset } from "../shared/updateAssets.js";
 import { displayVersion, updateAvailable, versionLabelForResult } from "../shared/versionUtils.js";
 
@@ -187,6 +187,70 @@ function runUpdateCommand(command, args = [], { cwd, timeoutMs = 5 * 60_000 } = 
   });
 }
 
+function escapeWindowsBatchSetValue(value = "") {
+  return String(value).replace(/%/g, "%%");
+}
+
+export function windowsUpdateInstallerScript({ logPath }) {
+  return [
+    "@echo off",
+    "setlocal EnableExtensions",
+    "set \"APP_PID=%~1\"",
+    "set \"INSTALLER=%~2\"",
+    "set \"APP_EXE=%~3\"",
+    `set "LOG_PATH=${escapeWindowsBatchSetValue(logPath)}"`,
+    "echo Installing Codex Messenger update > \"%LOG_PATH%\"",
+    "echo Script: %~f0 >> \"%LOG_PATH%\"",
+    "echo Installer: %INSTALLER% >> \"%LOG_PATH%\"",
+    "echo Previous app exe: %APP_EXE% >> \"%LOG_PATH%\"",
+    "if not exist \"%INSTALLER%\" (",
+    "  echo Installer missing: %INSTALLER% >> \"%LOG_PATH%\"",
+    "  exit /b 1",
+    ")",
+    ":wait_app",
+    "tasklist /FI \"PID eq %APP_PID%\" 2>NUL | find \"%APP_PID%\" >NUL",
+    "if \"%ERRORLEVEL%\"==\"0\" (",
+    "  timeout /t 1 /nobreak >NUL",
+    "  goto wait_app",
+    ")",
+    "\"%INSTALLER%\" /S >> \"%LOG_PATH%\" 2>&1",
+    "set \"INSTALL_EXIT=%ERRORLEVEL%\"",
+    "echo Installer exit code: %INSTALL_EXIT% >> \"%LOG_PATH%\"",
+    "if not \"%INSTALL_EXIT%\"==\"0\" exit /b %INSTALL_EXIT%",
+    "call :resolve_app_exe",
+    "if defined APP_EXE if exist \"%APP_EXE%\" (",
+    "  echo Relaunching: %APP_EXE% >> \"%LOG_PATH%\"",
+    "  start \"\" \"%APP_EXE%\"",
+    ") else (",
+    "  echo Codex Messenger exe not found after update. >> \"%LOG_PATH%\"",
+    ")",
+    "endlocal",
+    "exit /b 0",
+    "",
+    ":resolve_app_exe",
+    "if \"%APP_EXE%\"==\"\\\" set \"APP_EXE=\"",
+    "if \"%APP_EXE%\"==\"\\\\\" set \"APP_EXE=\"",
+    "if defined APP_EXE if exist \"%APP_EXE%\" exit /b 0",
+    "set \"APP_EXE=%LOCALAPPDATA%\\Programs\\codex-messenger\\Codex Messenger.exe\"",
+    "if exist \"%APP_EXE%\" exit /b 0",
+    "set \"APP_EXE=%LOCALAPPDATA%\\Programs\\Codex Messenger\\Codex Messenger.exe\"",
+    "if exist \"%APP_EXE%\" exit /b 0",
+    "set \"APP_EXE=%ProgramFiles%\\Codex Messenger\\Codex Messenger.exe\"",
+    "if exist \"%APP_EXE%\" exit /b 0",
+    "set \"APP_EXE=%ProgramFiles(x86)%\\Codex Messenger\\Codex Messenger.exe\"",
+    "if exist \"%APP_EXE%\" exit /b 0",
+    "set \"APP_EXE=\"",
+    "exit /b 0"
+  ].join("\r\n");
+}
+
+export function windowsUpdateInstallerLaunch({ scriptPath, appPid, installerPath, appExe }) {
+  return {
+    command: "cmd.exe",
+    args: ["/d", "/c", "call", scriptPath, String(appPid), installerPath, appExe]
+  };
+}
+
 export function createUpdateService({
   app,
   shell,
@@ -349,40 +413,27 @@ export function createUpdateService({
     const scriptPath = path.join(updateDir, "install-codex-messenger-update.cmd");
     const logPath = path.join(updateDir, "install-codex-messenger-update.log");
     const appExe = process.execPath;
-    const script = [
-      "@echo off",
-      "setlocal",
-      "set \"APP_PID=%~1\"",
-      "set \"INSTALLER=%~2\"",
-      "set \"APP_EXE=%~3\"",
-      `set "LOG_PATH=${logPath}"`,
-      "echo Installing Codex Messenger update > \"%LOG_PATH%\"",
-      ":wait_app",
-      "tasklist /FI \"PID eq %APP_PID%\" 2>NUL | find \"%APP_PID%\" >NUL",
-      "if \"%ERRORLEVEL%\"==\"0\" (",
-      "  timeout /t 1 /nobreak >NUL",
-      "  goto wait_app",
-      ")",
-      "\"%INSTALLER%\" /S >> \"%LOG_PATH%\" 2>&1",
-      "if exist \"%APP_EXE%\" start \"\" \"%APP_EXE%\"",
-      "endlocal"
-    ].join("\r\n");
+    const script = windowsUpdateInstallerScript({ logPath });
     await fs.writeFile(scriptPath, script, "utf8");
-    const command = [
-      "start",
-      "\"\"",
-      quoteWindowsArg(scriptPath),
-      quoteWindowsArg(String(process.pid)),
-      quoteWindowsArg(installerPath),
-      quoteWindowsArg(appExe)
-    ].join(" ");
-    const child = spawn("cmd.exe", ["/d", "/s", "/c", command], {
+    const launch = windowsUpdateInstallerLaunch({
+      scriptPath,
+      appPid: process.pid,
+      installerPath,
+      appExe
+    });
+    const child = spawn(launch.command, launch.args, {
       detached: true,
       windowsHide: false,
       stdio: "ignore"
     });
     child.unref();
-    logDebug("update.front.installer.scheduled", { platform: "win32", installerPath, scriptPath, latestVersion });
+    logDebug("update.front.installer.scheduled", {
+      platform: "win32",
+      installerPath,
+      scriptPath,
+      appExe,
+      latestVersion
+    });
     setTimeout(() => quitApplication(), 500);
     return {
       quitStarted: true,
