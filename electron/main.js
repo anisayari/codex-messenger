@@ -1536,8 +1536,20 @@ const createBaseWindow = createBaseWindowFactory({
   showDockIcon,
   smokeTest,
   onSmokeReady: () => app.quit(),
-  openExternalUrl
+  openExternalUrl,
+  logDebug
 });
+
+const hasSingleInstanceLock = smokeTest || app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) {
+  isQuitting = true;
+  app.quit();
+} else {
+  app.on("second-instance", (_event, commandLine = [], workingDirectory = "") => {
+    logDebug("app.second-instance", { commandLine, workingDirectory });
+    if (app.isReady()) showMainWindow();
+  });
+}
 
 function showMainWindow() {
   showDockIcon();
@@ -3235,7 +3247,7 @@ ipcMain.handle("conversation:wizz", (_event, contactId) => {
 
 registerWindowIpcHandlers({ ipcMain, BrowserWindow });
 
-app.whenReady().then(async () => {
+if (hasSingleInstanceLock) app.whenReady().then(async () => {
   const debugLogPath = await ensureDebugLogFile();
   logDebug("app.start", {
     version: app.getVersion(),

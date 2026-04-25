@@ -85,9 +85,11 @@ export function quoteWindowsArg(value) {
 export function spawnCommand(command, args, options = {}) {
   const ext = path.extname(command).toLowerCase();
   if (process.platform === "win32" && (ext === ".cmd" || ext === ".bat")) {
-    return spawn(quoteWindowsArg(command), args, {
+    const commandLine = `"${[quoteWindowsArg(command), ...args.map(quoteWindowsArg)].join(" ")}"`;
+    return spawn(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", commandLine], {
       ...options,
-      shell: true
+      shell: false,
+      windowsVerbatimArguments: true
     });
   }
   return spawn(command, args, {

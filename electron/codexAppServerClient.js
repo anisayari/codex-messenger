@@ -14,6 +14,22 @@ function codexThreadConfigOverrides() {
   return { ...codexMessengerConfigOverrides };
 }
 
+function codexAppServerArgs() {
+  const args = ["app-server", "--analytics-default-enabled"];
+  if (process.env.CODEX_MESSENGER_ENABLE_CODEX_CONNECTORS === "1") return args;
+  return [
+    ...args,
+    "--disable",
+    "apps",
+    "--disable",
+    "plugins",
+    "-c",
+    "include_apps_instructions=false",
+    "-c",
+    "mcp_servers={}"
+  ];
+}
+
 function normalizeUserInputs(input) {
   const items = typeof input === "string" ? [{ type: "text", text: input }] : input;
   return (Array.isArray(items) ? items : []).map((item) => {
@@ -64,7 +80,7 @@ export class CodexAppServerClient extends EventEmitter {
   async start() {
     const codexCommand = await this.resolveCodexCommand();
     this.logDebug("codex.app-server.start", { command: codexCommand.command, cwd: this.defaultCwd() });
-    this.child = spawnCommand(codexCommand.command, ["app-server", "--analytics-default-enabled"], {
+    this.child = spawnCommand(codexCommand.command, codexAppServerArgs(), {
       cwd: this.defaultCwd(),
       stdio: ["pipe", "pipe", "pipe"],
       windowsHide: true,
