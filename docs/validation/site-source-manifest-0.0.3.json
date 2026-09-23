@@ -1,0 +1,27 @@
+{
+  "frozen": true,
+  "release": "0.0.3",
+  "codexMinimum": "0.156.1",
+  "files": [
+    {
+      "path": "codexmessenger.net/index.html",
+      "bytes": 59109,
+      "sha256": "b6760c87eb6e0c78024b012439d91fd4b971e9f054447e0f1906f727ace4255d"
+    },
+    {
+      "path": "codexmessenger.net/assets/site.js",
+      "bytes": 15500,
+      "sha256": "5539948a66c459a11c17a1f6275adae31b428ecf874563c8604ec00b5d427450"
+    },
+    {
+      "path": "codexmessenger.net/README-deploy.md",
+      "bytes": 3988,
+      "sha256": "83003e33e3ec85af68d4303864097e0de736ddff6bcf46e3d996ffa8b7abef54"
+    },
+    {
+      "path": "codexmessenger.net/assets/screenshots/conversation-demo.png",
+      "bytes": 169248,
+      "sha256": "fa59dc14e58bbc1c69ac9c2570fb9fce4e26e0a0baeb89a08b972b1a95ded2f4"
+    }
+  ]
+}

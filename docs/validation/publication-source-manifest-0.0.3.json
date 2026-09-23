@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-09-23T14:36:29.263Z",
+  "verifiedAt": "2026-09-23T14:50:27.610Z",
   "messengerVersion": "0.0.3",
   "codexVersion": "0.156.1",
   "runner": {
     "node": "24.19.0",
-    "tests": 253,
-    "passed": 250,
+    "tests": 259,
+    "passed": 256,
     "skipped": 3,
     "failed": 0,
     "cancelled": 0,
     "liveFixturesPassed": 3
   },
-  "sourceMode": "Resident publication checkout; source copies attested individually, current audio and portable release/test fixes retested.",
+  "sourceMode": "Resident publication checkout; source copies attested individually; Windows URI assertions and native Codex distribution proof retested.",
   "files": [
     {
       "path": ".gitattributes",
@@ -46,13 +46,18 @@
     },
     {
       "path": ".github/workflows/release.yml",
-      "bytes": 4631,
-      "sha256": "8d10d056c402c921209822c40c1af131f07feb9fbfbddc0986709094c82a5adb"
+      "bytes": 5427,
+      "sha256": "1c755231b63c2ca681192b48b33a6f31f183a373844a844ad5dccec6372d913b"
     },
     {
       "path": ".gitignore",
       "bytes": 295,
       "sha256": "2cbbeef0a8b769b61bb15b98e60cac2e4c1173a388b68891c64b77a852659162"
+    },
+    {
+      "path": "README.md",
+      "bytes": 21460,
+      "sha256": "7763eca00d6349eddd00c2d4f71f4c51f6d224d3ecc2b464aed16791d083f42f"
     },
     {
       "path": "build/installer.nsh",
@@ -63,6 +68,11 @@
       "path": "codexmessenger.net/.well-known/security.txt",
       "bytes": 251,
       "sha256": "cf0740dbb05f289d3d738855742bbcaaa5449c2de680b09e63ab463bca549859"
+    },
+    {
+      "path": "codexmessenger.net/README-deploy.md",
+      "bytes": 3988,
+      "sha256": "83003e33e3ec85af68d4303864097e0de736ddff6bcf46e3d996ffa8b7abef54"
     },
     {
       "path": "codexmessenger.net/apple-touch-icon.png",
@@ -153,11 +163,6 @@
       "path": "codexmessenger.net/nginx.codexmessenger.net.conf",
       "bytes": 4560,
       "sha256": "3556bbe753363b6474ee552ab8f0a69542a5e59e00915ca93490e643f3b31345"
-    },
-    {
-      "path": "codexmessenger.net/README-deploy.md",
-      "bytes": 3988,
-      "sha256": "83003e33e3ec85af68d4303864097e0de736ddff6bcf46e3d996ffa8b7abef54"
     },
     {
       "path": "codexmessenger.net/robots.txt",
@@ -1170,6 +1175,11 @@
       "sha256": "e740b4f0be0442b5e6975076a734984ff8b66cfa3e3401d87457d01c125be8cc"
     },
     {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/KoiPond.swf",
+      "bytes": 76279,
+      "sha256": "dc48962a2d2ca7492753fe91731bcc144cf357f06d7d6671220b587038f13751"
+    },
+    {
       "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/background.jpg",
       "bytes": 67730,
       "sha256": "6b1abf3ba4be29f2441769eedb51a5690c10bb7e55cdb7a62589bb63a182260d"
@@ -1185,11 +1195,6 @@
       "sha256": "a9b2ac60a1545d1421cc081026c8ba61f95bc004fef4a3c1b5b4f713da3eca9a"
     },
     {
-      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/KoiPond.swf",
-      "bytes": 76279,
-      "sha256": "dc48962a2d2ca7492753fe91731bcc144cf357f06d7d6671220b587038f13751"
-    },
-    {
       "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/inner.mct",
       "bytes": 215635,
       "sha256": "d81588f71bb9905c3d60201c53b30233ef99c1e7e24c789d11bc4f64a6f3730c"
@@ -1200,14 +1205,14 @@
       "sha256": "448af0208c1a254bf9e019055d1b18d3adb8a3fdb8ffbfd08b8adfe933340e4b"
     },
     {
-      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/background.jpg",
-      "bytes": 139163,
-      "sha256": "d859364cdddb73ae35e4232274db5f0f50400d8dbce7aa7465286a749e1588a4"
-    },
-    {
       "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/Clocks.swf",
       "bytes": 82311,
       "sha256": "d4c0dad6581e7668e2e358b2668e42e9fbb534476fcc8113bed1c2ba3bd2e0b3"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/background.jpg",
+      "bytes": 139163,
+      "sha256": "d859364cdddb73ae35e4232274db5f0f50400d8dbce7aa7465286a749e1588a4"
     },
     {
       "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/content.xml",
@@ -1265,6 +1270,11 @@
       "sha256": "f8c3415d49f5f9877c7a76073ef9ee71e0933e46f8f2972daa0d3d59ceb90f14"
     },
     {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/Pixies.swf",
+      "bytes": 61498,
+      "sha256": "1c32077e883b1d5ef25e6e4e29d9be16d2acf063a6e22ccace9ec31d78057af1"
+    },
+    {
       "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/content.xml",
       "bytes": 1425,
       "sha256": "f584ae1d811acfcca8ec6d546f77a1a936d6d13b779078e20ff9eae0698885cf"
@@ -1273,11 +1283,6 @@
       "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/downlevel.jpg",
       "bytes": 26383,
       "sha256": "0f1f1fc94a026e10bd49a1cf0f36f4cd05e9d9c3fa84bf89b584a402eb4b4495"
-    },
-    {
-      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/Pixies.swf",
-      "bytes": 61498,
-      "sha256": "1c32077e883b1d5ef25e6e4e29d9be16d2acf063a6e22ccace9ec31d78057af1"
     },
     {
       "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/inner.mct",
@@ -1775,14 +1780,14 @@
       "sha256": "a4737df91adc98ef41883c8ef1600b21d10c9a8166d4be9f372bda86b01e405e"
     },
     {
-      "path": "public/msn-assets/msn75/resources/dwintl/string/dwintl_string_1_9.bin",
-      "bytes": 902,
-      "sha256": "c0ebce4b2b179300f39dd7735a999db6e1dd8224a2378b36f80fef13db3cfeaf"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/dwintl/string/dwintl_string_10_9.bin",
       "bytes": 34,
       "sha256": "09983c54edf8809d668ddc56d70039494bab2f524b48fdf97b5e963545a90831"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/dwintl/string/dwintl_string_1_9.bin",
+      "bytes": 902,
+      "sha256": "c0ebce4b2b179300f39dd7735a999db6e1dd8224a2378b36f80fef13db3cfeaf"
     },
     {
       "path": "public/msn-assets/msn75/resources/dwintl/string/dwintl_string_2_9.bin",
@@ -1853,6 +1858,176 @@
       "path": "public/msn-assets/msn75/resources/msgsc/version/msgsc_version_1_9.bin",
       "bytes": 1028,
       "sha256": "1a1bfe69a40c239b8e7e962b78816442e064a14243db072b8d2d14eea6d9a9ea"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1600_9.cab",
+      "bytes": 218461,
+      "sha256": "7558e1aac237d13520226df7f18f3feef1701125548ab903e5d3c7f02754e97e"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1601_9.cab",
+      "bytes": 278710,
+      "sha256": "3249edd6c4e889c035f90b6b308d7cfbf0b2a43c339cf409052f6a62c21c7f16"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1602_9.cab",
+      "bytes": 164902,
+      "sha256": "cb43e4a43559a2aa95c98295bf0c69a2d0b22149cc1972eb151fa190ac58ec71"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1603_9.cab",
+      "bytes": 123713,
+      "sha256": "448ff63aee84de9a0ee0019bf4fb9ecf099d6294979146ed83766d8e4d80d922"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1121_9.txt",
+      "bytes": 2948,
+      "sha256": "a7ce4ae1c4d9da027a10988bd872758f8c270d2ec703a521e14680d3ed766441"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1122_9.txt",
+      "bytes": 2948,
+      "sha256": "b06a5dff3a49ee823c9f70064808c719dd8ba472017e54942ff8931b4bc13397"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1123_9.txt",
+      "bytes": 2948,
+      "sha256": "48a8623166b2d4c2dc843982cce9332cf08de2119ecc233ce1ab813ed1bbc3c5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1124_9.txt",
+      "bytes": 2948,
+      "sha256": "d9cf8aef0e2593a7462cd454c1c834de983451e1aaed986c0cc6c4a6596c19f6"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1125_9.txt",
+      "bytes": 2948,
+      "sha256": "e86df915b62220c1f725a722bc1bc25ebe48fe94815e06bb1de3a28ed680d799"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1126_9.txt",
+      "bytes": 2948,
+      "sha256": "24a727c2165cc9f21be671c46ea244c5efe7b2e8460ef0d02693146cd6b441bd"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1127_9.txt",
+      "bytes": 2948,
+      "sha256": "6ac8da7b2242ea22b94f3e303a3c6c05d14362be0ebdf4197760cdef1cda035e"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1128_9.txt",
+      "bytes": 2948,
+      "sha256": "5dc5eb61157ee5d8be2444397d2e935e9a7262d88f1bb9ec97e7c21bc256f0df"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1129_9.txt",
+      "bytes": 2948,
+      "sha256": "872214d8753c9e23d954a6d73077a74de166d9b340ea2e894d7aff4938e906bd"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1130_9.txt",
+      "bytes": 2948,
+      "sha256": "5878e6c20ef44902808fef7ec58b491563f6104563889951dc89cc14a764aa89"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1131_9.txt",
+      "bytes": 2948,
+      "sha256": "74d8dd1a000f8a2390bcffa3969caa1e36a006e9f470f8a4d99b15ff9d7bbefd"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1132_9.txt",
+      "bytes": 2948,
+      "sha256": "58f55f8bcf27a224c6756fe179653bbecd7423b0ef9b36003afc25472dd00e25"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1133_9.txt",
+      "bytes": 2948,
+      "sha256": "d95ce49fe2d9b5f50f1a4d076188f2ac6312ea28ff8492d2113ad61ab2334b58"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1134_9.txt",
+      "bytes": 2948,
+      "sha256": "6c20431a4ebd85180733b22165c2ccb10b92f74da57d79903653ea9a055d338e"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1135_9.txt",
+      "bytes": 2948,
+      "sha256": "adcc1f56cbb2e10939b0e577fcb1bfecb3e16657829378eae689938be394372d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1121_9.cab",
+      "bytes": 46021,
+      "sha256": "260031c34df48f664fbb52f89b577eb10cc4926370542e635f9cdce011cc6b13"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1122_9.cab",
+      "bytes": 16178,
+      "sha256": "cae6659d16303937bb8bae93c9de1c2a22800407d94a2f2d69134c3d3477d805"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1123_9.cab",
+      "bytes": 23608,
+      "sha256": "7f9b8555c009ed3857221178fc5cbe8f4b81348d4636bc24359f7f8cd436486f"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1124_9.cab",
+      "bytes": 20560,
+      "sha256": "ac1c5c3b8ca40b46ec9ebe19aa60863f96ce1dfbcf7ddd47d0cd64fe20da3c01"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1125_9.cab",
+      "bytes": 46660,
+      "sha256": "d98b961efcfeb2c02ec8fcbd1cf136efba23fae3749f88a6e9973de5fde75c36"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1126_9.cab",
+      "bytes": 40950,
+      "sha256": "dd1f62f1bd4b411a6ef6c543da74b1ba4af0d07909e8e463404520c24b74ad4a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1127_9.cab",
+      "bytes": 59218,
+      "sha256": "34bebe9de5b930eb31261540c1ec7d0c611276bc325184cd649f168612d4c716"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1128_9.cab",
+      "bytes": 23262,
+      "sha256": "fb5c1efa913fb0cb192bcdc4c80a3922248d85e49989aac18f9fc1d732c7798a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1129_9.cab",
+      "bytes": 21122,
+      "sha256": "54ffab1b34382b5cc3e7ceeec5aa4ae79ba2c8dcd69190db507c49122b20bc73"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1130_9.cab",
+      "bytes": 23427,
+      "sha256": "3f0c5f647b43d3f88711f6ed9ac03b3a1023096da4bde50565fe5b82944558e2"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1131_9.cab",
+      "bytes": 62753,
+      "sha256": "502cf084f23e4d8d81a9fadd240dea3ef126f45ff6fe2a231b8de38ad0f65066"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1132_9.cab",
+      "bytes": 10225,
+      "sha256": "2352f96dd2fea387648791cf298e4f59e555cb3df3a5be497695afdc563024dc"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1133_9.cab",
+      "bytes": 35574,
+      "sha256": "904dc13850083a2006c7616198d2c7b5bb65b80bf7c38e2c3ab977b90cc9e00c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1134_9.cab",
+      "bytes": 67994,
+      "sha256": "4b65e1a111cdcef7146de48f5104a76d62ed070e256552717bee2e0f93bcce78"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1135_9.cab",
+      "bytes": 37885,
+      "sha256": "6b1cce4340f8cb8293db130a30913fd51cd0c0d72d636bca9ee74f4da0b3aeca"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/dialog/msgslang_dialog_11016_9.bin",
@@ -2040,11 +2215,6 @@
       "sha256": "d54d5dd56c443e7ab7d740279b1b8e499ce7de3253fba0b8c73968b05513680c"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/dialog/msgslang_dialog_300_9.bin",
-      "bytes": 1126,
-      "sha256": "771051f81ee73d13553ab7507d1fd81bc1b21bc81b819f370b457432bf7e7f1f"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msgslang/dialog/msgslang_dialog_30050_9.bin",
       "bytes": 2118,
       "sha256": "65b87b6f2b46aad13697d91b301a9916e90bce6d199abe01a200977ed2bd07a0"
@@ -2053,6 +2223,11 @@
       "path": "public/msn-assets/msn75/resources/msgslang/dialog/msgslang_dialog_30051_9.bin",
       "bytes": 1282,
       "sha256": "c2a8068c4dfed254218b7e1f7acaa44596b23d351330ea4f41da8fa1cad7a0b0"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/dialog/msgslang_dialog_300_9.bin",
+      "bytes": 1126,
+      "sha256": "771051f81ee73d13553ab7507d1fd81bc1b21bc81b819f370b457432bf7e7f1f"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/dialog/msgslang_dialog_302_9.bin",
@@ -2145,34 +2320,9 @@
       "sha256": "6f9353c88f67acc939e7f5f33ed7b382ba6a2b13215763b1f6e83376a550956b"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1600_9.cab",
-      "bytes": 218461,
-      "sha256": "7558e1aac237d13520226df7f18f3feef1701125548ab903e5d3c7f02754e97e"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1601_9.cab",
-      "bytes": 278710,
-      "sha256": "3249edd6c4e889c035f90b6b308d7cfbf0b2a43c339cf409052f6a62c21c7f16"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1602_9.cab",
-      "bytes": 164902,
-      "sha256": "cb43e4a43559a2aa95c98295bf0c69a2d0b22149cc1972eb151fa190ac58ec71"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/DYNAMICBACKGROUND/msgslang_DYNAMICBACKGROUND_1603_9.cab",
-      "bytes": 123713,
-      "sha256": "448ff63aee84de9a0ee0019bf4fb9ecf099d6294979146ed83766d8e4d80d922"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msgslang/menu/msgslang_menu_109_9.bin",
       "bytes": 2184,
       "sha256": "27e0c7f8df30c56657c347e22ce7a00db42a241aea9b1a9d90fb3f11f02a0a10"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/menu/msgslang_menu_110_9.bin",
-      "bytes": 1372,
-      "sha256": "ef04792a158b21b6735006076179e5c62a8328e2eb9b67f105fc382b84fb586b"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/menu/msgslang_menu_11017_9.bin",
@@ -2183,6 +2333,11 @@
       "path": "public/msn-assets/msn75/resources/msgslang/menu/msgslang_menu_11018_9.bin",
       "bytes": 62,
       "sha256": "086a1a8e33c82822cb347534e2a588b278d34c382594384f37a776c0f272cbe5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/menu/msgslang_menu_110_9.bin",
+      "bytes": 1372,
+      "sha256": "ef04792a158b21b6735006076179e5c62a8328e2eb9b67f105fc382b84fb586b"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/menu/msgslang_menu_200_9.bin",
@@ -2270,19 +2425,9 @@
       "sha256": "19e4e6c734a74dac8db2d76b4ec7f02488526bbe102b52058de858466afa48e7"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_1_9.bin",
-      "bytes": 1500,
-      "sha256": "1ec47126d02da417acf3578baf43055c060575d3440d06a740c58675c451ae89"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_10_9.bin",
       "bytes": 3024,
       "sha256": "3e54c5809971bee9e4ecec917ebb4c6432b109a59b97a136ca0b8f497efd3062"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_11_9.bin",
-      "bytes": 1128,
-      "sha256": "6a5db418d52e699965209baa7108b190c2065bfc214a187358121b90a0066d56"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_1188_9.bin",
@@ -2295,9 +2440,9 @@
       "sha256": "de8547889ed710bf40efdd1569527dea4163e57a007fe556be56af5e06bea17f"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_12_9.bin",
-      "bytes": 382,
-      "sha256": "0c3d4ca990c4d39c1d9070ae6d0a3fe31b1e504ff6be2014ee784359467a0668"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_11_9.bin",
+      "bytes": 1128,
+      "sha256": "6a5db418d52e699965209baa7108b190c2065bfc214a187358121b90a0066d56"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_125_9.bin",
@@ -2325,9 +2470,9 @@
       "sha256": "cdcd43085d93205ac59140d971ab50810101fcd1694ca66943d0268efa5c4e32"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_13_9.bin",
-      "bytes": 1280,
-      "sha256": "36645d475736c3d0ebc5923515cf967fb40b74505589290029caad5d90403a14"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_12_9.bin",
+      "bytes": 382,
+      "sha256": "0c3d4ca990c4d39c1d9070ae6d0a3fe31b1e504ff6be2014ee784359467a0668"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_130_9.bin",
@@ -2380,9 +2525,9 @@
       "sha256": "3d4e16baf85c56d59142a45fb02b43f544ed6b1dfc54466619e78fa3e56f83d2"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_14_9.bin",
-      "bytes": 1766,
-      "sha256": "64a0b0f76c06e211bcf10ef78a6f8a6e237e6f426e4be671480c5b1984d408c7"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_13_9.bin",
+      "bytes": 1280,
+      "sha256": "36645d475736c3d0ebc5923515cf967fb40b74505589290029caad5d90403a14"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_140_9.bin",
@@ -2435,14 +2580,19 @@
       "sha256": "717997d901baa4e25158aa92876fd7d899266f30310fa7c1765c651a6b9d27bf"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_15_9.bin",
-      "bytes": 644,
-      "sha256": "484969a65ce7aeb246be85834431790f49916ff11e86d74f5fd43b58679bc58d"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_14_9.bin",
+      "bytes": 1766,
+      "sha256": "64a0b0f76c06e211bcf10ef78a6f8a6e237e6f426e4be671480c5b1984d408c7"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_151_9.bin",
       "bytes": 1952,
       "sha256": "cd6b39091e85f3a2106a148b3e67894c365552945d266ac66c6e323b1c704fce"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_15_9.bin",
+      "bytes": 644,
+      "sha256": "484969a65ce7aeb246be85834431790f49916ff11e86d74f5fd43b58679bc58d"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_16_9.bin",
@@ -2465,14 +2615,9 @@
       "sha256": "26448bfd5ff451dd13f8df515cb1420b1af966dac1a07b3843040dcbe5028b04"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2_9.bin",
-      "bytes": 1704,
-      "sha256": "d62f5f0fd9b3bf5bd4839c21d728f830b1b18fa6396426a68a11f19da85b9391"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_20_9.bin",
-      "bytes": 1320,
-      "sha256": "1dcd84dc09602c5a8ed08384ff6bda62aee066632c2fe0fc413240cd7b2bbffe"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_1_9.bin",
+      "bytes": 1500,
+      "sha256": "1ec47126d02da417acf3578baf43055c060575d3440d06a740c58675c451ae89"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_200_9.bin",
@@ -2480,14 +2625,19 @@
       "sha256": "d53e44ecef789b274a96fb027a717b45038cc99369e5860a4b5a424b4a4948c3"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_21_9.bin",
-      "bytes": 1894,
-      "sha256": "a947ddae99f587c3265f89e7559d34017863dcd9f40f647913504e48f0886516"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_20_9.bin",
+      "bytes": 1320,
+      "sha256": "1dcd84dc09602c5a8ed08384ff6bda62aee066632c2fe0fc413240cd7b2bbffe"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2192_9.bin",
       "bytes": 68,
       "sha256": "b59a4bf9fba918e6eee1a80d5370b464420acf0f45a0d737084c034b072d29e5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_21_9.bin",
+      "bytes": 1894,
+      "sha256": "a947ddae99f587c3265f89e7559d34017863dcd9f40f647913504e48f0886516"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2219_9.bin",
@@ -2560,11 +2710,6 @@
       "sha256": "a317c76a583e7d3a0acf08698eae6541a9b49cf33b1b700fc21441e539e5502b"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_251_9.bin",
-      "bytes": 414,
-      "sha256": "de31fbe4347e2400d5f887c9057cb23516d1f6efb2e51d84c74b6a7325535572"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2510_9.bin",
       "bytes": 1028,
       "sha256": "2b6b238b99965395c7cd59e265a7f510932046ff31b23333fee3e47cc46a8f79"
@@ -2580,14 +2725,14 @@
       "sha256": "12d75360cf1f9186dbd53c6596b4076054653c9479fc0403297483c0bdfe8f7b"
     },
     {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_251_9.bin",
+      "bytes": 414,
+      "sha256": "de31fbe4347e2400d5f887c9057cb23516d1f6efb2e51d84c74b6a7325535572"
+    },
+    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_252_9.bin",
       "bytes": 1134,
       "sha256": "993cb551e176ac7746c1d5605dcdae56436ccf9bd29d2588993aba68bd7e89bb"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_253_9.bin",
-      "bytes": 716,
-      "sha256": "4e0ab425de8604a39f8a96598754a684ef8fa02c0768409c1a295060dc1d9fe8"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2537_9.bin",
@@ -2605,14 +2750,14 @@
       "sha256": "8007c941748ac30968a1839a038a9d07fb99314d7995004dd672614b0dec96a1"
     },
     {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_253_9.bin",
+      "bytes": 716,
+      "sha256": "4e0ab425de8604a39f8a96598754a684ef8fa02c0768409c1a295060dc1d9fe8"
+    },
+    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2540_9.bin",
       "bytes": 110,
       "sha256": "851a07ccdd49bf914278c2c339f7a79ac4179e9664da525b6330234d50427bf1"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_256_9.bin",
-      "bytes": 256,
-      "sha256": "3e501370e06a30587797d8bd9b4554c8dc34b3c703003ad946b15743303248f2"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2563_9.bin",
@@ -2630,9 +2775,9 @@
       "sha256": "8a059b456ebab1c4e2d66a87045eb7a604b7ead779989e544227d9febcaeb20e"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_257_9.bin",
-      "bytes": 52,
-      "sha256": "c9a052b9fef520e3f772207c8bd9f3b0943ebba808d98e373065589aa0982331"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_256_9.bin",
+      "bytes": 256,
+      "sha256": "3e501370e06a30587797d8bd9b4554c8dc34b3c703003ad946b15743303248f2"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2570_9.bin",
@@ -2645,6 +2790,11 @@
       "sha256": "8df89a8b9b2e0570e55d601ab06c3e1ebaf04e66c40e51aa550c5175cfe950cd"
     },
     {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_257_9.bin",
+      "bytes": 52,
+      "sha256": "c9a052b9fef520e3f772207c8bd9f3b0943ebba808d98e373065589aa0982331"
+    },
+    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_258_9.bin",
       "bytes": 1160,
       "sha256": "9df1b42c6a3438b9655011339dd1abdf77c3d7d204deac56b456e0ae0e7c38e1"
@@ -2653,11 +2803,6 @@
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_259_9.bin",
       "bytes": 2210,
       "sha256": "c7ff13a0d32240d3a55fa322f17eda94bb9dcf37cd717463834d730fab272b07"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_26_9.bin",
-      "bytes": 440,
-      "sha256": "5be9baefa4e4d69dbe7930c546dc3fea500f62e7c812cb50fd027d5b156a88b3"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_260_9.bin",
@@ -2695,11 +2840,6 @@
       "sha256": "b4064ab7abbdc32be786147f8b70f40a64863c0042905716bb36c5a2600fb164"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_268_9.bin",
-      "bytes": 426,
-      "sha256": "4b1d1a81cd0953761e1ef38f577b7902407d72689b47bbe5ad75a12cff1d0189"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2688_9.bin",
       "bytes": 162,
       "sha256": "3de945b6640d81c5438bbc84c7d8c7fcd6d01c52a647a86d0e37e146e7b2c972"
@@ -2710,9 +2850,9 @@
       "sha256": "1654f3fd7b90f9b321d8cac15b345249630e138e10d2187d00ba802a9d108b4f"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_269_9.bin",
-      "bytes": 34,
-      "sha256": "296a8fb37ea1acceee0084b9464e56d7962512bfdf28792d375bed0404a91b6b"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_268_9.bin",
+      "bytes": 426,
+      "sha256": "4b1d1a81cd0953761e1ef38f577b7902407d72689b47bbe5ad75a12cff1d0189"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2690_9.bin",
@@ -2765,9 +2905,14 @@
       "sha256": "4d15fd78283f08ce4b978080ffabc628e26eaf79ee2fa2665860e1e5920361b9"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_27_9.bin",
-      "bytes": 578,
-      "sha256": "c11a971e24cf8ed68db5a6e85d275e4484a7af62d804ad33ba06cf9008a780ed"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_269_9.bin",
+      "bytes": 34,
+      "sha256": "296a8fb37ea1acceee0084b9464e56d7962512bfdf28792d375bed0404a91b6b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_26_9.bin",
+      "bytes": 440,
+      "sha256": "5be9baefa4e4d69dbe7930c546dc3fea500f62e7c812cb50fd027d5b156a88b3"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2700_9.bin",
@@ -2820,9 +2965,9 @@
       "sha256": "b11aa1b613f3e61054a44fee96ef1c67fc0520c50366ed66d610a171eddaa748"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_28_9.bin",
-      "bytes": 312,
-      "sha256": "f6b1a3633077c9ddcbf5201ae6a207406833a0d0a4a3766f16b930dd04984a50"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_27_9.bin",
+      "bytes": 578,
+      "sha256": "c11a971e24cf8ed68db5a6e85d275e4484a7af62d804ad33ba06cf9008a780ed"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2876_9.bin",
@@ -2855,9 +3000,9 @@
       "sha256": "2a9b3dea6a798b61acab7d1722b0b7372a4412ad6011aae8f4dbeb8bcc7ad40e"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_29_9.bin",
-      "bytes": 462,
-      "sha256": "e27e81c4c1e984e707e42325fb5967d33fda758fab71536a59364da82b9800aa"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_28_9.bin",
+      "bytes": 312,
+      "sha256": "f6b1a3633077c9ddcbf5201ae6a207406833a0d0a4a3766f16b930dd04984a50"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2938_9.bin",
@@ -2870,14 +3015,14 @@
       "sha256": "2decf525486ebe6e312d58960c8217c9580474703331e2321e447747ce0e4c7a"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_3_9.bin",
-      "bytes": 2020,
-      "sha256": "34f48c8e4cb7792e005d9d8dbd8a3e53cb7009143797cc5c587ebb92cc1efe36"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_29_9.bin",
+      "bytes": 462,
+      "sha256": "e27e81c4c1e984e707e42325fb5967d33fda758fab71536a59364da82b9800aa"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_35_9.bin",
-      "bytes": 44,
-      "sha256": "717a322b8a49636e2e160f5102a2823c162d421ec97144f04f07b8ec3aeaff2a"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2_9.bin",
+      "bytes": 1704,
+      "sha256": "d62f5f0fd9b3bf5bd4839c21d728f830b1b18fa6396426a68a11f19da85b9391"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_3513_9.bin",
@@ -2913,6 +3058,11 @@
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_3570_9.bin",
       "bytes": 234,
       "sha256": "d5595b0020fd2579391b3850fb4e4ea9b2d290588fc143b6c9ac8de9785024c0"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_35_9.bin",
+      "bytes": 44,
+      "sha256": "717a322b8a49636e2e160f5102a2823c162d421ec97144f04f07b8ec3aeaff2a"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_36_9.bin",
@@ -3028,11 +3178,6 @@
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_3796_9.bin",
       "bytes": 104,
       "sha256": "430ac43b4e47f569956945fd67678530096bf274dec6e64eb3043cf99bf6eb5b"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_38_9.bin",
-      "bytes": 74,
-      "sha256": "22b88c0a23987bd253c2017d9217de66ebb0606a4f2a9e058a07464d98faf2e6"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_3814_9.bin",
@@ -3225,14 +3370,19 @@
       "sha256": "9b1ecdcc3cc48085a831295c10bdf8038f4410e8dd3422e6c33faa2847535a61"
     },
     {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_38_9.bin",
+      "bytes": 74,
+      "sha256": "22b88c0a23987bd253c2017d9217de66ebb0606a4f2a9e058a07464d98faf2e6"
+    },
+    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_39_9.bin",
       "bytes": 80,
       "sha256": "ba145269d3435107bfa86afc67a28b1364168ec9fe9ef0841c9108b2b88d6d82"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_4_9.bin",
-      "bytes": 2102,
-      "sha256": "67e3c1b51ac5487003b46e8e0badc7bda34c19fa7dbc2a40b22c2ac1cee927ad"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_3_9.bin",
+      "bytes": 2020,
+      "sha256": "34f48c8e4cb7792e005d9d8dbd8a3e53cb7009143797cc5c587ebb92cc1efe36"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_40_9.bin",
@@ -3280,9 +3430,9 @@
       "sha256": "555f883dcccc99cc1d0e2d04dd173c8114daeee007e1b8b27f787904c2a66b66"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_5_9.bin",
-      "bytes": 1822,
-      "sha256": "e69092a37f8bb22e040a7e187264c23efb486d878e7d188f4dfe974193027545"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_4_9.bin",
+      "bytes": 2102,
+      "sha256": "67e3c1b51ac5487003b46e8e0badc7bda34c19fa7dbc2a40b22c2ac1cee927ad"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_51_9.bin",
@@ -3305,9 +3455,9 @@
       "sha256": "c83afcc3cb3fc2ef721bb2c375ad50eba83c68783f017f015538a71984ee79aa"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_6_9.bin",
-      "bytes": 794,
-      "sha256": "90b0d318758b010840afa170264b5d45891cd778f50940a35eb203f33f0a40a7"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_5_9.bin",
+      "bytes": 1822,
+      "sha256": "e69092a37f8bb22e040a7e187264c23efb486d878e7d188f4dfe974193027545"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_626_9.bin",
@@ -3330,9 +3480,9 @@
       "sha256": "b15fc0135d7d7a88e29d094cdacec917b2ea184598d6c6677e24ed9d727dbeb7"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_7_9.bin",
-      "bytes": 648,
-      "sha256": "ef2572d9c9c8a9b65d99d2826b373a46436965701defd665788cee0551ce0a45"
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_6_9.bin",
+      "bytes": 794,
+      "sha256": "90b0d318758b010840afa170264b5d45891cd778f50940a35eb203f33f0a40a7"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_751_9.bin",
@@ -3340,14 +3490,14 @@
       "sha256": "37eb5ad569ad892573c218618ba2bdc9ca95520ff71ab59017215181f475d4f0"
     },
     {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_7_9.bin",
+      "bytes": 648,
+      "sha256": "ef2572d9c9c8a9b65d99d2826b373a46436965701defd665788cee0551ce0a45"
+    },
+    {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_8_9.bin",
       "bytes": 2086,
       "sha256": "344422e530c8c556481f1776cf9b1cb7d4f24889102e887290e3fe6117a5d6d6"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_9_9.bin",
-      "bytes": 1384,
-      "sha256": "e48eb9cf46f53b1de9a2c28692532e1006f58023a6115a25a821e135027c46e4"
     },
     {
       "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_94_9.bin",
@@ -3355,159 +3505,14 @@
       "sha256": "4fb77374824995e96075d213291a5198e92d7f8df3027e63f9eeb428ffa18a9b"
     },
     {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_9_9.bin",
+      "bytes": 1384,
+      "sha256": "e48eb9cf46f53b1de9a2c28692532e1006f58023a6115a25a821e135027c46e4"
+    },
+    {
       "path": "public/msn-assets/msn75/resources/msgslang/version/msgslang_version_1_9.bin",
       "bytes": 1096,
       "sha256": "98658c2cd36e9c8a38413aa168a77c169cd45f37dae8ba9f2effe1113dd03c4c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1121_9.txt",
-      "bytes": 2948,
-      "sha256": "a7ce4ae1c4d9da027a10988bd872758f8c270d2ec703a521e14680d3ed766441"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1122_9.txt",
-      "bytes": 2948,
-      "sha256": "b06a5dff3a49ee823c9f70064808c719dd8ba472017e54942ff8931b4bc13397"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1123_9.txt",
-      "bytes": 2948,
-      "sha256": "48a8623166b2d4c2dc843982cce9332cf08de2119ecc233ce1ab813ed1bbc3c5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1124_9.txt",
-      "bytes": 2948,
-      "sha256": "d9cf8aef0e2593a7462cd454c1c834de983451e1aaed986c0cc6c4a6596c19f6"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1125_9.txt",
-      "bytes": 2948,
-      "sha256": "e86df915b62220c1f725a722bc1bc25ebe48fe94815e06bb1de3a28ed680d799"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1126_9.txt",
-      "bytes": 2948,
-      "sha256": "24a727c2165cc9f21be671c46ea244c5efe7b2e8460ef0d02693146cd6b441bd"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1127_9.txt",
-      "bytes": 2948,
-      "sha256": "6ac8da7b2242ea22b94f3e303a3c6c05d14362be0ebdf4197760cdef1cda035e"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1128_9.txt",
-      "bytes": 2948,
-      "sha256": "5dc5eb61157ee5d8be2444397d2e935e9a7262d88f1bb9ec97e7c21bc256f0df"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1129_9.txt",
-      "bytes": 2948,
-      "sha256": "872214d8753c9e23d954a6d73077a74de166d9b340ea2e894d7aff4938e906bd"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1130_9.txt",
-      "bytes": 2948,
-      "sha256": "5878e6c20ef44902808fef7ec58b491563f6104563889951dc89cc14a764aa89"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1131_9.txt",
-      "bytes": 2948,
-      "sha256": "74d8dd1a000f8a2390bcffa3969caa1e36a006e9f470f8a4d99b15ff9d7bbefd"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1132_9.txt",
-      "bytes": 2948,
-      "sha256": "58f55f8bcf27a224c6756fe179653bbecd7423b0ef9b36003afc25472dd00e25"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1133_9.txt",
-      "bytes": 2948,
-      "sha256": "d95ce49fe2d9b5f50f1a4d076188f2ac6312ea28ff8492d2113ad61ab2334b58"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1134_9.txt",
-      "bytes": 2948,
-      "sha256": "6c20431a4ebd85180733b22165c2ccb10b92f74da57d79903653ea9a055d338e"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK.STAMP/msgslang_WINK.STAMP_1135_9.txt",
-      "bytes": 2948,
-      "sha256": "adcc1f56cbb2e10939b0e577fcb1bfecb3e16657829378eae689938be394372d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1121_9.cab",
-      "bytes": 46021,
-      "sha256": "260031c34df48f664fbb52f89b577eb10cc4926370542e635f9cdce011cc6b13"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1122_9.cab",
-      "bytes": 16178,
-      "sha256": "cae6659d16303937bb8bae93c9de1c2a22800407d94a2f2d69134c3d3477d805"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1123_9.cab",
-      "bytes": 23608,
-      "sha256": "7f9b8555c009ed3857221178fc5cbe8f4b81348d4636bc24359f7f8cd436486f"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1124_9.cab",
-      "bytes": 20560,
-      "sha256": "ac1c5c3b8ca40b46ec9ebe19aa60863f96ce1dfbcf7ddd47d0cd64fe20da3c01"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1125_9.cab",
-      "bytes": 46660,
-      "sha256": "d98b961efcfeb2c02ec8fcbd1cf136efba23fae3749f88a6e9973de5fde75c36"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1126_9.cab",
-      "bytes": 40950,
-      "sha256": "dd1f62f1bd4b411a6ef6c543da74b1ba4af0d07909e8e463404520c24b74ad4a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1127_9.cab",
-      "bytes": 59218,
-      "sha256": "34bebe9de5b930eb31261540c1ec7d0c611276bc325184cd649f168612d4c716"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1128_9.cab",
-      "bytes": 23262,
-      "sha256": "fb5c1efa913fb0cb192bcdc4c80a3922248d85e49989aac18f9fc1d732c7798a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1129_9.cab",
-      "bytes": 21122,
-      "sha256": "54ffab1b34382b5cc3e7ceeec5aa4ae79ba2c8dcd69190db507c49122b20bc73"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1130_9.cab",
-      "bytes": 23427,
-      "sha256": "3f0c5f647b43d3f88711f6ed9ac03b3a1023096da4bde50565fe5b82944558e2"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1131_9.cab",
-      "bytes": 62753,
-      "sha256": "502cf084f23e4d8d81a9fadd240dea3ef126f45ff6fe2a231b8de38ad0f65066"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1132_9.cab",
-      "bytes": 10225,
-      "sha256": "2352f96dd2fea387648791cf298e4f59e555cb3df3a5be497695afdc563024dc"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1133_9.cab",
-      "bytes": 35574,
-      "sha256": "904dc13850083a2006c7616198d2c7b5bb65b80bf7c38e2c3ab977b90cc9e00c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1134_9.cab",
-      "bytes": 67994,
-      "sha256": "4b65e1a111cdcef7146de48f5104a76d62ed070e256552717bee2e0f93bcce78"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msgslang/WINK/msgslang_WINK_1135_9.cab",
-      "bytes": 37885,
-      "sha256": "6b1cce4340f8cb8293db130a30913fd51cd0c0d72d636bca9ee74f4da0b3aeca"
     },
     {
       "path": "public/msn-assets/msn75/resources/msidcrl/version/msidcrl_version_1_9.bin",
@@ -3518,146 +3523,6 @@
       "path": "public/msn-assets/msn75/resources/msnmsgr/4002/msnmsgr_4002_5001_9.bin",
       "bytes": 5,
       "sha256": "9c260895da78b18cfd0aaf4f60a16302686ace07ce16dc09f978d307f13bb103"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1001_9.png",
-      "bytes": 165,
-      "sha256": "2b0db056259060d78a95f022321add543cb98281216ce3cebdebbea5cd635c60"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1002_9.png",
-      "bytes": 168,
-      "sha256": "3593582ecb5d0330517ed3a00b880a0392a7f9c18f32ad4534e41c83ee765a00"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1003_9.png",
-      "bytes": 156,
-      "sha256": "8ff90575018a88fcd60af6f770db0056a65bf6d02d490be42d34bb0a1f60e9b5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1004_9.png",
-      "bytes": 863,
-      "sha256": "a60d298d9158ffde1ef3b2e1a8e1fc8caf83082b3ca3b8b36e178abc3c0060d8"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1005_9.png",
-      "bytes": 169,
-      "sha256": "f8ead2f9cb0d29376a48520d9e5c93180cef08c9707ee78fecd687066efd1120"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1006_9.png",
-      "bytes": 169,
-      "sha256": "1ad06733c4bee28bfdb32ab73278950b0bf0328d520578ca5c391d3e4355922d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11101_9.png",
-      "bytes": 630,
-      "sha256": "b68f79d37332d92fd9bf67d3aa86b59fd90f0d184896e86bd9495c50622bbe43"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11102_9.png",
-      "bytes": 262,
-      "sha256": "a2c5521c2a9b5eef13e8ca3364a7160b9888cc829446187d890ee2b86e48a170"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11103_9.png",
-      "bytes": 10429,
-      "sha256": "8d197a49f3fb290957e07f940b924ab815b8d024a1ab23d412f49cc3353ee6c5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_228_9.png",
-      "bytes": 201,
-      "sha256": "52fcbc551fad57d3c57e8b734ba12d0bf6b05bcb6d040dc84b75d8ee527eea86"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_276_9.png",
-      "bytes": 908,
-      "sha256": "375e4fbe7605d3472bcb3ea11f4e2fe4817568ce6d9c4b50f1bce2be86bd7cef"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_279_9.png",
-      "bytes": 873,
-      "sha256": "4e1c4a3582c08e47c54e6212a00772f6f8b595aaf839f8989c367ae72dd4b430"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_280_9.png",
-      "bytes": 3527,
-      "sha256": "fa6db954a4b6fa7a5a91323fdf58e34e8b9ddec263950cca94ffc7012f9e655d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_281_9.png",
-      "bytes": 6857,
-      "sha256": "f0d852f0ad9c5689b45d6bf6630b25141ed38ed242ede9946d42e31443e3b1f8"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_282_9.png",
-      "bytes": 7111,
-      "sha256": "2a2b4d1e440d045b701ef45f4b20d8213bfd511e612df6629d542b117714f313"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_401_9.png",
-      "bytes": 820,
-      "sha256": "f785905333c8e865653ca998630d76ab58db005ae31e1c5bc79cce8252e30451"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_402_9.png",
-      "bytes": 2035,
-      "sha256": "e08aaeb39355a6dca18f7c593b9f7e23e566875596f4514ec5e686150a937e48"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_407_9.png",
-      "bytes": 1984,
-      "sha256": "436a6e298a8cd424f387172905a763f54493c9b9cffcbb0f273a355f5e81156c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_408_9.png",
-      "bytes": 2896,
-      "sha256": "71c7e3efc78b50ff40910b8b2018111e388a933acbcb791ce596200484226a8a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_5_9.png",
-      "bytes": 609,
-      "sha256": "9d5a869acdf5aaf18cb12f4e5bc238778a0244a3730f32b1910f6018dd3aba6f"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_607_9.png",
-      "bytes": 6741,
-      "sha256": "9e106ff22a4ee81da0669dd6590bb422243ad85486eda5bc0bb3d7da52cd486c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_610_9.png",
-      "bytes": 885,
-      "sha256": "9ea3ad45b5ad9392c4fe0f4b6eccdeaf104a6e4923f8c5eb9f17d2c6883f0471"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_714_9.png",
-      "bytes": 1077,
-      "sha256": "fa73d0a6ae6be223701de7ec4fec71825d105e2d6ce5b58d7547d58b4bc4373b"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_718_9.png",
-      "bytes": 6757,
-      "sha256": "36071265b41b11f9c2edb15c2a86b64f05765a7f838801229da812a41fda145b"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_723_9.png",
-      "bytes": 1462,
-      "sha256": "25077f7cae211a96e2e3dec2342dd047d0a5ad5383614f4d442f78d83f55a383"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_770_9.png",
-      "bytes": 877,
-      "sha256": "231fcfd4d28e46dda01bf4c5668d790692ccb422c4cfd9368cbe9e7ffd825050"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_771_9.png",
-      "bytes": 1946,
-      "sha256": "2c904bfcacd7b8bff210ee9df5a6404d6a84f3302058fb641539a2b75e83eea0"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_IDB_WAITINGCLOCK_9.png",
-      "bytes": 5714,
-      "sha256": "cb9cdd8598a91d178e5617fbddcb665d935abf62d41567821e89ae2505a48b25"
     },
     {
       "path": "public/msn-assets/msn75/resources/msnmsgr/CERT/msnmsgr_CERT_1100_9.cer",
@@ -3690,21 +3555,6 @@
       "sha256": "5e17fbee067199864b1e4d3230f5765b5e1092808e707433826dd0ea974f0221"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/cursor/msnmsgr_cursor_1_9.bin",
-      "bytes": 308,
-      "sha256": "df3b21a650f1c118aea4089d3c2eaec7bbe2acf5e9b47481da7fb4f81f3bb4ec"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/cursor/msnmsgr_cursor_2_9.bin",
-      "bytes": 308,
-      "sha256": "f96ddf1c839d543f8d64df41bcd46932145fbaa50544c3e288213f63b3f54356"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/cursor/msnmsgr_cursor_3_9.bin",
-      "bytes": 308,
-      "sha256": "6816b3fc3066dbd37999003f04a663546e7425ab3c88f52889f4f7dc80921868"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msnmsgr/GIF/msnmsgr_GIF_415_9.gif",
       "bytes": 5104,
       "sha256": "845a9194065bb55c17ed175c61fe4b1917ddc59e2e5f3d04fac57187484f826f"
@@ -3735,696 +3585,6 @@
       "sha256": "398ab683cc746bae3bc71264d2006f16657f644d2b40209c593b004e7af09e10"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_cursor/msnmsgr_group_cursor_2500_9.bin",
-      "bytes": 20,
-      "sha256": "c53efa8085835ba129c1909beaff8a67b45f50837707f22dfff0f24d8cd26710"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_cursor/msnmsgr_group_cursor_2501_9.bin",
-      "bytes": 20,
-      "sha256": "b07e022f8ef0a8e5fd3f56986b2e5bf06df07054e9ea9177996b0a6c27d74d7c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_cursor/msnmsgr_group_cursor_2502_9.bin",
-      "bytes": 20,
-      "sha256": "43f40dd5140804309a4c901ec3c85b54481316e67a6fe18beb9d5c0ce3a42c3a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_1_9.bin",
-      "bytes": 104,
-      "sha256": "00a209e783d25bd6ce8d4be4472f278e712f2f5ba5c9c62b55481e069d2064d4"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_100_9.bin",
-      "bytes": 48,
-      "sha256": "94e8e8a291ad6ed4da5638733ca47f281cf05021a0d427ab86f8a05d2b3a1fce"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_101_9.bin",
-      "bytes": 48,
-      "sha256": "87d49d5551368484b9b033a9a4a188891b649fe340ca077e9e775c613437801a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_2_9.bin",
-      "bytes": 132,
-      "sha256": "5d62d392a0f454a05c957c41003db41c4faabf09156725ca8ce9d6622b22ca71"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_200_9.bin",
-      "bytes": 34,
-      "sha256": "38e69ae3535e7709ddaee1b0a26a57f31719b3f00316184fad64c159f5659773"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_206_9.bin",
-      "bytes": 34,
-      "sha256": "12bdd0c3f88943996b207bad3dd1bf4c1078dff9c655223c75b7f2aeccb41440"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_211_9.bin",
-      "bytes": 20,
-      "sha256": "09c57da0ef77215a397e30ad586ae557bede7fe62e64d185dbeec541ea1e2f2c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_219_9.bin",
-      "bytes": 48,
-      "sha256": "a8bc5a3c0f8708e4ff26a8d10f1875819f99df43255c1eaaa7eda932b3b7cdc7"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_220_9.bin",
-      "bytes": 48,
-      "sha256": "86148c4310a94cb9e3c693d23a2d029aa16aa2703e4198ae428bf0801b84b2c1"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_221_9.bin",
-      "bytes": 48,
-      "sha256": "6b7e30fde61e4fc8464fd38a7ebd2ff7fe6ae3551eda1214f8bf0e4d1df97a05"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_222_9.bin",
-      "bytes": 48,
-      "sha256": "ac3f7912e781949f63377c5e0c8e0f79f514126d2e37e1f10f9a1c94e1b05402"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_223_9.bin",
-      "bytes": 48,
-      "sha256": "32b464de4c78c91e33c430ebfaf1beb64fc44f6886861bd54aa38c880ad1e7cf"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_224_9.bin",
-      "bytes": 48,
-      "sha256": "efae23549d27de29f58d468cf86ad5bac419a0a175ef2dc7f479199abf039083"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_225_9.bin",
-      "bytes": 48,
-      "sha256": "c227be14001cfed9cdd1cc0a333c19d8ebb873845b62a99dedf427409758fcc7"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_3_9.bin",
-      "bytes": 132,
-      "sha256": "3dbfd6efeee0d0eb0de6d642aab8b5e1b99a30fdddc486da79952a022d1019ff"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_MESSENGER.CSS_9.html",
-      "bytes": 9852,
-      "sha256": "f34ceee8fb0f2d47b4b741f191eeab5b9a4c83da7a89ac8e9239343104ee030c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_MSN_LOGO.GIF_9.gif",
-      "bytes": 2059,
-      "sha256": "643be8fe63817af60b5b0eef0a459386e081c86c990b23889de4a456cb30bbca"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_NOINET.JS_9.html",
-      "bytes": 3259,
-      "sha256": "ba23d9af81b6bcd51e92ac66a7f43c0014ccfe73026032aa88eff157c497a6b6"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_PIXEL_LAVENDAR.PNG_9.png",
-      "bytes": 125,
-      "sha256": "fcab39dd07fb5ebf2f097699667fdf46b5821dcf5b40d7d5d83399dd16ffd03b"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_SIGNIN_ANI.GIF_9.gif",
-      "bytes": 25942,
-      "sha256": "c2814881d7977eac5c49795590802b0f2a66e5b3052132897d4cd8d29c222d71"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_SPACER.GIF_9.gif",
-      "bytes": 43,
-      "sha256": "548f2d6f4d0d820c6c5ffbeffcbd7f0e73193e2932eefe542accc84762deec87"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_10_9.ico",
-      "bytes": 9662,
-      "sha256": "fff3cfb528cfef1131ecaf98f35cbce63b5a59bb261812e080579c1346b89d96"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_10_9.png",
-      "bytes": 3963,
-      "sha256": "09928269207e874f2b00e51a071126f95b9e08df3c6d3db408fa222a64de4399"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_11_9.ico",
-      "bytes": 4286,
-      "sha256": "6003760d3b749ee46d3e7bf2cb209abd1051c45258c7fbb498e55c63f8cae561"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_11_9.png",
-      "bytes": 2142,
-      "sha256": "4b9da9d3dcda197464166f15ac5d7b4cacae80371a62b8188640e5f95ec0807d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_12_9.ico",
-      "bytes": 1150,
-      "sha256": "c8a749bc43ba78f6f3551baeeb62c304058e3a3fdaac665753c412b8527464d9"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_12_9.png",
-      "bytes": 781,
-      "sha256": "0b7baaa08e82bad7581804dade0fe1ca432d5de01858c5515fe7c5f7c240e932"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_13_9.ico",
-      "bytes": 1662,
-      "sha256": "5aa31071b2af848640cbac927fb7a26291d8a5fb78f070cd28921f8cc95faf3f"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_13_9.png",
-      "bytes": 1251,
-      "sha256": "f93b4dc04268249c9caa27398be7dfa5836618ec43935a371c0539243db4ae53"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_14_9.ico",
-      "bytes": 766,
-      "sha256": "4cf582951aa17519fab4fe8e246d708d10d79577acb6cf145f545a57f129d968"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_14_9.png",
-      "bytes": 731,
-      "sha256": "01cd1753b9bf4019dd6f22ef3772b72035a43f355281a00f3962b883fead3af8"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_15_9.ico",
-      "bytes": 318,
-      "sha256": "f69a935346e6030a100096f71ea55057fbdd52359d13c95602cffbdf72997304"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_15_9.png",
-      "bytes": 312,
-      "sha256": "63816043bb76c0569efdd206dd68863ac603d032f179a958229a8ce1f11ccf4a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_16_9.ico",
-      "bytes": 3774,
-      "sha256": "cea5f11cac97d3b2c445625c535c5467205bddb95ba23c4f704b252b6b2ccba2"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_16_9.png",
-      "bytes": 3412,
-      "sha256": "e3d85cc6acd7c804dc1e54eb112c20384784dfe138d83c8776e8e2ea6eeb0f9a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_17_9.ico",
-      "bytes": 2238,
-      "sha256": "277190a1dbcc8a92250414477b9711d14af408850d826412724e5ec8de8b961a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_17_9.png",
-      "bytes": 1970,
-      "sha256": "763b11bc9947f4d96c5f9c7f9119ed606fb3a6ccb7113af3485522c1ad3096bf"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_18_9.ico",
-      "bytes": 1406,
-      "sha256": "28c7ee9cee8502e2f72f0d48b9712ef083af53c9ede83cf3da7762ff8b1743d0"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_18_9.png",
-      "bytes": 678,
-      "sha256": "da18999045c28947bc562cea0165316feb7cb6685cf34f97f61f75f11cdee112"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_19_9.ico",
-      "bytes": 9662,
-      "sha256": "6493ca321d43de6fb4c02dc261d39ebfef42a5dc650bafc86dca1bb11958c438"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_19_9.png",
-      "bytes": 4072,
-      "sha256": "e922908810b2170b55cab58679a18f5ff6d96fd06fa2ed7a8c61c82673070554"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_20_9.ico",
-      "bytes": 4286,
-      "sha256": "3d6035893c6595b79b0ec877b995960ff2a0139f23a505f14173a548403255d0"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_20_9.png",
-      "bytes": 2320,
-      "sha256": "85c2d5411566849e2bf0c2a694c5ef4d8e311b9cfa93362f17a0baf2e2201242"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_21_9.ico",
-      "bytes": 1086,
-      "sha256": "2795a3c2bb654030d0c44498936dc936b5badced77a0fd593106f20772b382a2"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_21_9.png",
-      "bytes": 757,
-      "sha256": "d418f4cc3f9d2fcc23959b196d03162b5826a3adb4fbea54c0db89f0a752169c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_22_9.ico",
-      "bytes": 766,
-      "sha256": "aedeb4e27c6b8085c0dc3d879e1846a8184fffe2db6a85803fb142651c588b84"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_22_9.png",
-      "bytes": 346,
-      "sha256": "166584a94581ddf5a462a8415b1f44bb19704e897d1972ad136d3a8d7ac6acdb"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_23_9.ico",
-      "bytes": 2238,
-      "sha256": "0dd56e9e9f63886985c0d164af0f193ee1276efead8870050456a74ff402f28c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_23_9.png",
-      "bytes": 698,
-      "sha256": "8bd94ad3355533df947ff03e938a0419c0af46727d8b136cc0cd9162f680a584"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_24_9.ico",
-      "bytes": 766,
-      "sha256": "fa777ac6d829a53304d954d9f92651f3e11e7c74b9391f52c3f5ad24442d078d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_24_9.png",
-      "bytes": 371,
-      "sha256": "b117764c9e3f7e18ccc1a352b511a03b87772f090fd9711f5d5849d2d9e74128"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_25_9.ico",
-      "bytes": 2238,
-      "sha256": "c0caf3dfc53d856f1727180009b802d58c9ffd1131a489ef28839c9acee4e99d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_25_9.png",
-      "bytes": 731,
-      "sha256": "1326ed03202667bc432bc60b083dfbd599472de52b2e6839dd36482de1831eba"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_26_9.ico",
-      "bytes": 766,
-      "sha256": "7a08eda0568fb46ef93d11b42426e86efaad69ad654cc630075f5e30e5454a98"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_26_9.png",
-      "bytes": 447,
-      "sha256": "3ecaf8f5a843ba4c17d94a1985e7ebd59fd49dd1cbe84c313143dd978f7c6fb3"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_27_9.ico",
-      "bytes": 318,
-      "sha256": "f68b2c0960ea802c170cfb28879ed5e976aa91d3355f6eeaea1e22b42f3e50df"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_27_9.png",
-      "bytes": 278,
-      "sha256": "bc20f13386dec1d2bf52432d93b6906f0489c5cb6b1810f4a1e8049e4c480790"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_28_9.ico",
-      "bytes": 1406,
-      "sha256": "de9787a832b5cf64cd09fde5d16783241eb3d71cc25fe321fbb7421c82691eb1"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_28_9.png",
-      "bytes": 738,
-      "sha256": "13f2c2081e4eba04ca3b774e04672e671c0f291403eee4c75ace383f495b0154"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_29_9.ico",
-      "bytes": 1150,
-      "sha256": "852138fff1be5d32da1cae2077a8a6fa306e0cffd7801a6e5f21474714256770"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_29_9.png",
-      "bytes": 912,
-      "sha256": "da3783ad70319933bd4963c2fba0d2513c103a814affe60cf56ced6e154ac83b"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_30_9.ico",
-      "bytes": 2238,
-      "sha256": "22edd72df01a127bf5156ebf73a5b4d1063d7d3e5883260a9c13c17351a69bb6"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_30_9.png",
-      "bytes": 1986,
-      "sha256": "acf7df64b606faf5e9306fd47b01a6fc852fbe7c0491679be32a4d9f34c56282"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_31_9.ico",
-      "bytes": 4286,
-      "sha256": "747bce39b3ddccd635cc0eec12f31ea9cdbbf497bcdd6fca1c01e4e59751ada2"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_31_9.png",
-      "bytes": 2635,
-      "sha256": "7c0dfb40ade1bc6a00f2798188e89038390bfa6e0b93b140788c39a929b08d1e"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_32_9.ico",
-      "bytes": 3774,
-      "sha256": "be8cb21a7ef12b2ca223e1eb744db992d270e7534617f440c44d92cad2e44f3a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_32_9.png",
-      "bytes": 3600,
-      "sha256": "740badea9aa1a9d3c36093847f3148cd3332da51bf13ad3b51a3ef4e7e3d04d8"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_33_9.ico",
-      "bytes": 9662,
-      "sha256": "4c40a28eb1dd9f3d2d13693d39526ccd49f3aa4e00f31e16be72f010513129e1"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_33_9.png",
-      "bytes": 4824,
-      "sha256": "216104d11709e8421281fa52d42ed0843a96c0a97be02b5c7ed241b416023dda"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_34_9.ico",
-      "bytes": 318,
-      "sha256": "1ae8e50d27810eca4fe948a7bead715afedf437e5a793d20986ad20f368a78c1"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_34_9.png",
-      "bytes": 285,
-      "sha256": "ef77318585feb7665eead19d20c424c28cf7d61230779561cd34475a6d71554c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_35_9.ico",
-      "bytes": 1406,
-      "sha256": "47bd6e34e360ae70c696a8153dbe7b6c355d4b9e890893df5764f76463f3fe3f"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_35_9.png",
-      "bytes": 738,
-      "sha256": "e189326c786ac08c631beba26c416182e7afeb0076b8e5cd22c403d8408e70b5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_36_9.ico",
-      "bytes": 1150,
-      "sha256": "491d29c58d694cba2f8604c3a75dc8b947098cf3acd1c36bad874da7ac4b592b"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_36_9.png",
-      "bytes": 907,
-      "sha256": "73d4aa370a3c30caae94bdffcad3de4b0f5450c313f1826e8dec43bb0094e99c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_37_9.ico",
-      "bytes": 318,
-      "sha256": "2a7551d1f7615512dd535fbfd6874c558a2be6d69d78354020906b51393c4bc0"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_37_9.png",
-      "bytes": 287,
-      "sha256": "2db220fdf54f1f928f71b041dae31c32191c012d709eff04573d5384bd702a25"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_38_9.ico",
-      "bytes": 1406,
-      "sha256": "a70596a52345b1272e6e23cc45a6e4ee59ffefafc3aa7ba565e044e69bd29bb5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_38_9.png",
-      "bytes": 731,
-      "sha256": "12c4803baacbf4e4d6b9593982ab6aabd503b6532d2e31a04a1c4b95601646b8"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_39_9.ico",
-      "bytes": 1150,
-      "sha256": "ec74793f297a0b640caaba1eedc6da01c3a3fb86433989d1ab0981a766341336"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_39_9.png",
-      "bytes": 879,
-      "sha256": "36a1514cfe8e5d6f084e904b467ea17ea473b32e3bfc53645dce70a8e6087fa6"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_4_9.ico",
-      "bytes": 1662,
-      "sha256": "8041e76a021c1ebef706a7863fb46882683321d843dc555afddca0f247e141df"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_4_9.png",
-      "bytes": 1183,
-      "sha256": "6f57ebececfc6e4a9ba1145b8975035581d4f51a907c369628b9c9fdb5fb94e8"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_40_9.ico",
-      "bytes": 318,
-      "sha256": "4e5de377ce5a4de41135d32deb9576403ab77dfdea457480be00502f8024e279"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_40_9.png",
-      "bytes": 251,
-      "sha256": "3d71943e1f98b5f7ba843c09d149d4ef8a35d86958f54467da39bf912a2ff0ad"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_41_9.ico",
-      "bytes": 1406,
-      "sha256": "ce2bc034b67f96610faf2fa1e66ee255a2ff3f32d286711b13e3ce82cc571b2c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_41_9.png",
-      "bytes": 709,
-      "sha256": "5f5690267530671a82e7637760f5fe319e3d3511cd813af132ca089c73cb363f"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_42_9.ico",
-      "bytes": 1150,
-      "sha256": "a81950aebe31c497c4fb59afa8ac69e73b118fb6c992c7bd7cfc0832f7901ad5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_42_9.png",
-      "bytes": 714,
-      "sha256": "dbb2d7ea74f675e29fd18660d8f3bafe6993504756052b38c8b9747b90fc8148"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_43_9.ico",
-      "bytes": 318,
-      "sha256": "41abcaf9f10bcb9f4f540d8897622896a9dade69921bd7fedda8b0ab75a9a81c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_43_9.png",
-      "bytes": 273,
-      "sha256": "046b93295c46b21d3a630d5798085b7f3ed7b7f331ae2b1c2a9e5f7c5132f565"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_44_9.ico",
-      "bytes": 1406,
-      "sha256": "22e89a1e6cde471e1f3ebc9e13cd6cd22ee21b26fffb86b4cbf7ee5d5242cd04"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_44_9.png",
-      "bytes": 695,
-      "sha256": "29fb579acf99119a415635ff65e24bafdb1811a75a54629d090e26969d11fc12"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_45_9.ico",
-      "bytes": 1150,
-      "sha256": "94c437de652097f3e32a611a30cad61923144a0ce5b1656ad7399b12589f1482"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_45_9.png",
-      "bytes": 705,
-      "sha256": "f62ecb9c0e406db843b6e65c9f6395b3243c15db06e040aedfd7c623605991e5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_46_9.ico",
-      "bytes": 318,
-      "sha256": "a35beada47e5a8b0ee97a449e85d5829afec20929728703ef71bdb6163ef2cb0"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_46_9.png",
-      "bytes": 288,
-      "sha256": "7917222a6a03d7e8fddf55469d11c389e9f99e66a66ff9353dc7eec886210a2c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_47_9.ico",
-      "bytes": 1406,
-      "sha256": "02b26d935c78be91826ad94e7bc6bc3eb8e1e198a0ba2efb453df942e5eb047b"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_47_9.png",
-      "bytes": 702,
-      "sha256": "7f2a8c8cb1639c24e81cc882eb087d7962a0ab6bf2c86307284125cc9c765ee2"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_48_9.ico",
-      "bytes": 1150,
-      "sha256": "0ba599dbd464f2d8c395ae107d7a797426158416de4e874927683c8cad940d10"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_48_9.png",
-      "bytes": 708,
-      "sha256": "7fc2d655aa707a980039c3eb56032c3be6a59a7dc0a2ddef1738ec09074bdce3"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_49_9.ico",
-      "bytes": 318,
-      "sha256": "852966a259f14b7b60081de0ab5a37f71e9abc82f8bdae12ee12e797ac95e6ae"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_49_9.png",
-      "bytes": 301,
-      "sha256": "705bd610554daba385f2650502270d9f4cba3ec60bd07204c22173b0cc5fa79a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_5_9.ico",
-      "bytes": 766,
-      "sha256": "a2d0e979d3831596d719e94c9bbb9106dd2a728f9e4ebc02c22a8de28d15cbf4"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_5_9.png",
-      "bytes": 650,
-      "sha256": "79efd71f510c9e006d9bf6341b0905e47c614eaefa3573879fa6c85e5d042574"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_50_9.ico",
-      "bytes": 1406,
-      "sha256": "4856612fddfd5fb782e66769db97560e849bf7be7f7502bc7bb1f96a347944d4"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_50_9.png",
-      "bytes": 740,
-      "sha256": "7550ab22e02df3bf009761282fe0f518d1d024371361a0e3701f3849661bb183"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_51_9.ico",
-      "bytes": 1150,
-      "sha256": "94c4a684315e788ee8bb136e6a897b35106535da4698d486aa21d25f71b7798a"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_51_9.png",
-      "bytes": 778,
-      "sha256": "604f2dc63cd4ab487625cf3575a409f619f6324cdc718de63a67b7fa8c32396c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_52_9.ico",
-      "bytes": 318,
-      "sha256": "63611441f61d8b198ecbd6b9ab611ff7484a46d4349037450581b5791cc4ac83"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_52_9.png",
-      "bytes": 303,
-      "sha256": "f4ec31bf772909ebaf5370ed6da9acefdcfec5a27180ab97c7ee0eed06a98046"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_53_9.ico",
-      "bytes": 1406,
-      "sha256": "e839a14c267fbee58b5f730a0bd26e3879a3d1a4cab1b5a036ca38f23d3224e7"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_53_9.png",
-      "bytes": 748,
-      "sha256": "7760b3db1a8820a1b71ff3d167fe22391ee305818302d3adbf67ab84e7abd59c"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_54_9.ico",
-      "bytes": 1150,
-      "sha256": "0230985fd43e6638a56b8c52e7276d2878d0d43232e97a93e15355093c590795"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_54_9.png",
-      "bytes": 775,
-      "sha256": "830f2c0950b04ba7d6371fec65f4fbba9588da6a16026a0e69fe513235d74fbb"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_55_9.ico",
-      "bytes": 318,
-      "sha256": "3c2c15afeb55875a11b1b84bc68e3e568e82cbd947b1de211a5af9b13dc5a527"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_55_9.png",
-      "bytes": 296,
-      "sha256": "8daed4885e328fc46e1e50f06938d1faff8d771680edf676128094b122abd8e2"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_56_9.ico",
-      "bytes": 1406,
-      "sha256": "76eca5cdcd3fdbd73cd1fec35df9800563d22baccdd9e6cd35887058f8c573ec"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_56_9.png",
-      "bytes": 707,
-      "sha256": "39a4ec1ea23cac0311513bb523a5025236047a3a58e6f54750475164d6bde1ff"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_57_9.ico",
-      "bytes": 1150,
-      "sha256": "645e8c8f637fd60a432a1cfbe623dc7e20baf85af9c974cca709fc1c470de895"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_57_9.png",
-      "bytes": 817,
-      "sha256": "464e63dfaf3d3c06862c3bb3a18f5a256804b66ee0141883d4ecafbe90b8abc1"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_58_9.ico",
-      "bytes": 318,
-      "sha256": "c8a35595cabb45b9a5cdf2d7ec8c7df83e231931e2202f8cbd7ac720aebdd984"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_58_9.png",
-      "bytes": 298,
-      "sha256": "02b1445cc49ede2cd0748d79fd827a1ff5ce031ac969365b11cd8609f486b8f7"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_59_9.ico",
-      "bytes": 1406,
-      "sha256": "94c7ed90420262574fb36c9d3ee274c442da513d0da08dcef1b1ef67676ad336"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_59_9.png",
-      "bytes": 713,
-      "sha256": "4ba08c42347652fde01758c6a17c27cb98c20d2f1c7a1d75275d46415075f717"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_6_9.ico",
-      "bytes": 318,
-      "sha256": "898a8e99cfbd5f14b966083654d0e06761418bca17d96a1161c6cba3e2b9d834"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_6_9.png",
-      "bytes": 279,
-      "sha256": "a38631317de3c092b07567d957a7cc73c85b0fdc80b43d388e4d1d0cd1334e1e"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_60_9.ico",
-      "bytes": 1150,
-      "sha256": "5a8e4e211187c52aca0ebebf48a388130df1090af059aab92f15408ba4be82ea"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_60_9.png",
-      "bytes": 826,
-      "sha256": "4fd9d9b794fe42fbe4ff703511649a7166875d18c63e646c78f4320d086bbdf8"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_7_9.ico",
-      "bytes": 3774,
-      "sha256": "ad7d5b3d077cb46fe3758239cd66b8e59021565506aa35250764c8c687179acf"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_7_9.png",
-      "bytes": 3291,
-      "sha256": "80c0d0a35024fc372a18dcf3e375b981399a573d6304754082a581cb86909107"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_8_9.ico",
-      "bytes": 2238,
-      "sha256": "0dce1e3d535746c59358dcfcfd534500bdb1811af4c565b90cb75e7e43c4ffc3"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_8_9.png",
-      "bytes": 1796,
-      "sha256": "ac9ace7e1161a1a2ec6503a4e4a175c76045eed1bd8e7d3f568a2c3745d28363"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_9_9.ico",
-      "bytes": 1406,
-      "sha256": "761e3f2fb7c5626fb187fd303a76dd04f4d63764e050a1ba30240a0bbe3efa7d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_9_9.png",
-      "bytes": 685,
-      "sha256": "dd32c5e82b66d051217a84b56935acddc55cde2c84714f2408ce922e05b25491"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msnmsgr/JPG/msnmsgr_JPG_340_9.jpg",
       "bytes": 61437,
       "sha256": "16392bbee2c8954a916796a71cf3c921c822318f18f41bcfe3e0169637c14384"
@@ -4453,11 +3613,6 @@
       "path": "public/msn-assets/msn75/resources/msnmsgr/JPG/msnmsgr_JPG_726_9.jpg",
       "bytes": 18391,
       "sha256": "67394420e171fb5830f42a20a2ca288e81741b580e159cf352035b550be0f1e5"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/manifest/msnmsgr_manifest_1_9.xml",
-      "bytes": 882,
-      "sha256": "18b9c119bf5271bab226cac58bbfe10664d7aea216716fe1ea4e6071bb4e006a"
     },
     {
       "path": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1009_9.png",
@@ -6050,16 +5205,6 @@
       "sha256": "a96aa821a7a0291beeb9b63c2d1c37b09bd2d1387868187511b793d95ae2b85a"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/string/msnmsgr_string_563_9.bin",
-      "bytes": 374,
-      "sha256": "b2269a5cee8320d59d58dfe1214dc54984ed231f30bdbb08d7c04f4e5f184cd6"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/string/msnmsgr_string_7_9.bin",
-      "bytes": 108,
-      "sha256": "d3eea450732935d3a6633bedc1a4b9529184ad7a1793c890a949bd2d6504869b"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msnmsgr/TYPELIB/msnmsgr_TYPELIB_1_9.tlb",
       "bytes": 11676,
       "sha256": "d525298767c3e4628674b61fdce24edd7c7cb5c1237787b080721adb21fccb87"
@@ -6220,11 +5365,6 @@
       "sha256": "bcea20d559ec9f67ef563c12a3025aa1172c1f6f4a2212c8fac3972b7202aa92"
     },
     {
-      "path": "public/msn-assets/msn75/resources/msnmsgr/version/msnmsgr_version_1_9.bin",
-      "bytes": 1012,
-      "sha256": "2f0add9dc4f7ef2944d494514839ce00b85f57b3acb794ae51f3488ff9c2491f"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/msnmsgr/XML/msnmsgr_XML_APPCOMPAT.XML_9.xml",
       "bytes": 1108,
       "sha256": "7f2200ab9f2221dac32c8a85c437fc4106eed564bf4b22924d80bda99ec230f4"
@@ -6248,6 +5388,871 @@
       "path": "public/msn-assets/msn75/resources/msnmsgr/XSL/msnmsgr_XSL_MESSAGELOG.XSL_9.xml",
       "bytes": 5902,
       "sha256": "fb0ab53794fd7e94898d9c9870fa9130dc670a559c1c7a850964c0ac47c71ed9"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1001_9.png",
+      "bytes": 165,
+      "sha256": "2b0db056259060d78a95f022321add543cb98281216ce3cebdebbea5cd635c60"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1002_9.png",
+      "bytes": 168,
+      "sha256": "3593582ecb5d0330517ed3a00b880a0392a7f9c18f32ad4534e41c83ee765a00"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1003_9.png",
+      "bytes": 156,
+      "sha256": "8ff90575018a88fcd60af6f770db0056a65bf6d02d490be42d34bb0a1f60e9b5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1004_9.png",
+      "bytes": 863,
+      "sha256": "a60d298d9158ffde1ef3b2e1a8e1fc8caf83082b3ca3b8b36e178abc3c0060d8"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1005_9.png",
+      "bytes": 169,
+      "sha256": "f8ead2f9cb0d29376a48520d9e5c93180cef08c9707ee78fecd687066efd1120"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1006_9.png",
+      "bytes": 169,
+      "sha256": "1ad06733c4bee28bfdb32ab73278950b0bf0328d520578ca5c391d3e4355922d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11101_9.png",
+      "bytes": 630,
+      "sha256": "b68f79d37332d92fd9bf67d3aa86b59fd90f0d184896e86bd9495c50622bbe43"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11102_9.png",
+      "bytes": 262,
+      "sha256": "a2c5521c2a9b5eef13e8ca3364a7160b9888cc829446187d890ee2b86e48a170"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11103_9.png",
+      "bytes": 10429,
+      "sha256": "8d197a49f3fb290957e07f940b924ab815b8d024a1ab23d412f49cc3353ee6c5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_228_9.png",
+      "bytes": 201,
+      "sha256": "52fcbc551fad57d3c57e8b734ba12d0bf6b05bcb6d040dc84b75d8ee527eea86"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_276_9.png",
+      "bytes": 908,
+      "sha256": "375e4fbe7605d3472bcb3ea11f4e2fe4817568ce6d9c4b50f1bce2be86bd7cef"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_279_9.png",
+      "bytes": 873,
+      "sha256": "4e1c4a3582c08e47c54e6212a00772f6f8b595aaf839f8989c367ae72dd4b430"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_280_9.png",
+      "bytes": 3527,
+      "sha256": "fa6db954a4b6fa7a5a91323fdf58e34e8b9ddec263950cca94ffc7012f9e655d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_281_9.png",
+      "bytes": 6857,
+      "sha256": "f0d852f0ad9c5689b45d6bf6630b25141ed38ed242ede9946d42e31443e3b1f8"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_282_9.png",
+      "bytes": 7111,
+      "sha256": "2a2b4d1e440d045b701ef45f4b20d8213bfd511e612df6629d542b117714f313"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_401_9.png",
+      "bytes": 820,
+      "sha256": "f785905333c8e865653ca998630d76ab58db005ae31e1c5bc79cce8252e30451"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_402_9.png",
+      "bytes": 2035,
+      "sha256": "e08aaeb39355a6dca18f7c593b9f7e23e566875596f4514ec5e686150a937e48"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_407_9.png",
+      "bytes": 1984,
+      "sha256": "436a6e298a8cd424f387172905a763f54493c9b9cffcbb0f273a355f5e81156c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_408_9.png",
+      "bytes": 2896,
+      "sha256": "71c7e3efc78b50ff40910b8b2018111e388a933acbcb791ce596200484226a8a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_5_9.png",
+      "bytes": 609,
+      "sha256": "9d5a869acdf5aaf18cb12f4e5bc238778a0244a3730f32b1910f6018dd3aba6f"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_607_9.png",
+      "bytes": 6741,
+      "sha256": "9e106ff22a4ee81da0669dd6590bb422243ad85486eda5bc0bb3d7da52cd486c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_610_9.png",
+      "bytes": 885,
+      "sha256": "9ea3ad45b5ad9392c4fe0f4b6eccdeaf104a6e4923f8c5eb9f17d2c6883f0471"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_714_9.png",
+      "bytes": 1077,
+      "sha256": "fa73d0a6ae6be223701de7ec4fec71825d105e2d6ce5b58d7547d58b4bc4373b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_718_9.png",
+      "bytes": 6757,
+      "sha256": "36071265b41b11f9c2edb15c2a86b64f05765a7f838801229da812a41fda145b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_723_9.png",
+      "bytes": 1462,
+      "sha256": "25077f7cae211a96e2e3dec2342dd047d0a5ad5383614f4d442f78d83f55a383"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_770_9.png",
+      "bytes": 877,
+      "sha256": "231fcfd4d28e46dda01bf4c5668d790692ccb422c4cfd9368cbe9e7ffd825050"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_771_9.png",
+      "bytes": 1946,
+      "sha256": "2c904bfcacd7b8bff210ee9df5a6404d6a84f3302058fb641539a2b75e83eea0"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_IDB_WAITINGCLOCK_9.png",
+      "bytes": 5714,
+      "sha256": "cb9cdd8598a91d178e5617fbddcb665d935abf62d41567821e89ae2505a48b25"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/cursor/msnmsgr_cursor_1_9.bin",
+      "bytes": 308,
+      "sha256": "df3b21a650f1c118aea4089d3c2eaec7bbe2acf5e9b47481da7fb4f81f3bb4ec"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/cursor/msnmsgr_cursor_2_9.bin",
+      "bytes": 308,
+      "sha256": "f96ddf1c839d543f8d64df41bcd46932145fbaa50544c3e288213f63b3f54356"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/cursor/msnmsgr_cursor_3_9.bin",
+      "bytes": 308,
+      "sha256": "6816b3fc3066dbd37999003f04a663546e7425ab3c88f52889f4f7dc80921868"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_cursor/msnmsgr_group_cursor_2500_9.bin",
+      "bytes": 20,
+      "sha256": "c53efa8085835ba129c1909beaff8a67b45f50837707f22dfff0f24d8cd26710"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_cursor/msnmsgr_group_cursor_2501_9.bin",
+      "bytes": 20,
+      "sha256": "b07e022f8ef0a8e5fd3f56986b2e5bf06df07054e9ea9177996b0a6c27d74d7c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_cursor/msnmsgr_group_cursor_2502_9.bin",
+      "bytes": 20,
+      "sha256": "43f40dd5140804309a4c901ec3c85b54481316e67a6fe18beb9d5c0ce3a42c3a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_100_9.bin",
+      "bytes": 48,
+      "sha256": "94e8e8a291ad6ed4da5638733ca47f281cf05021a0d427ab86f8a05d2b3a1fce"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_101_9.bin",
+      "bytes": 48,
+      "sha256": "87d49d5551368484b9b033a9a4a188891b649fe340ca077e9e775c613437801a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_1_9.bin",
+      "bytes": 104,
+      "sha256": "00a209e783d25bd6ce8d4be4472f278e712f2f5ba5c9c62b55481e069d2064d4"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_200_9.bin",
+      "bytes": 34,
+      "sha256": "38e69ae3535e7709ddaee1b0a26a57f31719b3f00316184fad64c159f5659773"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_206_9.bin",
+      "bytes": 34,
+      "sha256": "12bdd0c3f88943996b207bad3dd1bf4c1078dff9c655223c75b7f2aeccb41440"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_211_9.bin",
+      "bytes": 20,
+      "sha256": "09c57da0ef77215a397e30ad586ae557bede7fe62e64d185dbeec541ea1e2f2c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_219_9.bin",
+      "bytes": 48,
+      "sha256": "a8bc5a3c0f8708e4ff26a8d10f1875819f99df43255c1eaaa7eda932b3b7cdc7"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_220_9.bin",
+      "bytes": 48,
+      "sha256": "86148c4310a94cb9e3c693d23a2d029aa16aa2703e4198ae428bf0801b84b2c1"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_221_9.bin",
+      "bytes": 48,
+      "sha256": "6b7e30fde61e4fc8464fd38a7ebd2ff7fe6ae3551eda1214f8bf0e4d1df97a05"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_222_9.bin",
+      "bytes": 48,
+      "sha256": "ac3f7912e781949f63377c5e0c8e0f79f514126d2e37e1f10f9a1c94e1b05402"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_223_9.bin",
+      "bytes": 48,
+      "sha256": "32b464de4c78c91e33c430ebfaf1beb64fc44f6886861bd54aa38c880ad1e7cf"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_224_9.bin",
+      "bytes": 48,
+      "sha256": "efae23549d27de29f58d468cf86ad5bac419a0a175ef2dc7f479199abf039083"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_225_9.bin",
+      "bytes": 48,
+      "sha256": "c227be14001cfed9cdd1cc0a333c19d8ebb873845b62a99dedf427409758fcc7"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_2_9.bin",
+      "bytes": 132,
+      "sha256": "5d62d392a0f454a05c957c41003db41c4faabf09156725ca8ce9d6622b22ca71"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/group_icon/msnmsgr_group_icon_3_9.bin",
+      "bytes": 132,
+      "sha256": "3dbfd6efeee0d0eb0de6d642aab8b5e1b99a30fdddc486da79952a022d1019ff"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_MESSENGER.CSS_9.html",
+      "bytes": 9852,
+      "sha256": "f34ceee8fb0f2d47b4b741f191eeab5b9a4c83da7a89ac8e9239343104ee030c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_MSN_LOGO.GIF_9.gif",
+      "bytes": 2059,
+      "sha256": "643be8fe63817af60b5b0eef0a459386e081c86c990b23889de4a456cb30bbca"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_NOINET.JS_9.html",
+      "bytes": 3259,
+      "sha256": "ba23d9af81b6bcd51e92ac66a7f43c0014ccfe73026032aa88eff157c497a6b6"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_PIXEL_LAVENDAR.PNG_9.png",
+      "bytes": 125,
+      "sha256": "fcab39dd07fb5ebf2f097699667fdf46b5821dcf5b40d7d5d83399dd16ffd03b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_SIGNIN_ANI.GIF_9.gif",
+      "bytes": 25942,
+      "sha256": "c2814881d7977eac5c49795590802b0f2a66e5b3052132897d4cd8d29c222d71"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_SPACER.GIF_9.gif",
+      "bytes": 43,
+      "sha256": "548f2d6f4d0d820c6c5ffbeffcbd7f0e73193e2932eefe542accc84762deec87"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_10_9.ico",
+      "bytes": 9662,
+      "sha256": "fff3cfb528cfef1131ecaf98f35cbce63b5a59bb261812e080579c1346b89d96"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_10_9.png",
+      "bytes": 3963,
+      "sha256": "09928269207e874f2b00e51a071126f95b9e08df3c6d3db408fa222a64de4399"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_11_9.ico",
+      "bytes": 4286,
+      "sha256": "6003760d3b749ee46d3e7bf2cb209abd1051c45258c7fbb498e55c63f8cae561"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_11_9.png",
+      "bytes": 2142,
+      "sha256": "4b9da9d3dcda197464166f15ac5d7b4cacae80371a62b8188640e5f95ec0807d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_12_9.ico",
+      "bytes": 1150,
+      "sha256": "c8a749bc43ba78f6f3551baeeb62c304058e3a3fdaac665753c412b8527464d9"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_12_9.png",
+      "bytes": 781,
+      "sha256": "0b7baaa08e82bad7581804dade0fe1ca432d5de01858c5515fe7c5f7c240e932"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_13_9.ico",
+      "bytes": 1662,
+      "sha256": "5aa31071b2af848640cbac927fb7a26291d8a5fb78f070cd28921f8cc95faf3f"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_13_9.png",
+      "bytes": 1251,
+      "sha256": "f93b4dc04268249c9caa27398be7dfa5836618ec43935a371c0539243db4ae53"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_14_9.ico",
+      "bytes": 766,
+      "sha256": "4cf582951aa17519fab4fe8e246d708d10d79577acb6cf145f545a57f129d968"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_14_9.png",
+      "bytes": 731,
+      "sha256": "01cd1753b9bf4019dd6f22ef3772b72035a43f355281a00f3962b883fead3af8"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_15_9.ico",
+      "bytes": 318,
+      "sha256": "f69a935346e6030a100096f71ea55057fbdd52359d13c95602cffbdf72997304"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_15_9.png",
+      "bytes": 312,
+      "sha256": "63816043bb76c0569efdd206dd68863ac603d032f179a958229a8ce1f11ccf4a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_16_9.ico",
+      "bytes": 3774,
+      "sha256": "cea5f11cac97d3b2c445625c535c5467205bddb95ba23c4f704b252b6b2ccba2"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_16_9.png",
+      "bytes": 3412,
+      "sha256": "e3d85cc6acd7c804dc1e54eb112c20384784dfe138d83c8776e8e2ea6eeb0f9a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_17_9.ico",
+      "bytes": 2238,
+      "sha256": "277190a1dbcc8a92250414477b9711d14af408850d826412724e5ec8de8b961a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_17_9.png",
+      "bytes": 1970,
+      "sha256": "763b11bc9947f4d96c5f9c7f9119ed606fb3a6ccb7113af3485522c1ad3096bf"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_18_9.ico",
+      "bytes": 1406,
+      "sha256": "28c7ee9cee8502e2f72f0d48b9712ef083af53c9ede83cf3da7762ff8b1743d0"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_18_9.png",
+      "bytes": 678,
+      "sha256": "da18999045c28947bc562cea0165316feb7cb6685cf34f97f61f75f11cdee112"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_19_9.ico",
+      "bytes": 9662,
+      "sha256": "6493ca321d43de6fb4c02dc261d39ebfef42a5dc650bafc86dca1bb11958c438"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_19_9.png",
+      "bytes": 4072,
+      "sha256": "e922908810b2170b55cab58679a18f5ff6d96fd06fa2ed7a8c61c82673070554"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_20_9.ico",
+      "bytes": 4286,
+      "sha256": "3d6035893c6595b79b0ec877b995960ff2a0139f23a505f14173a548403255d0"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_20_9.png",
+      "bytes": 2320,
+      "sha256": "85c2d5411566849e2bf0c2a694c5ef4d8e311b9cfa93362f17a0baf2e2201242"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_21_9.ico",
+      "bytes": 1086,
+      "sha256": "2795a3c2bb654030d0c44498936dc936b5badced77a0fd593106f20772b382a2"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_21_9.png",
+      "bytes": 757,
+      "sha256": "d418f4cc3f9d2fcc23959b196d03162b5826a3adb4fbea54c0db89f0a752169c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_22_9.ico",
+      "bytes": 766,
+      "sha256": "aedeb4e27c6b8085c0dc3d879e1846a8184fffe2db6a85803fb142651c588b84"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_22_9.png",
+      "bytes": 346,
+      "sha256": "166584a94581ddf5a462a8415b1f44bb19704e897d1972ad136d3a8d7ac6acdb"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_23_9.ico",
+      "bytes": 2238,
+      "sha256": "0dd56e9e9f63886985c0d164af0f193ee1276efead8870050456a74ff402f28c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_23_9.png",
+      "bytes": 698,
+      "sha256": "8bd94ad3355533df947ff03e938a0419c0af46727d8b136cc0cd9162f680a584"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_24_9.ico",
+      "bytes": 766,
+      "sha256": "fa777ac6d829a53304d954d9f92651f3e11e7c74b9391f52c3f5ad24442d078d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_24_9.png",
+      "bytes": 371,
+      "sha256": "b117764c9e3f7e18ccc1a352b511a03b87772f090fd9711f5d5849d2d9e74128"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_25_9.ico",
+      "bytes": 2238,
+      "sha256": "c0caf3dfc53d856f1727180009b802d58c9ffd1131a489ef28839c9acee4e99d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_25_9.png",
+      "bytes": 731,
+      "sha256": "1326ed03202667bc432bc60b083dfbd599472de52b2e6839dd36482de1831eba"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_26_9.ico",
+      "bytes": 766,
+      "sha256": "7a08eda0568fb46ef93d11b42426e86efaad69ad654cc630075f5e30e5454a98"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_26_9.png",
+      "bytes": 447,
+      "sha256": "3ecaf8f5a843ba4c17d94a1985e7ebd59fd49dd1cbe84c313143dd978f7c6fb3"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_27_9.ico",
+      "bytes": 318,
+      "sha256": "f68b2c0960ea802c170cfb28879ed5e976aa91d3355f6eeaea1e22b42f3e50df"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_27_9.png",
+      "bytes": 278,
+      "sha256": "bc20f13386dec1d2bf52432d93b6906f0489c5cb6b1810f4a1e8049e4c480790"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_28_9.ico",
+      "bytes": 1406,
+      "sha256": "de9787a832b5cf64cd09fde5d16783241eb3d71cc25fe321fbb7421c82691eb1"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_28_9.png",
+      "bytes": 738,
+      "sha256": "13f2c2081e4eba04ca3b774e04672e671c0f291403eee4c75ace383f495b0154"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_29_9.ico",
+      "bytes": 1150,
+      "sha256": "852138fff1be5d32da1cae2077a8a6fa306e0cffd7801a6e5f21474714256770"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_29_9.png",
+      "bytes": 912,
+      "sha256": "da3783ad70319933bd4963c2fba0d2513c103a814affe60cf56ced6e154ac83b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_30_9.ico",
+      "bytes": 2238,
+      "sha256": "22edd72df01a127bf5156ebf73a5b4d1063d7d3e5883260a9c13c17351a69bb6"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_30_9.png",
+      "bytes": 1986,
+      "sha256": "acf7df64b606faf5e9306fd47b01a6fc852fbe7c0491679be32a4d9f34c56282"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_31_9.ico",
+      "bytes": 4286,
+      "sha256": "747bce39b3ddccd635cc0eec12f31ea9cdbbf497bcdd6fca1c01e4e59751ada2"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_31_9.png",
+      "bytes": 2635,
+      "sha256": "7c0dfb40ade1bc6a00f2798188e89038390bfa6e0b93b140788c39a929b08d1e"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_32_9.ico",
+      "bytes": 3774,
+      "sha256": "be8cb21a7ef12b2ca223e1eb744db992d270e7534617f440c44d92cad2e44f3a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_32_9.png",
+      "bytes": 3600,
+      "sha256": "740badea9aa1a9d3c36093847f3148cd3332da51bf13ad3b51a3ef4e7e3d04d8"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_33_9.ico",
+      "bytes": 9662,
+      "sha256": "4c40a28eb1dd9f3d2d13693d39526ccd49f3aa4e00f31e16be72f010513129e1"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_33_9.png",
+      "bytes": 4824,
+      "sha256": "216104d11709e8421281fa52d42ed0843a96c0a97be02b5c7ed241b416023dda"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_34_9.ico",
+      "bytes": 318,
+      "sha256": "1ae8e50d27810eca4fe948a7bead715afedf437e5a793d20986ad20f368a78c1"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_34_9.png",
+      "bytes": 285,
+      "sha256": "ef77318585feb7665eead19d20c424c28cf7d61230779561cd34475a6d71554c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_35_9.ico",
+      "bytes": 1406,
+      "sha256": "47bd6e34e360ae70c696a8153dbe7b6c355d4b9e890893df5764f76463f3fe3f"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_35_9.png",
+      "bytes": 738,
+      "sha256": "e189326c786ac08c631beba26c416182e7afeb0076b8e5cd22c403d8408e70b5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_36_9.ico",
+      "bytes": 1150,
+      "sha256": "491d29c58d694cba2f8604c3a75dc8b947098cf3acd1c36bad874da7ac4b592b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_36_9.png",
+      "bytes": 907,
+      "sha256": "73d4aa370a3c30caae94bdffcad3de4b0f5450c313f1826e8dec43bb0094e99c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_37_9.ico",
+      "bytes": 318,
+      "sha256": "2a7551d1f7615512dd535fbfd6874c558a2be6d69d78354020906b51393c4bc0"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_37_9.png",
+      "bytes": 287,
+      "sha256": "2db220fdf54f1f928f71b041dae31c32191c012d709eff04573d5384bd702a25"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_38_9.ico",
+      "bytes": 1406,
+      "sha256": "a70596a52345b1272e6e23cc45a6e4ee59ffefafc3aa7ba565e044e69bd29bb5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_38_9.png",
+      "bytes": 731,
+      "sha256": "12c4803baacbf4e4d6b9593982ab6aabd503b6532d2e31a04a1c4b95601646b8"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_39_9.ico",
+      "bytes": 1150,
+      "sha256": "ec74793f297a0b640caaba1eedc6da01c3a3fb86433989d1ab0981a766341336"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_39_9.png",
+      "bytes": 879,
+      "sha256": "36a1514cfe8e5d6f084e904b467ea17ea473b32e3bfc53645dce70a8e6087fa6"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_40_9.ico",
+      "bytes": 318,
+      "sha256": "4e5de377ce5a4de41135d32deb9576403ab77dfdea457480be00502f8024e279"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_40_9.png",
+      "bytes": 251,
+      "sha256": "3d71943e1f98b5f7ba843c09d149d4ef8a35d86958f54467da39bf912a2ff0ad"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_41_9.ico",
+      "bytes": 1406,
+      "sha256": "ce2bc034b67f96610faf2fa1e66ee255a2ff3f32d286711b13e3ce82cc571b2c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_41_9.png",
+      "bytes": 709,
+      "sha256": "5f5690267530671a82e7637760f5fe319e3d3511cd813af132ca089c73cb363f"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_42_9.ico",
+      "bytes": 1150,
+      "sha256": "a81950aebe31c497c4fb59afa8ac69e73b118fb6c992c7bd7cfc0832f7901ad5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_42_9.png",
+      "bytes": 714,
+      "sha256": "dbb2d7ea74f675e29fd18660d8f3bafe6993504756052b38c8b9747b90fc8148"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_43_9.ico",
+      "bytes": 318,
+      "sha256": "41abcaf9f10bcb9f4f540d8897622896a9dade69921bd7fedda8b0ab75a9a81c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_43_9.png",
+      "bytes": 273,
+      "sha256": "046b93295c46b21d3a630d5798085b7f3ed7b7f331ae2b1c2a9e5f7c5132f565"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_44_9.ico",
+      "bytes": 1406,
+      "sha256": "22e89a1e6cde471e1f3ebc9e13cd6cd22ee21b26fffb86b4cbf7ee5d5242cd04"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_44_9.png",
+      "bytes": 695,
+      "sha256": "29fb579acf99119a415635ff65e24bafdb1811a75a54629d090e26969d11fc12"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_45_9.ico",
+      "bytes": 1150,
+      "sha256": "94c437de652097f3e32a611a30cad61923144a0ce5b1656ad7399b12589f1482"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_45_9.png",
+      "bytes": 705,
+      "sha256": "f62ecb9c0e406db843b6e65c9f6395b3243c15db06e040aedfd7c623605991e5"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_46_9.ico",
+      "bytes": 318,
+      "sha256": "a35beada47e5a8b0ee97a449e85d5829afec20929728703ef71bdb6163ef2cb0"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_46_9.png",
+      "bytes": 288,
+      "sha256": "7917222a6a03d7e8fddf55469d11c389e9f99e66a66ff9353dc7eec886210a2c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_47_9.ico",
+      "bytes": 1406,
+      "sha256": "02b26d935c78be91826ad94e7bc6bc3eb8e1e198a0ba2efb453df942e5eb047b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_47_9.png",
+      "bytes": 702,
+      "sha256": "7f2a8c8cb1639c24e81cc882eb087d7962a0ab6bf2c86307284125cc9c765ee2"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_48_9.ico",
+      "bytes": 1150,
+      "sha256": "0ba599dbd464f2d8c395ae107d7a797426158416de4e874927683c8cad940d10"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_48_9.png",
+      "bytes": 708,
+      "sha256": "7fc2d655aa707a980039c3eb56032c3be6a59a7dc0a2ddef1738ec09074bdce3"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_49_9.ico",
+      "bytes": 318,
+      "sha256": "852966a259f14b7b60081de0ab5a37f71e9abc82f8bdae12ee12e797ac95e6ae"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_49_9.png",
+      "bytes": 301,
+      "sha256": "705bd610554daba385f2650502270d9f4cba3ec60bd07204c22173b0cc5fa79a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_4_9.ico",
+      "bytes": 1662,
+      "sha256": "8041e76a021c1ebef706a7863fb46882683321d843dc555afddca0f247e141df"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_4_9.png",
+      "bytes": 1183,
+      "sha256": "6f57ebececfc6e4a9ba1145b8975035581d4f51a907c369628b9c9fdb5fb94e8"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_50_9.ico",
+      "bytes": 1406,
+      "sha256": "4856612fddfd5fb782e66769db97560e849bf7be7f7502bc7bb1f96a347944d4"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_50_9.png",
+      "bytes": 740,
+      "sha256": "7550ab22e02df3bf009761282fe0f518d1d024371361a0e3701f3849661bb183"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_51_9.ico",
+      "bytes": 1150,
+      "sha256": "94c4a684315e788ee8bb136e6a897b35106535da4698d486aa21d25f71b7798a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_51_9.png",
+      "bytes": 778,
+      "sha256": "604f2dc63cd4ab487625cf3575a409f619f6324cdc718de63a67b7fa8c32396c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_52_9.ico",
+      "bytes": 318,
+      "sha256": "63611441f61d8b198ecbd6b9ab611ff7484a46d4349037450581b5791cc4ac83"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_52_9.png",
+      "bytes": 303,
+      "sha256": "f4ec31bf772909ebaf5370ed6da9acefdcfec5a27180ab97c7ee0eed06a98046"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_53_9.ico",
+      "bytes": 1406,
+      "sha256": "e839a14c267fbee58b5f730a0bd26e3879a3d1a4cab1b5a036ca38f23d3224e7"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_53_9.png",
+      "bytes": 748,
+      "sha256": "7760b3db1a8820a1b71ff3d167fe22391ee305818302d3adbf67ab84e7abd59c"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_54_9.ico",
+      "bytes": 1150,
+      "sha256": "0230985fd43e6638a56b8c52e7276d2878d0d43232e97a93e15355093c590795"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_54_9.png",
+      "bytes": 775,
+      "sha256": "830f2c0950b04ba7d6371fec65f4fbba9588da6a16026a0e69fe513235d74fbb"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_55_9.ico",
+      "bytes": 318,
+      "sha256": "3c2c15afeb55875a11b1b84bc68e3e568e82cbd947b1de211a5af9b13dc5a527"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_55_9.png",
+      "bytes": 296,
+      "sha256": "8daed4885e328fc46e1e50f06938d1faff8d771680edf676128094b122abd8e2"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_56_9.ico",
+      "bytes": 1406,
+      "sha256": "76eca5cdcd3fdbd73cd1fec35df9800563d22baccdd9e6cd35887058f8c573ec"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_56_9.png",
+      "bytes": 707,
+      "sha256": "39a4ec1ea23cac0311513bb523a5025236047a3a58e6f54750475164d6bde1ff"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_57_9.ico",
+      "bytes": 1150,
+      "sha256": "645e8c8f637fd60a432a1cfbe623dc7e20baf85af9c974cca709fc1c470de895"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_57_9.png",
+      "bytes": 817,
+      "sha256": "464e63dfaf3d3c06862c3bb3a18f5a256804b66ee0141883d4ecafbe90b8abc1"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_58_9.ico",
+      "bytes": 318,
+      "sha256": "c8a35595cabb45b9a5cdf2d7ec8c7df83e231931e2202f8cbd7ac720aebdd984"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_58_9.png",
+      "bytes": 298,
+      "sha256": "02b1445cc49ede2cd0748d79fd827a1ff5ce031ac969365b11cd8609f486b8f7"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_59_9.ico",
+      "bytes": 1406,
+      "sha256": "94c7ed90420262574fb36c9d3ee274c442da513d0da08dcef1b1ef67676ad336"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_59_9.png",
+      "bytes": 713,
+      "sha256": "4ba08c42347652fde01758c6a17c27cb98c20d2f1c7a1d75275d46415075f717"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_5_9.ico",
+      "bytes": 766,
+      "sha256": "a2d0e979d3831596d719e94c9bbb9106dd2a728f9e4ebc02c22a8de28d15cbf4"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_5_9.png",
+      "bytes": 650,
+      "sha256": "79efd71f510c9e006d9bf6341b0905e47c614eaefa3573879fa6c85e5d042574"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_60_9.ico",
+      "bytes": 1150,
+      "sha256": "5a8e4e211187c52aca0ebebf48a388130df1090af059aab92f15408ba4be82ea"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_60_9.png",
+      "bytes": 826,
+      "sha256": "4fd9d9b794fe42fbe4ff703511649a7166875d18c63e646c78f4320d086bbdf8"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_6_9.ico",
+      "bytes": 318,
+      "sha256": "898a8e99cfbd5f14b966083654d0e06761418bca17d96a1161c6cba3e2b9d834"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_6_9.png",
+      "bytes": 279,
+      "sha256": "a38631317de3c092b07567d957a7cc73c85b0fdc80b43d388e4d1d0cd1334e1e"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_7_9.ico",
+      "bytes": 3774,
+      "sha256": "ad7d5b3d077cb46fe3758239cd66b8e59021565506aa35250764c8c687179acf"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_7_9.png",
+      "bytes": 3291,
+      "sha256": "80c0d0a35024fc372a18dcf3e375b981399a573d6304754082a581cb86909107"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_8_9.ico",
+      "bytes": 2238,
+      "sha256": "0dce1e3d535746c59358dcfcfd534500bdb1811af4c565b90cb75e7e43c4ffc3"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_8_9.png",
+      "bytes": 1796,
+      "sha256": "ac9ace7e1161a1a2ec6503a4e4a175c76045eed1bd8e7d3f568a2c3745d28363"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_9_9.ico",
+      "bytes": 1406,
+      "sha256": "761e3f2fb7c5626fb187fd303a76dd04f4d63764e050a1ba30240a0bbe3efa7d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_9_9.png",
+      "bytes": 685,
+      "sha256": "dd32c5e82b66d051217a84b56935acddc55cde2c84714f2408ce922e05b25491"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/manifest/msnmsgr_manifest_1_9.xml",
+      "bytes": 882,
+      "sha256": "18b9c119bf5271bab226cac58bbfe10664d7aea216716fe1ea4e6071bb4e006a"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/string/msnmsgr_string_563_9.bin",
+      "bytes": 374,
+      "sha256": "b2269a5cee8320d59d58dfe1214dc54984ed231f30bdbb08d7c04f4e5f184cd6"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/string/msnmsgr_string_7_9.bin",
+      "bytes": 108,
+      "sha256": "d3eea450732935d3a6633bedc1a4b9529184ad7a1793c890a949bd2d6504869b"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/version/msnmsgr_version_1_9.bin",
+      "bytes": 1012,
+      "sha256": "2f0add9dc4f7ef2944d494514839ce00b85f57b3acb794ae51f3488ff9c2491f"
     },
     {
       "path": "public/msn-assets/msn75/resources/msnsearch/AVI/msnsearch_AVI_3001_9.avi",
@@ -6430,11 +6435,6 @@
       "sha256": "d8c4a4e40b840a780f398b81ebfb19d9f0ee995f40e73203c0fd6f0caef0dd22"
     },
     {
-      "path": "public/msn-assets/msn75/resources/psmsong/string/psmsong_string_7_9.bin",
-      "bytes": 266,
-      "sha256": "a0a13970d52f22a345ae0cc3e53a213c6ac2f581655c73425ace15a08272c947"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/psmsong/TEXTINCLUDE/psmsong_TEXTINCLUDE_1_9.txt",
       "bytes": 11,
       "sha256": "7791d56b6792eb1836f2e46ea02d208ffb1343ae922d6c696ad04de2e2c09441"
@@ -6450,9 +6450,49 @@
       "sha256": "d714e74d2625c567093b9353c97390bda18432c65f4cb97ce7ebe84b12c496df"
     },
     {
+      "path": "public/msn-assets/msn75/resources/psmsong/string/psmsong_string_7_9.bin",
+      "bytes": 266,
+      "sha256": "a0a13970d52f22a345ae0cc3e53a213c6ac2f581655c73425ace15a08272c947"
+    },
+    {
       "path": "public/msn-assets/msn75/resources/psmsong/version/psmsong_version_1_9.bin",
       "bytes": 1048,
       "sha256": "66da9ec608c001787ae9a6dbc5252ec4ece3db4d1183cf8ec6872c0b098b3e1d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/rtcdll/REGISTRY/rtcdll_REGISTRY_101_9.reg",
+      "bytes": 486,
+      "sha256": "f751f449666c294b19809edc3062c480c4e621b0605644ec99e74de132639467"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/rtcdll/REGISTRY/rtcdll_REGISTRY_102_9.reg",
+      "bytes": 1254,
+      "sha256": "c7029ff0dbbf0b0b9ad79a63a1e42fd01479a4e1203c0bb0a4a1cd9fd8517039"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/rtcdll/TYPELIB/rtcdll_TYPELIB_1_9.tlb",
+      "bytes": 75104,
+      "sha256": "3e8993ebb51c7cb8ae07b80c5c68380f1da0044000c79ff3cc69376986535a36"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_616_9.wav",
+      "bytes": 1008,
+      "sha256": "28c2a246db78b7f9b3ee1ba0330a63cd59047dbf9f7d2b4d1cc1a7575c96592d"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_617_9.wav",
+      "bytes": 16852,
+      "sha256": "de8f31d3de20d259bd9ee500567071fbd6d0933bc04e81e33817212cf8cfecde"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_618_9.wav",
+      "bytes": 6452,
+      "sha256": "3641af4b15525ef6a8a7f2101a98774383119c80afc7d9d05fb60eec3c655eb7"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_619_9.wav",
+      "bytes": 32044,
+      "sha256": "3be865c6cd06c01c22d3f9ba72788a92dffe3b2c34bf7556478468e486b62c58"
     },
     {
       "path": "public/msn-assets/msn75/resources/rtcdll/bitmap/rtcdll_bitmap_100_9.png",
@@ -6515,16 +6555,6 @@
       "sha256": "687c958cb50cead6edcc91a03bf29e5def61a334f9057605bb0514aac098ce4e"
     },
     {
-      "path": "public/msn-assets/msn75/resources/rtcdll/REGISTRY/rtcdll_REGISTRY_101_9.reg",
-      "bytes": 486,
-      "sha256": "f751f449666c294b19809edc3062c480c4e621b0605644ec99e74de132639467"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/rtcdll/REGISTRY/rtcdll_REGISTRY_102_9.reg",
-      "bytes": 1254,
-      "sha256": "c7029ff0dbbf0b0b9ad79a63a1e42fd01479a4e1203c0bb0a4a1cd9fd8517039"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/rtcdll/string/rtcdll_string_1063_9.bin",
       "bytes": 1772,
       "sha256": "9d664b98e321b758e7ecfc4b99e3b20dbbde5429e5f339c0e55e8727f62441ba"
@@ -6555,34 +6585,14 @@
       "sha256": "4727aeba069af8579062f78d5509ad288b68ea771643c854b06ab2ec53ef40b5"
     },
     {
-      "path": "public/msn-assets/msn75/resources/rtcdll/TYPELIB/rtcdll_TYPELIB_1_9.tlb",
-      "bytes": 75104,
-      "sha256": "3e8993ebb51c7cb8ae07b80c5c68380f1da0044000c79ff3cc69376986535a36"
-    },
-    {
       "path": "public/msn-assets/msn75/resources/rtcdll/version/rtcdll_version_1_9.bin",
       "bytes": 1096,
       "sha256": "6b666f36a61c0511550d2194c210bf10549ff7404d66f5b24f03ddaa00221729"
     },
     {
-      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_616_9.wav",
-      "bytes": 1008,
-      "sha256": "28c2a246db78b7f9b3ee1ba0330a63cd59047dbf9f7d2b4d1cc1a7575c96592d"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_617_9.wav",
-      "bytes": 16852,
-      "sha256": "de8f31d3de20d259bd9ee500567071fbd6d0933bc04e81e33817212cf8cfecde"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_618_9.wav",
-      "bytes": 6452,
-      "sha256": "3641af4b15525ef6a8a7f2101a98774383119c80afc7d9d05fb60eec3c655eb7"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/rtcdll/WAVE/rtcdll_WAVE_619_9.wav",
-      "bytes": 32044,
-      "sha256": "3be865c6cd06c01c22d3f9ba72788a92dffe3b2c34bf7556478468e486b62c58"
+      "path": "public/msn-assets/msn75/resources/rtcres/WAVE/rtcres_WAVE_103_9.wav",
+      "bytes": 188230,
+      "sha256": "6d9e7f250e8cdc26fb88c61a4de420b7ff46d32924996ceb0a34e0a9a96eb70b"
     },
     {
       "path": "public/msn-assets/msn75/resources/rtcres/bitmap/rtcres_bitmap_104_9.png",
@@ -6648,11 +6658,6 @@
       "path": "public/msn-assets/msn75/resources/rtcres/version/rtcres_version_1_9.bin",
       "bytes": 1092,
       "sha256": "2657d9874a57501c519809b6ab4b15688c532d692416c0a37f8daaa9b35b449e"
-    },
-    {
-      "path": "public/msn-assets/msn75/resources/rtcres/WAVE/rtcres_WAVE_103_9.wav",
-      "bytes": 188230,
-      "sha256": "6d9e7f250e8cdc26fb88c61a4de420b7ff46d32924996ceb0a34e0a9a96eb70b"
     },
     {
       "path": "public/msn-assets/msn75/resources/sirenacm/string/sirenacm_string_7_9.bin",
@@ -6780,16 +6785,6 @@
       "sha256": "e4ba64aa1dc9f7f2368602dd0fc2c51046f3e35baba8116d6cf3ae930a63aa02"
     },
     {
-      "path": "public/msn-assets/ruffle/0.6.0/core.ruffle.c80159b526e567babaf5.js",
-      "bytes": 108322,
-      "sha256": "624b0b23bc4460d73e789e608fd1274546a5a411f71f7e873414aca94bc5bc4f"
-    },
-    {
-      "path": "public/msn-assets/ruffle/0.6.0/core.ruffle.f000070ea72f8ae4fe3a.js",
-      "bytes": 114739,
-      "sha256": "08ce4ff032b61d2014ba52bdc6f5d8f6adb0aacdc1e6e3fd5e68281c958bd90d"
-    },
-    {
       "path": "public/msn-assets/ruffle/0.6.0/LICENSE_APACHE",
       "bytes": 9723,
       "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
@@ -6798,6 +6793,16 @@
       "path": "public/msn-assets/ruffle/0.6.0/LICENSE_MIT",
       "bytes": 1097,
       "sha256": "4de9338a7879c68e911742a7d691f0797ff1ef8d8a6fb978b0c711e258fe959c"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/core.ruffle.c80159b526e567babaf5.js",
+      "bytes": 108322,
+      "sha256": "624b0b23bc4460d73e789e608fd1274546a5a411f71f7e873414aca94bc5bc4f"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/core.ruffle.f000070ea72f8ae4fe3a.js",
+      "bytes": 114739,
+      "sha256": "08ce4ff032b61d2014ba52bdc6f5d8f6adb0aacdc1e6e3fd5e68281c958bd90d"
     },
     {
       "path": "public/msn-assets/ruffle/0.6.0/manifest.json",
@@ -6900,11 +6905,6 @@
       "sha256": "a82d1b935dbaf3aedbcd58d39cc2f14350505ec02ca2a090984069330b371af7"
     },
     {
-      "path": "README.md",
-      "bytes": 21460,
-      "sha256": "7763eca00d6349eddd00c2d4f71f4c51f6d224d3ecc2b464aed16791d083f42f"
-    },
-    {
       "path": "script/build_and_run.sh",
       "bytes": 1630,
       "sha256": "cb8cb017c2e28eff4730aae9414714f95ef8f90b2d72842f3afeca27475bd8e4"
@@ -6918,6 +6918,11 @@
       "path": "scripts/check-codex.mjs",
       "bytes": 1182,
       "sha256": "0fce3c7e337b1c36744840f9f742d4b65ddf992ea29fd1b3f3eeff40bea6bcb2"
+    },
+    {
+      "path": "scripts/codex-native-proof.mjs",
+      "bytes": 12288,
+      "sha256": "1a41815f1b8cf6e54a511f32ca0b74cec710223f2a4a0ed77630c7726a7dea52"
     },
     {
       "path": "scripts/dev-electron.mjs",
@@ -6941,8 +6946,8 @@
     },
     {
       "path": "scripts/release-artifacts.mjs",
-      "bytes": 4168,
-      "sha256": "e0f563e88523aae48644774ef08cfccc87544d4cc56967c9bceff9c0a14f029e"
+      "bytes": 5814,
+      "sha256": "ddb927c20dcfa0f5eb3b65b3b926e3a1a66a40f11559ed0137eecf7fa40d71be"
     },
     {
       "path": "scripts/release-check.mjs",
@@ -7295,6 +7300,11 @@
       "sha256": "6623c7a779e9f2d1a388c24366a15d12ad76fec893ad0079064d12835a654e7c"
     },
     {
+      "path": "tests/codexNativeProof.test.mjs",
+      "bytes": 6591,
+      "sha256": "2af655888f7172271856b9a795eda67cf8c20fdf0f4764d04cab0b9d8402fcfe"
+    },
+    {
       "path": "tests/codexOptions.test.mjs",
       "bytes": 2602,
       "sha256": "f2724b04fda2bcc5a35e5aed5e37ca991f7631816ebd972bddf2c86fb190b5b8"
@@ -7376,8 +7386,8 @@
     },
     {
       "path": "tests/releasePipeline.test.mjs",
-      "bytes": 5154,
-      "sha256": "62f930192945ab491325d8dfb23d3b16d6a71e4f38487e4f640f178be3353807"
+      "bytes": 6187,
+      "sha256": "6d4f80699e539d771e11b3ae24263e6fc1c1733b3e86d62aaaf327b807dbe085"
     },
     {
       "path": "tests/security.test.mjs",
@@ -7401,8 +7411,8 @@
     },
     {
       "path": "tests/updateAndThreadUtils.test.mjs",
-      "bytes": 8477,
-      "sha256": "2b25acc79c24685d3e3cb822b383d9edae51cfbf8be5337e621b96f917e2e3f8"
+      "bytes": 8434,
+      "sha256": "56d53cadd8e94828fd5e750a906ba79e2b2e1126d1cf8932e195e8bb240c801e"
     },
     {
       "path": "tests/windowFrameNavigation.test.mjs",

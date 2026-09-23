@@ -1,0 +1,32 @@
+[
+  {
+    "path": "docs/assets/newsite0.0.3/desktop-en.png",
+    "bytes": 714771,
+    "sha256": "18f79aa5f3a2a99c97420d2df65036352b8add5a757df865b40fb03b9c094f6b"
+  },
+  {
+    "path": "docs/assets/newsite0.0.3/desktop-fr.png",
+    "bytes": 714439,
+    "sha256": "30600d0ce87d60c7e3e25b7ee4cfe7ffe7f5d326699f7afc27a1c96af03adecb"
+  },
+  {
+    "path": "docs/assets/newsite0.0.3/download-desktop-en.png",
+    "bytes": 676990,
+    "sha256": "0c138899bd9c2d6fced6493a257128d4a3a9956090bafe438c6a483d6de71315"
+  },
+  {
+    "path": "docs/assets/newsite0.0.3/download-mobile-en.png",
+    "bytes": 255845,
+    "sha256": "9d6eafb5a67c268510f4414328a5d2de5ecbfa6e4e5cbf2909dc017112b8f024"
+  },
+  {
+    "path": "docs/assets/newsite0.0.3/mobile-en.png",
+    "bytes": 289849,
+    "sha256": "45b0aec85ee15fb6ef52f5fd1d413ca86b40cf15e08f64a2215bcb83cc83505d"
+  },
+  {
+    "path": "docs/assets/newsite0.0.3/mobile-fr.png",
+    "bytes": 290577,
+    "sha256": "9e2a15a091d7ff7667d056996481f42a950d59cc652e3eea3cfe483609d465a6"
+  }
+]

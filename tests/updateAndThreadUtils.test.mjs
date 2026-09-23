@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { codexImageFromItem, imageSrcFromBase64Png, imageSrcFromPathOrUrl, isCodexImageItem } from "../shared/codexImages.js";
 import { windowsUpdateInstallerLaunch, windowsUpdateInstallerScript } from "../electron/updateService.js";
 import { appCopyFor, supportedLanguages } from "../shared/languages.js";
@@ -43,8 +43,6 @@ test("front release asset selection prefers platform installer assets", () => {
 test("Codex image items expose renderable image attachments", () => {
   const tmpCodexImagePath = path.join(os.tmpdir(), "codex image.png");
   const tmpViewedPath = path.join(os.tmpdir(), "viewed.png");
-  const tmpCodexImageUrl = pathToFileURL(tmpCodexImagePath).href;
-  const tmpViewedUrl = pathToFileURL(tmpViewedPath).href;
   const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
   const pngDataUrl = `data:image/png;base64,${pngBase64}`;
   const generated = codexImageFromItem({
@@ -68,12 +66,13 @@ test("Codex image items expose renderable image attachments", () => {
     savedPath: tmpCodexImagePath,
     result: "ignored"
   });
-  assert.equal(savedPathFallback.src, tmpCodexImageUrl);
+  assert.equal(fileURLToPath(savedPathFallback.src), tmpCodexImagePath);
+  assert.match(savedPathFallback.src, /\/codex%20image\.png$/);
   assert.equal(savedPathFallback.status, "completed");
 
   const viewed = codexImageFromItem({ type: "imageView", path: tmpViewedPath });
   assert.equal(viewed.kind, "imageView");
-  assert.equal(viewed.src, tmpViewedUrl);
+  assert.equal(fileURLToPath(viewed.src), tmpViewedPath);
   assert.equal(isCodexImageItem({ type: "imageView" }), true);
 
   const rawCall = codexImageFromItem({

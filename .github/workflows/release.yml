@@ -76,6 +76,23 @@ jobs:
       - name: Unit and API contract tests
         run: npm run test
 
+      - name: Install the official native Codex runtime for the local contract
+        run: >-
+          npm install
+          --prefix "$RUNNER_TEMP/codex-live-runtime"
+          --no-save --ignore-scripts --no-audit --no-fund
+          @openai/codex@0.156.1
+
+      - name: Verify the native Codex JSON-RPC contract on this host
+        run: >-
+          node scripts/codex-native-proof.mjs
+          --runtime "$RUNNER_TEMP/codex-live-runtime"
+          --version 0.156.1
+          --platform ${{ matrix.platform }}
+          --arch ${{ matrix.arch }}
+          --report release-proof/codex-native.json
+          --tap release-proof/codex-native.tap
+
       - name: Release preflight
         run: npm run test:release
 
@@ -115,6 +132,9 @@ jobs:
           --commit "${{ steps.metadata.outputs.commit }}"
           --upload-dir release-upload
           --proof release-proof/packaged-smoke.json
+          --codex-version 0.156.1
+          --codex-proof release-proof/codex-native.json
+          --codex-tap release-proof/codex-native.tap
 
       - name: Upload verified installers, checksums and packaged smoke proof
         uses: actions/upload-artifact@v4

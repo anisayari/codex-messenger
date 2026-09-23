@@ -21,7 +21,7 @@ export async function sha256File(filePath) {
   return hash.digest('hex');
 }
 
-export async function stageReleaseArtifacts({ platform, arch, version, commit, outputDir, uploadDir, proofPath }) {
+export async function stageReleaseArtifacts({ platform, arch, version, commit, outputDir, uploadDir, proofPath, codexVersion, codexProofPath, codexTapPath }) {
   const names = expectedInstallers({ platform, arch, version });
   assert.match(commit, /^[0-9a-f]{40}(?![\s\S])/, 'Source commit must be a full lowercase Git SHA');
   const proof = JSON.parse(await fs.readFile(proofPath, 'utf8'));
@@ -29,6 +29,17 @@ export async function stageReleaseArtifacts({ platform, arch, version, commit, o
   assert.equal(proof.version, version, 'Packaged smoke version must match installers');
   assert.equal(proof.platform, platform, 'Packaged smoke platform must match installers');
   assert.equal(proof.arch, arch, 'Packaged smoke architecture must match installers');
+  canonicalReleaseVersion(codexVersion);
+  const codexProof = JSON.parse(await fs.readFile(codexProofPath, 'utf8'));
+  assert.equal(codexProof.passed, true, 'Native Codex contract must pass before upload');
+  assert.equal(codexProof.version, codexVersion, 'Native Codex version must match the verified runtime');
+  assert.equal(codexProof.platform, platform, 'Native Codex platform must match installers');
+  assert.equal(codexProof.arch, arch, 'Native Codex architecture must match installers');
+  assert.match(codexProof.nativeSha256, /^[0-9a-f]{64}(?![\s\S])/, 'Native Codex proof must contain the executable SHA256');
+  const codexTap = await fs.readFile(codexTapPath, 'utf8');
+  assert.match(codexTap, /^# pass 1\r?$/m, 'Native Codex TAP must contain one passing contract');
+  assert.match(codexTap, /^# fail 0\r?$/m, 'Native Codex TAP must contain zero failures');
+  assert.match(codexTap, /^# skipped 0\r?$/m, 'Native Codex TAP must contain zero skips');
   await fs.mkdir(uploadDir, { recursive: true });
   const files = [];
   for (const name of names) {
@@ -44,11 +55,16 @@ export async function stageReleaseArtifacts({ platform, arch, version, commit, o
   }
   const proofName = `packaged-smoke-${platform}-${arch}.json`;
   await fs.copyFile(proofPath, path.join(uploadDir, proofName), constants.COPYFILE_EXCL);
+  const codexProofName = `codex-native-${platform}-${arch}.json`;
+  const codexTapName = `codex-native-${platform}-${arch}.tap`;
+  await fs.copyFile(codexProofPath, path.join(uploadDir, codexProofName), constants.COPYFILE_EXCL);
+  await fs.copyFile(codexTapPath, path.join(uploadDir, codexTapName), constants.COPYFILE_EXCL);
   const manifest = {
     version, tag: `v${version}`, commit, platform, arch,
     developerIdSigningOrNotarization: 'not performed by this workflow',
     windowsAuthenticodeSigning: 'not performed by this workflow',
     packagedSmoke: proofName,
+    nativeCodex: { version: codexVersion, sha256: codexProof.nativeSha256, proof: codexProofName, tap: codexTapName },
     files
   };
   await fs.writeFile(path.join(uploadDir, `artifact-manifest-${platform}-${arch}.json`), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' });
@@ -60,7 +76,7 @@ function parseArgs(args) {
   const result = {};
   for (let index = 0; index < args.length; index += 2) {
     const key = args[index];
-    assert.ok(['--platform', '--arch', '--version', '--commit', '--output', '--upload-dir', '--proof'].includes(key) && args[index + 1], 'Expected a supported argument and value');
+    assert.ok(['--platform', '--arch', '--version', '--commit', '--output', '--upload-dir', '--proof', '--codex-version', '--codex-proof', '--codex-tap'].includes(key) && args[index + 1], 'Expected a supported argument and value');
     assert.ok(!(key in result), 'Duplicate argument');
     result[key] = args[index + 1];
   }
@@ -71,7 +87,8 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const manifest = await stageReleaseArtifacts({
     platform: args['--platform'], arch: args['--arch'], version: args['--version'], commit: args['--commit'],
-    outputDir: path.resolve(args['--output']), uploadDir: path.resolve(args['--upload-dir']), proofPath: path.resolve(args['--proof'])
+    outputDir: path.resolve(args['--output']), uploadDir: path.resolve(args['--upload-dir']), proofPath: path.resolve(args['--proof']),
+    codexVersion: args['--codex-version'], codexProofPath: path.resolve(args['--codex-proof']), codexTapPath: path.resolve(args['--codex-tap'])
   });
   console.log(JSON.stringify(manifest));
 }

@@ -35,12 +35,12 @@ Des lectures de fichiers gérés par iCloud ont bloqué les commandes lancées d
 
 ## Preuves conservées
 
-- [Résultats de la suite globale et empreintes du runner](validation/source-manifest-0.156.0.json)
+- [Suite globale](validation/node-tests-0.156.0.log) et [empreintes des sources du runner](validation/source-manifest-0.156.0.json)
 - [Electron natif final](validation/native-electron-0.156.0.json)
 - [Archive officielle vérifiée](validation/changelog-archive-0.156.0.json)
-- [Métadonnées live](validation/source-manifest-0.156.0.json)
-- [Contrôles de distribution](validation/source-manifest-0.156.0.json)
-- [Build production](validation/native-electron-0.156.0.json)
+- [Métadonnées live](validation/metadata-live-0.156.0.log)
+- [Contrôles de distribution](validation/release-check-0.156.0.log)
+- [Build production](validation/production-build-0.156.0.log)
 - [Catalogue live](validation/catalogue-0.156.0.log)
 - [Échange authentifié réel](validation/authenticated-0.156.0.log)
 - [Détection et binaire npm](validation/cli-detection-0.156.0.log)

@@ -6,7 +6,8 @@ Cible vérifiée le 23 septembre 2026 : Codex CLI **0.156.1**, dernière stable 
 
 | Contrôle | Résultat vérifié |
 |---|---|
-| Suite par défaut, Node 24.19 | **253 tests : 250 réussis, 3 opt-in ignorés, 0 échec ou annulation**, 3,56 s ; découverte portable explicite |
+| Suite par défaut, Node 24.19 | **259 tests : 256 réussis, 3 opt-in ignorés, 0 échec ou annulation**, 2,75 s ; découverte portable explicite |
+| Preuve native CLI pour la distribution | **Réussie localement** : Rust npm 0.156.1 ARM, version et Mach-O vérifiés, empreinte SHA256, contrat non authentifié 1/1 réussi ; requise sur chacun des trois runners |
 | Trois fixtures CLI 0.156.1 | **3/3 réussies**, aucune ignorée : message bénin en 6 deltas, historique après redémarrage, reprise, fork, recherche et deux occurrences UTF-16 ; métadonnées, catalogue et PTY |
 | Audit npm | **0 vulnérabilité**, 513 dépendances comptabilisées |
 | Preflight distribution | **Réussi pour 0.0.3 / v0.0.3**, minimum CLI 0.156.1 et versions package/lock cohérentes |
@@ -23,6 +24,6 @@ Cible vérifiée le 23 septembre 2026 : Codex CLI **0.156.1**, dernière stable 
 
 Le workflow [Build desktop release](https://github.com/anisayari/codex-messenger/actions/workflows/release.yml) construit Windows x64, macOS arm64 et macOS x64 sur leurs hôtes natifs, lance l’application empaquetée et produit installateurs, preuves et SHA256SUMS. La release [v0.0.3](https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3) est publiée après réussite des trois jobs. Le [déploiement](https://github.com/anisayari/codex-messenger/actions/workflows/deploy-codexmessenger-net.yml) exige une release correspondant au site, avec installateurs Windows/macOS téléversés et digests SHA256.
 
-État au commit de préparation : contrôles locaux terminés ; les preuves des jobs de distribution et du [site en production](https://codexmessenger.net/) seront ajoutées après leur exécution réelle.
+Le premier passage natif Windows a repéré une assertion trop stricte sur une URI de fichier : `~` et `%7E` désignent le même caractère. Le test conserve la vérification du chemin natif et de l’encodage des espaces. Les builds finaux sont relancés ensemble sur le commit corrigé avant publication. Les preuves de distribution et du [site en production](https://codexmessenger.net/) seront ajoutées après leur exécution réelle.
 
 Les builds macOS sont unsigned et sans notarisation Developer ID ; la signature Authenticode Windows n’est pas fournie. Le smoke des paquets couvre leur démarrage et leur isolation, et les fixtures CLI dédiées couvrent le serveur réel. Aucun microphone ou caméra physique, appel vocal, OAuth externe, crédit de réinitialisation ou remplacement signé d’une app utilisateur n’a été exécuté. Voir [la matrice fonctionnelle](CODEX-MIGRATION.md).
