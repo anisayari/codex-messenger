@@ -161,10 +161,18 @@ try {
   }
   Test-Case 'real native process returns a scalar exit code, visible stdout and restores working directory' {
     $node = (Get-Command node -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+    $nativeScripts = New-FixtureDirectory 'native scripts with spaces & retro'
+    $stdoutScript = Join-Path $nativeScripts 'stdout exit 0.mjs'
+    $stderrScript = Join-Path $nativeScripts 'stderr exit 23.mjs'
+    # Source launchers pass an actual .mjs path. Embedded double quotes in -e
+    # are rewritten by Windows PowerShell 5.1's legacy native argument mode.
+    # Exercise real spaced paths and literal arguments without eval or a shell.
+    Write-FixtureFile $stdoutScript "if(process.argv[2]!=='with spaces'||process.argv[3]!=='literal & | ;')process.exit(42);console.log('launcher fixture stdout');process.exit(0);"
+    Write-FixtureFile $stderrScript "console.error('launcher fixture stderr');process.exit(23);"
     $before = (Get-Location).Path; $global:LASTEXITCODE = 37
-    $result = & $original['Invoke-LauncherNative'] $node @('-e', 'console.log("launcher fixture stdout");process.exit(0)') $fixtureRoot
+    $result = & $original['Invoke-LauncherNative'] $node @($stdoutScript, 'with spaces', 'literal & | ;') $fixtureRoot
     Assert-Equal @($result).Count 1; Assert-Equal $result 0; Assert-Equal (Get-Location).Path $before
-    Assert-Equal (& $original['Invoke-LauncherNative'] $node @('-e', 'console.error("launcher fixture stderr");process.exit(23)') $fixtureRoot) 23
+    Assert-Equal (& $original['Invoke-LauncherNative'] $node @($stderrScript) $fixtureRoot) 23
     $global:LASTEXITCODE = 37
     Assert-True ((Get-LauncherNodeVersion $node) -match '^v\d+\.\d+\.\d+$') 'Actual Node version'
   }
