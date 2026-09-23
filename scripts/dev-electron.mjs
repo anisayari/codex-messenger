@@ -48,9 +48,10 @@ export async function devElectronCommand(args = []) {
 export async function runDevelopment(args = [], { createServer, command = devElectronCommand, spawnChild = spawn } = {}) {
   let server, child;
   let interrupted = false;
-  const onSignal = () => { interrupted = true; void stopChild(child).catch(() => {}); };
-  process.once('SIGINT', onSignal);
-  process.once('SIGTERM', onSignal);
+  const onSignal = () => { if (interrupted) return; interrupted = true; void stopChild(child).catch(() => {}); };
+  // Keep our listener until cleanup completes: Rolldown re-raises unhandled signals.
+  process.on('SIGINT', onSignal);
+  process.on('SIGTERM', onSignal);
   try {
     server = await startPreviewServer({ root: rootDir, createServer });
     if (interrupted) return 130;

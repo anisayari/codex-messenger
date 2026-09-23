@@ -169,6 +169,12 @@ try {
     foreach ($version in @('20.18.9', '21.7.3', '22.11.0', '18.20.8', 'v24.0.0-rc.1', 'unknown')) { Assert-False (Test-NodeEngineVersion $version '^20.19.0 || >=22.12.0') $version }
     Assert-Throws { Test-NodeEngineVersion '24.15.0' '>=20 <22' } 'Cannot validate'
   }
+  Test-Case 'source runtime compatibility follows the actual locked Electron package range' {
+    $range = (Get-Content -LiteralPath (Join-Path $repo 'package.json') -Raw | ConvertFrom-Json).engines.node
+    Assert-Equal $range '>=22.12.0'
+    foreach ($version in @('22.12.0', '24.15.0', '26.0.0')) { Assert-True (Test-NodeEngineVersion $version $range) $version }
+    foreach ($version in @('20.19.0', '20.20.2', '22.11.0')) { Assert-False (Test-NodeEngineVersion $version $range) $version }
+  }
   Test-Case 'real native process returns a scalar exit code, visible stdout and restores working directory' {
     $node = (Get-Command node -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     $nativeScripts = New-FixtureDirectory 'native scripts with spaces & retro'
