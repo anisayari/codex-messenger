@@ -48,6 +48,13 @@ cm_trace_done:
   ClearErrors
 FunctionEnd
 
+; Vendor plugins may be registered after this include during a cold build.
+!macro customHeader
+  !ifdef BUILD_UNINSTALLER
+    !define CM_GUARD_PREFIX "un."
+  !else
+    !define CM_GUARD_PREFIX ""
+  !endif
 Function ${CM_GUARD_PREFIX}cmCheckAppRunning
   StrCpy $cmProcessAttempts 0
 cm_process_retry:
@@ -86,6 +93,8 @@ cm_process_done:
   ClearErrors
   Return
 FunctionEnd
+  !undef CM_GUARD_PREFIX
+!macroend
 
 Function ${CM_GUARD_PREFIX}cmFindDirectoryLeaf
   StrCpy $cmGuardLeaf ""

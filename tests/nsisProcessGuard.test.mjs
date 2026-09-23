@@ -64,6 +64,13 @@ function runGuard(results, { silent = true, answers = [] } = {}) {
   assert.fail('Process guard did not finish within the bounded test execution');
 }
 
+test('native plugin function is declared only in the vendor header hook after plugin registration', () => {
+  const header = source.match(/!macro customHeader\n([\s\S]*?)\n!macroend/);
+  assert.ok(header);
+  assert.match(header[1], /Function \$\{CM_GUARD_PREFIX\}cmCheckAppRunning/);
+  assert.doesNotMatch(source.replace(header[0], ''), /Function .*cmCheckAppRunning/);
+});
+
 test('native confirmed absence alone permits install and removes the PowerShell dependency', () => {
   assert.deepEqual(runGuard([603]), { passed: true, calls: 1, waits: 0, unloads: 1, prompts: 0,
     errorLevel: 0, phases: ['PROCESS_ABSENT'] });
