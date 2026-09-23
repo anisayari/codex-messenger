@@ -3409,8 +3409,9 @@ function App() {
   return bootstrap.view === "chat" ? <ChatWindow bootstrap={bootstrap} /> : <MainWindow />;
 }
 
-const rendererRoot = import.meta.hot?.data.rendererRoot ?? createRoot(document.getElementById("root"));
-if (import.meta.hot) import.meta.hot.data.rendererRoot = rendererRoot;
+const hotContext = import.meta.hot;
+const rendererRoot = hotContext?.data.rendererRoot ?? createRoot(document.getElementById("root"));
+if (hotContext) hotContext.data.rendererRoot = rendererRoot;
 rendererRoot.render(
   <RendererErrorBoundary>
     <App />
