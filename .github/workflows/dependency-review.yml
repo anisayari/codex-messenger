@@ -3,10 +3,23 @@ name: Dependency Review
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      base_ref:
+        description: Base commit SHA or ref to compare
+        required: true
+        type: string
+      head_ref:
+        description: Head commit SHA or ref to compare
+        required: true
+        type: string
 
 permissions:
   contents: read
   pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   dependency-review:
@@ -15,9 +28,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: moderate
+          base-ref: ${{ github.event_name == 'workflow_dispatch' && inputs.base_ref || github.event.pull_request.base.sha }}
+          head-ref: ${{ github.event_name == 'workflow_dispatch' && inputs.head_ref || github.event.pull_request.head.sha }}
