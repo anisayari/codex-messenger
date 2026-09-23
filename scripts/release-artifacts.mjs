@@ -29,7 +29,7 @@ export function requiredInstallerChecks(name, { platform, arch, version }) {
     'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup'];
   return name === names[0]
     ? ['installed', 'silentNoAutoLaunch', 'runningAppInstallRefused', 'runningAppPreserved', 'foreignUninstallRefused', 'foreignFilePreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved', 'uninstalled', 'registrationRemoved', 'protectedFilesPreserved', 'originAsar', 'privateTempCleanup']
-    : ['actualWrapperExecution', 'wrapperVersion', 'wrapperPackaged', 'wrapperRendererReady', 'wrapperCleanExit', 'wrapperRuntimeErrorsZero', 'originAsar', 'privateTempCleanup'];
+    : ['actualWrapperExecution', 'wrapperVersion', 'wrapperPackaged', 'wrapperRendererReady', 'wrapperCleanExit', 'wrapperRuntimeErrorsZero', 'privateLaunchDirectory', 'originAsar', 'privateTempCleanup'];
 }
 
 function matchingTarget(proof, { version, platform, arch }, label) {

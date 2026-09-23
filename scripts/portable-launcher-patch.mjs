@@ -19,6 +19,10 @@ export function patchPortableTemplate(source) {
 }
 
 export async function preparePortableLauncher(root) {
+  // In 26.15.3, false generates one fixed unpack directory per EXE. true keeps
+  // $PLUGINSDIR\app private to each execution, including concurrent launches.
+  const config = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  assert.equal(config.build?.portable?.unpackDirName, true, 'Portable builds must use a new private extraction directory for each launch');
   const directory = path.join(root, 'node_modules', 'app-builder-lib');
   const installed = JSON.parse(await fs.readFile(path.join(directory, 'package.json'), 'utf8'));
   const lock = JSON.parse(await fs.readFile(path.join(root, 'package-lock.json'), 'utf8'));

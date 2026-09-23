@@ -11,7 +11,7 @@ This release corrects installation, startup, update state and uninstall behavior
 | Windows installation refuses to replace an application that is still open | Start the actual installed app in a private profile; require silent setup refusal with exit 42 while its PID, complete installed payload and registration remain unchanged |
 | Windows uninstallation protects unrelated files and profiles | Refused uninstall with a foreign sentinel; successful uninstall after removing only that test sentinel; project/Codex/profile sentinels preserved |
 | Legacy shared install directories are protected before the old uninstaller runs | Execute the new installer against an isolated legacy registry fixture and check refusal/preservation |
-| Portable Windows executable starts its actual bundled app | Execute the actual wrapper with private temporary paths containing spaces; inspect version, packaged renderer readiness and clean exit |
+| Portable Windows executable starts its actual bundled app in a separate extraction directory per launch | Execute the actual wrapper with private temporary paths containing spaces; require its renderer under the launch-specific NSIS plugin directory, correct version, packaged renderer readiness, clean exit and an empty wrapper TEMP afterward |
 | macOS DMG and ZIP contain a working app of the requested architecture | Read-only mount/copy or extract each actual artifact; inspect bundle identity and launch each extracted app |
 | A manual unsigned update releases the UI and explains the next action | Updater and hook regressions; signature checks remain required for automatic replacement |
 | Website downloads match the release and open in English | Production browser checks, exact release links and public installer HEAD responses |

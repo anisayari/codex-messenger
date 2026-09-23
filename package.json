@@ -116,7 +116,7 @@
       "shortcutName": "Codex Messenger"
     },
     "portable": {
-      "unpackDirName": false,
+      "unpackDirName": true,
       "artifactName": "Codex-Messenger-${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}"
     }
   },

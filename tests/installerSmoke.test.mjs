@@ -11,7 +11,7 @@ import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, valida
   parseInstallerTrace, sanitizeWindowsTimeoutDiagnostics, captureWindowsTimeoutDiagnostics, snapshotInstallerCaches,
   cleanupInstallerCaches, validateNativeInstallerFolders, snapshotInstalledPayload, validateRunningInstalledApplication,
   readRunningApplicationLog, waitForRunningInstalledApplication, snapshotPortableTemp, classifyPortableTemp,
-  requirePortableTempCleanup } from '../scripts/installer-smoke.mjs';
+  requirePortableTempCleanup, portableWrapperEnvironment, requirePortableToolingTempPreserved } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -22,7 +22,7 @@ const result = { started: true, timedOut: false, forced: false, code: 0, signal:
 const wrapperOptions = { version: options.version, privateRoot: 'C:\\private\\temp', userData: 'C:\\private\\profile' };
 const wrapperLog = () => [
   { event: 'app.start', version: options.version, packaged: true, dev: false, logPath: 'C:\\private\\profile\\codex-messenger.log' },
-  { event: 'window.ready-to-show', key: 'main', url: 'file:///C:/private/temp/payload/resources/app.asar/dist/index.html' }
+  { event: 'window.ready-to-show', key: 'main', url: 'file:///C:/private/temp/nsxAB12.tmp/app/resources/app.asar/dist/index.html' }
 ].map(record => JSON.stringify(record)).join('\n');
 
 test('installer smoke CLI and NSIS arguments preserve the last unquoted private custom directory with spaces', () => {
@@ -165,29 +165,54 @@ test('installed payload comparison binds every file and directory to the canonic
 test('actual portable wrapper proof rejects missing startup, foreign document, renderer errors and forced or failed exits', () => {
   const checks = validatePortableWrapper(wrapperLog(), result, wrapperOptions);
   assert.equal(checks.actualWrapperExecution, true); assert.equal(Object.hasOwn(checks, 'preloadBootstrap'), false);
+  assert.equal(checks.privateLaunchDirectory, true);
+  for (const directory of ['nsa1.tmp', 'nszFFFF.tmp']) assert.equal(validatePortableWrapper(wrapperLog().replace('nsxAB12.tmp', directory), result, wrapperOptions).privateLaunchDirectory, true);
   for (const invalid of [wrapperLog() + '\nnull', wrapperLog() + '\n{', wrapperLog().split('\n')[0], wrapperLog().replaceAll('0.0.4', '0.0.3'),
     wrapperLog().replace('/private/temp/', '/foreign/'), wrapperLog() + '\n' + JSON.stringify({ event: 'renderer.react.render.error' }),
     wrapperLog() + '\n' + JSON.stringify({ event: 'window.preload-error' }), wrapperLog() + '\n' + JSON.stringify({ event: 'window.console-message', level: 'error' }),
     wrapperLog() + '\n' + wrapperLog().split('\n')[0]]) assert.throws(() => validatePortableWrapper(invalid, result, wrapperOptions));
   for (const changes of [{ timedOut: true }, { forced: true }, { code: 1 }, { code: null }, { signal: 'SIGKILL' }, { started: false }]) assert.throws(() => validatePortableWrapper(wrapperLog(), { ...result, ...changes }, wrapperOptions));
+  for (const replacement of ['123456789012345678901234567/', 'payload/', 'nsxAB12.tmp/', 'nsxABCDE.tmp/app/', 'nsxGGGG.tmp/app/']) {
+    assert.throws(() => validatePortableWrapper(wrapperLog().replace('nsxAB12.tmp/app/', replacement), result, wrapperOptions), error => error.installerSmokeCode === 'PORTABLE_LAUNCH_DIRECTORY_INVALID');
+  }
+});
+
+test('portable wrapper TEMP is separate from tooling and overrides Windows environment casing without changing its private app or Codex profile', () => {
+  const tooling = { Temp: 'C:\\private\\tooling temp', tMp: 'C:\\private\\tooling temp', tmpdir: 'C:\\private\\tooling temp',
+    APPDATA: 'C:\\private\\appdata', LOCALAPPDATA: 'C:\\private\\localappdata', CODEX_HOME: 'C:\\private\\codex-home',
+    CODEX_MESSENGER_USER_DATA_DIR: 'C:\\private\\profile', CODEX_MESSENGER_CODEX_PATH: 'C:\\private\\codex-unavailable' };
+  const first = portableWrapperEnvironment(tooling, 'C:\\private\\wrapper temp one', { platform: 'win32' });
+  const second = portableWrapperEnvironment(tooling, 'C:\\private\\wrapper temp two', { platform: 'win32' });
+  for (const [actual, expected] of [[first, 'C:\\private\\wrapper temp one'], [second, 'C:\\private\\wrapper temp two']]) {
+    for (const key of ['TEMP', 'TMP', 'TMPDIR']) {
+      assert.equal(actual[key], expected);
+      assert.equal(Object.keys(actual).filter(name => name.toUpperCase() === key).length, 1);
+    }
+    for (const key of ['APPDATA', 'LOCALAPPDATA', 'CODEX_HOME', 'CODEX_MESSENGER_USER_DATA_DIR', 'CODEX_MESSENGER_CODEX_PATH']) assert.equal(actual[key], tooling[key]);
+  }
+  assert.equal(tooling.Temp, 'C:\\private\\tooling temp'); assert.equal(Object.hasOwn(tooling, 'TEMP'), false);
+  for (const directory of ['relative', 'C:\\private\\bad\npath', 'C:\\private\\bad\0path']) assert.throws(() => portableWrapperEnvironment(tooling, directory, { platform: 'win32' }));
 });
 
 test('portable TEMP diagnostics expose only bounded categories and kinds, including PowerShell policy files and NSIS or payload directories', () => {
   const records = [
     { name: '__PSScriptPolicyTest_a1b2c3.d4e5.ps1', kind: 'file' },
     { name: '__PSScriptPolicyTest_a1b2c3.d4e5.psm1', kind: 'file' },
-    { name: 'nsAB12.tmp', kind: 'directory' }, { name: 'nsCD34.tmp', kind: 'file' },
-    { name: 'nsAB12.tmp/app', kind: 'directory' }, { name: 'GpuCache', kind: 'directory' },
+    { name: 'nsxAB12.tmp', kind: 'directory' }, { name: 'nsqCD34.tmp', kind: 'file' },
+    { name: 'nsxAB12.tmp/app', kind: 'directory' }, { name: 'GpuCache', kind: 'directory' },
     { name: '123456789012345678901234567', kind: 'directory' },
-    { name: 'secret-private-username', kind: 'file' }, { name: 'secret-private-link', kind: 'link' }
+    { name: 'codex-messenger-installer-smoke.trace', kind: 'file' },
+    { name: 'secret-private-username', kind: 'file', bytes: 14 }, { name: 'secret-empty-file', kind: 'file', bytes: 0 },
+    { name: 'secret-private-link', kind: 'link' }
   ];
   const classified = classifyPortableTemp(records);
   assert.deepEqual(classified, [
     { category: 'CACHE_DIRECTORY', kind: 'directory', count: 1 },
+    { category: 'INSTALLER_QA_TRACE', kind: 'file', count: 1 },
     { category: 'KSUID_DIRECTORY', kind: 'directory', count: 1 },
     { category: 'NSIS_PLUGIN_DIRECTORY', kind: 'directory', count: 1 },
     { category: 'NSIS_TEMP_FILE', kind: 'file', count: 1 },
-    { category: 'OTHER_TEMP', kind: 'file', count: 1 }, { category: 'OTHER_TEMP', kind: 'link', count: 1 },
+    { category: 'OTHER_TEMP', kind: 'file', count: 2, totalBytes: 14, maxBytes: 14, zeroByteCount: 1 }, { category: 'OTHER_TEMP', kind: 'link', count: 1 },
     { category: 'PORTABLE_PAYLOAD_DIRECTORY', kind: 'directory', count: 1 },
     { category: 'POWERSHELL_POLICY_TEMP', kind: 'file', count: 2 }
   ]);
@@ -203,13 +228,17 @@ test('portable TEMP snapshot detects baseline content changes and leftover entri
   const policy = path.join(root, '__PSScriptPolicyTest_a1.b2.ps1');
   await fs.writeFile(policy, 'unit policy fixture');
   const before = await snapshotPortableTemp(root);
+  requirePortableToolingTempPreserved(before, before);
   assert.throws(() => requirePortableTempCleanup(before, before), error => error.installerSmokeCode === 'PORTABLE_TEMP_NOT_EMPTY' && error.installerSmokeOperation === 'PORTABLE_TEMP_RECHECK');
   await fs.writeFile(policy, 'changed unit policy fixture');
-  assert.notDeepEqual(await snapshotPortableTemp(root), before);
+  const modified = await snapshotPortableTemp(root);
+  assert.notDeepEqual(modified, before);
+  assert.throws(() => requirePortableToolingTempPreserved(before, modified), error => error.installerSmokeCode === 'PORTABLE_TOOLING_TEMP_CHANGED');
   await fs.mkdir(path.join(root, 'nsAB12.tmp')); await fs.writeFile(path.join(root, 'nsAB12.tmp', 'unit.txt'), 'unit temporary fixture');
   const after = await snapshotPortableTemp(root);
   assert.throws(() => requirePortableTempCleanup(baseline, after), error => error.installerSmokeCode === 'PORTABLE_TEMP_NOT_EMPTY');
   assert.throws(() => requirePortableTempCleanup(before, []), error => error.installerSmokeCode === 'PORTABLE_TEMP_BASELINE_CHANGED');
+  assert.throws(() => requirePortableToolingTempPreserved(before, []), error => error.installerSmokeCode === 'PORTABLE_TOOLING_TEMP_CHANGED');
 });
 
 test('DMG receipt and Mac bundle identity require a readonly owned mount, exact version and exact architecture', () => {

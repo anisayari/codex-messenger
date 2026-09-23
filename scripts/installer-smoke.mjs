@@ -20,7 +20,7 @@ const checkAbort = () => { if (nativeScope.getStore()?.signal?.aborted) throw ab
 const cleanupOwned = task => nativeScope.run({ ...nativeScope.getStore(), cleanup: true }, task);
 export const installerChecks = {
   nsis: ['installed', 'silentNoAutoLaunch', 'runningAppInstallRefused', 'runningAppPreserved', 'foreignUninstallRefused', 'foreignFilePreserved', 'uninstalled', 'registrationRemoved', 'protectedFilesPreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved', 'originAsar', 'privateTempCleanup'],
-  portable: ['actualWrapperExecution', 'wrapperVersion', 'wrapperPackaged', 'wrapperRendererReady', 'wrapperCleanExit', 'wrapperRuntimeErrorsZero', 'originAsar', 'privateTempCleanup'],
+  portable: ['actualWrapperExecution', 'wrapperVersion', 'wrapperPackaged', 'wrapperRendererReady', 'privateLaunchDirectory', 'wrapperCleanExit', 'wrapperRuntimeErrorsZero', 'originAsar', 'privateTempCleanup'],
   dmg: ['mountedReadOnly', 'copiedApplication', 'mountDetached', 'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup'],
   zip: ['extractedApplication', 'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup']
 };
@@ -121,6 +121,11 @@ export function validatePortableWrapper(log, result, { version, privateRoot, use
   assert.equal(ready.length, 1, 'The wrapper must load its actual main renderer');
   const document = fileURLToPath(ready[0].url, { windows: true });
   assert.ok(isOwnedPath(privateRoot, document, 'win32') && /\\resources\\app\.asar\\dist\\index\.html$/i.test(document));
+  // NSIS 3.0.4 uses the three-letter prefix ns[a-z], then GetTempFileName's
+  // low-16-bit hexadecimal suffix, for its launch-specific plugin directory.
+  if (!/^ns[a-z][a-f0-9]{1,4}\.tmp\\app\\resources\\app\.asar\\dist\\index\.html$/i.test(path.win32.relative(privateRoot, document))) {
+    throw containerValidationError('PORTABLE_LAUNCH_DIRECTORY_INVALID', 'PORTABLE_LAUNCH_DIRECTORY');
+  }
   const normalized = records.map(record => ({ ...record, event: String(record.event || '').replace(/^renderer\./, '') })).map(record => JSON.stringify(record)).join('\n');
   assert.ok(Object.values(errorsFromPrivateLog(normalized)).every(count => count === 0), 'Portable wrapper cannot contain runtime errors');
   return Object.fromEntries(installerChecks.portable.filter(key => key !== 'originAsar' && key !== 'privateTempCleanup').map(key => [key, true]));
@@ -790,25 +795,45 @@ export function classifyPortableTemp(records) {
     assert.ok(typeof record.name === 'string' && ['file', 'directory', 'link', 'other'].includes(record.kind));
     const name = record.name.split(/[\\/]/).at(-1);
     let category = 'OTHER_TEMP';
-    if (/^__PSScriptPolicyTest_[a-z0-9]{1,32}(?:\.[a-z0-9]{1,16}){0,2}\.ps(?:1|m1)$/i.test(name)) category = 'POWERSHELL_POLICY_TEMP';
-    else if (/^ns[a-f0-9]{4}\.tmp$/i.test(name)) category = record.kind === 'directory' ? 'NSIS_PLUGIN_DIRECTORY' : 'NSIS_TEMP_FILE';
+    if (record.kind === 'file' && name.toLowerCase() === traceFileName) category = 'INSTALLER_QA_TRACE';
+    else if (/^__PSScriptPolicyTest_[a-z0-9]{1,32}(?:\.[a-z0-9]{1,16}){0,2}\.ps(?:1|m1)$/i.test(name)) category = 'POWERSHELL_POLICY_TEMP';
+    else if (/^ns[a-z][a-f0-9]{1,4}\.tmp$/i.test(name)) category = record.kind === 'directory' ? 'NSIS_PLUGIN_DIRECTORY' : 'NSIS_TEMP_FILE';
     else if (record.kind === 'directory' && name.toLowerCase() === 'app') category = 'PORTABLE_PAYLOAD_DIRECTORY';
     else if (record.kind === 'directory' && /^[a-z0-9]{27}$/i.test(name)) category = 'KSUID_DIRECTORY';
     else if (record.kind === 'directory' && /^(?:cache|code cache|gpucache|dawncache|crashpad|blob_storage|session storage)$/i.test(name)) category = 'CACHE_DIRECTORY';
     const key = `${category}:${record.kind}`;
-    counts.set(key, (counts.get(key) || 0) + 1);
+    const summary = counts.get(key) || { category, kind: record.kind, count: 0 };
+    summary.count += 1;
+    if (category === 'OTHER_TEMP' && record.kind === 'file') {
+      assert.ok(Number.isSafeInteger(record.bytes) && record.bytes >= 0, 'Expected a bounded private TEMP file size');
+      summary.totalBytes = (summary.totalBytes || 0) + record.bytes;
+      assert.ok(Number.isSafeInteger(summary.totalBytes), 'Portable TEMP byte totals exceed their diagnostic bound');
+      summary.maxBytes = Math.max(summary.maxBytes || 0, record.bytes);
+      summary.zeroByteCount = (summary.zeroByteCount || 0) + Number(record.bytes === 0);
+    }
+    counts.set(key, summary);
   }
-  return [...counts].sort(([left], [right]) => left.localeCompare(right)).map(([key, count]) => {
-    const [category, kind] = key.split(':');
-    return { category, kind, count };
-  });
+  return [...counts].sort(([left], [right]) => left.localeCompare(right)).map(([, summary]) => summary);
 }
 
 const containerValidationError = (code, operation) => Object.assign(new Error(code), { installerSmokeCode: code, installerSmokeOperation: operation });
 
+export function portableWrapperEnvironment(environment, directory, { platform = process.platform } = {}) {
+  const paths = platform === 'win32' ? path.win32 : path;
+  assert.ok(paths.isAbsolute(directory) && !/[\r\n\0]/.test(directory), 'Expected an absolute private wrapper TEMP');
+  const result = { ...environment };
+  for (const key of Object.keys(result)) if (['TEMP', 'TMP', 'TMPDIR'].includes(key.toUpperCase())) delete result[key];
+  return { ...result, TEMP: directory, TMP: directory, TMPDIR: directory };
+}
+
+export function requirePortableToolingTempPreserved(baseline, remaining) {
+  try { assert.deepEqual(remaining, baseline); }
+  catch { throw containerValidationError('PORTABLE_TOOLING_TEMP_CHANGED', 'PORTABLE_TOOLING_TEMP_RECHECK'); }
+}
+
 export function requirePortableTempCleanup(baseline, remaining) {
-  // Keep the original empty-TEMP requirement until native diagnostics explain
-  // whether a tool created a baseline file before the wrapper was launched.
+  // The wrapper alone receives this fresh private TEMP. Both snapshots must be
+  // empty; tooling files stay in their separate directory without alteration.
   if (remaining.length > 0) throw containerValidationError('PORTABLE_TEMP_NOT_EMPTY', 'PORTABLE_TEMP_RECHECK');
   try { assert.deepEqual(remaining, baseline); }
   catch { throw containerValidationError('PORTABLE_TEMP_BASELINE_CHANGED', 'PORTABLE_TEMP_RECHECK'); }
@@ -833,12 +858,18 @@ async function portableSmoke(installer, options, root, entry, origin) {
   await fs.mkdir(wrapperDirectory, { mode: 0o700 });
   const wrapperFile = path.join(wrapperDirectory, path.basename(installer));
   await fs.copyFile(installer, wrapperFile); assert.equal(await sha256File(wrapperFile), entry.sha256);
-  const tempDirectory = path.join(root, 'temp with spaces');
+  const toolingTempDirectory = path.join(root, 'temp with spaces');
+  const toolingBaseline = await snapshotPortableTemp(toolingTempDirectory);
+  entry.portableToolingTempBaseline = classifyPortableTemp(toolingBaseline);
+  const tempDirectory = await fs.realpath(await fs.mkdtemp(path.join(root, 'wrapper temp with spaces-')));
+  await fs.chmod(tempDirectory, 0o700);
   const baseline = await snapshotPortableTemp(tempDirectory);
+  if (baseline.length !== 0) throw containerValidationError('PORTABLE_TEMP_BASELINE_NOT_EMPTY', 'PORTABLE_TEMP_RECHECK');
   entry.portableTempBaseline = classifyPortableTemp(baseline);
-  const wrapper = await runOwned(wrapperFile, ['--smoke-test'], { env, cwd: wrapperDirectory, timeoutMs: 45000 });
+  const wrapperEnv = portableWrapperEnvironment(env, tempDirectory);
+  const wrapper = await runOwned(wrapperFile, ['--smoke-test'], { env: wrapperEnv, cwd: wrapperDirectory, timeoutMs: 45000 });
   Object.assign(entry.checks, validatePortableWrapper(await fs.readFile(path.join(root, 'profile', 'codex-messenger.log'), 'utf8'), wrapper,
-    { version: options.version, privateRoot: path.join(root, 'temp with spaces'), userData: path.join(root, 'profile') }));
+    { version: options.version, privateRoot: tempDirectory, userData: path.join(root, 'profile') }));
   const remaining = await snapshotPortableTemp(tempDirectory);
   entry.portableTempRemaining = classifyPortableTemp(remaining);
   const baselineByName = new Map(baseline.map(record => [record.name, record]));
@@ -847,6 +878,10 @@ async function portableSmoke(installer, options, root, entry, origin) {
     const after = remaining.find(candidate => candidate.name === record.name);
     return after !== undefined && JSON.stringify(record) === JSON.stringify(after);
   });
+  const toolingRemaining = await snapshotPortableTemp(toolingTempDirectory);
+  entry.portableToolingTempRemaining = classifyPortableTemp(toolingRemaining);
+  entry.portableToolingTempBaselineUnchanged = JSON.stringify(toolingRemaining) === JSON.stringify(toolingBaseline);
+  requirePortableToolingTempPreserved(toolingBaseline, toolingRemaining);
   requirePortableTempCleanup(baseline, remaining);
 }
 
