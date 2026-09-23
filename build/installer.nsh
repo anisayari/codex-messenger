@@ -1,6 +1,7 @@
 ; Silent installs never start the app. The caller owns any relaunch.
 ; Missing generated payload data must stop compilation rather than weaken the guard.
-!include "${BUILD_RESOURCES_DIR}/installer-files.generated.nsh"
+!addincludedir "${BUILD_RESOURCES_DIR}"
+!include "installer-files.generated.nsh"
 
 !ifdef BUILD_UNINSTALLER
 !define CM_GUARD_PREFIX "un."

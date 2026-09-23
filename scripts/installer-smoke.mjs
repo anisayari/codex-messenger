@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn, execFile } from 'node:child_process';
@@ -36,6 +37,39 @@ export function isOwnedPath(root, candidate, platform = process.platform) {
 export function nsisInstallArguments(directory) {
   assert.ok(path.win32.isAbsolute(directory) && !/["\r\n\0]/.test(directory), 'Expected an absolute private NSIS directory');
   return ['/S', '/currentuser', '--no-desktop-shortcut', `/D=${directory}`];
+}
+
+export function nsisUninstallArguments(directory) {
+  assert.ok(path.win32.isAbsolute(directory) && !/["\r\n\0]/.test(directory), 'Expected an absolute private NSIS directory');
+  return ['/S', '/currentuser', `_?=${directory}`];
+}
+
+export function nsisVerbatimCommand(command) {
+  assert.ok(path.win32.isAbsolute(command) && !/["\r\n\0]/.test(command), 'Expected an absolute NSIS executable');
+  return { windowsVerbatimArguments: true, argv0: `"${command}"` };
+}
+
+export async function copyOwnedUninstaller(root, directory, expectedSha256) {
+  assert.ok(isOwnedPath(root, directory));
+  assert.match(expectedSha256, /^[0-9a-f]{64}(?![\s\S])/);
+  assert.ok(isOwnedPath(await fs.realpath(root), await fs.realpath(directory)));
+  const source = path.join(directory, 'Uninstall Codex Messenger.exe');
+  const stat = await fs.lstat(source);
+  assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size >= 1024, 'Expected the actual installed uninstaller');
+  assert.equal(await sha256File(source), expectedSha256, 'Uninstaller identity changed');
+  const copyDirectory = await fs.mkdtemp(path.join(root, 'uninstall execution with spaces-'));
+  try {
+    await fs.chmod(copyDirectory, 0o700);
+    const executable = path.join(copyDirectory, 'Uninstall Codex Messenger.exe');
+    await fs.copyFile(source, executable, fsConstants.COPYFILE_EXCL);
+    assert.ok((await fs.lstat(executable)).isFile());
+    assert.equal(await sha256File(executable), expectedSha256);
+    assert.equal(await sha256File(source), expectedSha256);
+    return { executable, copyDirectory };
+  } catch (error) {
+    await fs.rm(copyDirectory, { recursive: true, force: true });
+    throw error;
+  }
 }
 
 export function validateInstallerApplication(smoke, options) {
@@ -103,7 +137,8 @@ async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 300
   const signal = nativeScope.getStore()?.cleanup ? undefined : nativeScope.getStore()?.signal;
   if (signal?.aborted) return { code: null, signal: null, started: false, timedOut: false, forced: false, aborted: true, stdout: '', stderr: '' };
   return new Promise(resolve => {
-    const child = spawn(command, args, { env, cwd, shell: false, windowsHide: true, windowsVerbatimArguments: verbatim,
+    const child = spawn(command, args, { env, cwd, shell: false, windowsHide: true,
+      ...(verbatim ? nsisVerbatimCommand(command) : { windowsVerbatimArguments: false }),
       detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] });
     let stdout = '', stderr = '', started = true, timedOut = false, forced = false, aborted = false, fallback, finished = false;
     const finish = (code, childSignal) => {
@@ -300,7 +335,13 @@ async function nsisSmoke(installer, options, root, entry, origin) {
   const foreign = path.join(directory, 'installer-smoke-foreign.txt'), sentinel = 'owned installer smoke sentinel\n';
   const protectedFiles = [path.join(root, 'profile', 'preserve.txt'), path.join(root, 'codex-home', 'preserve.txt'), path.join(root, 'project', 'preserve.txt')];
   await Promise.all(protectedFiles.map(file => fs.writeFile(file, sentinel, { flag: 'wx', mode: 0o600 })));
-  const uninstall = async () => runOwned(path.join(directory, 'Uninstall Codex Messenger.exe'), ['/S', '/currentuser'], { env, cwd: root, timeoutMs: 30000 });
+  let uninstallerSha256;
+  const uninstall = async () => {
+    const copy = await copyOwnedUninstaller(root, directory, uninstallerSha256);
+    try {
+      return await runOwned(copy.executable, nsisUninstallArguments(directory), { env, cwd: root, timeoutMs: 30000, verbatim: true });
+    } finally { await fs.rm(copy.copyDirectory, { recursive: true, force: true }); }
+  };
   let attempted = false;
   try {
     attempted = true;
@@ -308,6 +349,10 @@ async function nsisSmoke(installer, options, root, entry, origin) {
     validateInstalledRegistration(await registryState(guid, env), directory, options.version);
     await mutateOwnedRegistration(guid, identity, env, true);
     assert.ok((await fs.stat(files.executable)).isFile());
+    const uninstaller = path.join(directory, 'Uninstall Codex Messenger.exe');
+    const uninstallerStat = await fs.lstat(uninstaller);
+    assert.ok(uninstallerStat.isFile() && !uninstallerStat.isSymbolicLink() && uninstallerStat.size >= 1024);
+    uninstallerSha256 = await sha256File(uninstaller);
     entry.checks.installed = true;
     await new Promise(resolve => setTimeout(resolve, 1000));
     assert.deepEqual(await ownedAppProcesses(files.executable, env), []);
@@ -342,7 +387,7 @@ async function nsisSmoke(installer, options, root, entry, origin) {
           validateOwnedRegistrationCleanup(cleanupState, identity);
           const uninstallFile = path.join(directory, 'Uninstall Codex Messenger.exe');
           const regular = await fs.lstat(uninstallFile).then(stat => stat.isFile() && !stat.isSymbolicLink(), () => false);
-          if (regular && state.entries.every(record => record.location === directory)) await uninstall();
+          if (regular && uninstallerSha256 && state.entries.every(record => record.location === directory)) await uninstall();
           const remaining = await registryState(guid, env);
           if (remaining.entries.length || remaining.menu || remaining.desktop) await mutateOwnedRegistration(guid, identity, env);
         }

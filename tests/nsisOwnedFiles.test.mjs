@@ -4,6 +4,9 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import afterPack, { createNsisPayloadManifest, renderNsisPayloadManifest } from '../scripts/nsis-owned-files.mjs';
+import { resolveFunction } from 'app-builder-lib/out/util/resolve.js';
+import { AsyncEventEmitter } from 'app-builder-lib/out/util/asyncEventEmitter.js';
+import { fileURLToPath } from 'node:url';
 
 async function fixture(t) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-messenger-nsis-manifest-'));
@@ -51,4 +54,29 @@ test('afterPack writes a deterministic NSIS include for Windows and leaves other
   await afterPack(context); assert.equal(await fs.readFile(generated, 'utf8'), expected);
   await afterPack({ electronPlatformName: 'darwin' }); assert.equal(await fs.readFile(generated, 'utf8'), expected);
   assert.deepEqual(await fs.readdir(f.build), ['installer-files.generated.nsh']);
+});
+
+test('electron-builder resolves and awaits the configured Windows hook and logs its verified compiler include', async (t) => {
+  const f = await fixture(t);
+  const root = fileURLToPath(new URL('..', import.meta.url));
+  const config = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const hookPath = path.resolve(root, config.build.afterPack);
+  const hook = await resolveFunction(config.type, hookPath, 'afterPack', root);
+  assert.equal(hook, afterPack);
+  const messages = [];
+  t.mock.method(console, 'log', (message) => messages.push(message));
+  const emitter = new AsyncEventEmitter();
+  emitter.on('afterPack', hook, 'user');
+  const emitted = await emitter.emit('afterPack', { electronPlatformName: 'win32', appOutDir: f.app,
+    packager: { appInfo: { productFilename: 'Codex Messenger' }, info: { buildResourcesDir: f.build } } });
+  assert.equal(emitted.emittedUser, true);
+  const destination = path.join(f.build, 'installer-files.generated.nsh');
+  const include = await fs.readFile(destination, 'utf8');
+  assert.equal(include, renderNsisPayloadManifest(await createNsisPayloadManifest(f.app, 'Codex Messenger')));
+  assert.equal(messages.length, 1);
+  const logged = JSON.parse(messages[0].slice('[nsis-owned-files] '.length));
+  assert.equal(logged.destination, destination);
+  assert.equal(logged.bytes, Buffer.byteLength(include));
+  assert.equal(logged.platform, 'win32');
+  assert.equal(logged.sha256.length, 64);
 });

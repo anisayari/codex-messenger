@@ -146,7 +146,7 @@ test("Windows installer protects shared directories and never launches the app d
   assert.match(nsisScript, /!macro customInstall/);
   assert.match(nsisScript, /!macro customInit/);
   assert.match(nsisScript, /!macro customUnInit/);
-  assert.match(nsisScript, /!include "\$\{BUILD_RESOURCES_DIR\}\/installer-files.generated.nsh"/);
+  assert.match(nsisScript, /!addincludedir "\$\{BUILD_RESOURCES_DIR\}"\s+!include "installer-files.generated.nsh"/);
   assert.match(nsisScript, /SetErrorLevel 42/);
   assert.match(nsisScript, /\/SD IDOK/);
   assert.doesNotMatch(nsisScript, /\bExec(?:Wait)?\s+['"]/);

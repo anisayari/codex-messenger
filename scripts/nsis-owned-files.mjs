@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 function nsisLiteral(value) {
   assert.ok(typeof value === 'string' && value && !/["\r\n\0]/.test(value), 'Unsafe NSIS payload path');
@@ -51,8 +51,15 @@ export default async function afterPack(context) {
   const manifest = await createNsisPayloadManifest(context.appOutDir, context.packager.appInfo.productFilename);
   const destination = path.join(context.packager.info.buildResourcesDir, 'installer-files.generated.nsh');
   const temporary = `${destination}.${randomUUID()}.tmp`;
+  const include = renderNsisPayloadManifest(manifest);
   try {
-    await fs.writeFile(temporary, renderNsisPayloadManifest(manifest), { flag: 'wx', mode: 0o600 });
+    await fs.writeFile(temporary, include, { flag: 'wx', mode: 0o600 });
     await fs.rename(temporary, destination);
+    const stat = await fs.lstat(destination);
+    assert.ok(stat.isFile() && stat.size === Buffer.byteLength(include), 'Generated NSIS manifest is incomplete');
+    assert.equal(await fs.readFile(destination, 'utf8'), include, 'Generated NSIS manifest does not match the packaged payload');
+    console.log('[nsis-owned-files] ' + JSON.stringify({ destination, platform: context.electronPlatformName,
+      files: manifest.files.length, directories: manifest.directories.length, bytes: stat.size,
+      sha256: createHash('sha256').update(include).digest('hex') }));
   } catch (error) { await fs.unlink(temporary).catch(() => {}); throw error; }
 }

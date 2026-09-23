@@ -356,6 +356,56 @@ function Remove-PortableInstall {
   return $true
 }
 
+function ConvertFrom-MessengerUninstallArguments {
+  param([string]$Arguments)
+  $result = @()
+  foreach ($token in @($Arguments -split '\s+' | Where-Object { $_ })) {
+    $canonical = switch ($token.ToLowerInvariant()) {
+      '/s' { '/S' }; '/currentuser' { '/currentuser' }; '/allusers' { '/allusers' }
+      default { throw 'The registered uninstaller contains an unsupported argument. Nothing was executed.' }
+    }
+    if ($result -contains $canonical) { throw 'The registered uninstaller contains duplicate arguments. Nothing was executed.' }
+    $result += $canonical
+  }
+  if ($result -contains '/currentuser' -and $result -contains '/allusers') { throw 'The registered uninstaller contains conflicting user scopes. Nothing was executed.' }
+  return $result
+}
+
+function Remove-MessengerUninstallCopy {
+  param($Copy)
+  if (!$Copy -or ![System.IO.Directory]::Exists($Copy.Directory)) { return }
+  $directoryItem = Get-Item -LiteralPath $Copy.Directory -Force -ErrorAction Stop
+  if (($directoryItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'The private uninstaller directory changed identity; it was preserved.' }
+  if ([System.IO.File]::Exists($Copy.Exe)) {
+    $fileItem = Get-Item -LiteralPath $Copy.Exe -Force -ErrorAction Stop
+    if (($fileItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0 -or !$Copy.Hash -or (Get-FileHash -LiteralPath $Copy.Exe -Algorithm SHA256 -ErrorAction Stop).Hash -ne $Copy.Hash) {
+      throw 'The private uninstaller copy changed identity; it was preserved.'
+    }
+    [System.IO.File]::Delete($Copy.Exe)
+  }
+  if (@(Get-ChildItem -LiteralPath $Copy.Directory -Force).Count -ne 0) { throw 'Unexpected files in the private uninstaller directory were preserved.' }
+  # Only this empty, uniquely created directory is removed. Never InstallDir.
+  [System.IO.Directory]::Delete($Copy.Directory)
+}
+
+function New-MessengerUninstallCopy {
+  param([string]$Exe)
+  $directory = Join-Path ([System.IO.Path]::GetTempPath()) ('codex-messenger-uninstall-' + [guid]::NewGuid().ToString('N'))
+  [void](New-Item -ItemType Directory -Path $directory -ErrorAction Stop)
+  $copy = [pscustomobject]@{ Directory = $directory; Exe = (Join-Path $directory 'Uninstall Codex Messenger.exe'); Hash = '' }
+  try {
+    $copy.Hash = (Get-FileHash -LiteralPath $Exe -Algorithm SHA256 -ErrorAction Stop).Hash
+    [System.IO.File]::Copy($Exe, $copy.Exe, $false)
+    if ((Get-FileHash -LiteralPath $copy.Exe -Algorithm SHA256 -ErrorAction Stop).Hash -ne $copy.Hash -or (Get-FileHash -LiteralPath $Exe -Algorithm SHA256 -ErrorAction Stop).Hash -ne $copy.Hash) {
+      throw 'The uninstaller copy could not be verified. Nothing was executed.'
+    }
+    return $copy
+  } catch {
+    Remove-MessengerUninstallCopy $copy
+    throw
+  }
+}
+
 function Invoke-MessengerUninstaller {
   param($Install)
   if (!$Install -or !$Install.Exe) { throw 'No installed Codex Messenger executable was found.' }
@@ -364,18 +414,49 @@ function Invoke-MessengerUninstaller {
     return 0
   }
   if ($Install.Kind -ne 'registered') { throw 'No registered uninstaller was found. Use the original installer or Windows Apps settings; no folder was removed.' }
-  $commandLine = if ($Install.QuietUninstallString) { $Install.QuietUninstallString } else { $Install.UninstallString }
+  # Re-read the selected NSIS registration. A cached tuple cannot authorize a
+  # different folder, executable or command after the launcher was opened.
+  $entry = $null
+  foreach ($candidate in @(Get-MessengerRegistryEntries)) {
+    if (Test-MessengerRegistryIdentity $candidate) {
+      if ($Install.RegistryPath -and ([string]$candidate.PSPath).Equals([string]$Install.RegistryPath, [System.StringComparison]::OrdinalIgnoreCase)) { $entry = $candidate; break }
+    }
+  }
+  if (!$entry) { throw 'The selected NSIS registration no longer has the expected identity. Nothing was executed.' }
+  $registeredDirectory = [string]$entry.InstallLocation
+  if (!$registeredDirectory) {
+    $registeredCommand = ConvertFrom-MessengerUninstallCommand ([string]$entry.UninstallString)
+    if ($registeredCommand) { $registeredDirectory = [System.IO.Path]::GetDirectoryName($registeredCommand.Exe) }
+  }
+  $directory = Get-NormalizedLauncherPath $Install.InstallDir
+  if (!(Get-NormalizedLauncherPath $registeredDirectory).Equals($directory, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'The selected installation folder changed. Nothing was executed.' }
+  $application = Get-MessengerExecutable $directory
+  if (!$application -or !(Get-NormalizedLauncherPath $application).Equals((Get-NormalizedLauncherPath $Install.Exe), [System.StringComparison]::OrdinalIgnoreCase) -or (Get-MessengerFileMetadata $application).ProductName -ne 'Codex Messenger') {
+    throw 'The selected application executable no longer has the expected identity. Nothing was executed.'
+  }
+  $commandLine = if ($entry.QuietUninstallString) { [string]$entry.QuietUninstallString } else { [string]$entry.UninstallString }
   $command = ConvertFrom-MessengerUninstallCommand $commandLine
   if (!$command) { throw 'The installed application has no registered uninstaller. No folder was removed.' }
-  $directory = Get-NormalizedLauncherPath $Install.InstallDir
   $exe = Get-NormalizedLauncherPath $command.Exe
   $uninstallerName = [System.IO.Path]::GetFileName($exe)
   if (![System.IO.Path]::GetDirectoryName($exe).Equals($directory, [System.StringComparison]::OrdinalIgnoreCase) -or $uninstallerName -notin @('Uninstall Codex Messenger.exe', 'Uninstall CodexMessenger.exe') -or !(Test-Path -LiteralPath $exe -PathType Leaf)) {
     throw 'The registered uninstaller does not belong to the selected application folder. Nothing was removed.'
   }
-  $options = @{ FilePath = $exe; WorkingDirectory = $directory; Wait = $true; PassThru = $true; ErrorAction = 'Stop' }
-  if ($command.Arguments) { $options.ArgumentList = $command.Arguments }
-  $process = Start-Process @options
-  if ($process.ExitCode -ne 0) { throw "The uninstaller exited with code $($process.ExitCode). No fallback folder deletion was attempted." }
-  return 0
+  if ((Get-MessengerFileMetadata $exe).ProductName -ne 'Codex Messenger') { throw 'The registered uninstaller executable has an unexpected product identity. Nothing was executed.' }
+  $arguments = @(ConvertFrom-MessengerUninstallArguments $command.Arguments)
+  if ((($arguments -contains '/allusers') -and [string]$entry.PSPath -notmatch 'HKEY_LOCAL_MACHINE|^HKLM:') -or (($arguments -contains '/currentuser') -and [string]$entry.PSPath -notmatch 'HKEY_CURRENT_USER|^HKCU:')) {
+    throw 'The registered uninstaller user scope does not match its registry hive. Nothing was executed.'
+  }
+  $copy = $null
+  try {
+    $copy = New-MessengerUninstallCopy $exe
+    # NSIS reads _?= as the complete trailing path, including spaces. This
+    # disables its detached TEMP bootstrap and preserves the real exit code.
+    $argumentLine = (($arguments + ('_?=' + $directory)) -join ' ')
+    $process = Start-Process -FilePath $copy.Exe -WorkingDirectory $copy.Directory -ArgumentList $argumentLine -Wait -PassThru -ErrorAction Stop
+    if ($null -eq $process.ExitCode -or $process.ExitCode -ne 0) { throw "The uninstaller exited with code $($process.ExitCode). No fallback folder deletion was attempted." }
+    return 0
+  } finally {
+    if ($copy) { Remove-MessengerUninstallCopy $copy }
+  }
 }

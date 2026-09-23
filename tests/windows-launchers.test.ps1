@@ -54,6 +54,16 @@ function New-RegistryEntry { param([string]$Directory, [string]$Version = '0.0.4
     PSChildName = '{aec7928a-9490-5305-a9b2-1a0182dfd515}'; PSPath = 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\{aec7928a-9490-5305-a9b2-1a0182dfd515}';
     UninstallString = '"' + (Join-Path $Directory 'Uninstall Codex Messenger.exe') + '"'; QuietUninstallString = '' }
 }
+function New-FixtureRegisteredUninstall { param([string]$Name)
+  $script:UninstallApp = New-FixtureApp $Name
+  $script:UninstallOriginal = Join-Path $script:UninstallApp 'Uninstall Codex Messenger.exe'
+  Write-FixtureFile $script:UninstallOriginal 'verified uninstaller fixture, never executed'
+  $script:UninstallEntry = New-RegistryEntry $script:UninstallApp
+  $script:UninstallEntry.QuietUninstallString = '"' + $script:UninstallOriginal + '" /currentuser /S'
+  return [pscustomobject]@{ Kind = 'registered'; Exe = (Join-Path $script:UninstallApp 'Codex Messenger.exe');
+    InstallDir = $script:UninstallApp; RegistryPath = $script:UninstallEntry.PSPath;
+    UninstallString = $script:UninstallEntry.UninstallString; QuietUninstallString = $script:UninstallEntry.QuietUninstallString }
+}
 function Start-Process { [CmdletBinding()]param([string]$FilePath, [string]$WorkingDirectory, $ArgumentList, [switch]$Wait, [switch]$PassThru)
   throw "Unexpected process execution: $FilePath"
 }
@@ -323,23 +333,87 @@ try {
       }
     }
   }
-  Test-Case 'registered uninstaller waits for the selected executable and preserves failed exit without folder fallback' {
-    $app = New-FixtureApp 'uninstaller'; Write-FixtureFile (Join-Path $app 'Uninstall Codex Messenger.exe')
-    $install = [pscustomobject]@{ Kind = 'registered'; Exe = (Join-Path $app 'Codex Messenger.exe'); InstallDir = $app;
-      UninstallString = '"' + (Join-Path $app 'Uninstall Codex Messenger.exe') + '"'; QuietUninstallString = '"' + (Join-Path $app 'Uninstall Codex Messenger.exe') + '" /S' }
-    $script:UninstallExit = 17; $script:UninstallCalls = 0
+  Test-Case 'registered NSIS uninstaller runs an exact verified private copy with trailing raw InstallDir and preserves failure' {
+    $install = New-FixtureRegisteredUninstall 'uninstaller with spaces'
+    $script:UninstallExit = 17; $script:UninstallCopies = @()
+    function Get-MessengerRegistryEntries { $script:UninstallEntry }
+    function Get-MessengerFileMetadata { param($Exe) [pscustomobject]@{ ProductName = 'Codex Messenger' } }
     function Start-Process { [CmdletBinding()]param($FilePath, $WorkingDirectory, $ArgumentList, [switch]$Wait, [switch]$PassThru)
-      Assert-Equal $FilePath (Join-Path $app 'Uninstall Codex Messenger.exe'); Assert-Equal $WorkingDirectory $app
-      Assert-Equal $ArgumentList '/S'; Assert-True $Wait; Assert-True $PassThru; $script:UninstallCalls++
+      Assert-False ($FilePath -eq $script:UninstallOriginal)
+      Assert-False ($WorkingDirectory -eq $script:UninstallApp)
+      Assert-Equal ([IO.Path]::GetDirectoryName($FilePath)) $WorkingDirectory
+      Assert-True (([IO.Path]::GetFileName($WorkingDirectory)) -match '^codex-messenger-uninstall-[a-f0-9]{32}$')
+      Assert-Equal (Get-FileHash -LiteralPath $FilePath -Algorithm SHA256).Hash (Get-FileHash -LiteralPath $script:UninstallOriginal -Algorithm SHA256).Hash
+      Assert-Equal $ArgumentList ('/currentuser /S _?=' + $script:UninstallApp)
+      Assert-True $Wait; Assert-True $PassThru; $script:UninstallCopies += $FilePath
       [pscustomobject]@{ ExitCode = $script:UninstallExit }
     }
     Assert-Throws { Invoke-MessengerUninstaller $install } 'exited with code 17'
     $script:UninstallExit = 0; Assert-Equal (Invoke-MessengerUninstaller $install) 0
-    Assert-Equal $script:UninstallCalls 2; Assert-True (Microsoft.PowerShell.Management\Test-Path -LiteralPath $app)
-    $install.QuietUninstallString = ''; $install.UninstallString = '"' + $install.Exe + '"'
+    Assert-Equal $script:UninstallCopies.Count 2
+    foreach ($copy in $script:UninstallCopies) { Assert-False ([IO.File]::Exists($copy)); Assert-False ([IO.Directory]::Exists([IO.Path]::GetDirectoryName($copy))) }
+    Assert-True ([IO.Directory]::Exists($script:UninstallApp)); Assert-True ([IO.File]::Exists($script:UninstallOriginal))
+    $script:UninstallEntry.QuietUninstallString = ''; $script:UninstallEntry.UninstallString = '"' + $install.Exe + '"'
     Assert-Throws { Invoke-MessengerUninstaller $install } 'does not belong'
-    $install.UninstallString = 'powershell.exe -Command something'; Assert-Throws { Invoke-MessengerUninstaller $install } 'absolute|does not belong'
+    $script:UninstallEntry.UninstallString = 'powershell.exe -Command something'; Assert-Throws { Invoke-MessengerUninstaller $install } 'absolute|does not belong'
     $install.Kind = 'unregistered'; Assert-Throws { Invoke-MessengerUninstaller $install } 'No registered uninstaller'
+  }
+  Test-Case 'NSIS action revalidates the real registration and rejects stale path or executable identity before copying' {
+    $install = New-FixtureRegisteredUninstall 'stale uninstaller registration'
+    function Get-MessengerRegistryEntries { $script:UninstallEntry }
+    function Get-MessengerFileMetadata { param($Exe) [pscustomobject]@{ ProductName = 'Codex Messenger' } }
+    $script:UninstallEntry.PSChildName = 'wrong-key'; Assert-Throws { Invoke-MessengerUninstaller $install } 'expected identity'
+    $script:UninstallEntry.PSChildName = '{aec7928a-9490-5305-a9b2-1a0182dfd515}'
+    $script:UninstallEntry.InstallLocation = $fixtureRoot; Assert-Throws { Invoke-MessengerUninstaller $install } 'folder changed'
+    $script:UninstallEntry.InstallLocation = $script:UninstallApp
+    $install.Exe = Join-Path $fixtureRoot 'wrong.exe'; Assert-Throws { Invoke-MessengerUninstaller $install } 'executable no longer'
+    $install.Exe = Join-Path $script:UninstallApp 'Codex Messenger.exe'
+    function Get-MessengerFileMetadata { param($Exe) [pscustomobject]@{ ProductName = 'Different app' } }
+    Assert-Throws { Invoke-MessengerUninstaller $install } 'application executable'
+    function Get-MessengerFileMetadata { param($Exe)
+      $product = if ([IO.Path]::GetFileName($Exe) -like 'Uninstall*') { 'Different uninstaller' } else { 'Codex Messenger' }
+      [pscustomobject]@{ ProductName = $product }
+    }
+    Assert-Throws { Invoke-MessengerUninstaller $install } 'unexpected product identity'
+  }
+  Test-Case 'NSIS registry arguments cannot inject a command, override InstallDir, duplicate flags or change registry scope' {
+    $install = New-FixtureRegisteredUninstall 'unsafe registry arguments'
+    function Get-MessengerRegistryEntries { $script:UninstallEntry }
+    function Get-MessengerFileMetadata { param($Exe) [pscustomobject]@{ ProductName = 'Codex Messenger' } }
+    foreach ($unsafe in @('/S & calc.exe', '/S _?=another', '/S /S', '/currentuser /allusers', '/allusers /S', '/S "extra"')) {
+      $script:UninstallEntry.QuietUninstallString = '"' + $script:UninstallOriginal + '" ' + $unsafe
+      Assert-Throws { Invoke-MessengerUninstaller $install } 'unsupported argument|duplicate arguments|conflicting user scopes|scope does not match'
+    }
+    $script:UninstallEntry.QuietUninstallString = '"' + (Join-Path $fixtureRoot 'Uninstall Codex Messenger.exe') + '" /S'
+    Assert-Throws { Invoke-MessengerUninstaller $install } 'does not belong'
+  }
+  Test-Case 'private uninstaller copy is cleaned when process creation fails without deleting the installation' {
+    $install = New-FixtureRegisteredUninstall 'process creation failure'; $script:FailedCopy = ''
+    function Get-MessengerRegistryEntries { $script:UninstallEntry }
+    function Get-MessengerFileMetadata { param($Exe) [pscustomobject]@{ ProductName = 'Codex Messenger' } }
+    function Start-Process { [CmdletBinding()]param($FilePath, $WorkingDirectory, $ArgumentList, [switch]$Wait, [switch]$PassThru)
+      $script:FailedCopy = $FilePath; throw 'Fixture process creation denied'
+    }
+    Assert-Throws { Invoke-MessengerUninstaller $install } 'Fixture process creation denied'
+    Assert-True $script:FailedCopy; Assert-False ([IO.File]::Exists($script:FailedCopy))
+    Assert-False ([IO.Directory]::Exists([IO.Path]::GetDirectoryName($script:FailedCopy)))
+    Assert-True ([IO.File]::Exists($script:UninstallOriginal))
+  }
+  Test-Case 'changed copied bytes are preserved rather than deleting an unverified temporary file' {
+    $install = New-FixtureRegisteredUninstall 'tampered private copy'; $script:TamperedCopy = ''
+    function Get-MessengerRegistryEntries { $script:UninstallEntry }
+    function Get-MessengerFileMetadata { param($Exe) [pscustomobject]@{ ProductName = 'Codex Messenger' } }
+    function Start-Process { [CmdletBinding()]param($FilePath, $WorkingDirectory, $ArgumentList, [switch]$Wait, [switch]$PassThru)
+      $script:TamperedCopy = $FilePath; [IO.File]::WriteAllText($FilePath, 'changed bytes'); [pscustomobject]@{ ExitCode = 0 }
+    }
+    try {
+      Assert-Throws { Invoke-MessengerUninstaller $install } 'copy changed identity'
+      Assert-Equal ([IO.File]::ReadAllText($script:TamperedCopy)) 'changed bytes'
+      Assert-True ([IO.File]::Exists($script:UninstallOriginal))
+    } finally {
+      # Fixture-owned bytes are removed explicitly by the fixture, not the launcher.
+      if ($script:TamperedCopy) { [IO.File]::Delete($script:TamperedCopy); [IO.Directory]::Delete([IO.Path]::GetDirectoryName($script:TamperedCopy)) }
+    }
   }
   Test-Case 'both root wrappers forward NoUi and actual success/failure exits independently of stale LASTEXITCODE' {
     $psExecutable = if ($env:OS -eq 'Windows_NT' -and $PSVersionTable.PSEdition -ne 'Core') { Join-Path $PSHOME 'powershell.exe' } elseif ($env:OS -eq 'Windows_NT') { Join-Path $PSHOME 'pwsh.exe' } else { Join-Path $PSHOME 'pwsh' }

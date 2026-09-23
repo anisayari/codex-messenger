@@ -9,10 +9,16 @@ export function builderInvocation(rootDir, args, nodeExecutable = process.execPa
   return { command: nodeExecutable, args: [path.join(rootDir, "node_modules", "electron-builder", "cli.js"), ...args] };
 }
 
+export function needsPortableLauncherPatch(args, platform = process.platform) {
+  // Windows defaults include the configured portable target even without an
+  // explicit target token. Cover electron-builder's Windows option aliases.
+  return platform === 'win32' || args.some(arg => arg === 'portable' || /^(?:--win(?:dows)?|-w)(?:=|$)/.test(arg));
+}
+
 async function main() {
   const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
   const packageJson = JSON.parse(await fs.readFile(path.join(rootDir, "package.json"), "utf8"));
-  if (process.argv.slice(2).includes("portable")) await preparePortableLauncher(rootDir);
+  if (needsPortableLauncherPatch(process.argv.slice(2))) await preparePortableLauncher(rootDir);
   const invocation = builderInvocation(rootDir, process.argv.slice(2));
   const child = spawn(invocation.command, invocation.args, {
     cwd: rootDir,

@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, validateInstallerApplication, validateOriginAsar,
   validatePortableWrapper, validateReadOnlyMount, validateBundleIdentity, validateInstalledRegistration, uniqueRegularPayload,
-  installerChecks, validateInstallerEntry, requireNativeCommandExit, validateOwnedRegistrationCleanup, runInstallerSmoke } from '../scripts/installer-smoke.mjs';
+  installerChecks, validateInstallerEntry, requireNativeCommandExit, validateOwnedRegistrationCleanup, runInstallerSmoke,
+  nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -24,6 +26,43 @@ test('installer smoke CLI and NSIS arguments preserve the last unquoted private 
   assert.deepEqual(nsisInstallArguments('C:\\private\\custom path'), ['/S', '/currentuser', '--no-desktop-shortcut', '/D=C:\\private\\custom path']);
   for (const bad of ['relative', 'C:\\private\\bad"path', 'C:\\private\\bad\npath']) assert.throws(() => nsisInstallArguments(bad));
   assert.throws(() => parseInstallerSmokeArguments(['--version', '0.0.4\n']));
+});
+
+test('direct NSIS uninstall waits on the copied executable with only argv0 quoted and the install directory last and unquoted', () => {
+  const directory = 'C:\\private root\\custom install with spaces\\Codex Messenger';
+  assert.deepEqual(nsisUninstallArguments(directory), ['/S', '/currentuser', `_?=${directory}`]);
+  const executable = 'C:\\private root\\uninstall execution with spaces\\Uninstall Codex Messenger.exe';
+  assert.deepEqual(nsisVerbatimCommand(executable), { windowsVerbatimArguments: true, argv0: `"${executable}"` });
+  for (const bad of ['relative', 'C:\\private\\bad"path', 'C:\\private\\bad\npath']) {
+    assert.throws(() => nsisUninstallArguments(bad)); assert.throws(() => nsisVerbatimCommand(bad));
+  }
+});
+
+test('NSIS uninstall copies refresh the actual regular executable outside its directory and refuse an unknown or changed identity', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'installer-uninstall-unit-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const directory = path.join(root, 'custom install with spaces', 'Codex Messenger');
+  await fs.mkdir(directory, { recursive: true });
+  const source = path.join(directory, 'Uninstall Codex Messenger.exe'), data = Buffer.alloc(2048, 0x5a);
+  await fs.writeFile(source, data);
+  const digest = createHash('sha256').update(data).digest('hex');
+  const first = await copyOwnedUninstaller(root, directory, digest), second = await copyOwnedUninstaller(root, directory, digest);
+  assert.notEqual(first.executable, second.executable);
+  for (const copy of [first, second]) {
+    assert.equal(isOwnedPath(root, copy.executable), true); assert.equal(isOwnedPath(directory, copy.executable), false);
+    assert.match(copy.executable, /uninstall execution with spaces/);
+    assert.equal((await fs.lstat(copy.executable)).isSymbolicLink(), false);
+    assert.deepEqual(await fs.readFile(copy.executable), data);
+    await fs.rm(copy.copyDirectory, { recursive: true, force: true });
+  }
+  await assert.rejects(copyOwnedUninstaller(root, directory, undefined));
+  await assert.rejects(copyOwnedUninstaller(root, directory, 'a'.repeat(64)));
+  await fs.writeFile(source, Buffer.alloc(2048, 0x6b));
+  await assert.rejects(copyOwnedUninstaller(root, directory, digest));
+  await fs.unlink(source);
+  await fs.symlink(process.platform === 'win32' ? directory : 'missing-target.exe', source, process.platform === 'win32' ? 'junction' : 'file');
+  await assert.rejects(copyOwnedUninstaller(root, directory, digest));
+  assert.deepEqual(await fs.readdir(root), ['custom install with spaces']);
 });
 
 test('owned paths require a distinct descendant and reject roots, siblings, traversal and another volume', () => {
