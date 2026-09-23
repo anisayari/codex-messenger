@@ -29,15 +29,15 @@ Important: Codex Messenger is only a local front-end client for `codex app-serve
 
 Official downloads are available from [codexmessenger.net](https://codexmessenger.net/). Click `DOWNLOAD` and choose the platform in the popup:
 
-- macOS `v0.0.3`: open the GitHub release page and choose the `.dmg`.
-- Windows `v0.0.3`: open the GitHub release page and choose the Windows installer `.exe`.
+- macOS `v0.0.4`: open the GitHub release page and choose the `.dmg`.
+- Windows `v0.0.4`: open the GitHub release page and choose the Windows installer `.exe`.
 
 The website download popup points to the official GitHub release page instead of proxying installer files through the static site.
 
 ### Option 1: Windows installer
 
 1. Open the [Releases](https://github.com/anisayari/codex-messenger/releases) page.
-2. Download `Codex.Messenger.Setup.0.0.3.exe`, or use the Windows button on [codexmessenger.net](https://codexmessenger.net/).
+2. Download `Codex-Messenger-Setup-0.0.4.exe`, or use the Windows button on [codexmessenger.net](https://codexmessenger.net/).
 3. Run the installer.
 4. On first launch, confirm that Codex is detected or manually select the path to `codex`, `codex.cmd`, or `codex.exe`.
 
@@ -56,7 +56,7 @@ The macOS build is unsigned. If Gatekeeper blocks the first launch, use right-cl
 
 ### Option 3: portable Windows build
 
-Download `Codex.Messenger.0.0.3.exe` from the releases page and run it directly. No installer is required.
+Download `Codex-Messenger-0.0.4.exe` from the releases page and run it directly. No installer is required.
 
 ### Option 4: from source
 
@@ -147,18 +147,18 @@ The root PowerShell files `launch-codex-messenger.ps1` and `launch-web-preview.p
 
 The Windows launcher opens a small control panel. It can launch Codex Messenger, check the latest GitHub version, open the update page, or uninstall only the Codex Messenger front client. It leaves Codex conversations and project data untouched.
 
-The Windows and macOS app launchers run the Codex setup check first. If Codex CLI is missing and Node.js/npm is available, they install `@openai/codex`; if Codex is not logged in, they open `codex login` for the OpenAI login flow. The macOS launcher then opens the packaged app from `release/macos/` when it exists, or starts source development mode. The web preview launchers start Vite and open the browser preview. The full application is still Electron-only because Codex integration, filesystem access, camera capture, and conversation windows run through the main process.
+The app launchers open an installed or packaged app directly; its login screen handles Codex detection and configuration. Source mode finds a supported Node runtime, installs local project dependencies when needed, and starts Electron with a visible console. The macOS launcher selects the bundle matching the Mac architecture, including when invoked through Rosetta. The web preview launchers reserve port 5174 and open the browser after Vite starts; they report a busy port and close their server when stopped. The full application requires Electron for Codex integration, filesystem access and native windows.
 
 ## Updates
 
 Codex Messenger checks for updates on startup:
 
-- Codex Messenger front: compares the local app version with the version published in the GitHub repository.
+- Codex Messenger front: compares the local app version with the latest stable GitHub release.
 - Codex app-server: checks the local `codex --version` output and compares it with the public `@openai/codex` npm package.
 
 When an update is available, an `Update` button appears at the top of the main window. You can also open `File -> About Codex Messenger...` or `File -> Check for updates` to see the current version and run a manual check.
 
-The Codex Messenger front update button downloads the latest GitHub release asset for the current platform, requires and verifies its SHA-256 digest from GitHub release metadata, then starts the installer. On Windows, automatic installation requires a valid installed-app and installer signature from the same publisher; unsigned releases such as v0.0.3 must be installed manually from the release page. On macOS, automatic replacement requires a validated app signed by the same team, Gatekeeper acceptance and a rollback backup. Unsigned builds open the verified DMG for manual installation. The Codex app-server update button runs `npm install -g @openai/codex@latest`.
+The Codex Messenger front update button downloads the latest stable GitHub release asset for the exact platform and architecture and verifies its SHA-256 digest. On Windows, automatic installation requires valid installed-app and installer signatures from the same publisher. Unsigned releases such as v0.0.4 reveal the verified installer in Explorer for manual installation, with a clear message and a responsive interface. On macOS, automatic replacement requires a validated app signed by the same team, Gatekeeper acceptance and a rollback backup; unsigned builds open the verified DMG for manual installation. Concurrent requests schedule a single installation. The Codex app-server update button runs `npm install -g @openai/codex@latest`.
 
 ## Uninstall
 
@@ -176,6 +176,8 @@ The uninstaller is intended to remove only the Codex Messenger front client, sho
 - Codex CLI configuration or caches.
 - Your project folders.
 - Files outside the Codex Messenger install directory.
+
+The Windows installer refuses to remove an application directory containing unrelated files. Move those files somewhere safe before retrying; this guard also applies before upgrading an older installation.
 
 ## Features
 
@@ -217,7 +219,7 @@ The uninstaller is intended to remove only the Codex Messenger front client, sho
 
 ## Modernisation audit
 
-Release **v0.0.3** targets Codex CLI **0.156.1**. The public app-server API includes the 0.156.0 features and the 0.156.1 model catalogue hotfix. The CLI remains a separate local installation; update it from the login screen when needed.
+Release **v0.0.4** targets Codex CLI **0.156.1**. The public app-server API includes the 0.156.0 features and the 0.156.1 model catalogue hotfix. The CLI remains a separate local installation; update it from the login screen when needed.
 
 - [Plan and confirmed defects](docs/PLAN-MODERNISATION.md)
 - [All 51 stable changelogs, sources and integrity](docs/codex-changelog/README.md)
@@ -337,11 +339,11 @@ npm run package:win
 
 Generated Windows files are written to `release/windows/`:
 
-- `Codex Messenger Setup 0.0.3.exe`: Windows installer.
-- `Codex Messenger 0.0.3.exe`: portable build.
+- `Codex-Messenger-Setup-0.0.4.exe`: Windows installer.
+- `Codex-Messenger-0.0.4.exe`: portable build.
 - `win-unpacked/`: unpacked folder for local testing.
 
-GitHub normalizes spaces in asset names to periods. The published Windows files are `Codex.Messenger.Setup.0.0.3.exe` and `Codex.Messenger.0.0.3.exe`; the published Windows SHA256SUMS and manifest use these download names. The build artifact retains the original local filenames.
+Builds and GitHub downloads use the same canonical filenames. The published SHA256SUMS and artifact manifests refer to those exact names.
 
 The build is not signed. For broad public distribution, add Windows code signing.
 
@@ -354,8 +356,8 @@ npm run package:mac
 
 Generated macOS files are written to `release/macos/`:
 
-- `Codex-Messenger-0.0.3-arm64.dmg` or `Codex-Messenger-0.0.3-x64.dmg`.
-- `Codex-Messenger-0.0.3-arm64.zip` or `Codex-Messenger-0.0.3-x64.zip`.
+- `Codex-Messenger-0.0.4-arm64.dmg` or `Codex-Messenger-0.0.4-x64.dmg`.
+- `Codex-Messenger-0.0.4-arm64.zip` or `Codex-Messenger-0.0.4-x64.zip`.
 - `mac-arm64/` or `mac/`: unpacked app folder for local testing.
 
 The unsigned macOS build includes camera and microphone usage descriptions for the snapshot and voice clip features, but it is not notarized or Developer ID signed.
@@ -389,8 +391,8 @@ The static showcase site lives in `codexmessenger.net/`.
 
 Its `DOWNLOAD` button opens a platform chooser popup with:
 
-- macOS `v0.0.3`: GitHub Releases.
-- Windows `v0.0.3`: GitHub Releases.
+- macOS `v0.0.4`: GitHub Releases.
+- Windows `v0.0.4`: GitHub Releases.
 
 The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, patches the GitHub release URL in `codexmessenger.net/index.html`, and uploads the static files to the VPS. The VPS no longer stores installer copies under `/downloads/`.
 

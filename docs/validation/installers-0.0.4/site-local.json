@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "scope": "Local website 0.0.4 version labels, EN/FR controls and mobile download modal only",
+  "url": "http://127.0.0.1:4175/",
+  "browser": "153.0.8010.50",
+  "playwright": "1.59.1",
+  "checkedAt": "2026-09-23T15:41:37.319Z",
+  "passed": true,
+  "checks": [
+    {
+      "name": "local English default with fr-FR browser",
+      "passed": true
+    },
+    {
+      "name": "desktop modal three version 0.0.4 labels",
+      "passed": true
+    },
+    {
+      "name": "desktop three official release links",
+      "passed": true
+    },
+    {
+      "name": "Escape closes download modal",
+      "passed": true
+    },
+    {
+      "name": "French selector switches language",
+      "passed": true
+    },
+    {
+      "name": "French modal preserves 0.0.4 labels",
+      "passed": true
+    },
+    {
+      "name": "English selector restores default language",
+      "passed": true
+    },
+    {
+      "name": "mobile English default with stale French storage",
+      "passed": true
+    },
+    {
+      "name": "320px layout has no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "mobile touch opens download modal",
+      "passed": true
+    },
+    {
+      "name": "mobile modal 0.0.4 labels",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "docs/assets/installers-0.0.4/local/desktop-downloads.png",
+    "docs/assets/installers-0.0.4/local/mobile-downloads.png"
+  ]
+}

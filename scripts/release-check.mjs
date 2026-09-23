@@ -75,7 +75,9 @@ assert.ok(main.includes("codex-messenger.log"), "release must keep the debug log
 assert.ok(main.includes("ensureLoadedThread"), "release must resume existing threads before sending turns");
 assertIncludes("package.json", "\"include\": \"build/installer.nsh\"");
 assertIncludes("build/installer.nsh", "!macro customInstall");
-assertIncludes("build/installer.nsh", "IfSilent 0 +3");
+assertIncludes("build/installer.nsh", "!macro customInit");
+assertIncludes("build/installer.nsh", "!macro customUnInit");
+assertIncludes("package.json", "\"afterPack\": \"./scripts/nsis-owned-files.mjs\"");
 
 const siteHtml = read("codexmessenger.net/index.html");
 assert.ok(!/\.\/downloads\/CodexMessenger(?:-mac-arm64)?[^"']*\.(?:exe|dmg)/.test(siteHtml), "site must not link to local installer assets");

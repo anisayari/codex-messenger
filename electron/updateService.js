@@ -6,12 +6,11 @@ import https from "node:https";
 import path from "node:path";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { codexNpmPackageName, findNpmCommand } from "../shared/codexSetup.js";
+import { codexNpmPackageName, findNpmCommand, spawnCommand } from "../shared/codexSetup.js";
 import { assetDigestSha256, releaseVersionLabel, safeAssetFileName, selectFrontReleaseAsset } from "../shared/updateAssets.js";
 import { displayVersion, updateAvailable, versionLabelForResult } from "../shared/versionUtils.js";
 
 const repositoryUrl = "https://github.com/anisayari/codex-messenger";
-const frontPackageUrl = "https://raw.githubusercontent.com/anisayari/codex-messenger/main/package.json";
 export const frontReleasesUrl = `${repositoryUrl}/releases`;
 const frontLatestReleaseApiUrl = "https://api.github.com/repos/anisayari/codex-messenger/releases/latest";
 const codexNpmRegistryUrl = "https://registry.npmjs.org/@openai%2Fcodex/latest";
@@ -165,22 +164,11 @@ function compactUpdateOutput(stdout = "", stderr = "") {
   return combined.length > 4000 ? `${combined.slice(-4000)}` : combined;
 }
 
-function spawnableUpdateCommand(command, args = []) {
-  if (process.platform === "win32" && [".cmd", ".bat"].includes(path.extname(command).toLowerCase())) {
-    return {
-      command: "cmd.exe",
-      args: ["/d", "/s", "/c", command, ...args]
-    };
-  }
-  return { command, args };
-}
-
-function runUpdateCommand(command, args = [], { cwd, timeoutMs = 5 * 60_000 } = {}) {
+export function runUpdateCommand(command, args = [], { cwd, env = process.env, timeoutMs = 5 * 60_000, spawnImpl = spawnCommand } = {}) {
   return new Promise((resolve, reject) => {
-    const spawnable = spawnableUpdateCommand(command, args);
-    const child = spawn(spawnable.command, spawnable.args, {
+    const child = spawnImpl(command, args, {
       cwd,
-      env: process.env,
+      env,
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -219,18 +207,18 @@ function escapeWindowsBatchSetValue(value = "") {
 export function windowsUpdateInstallerScript({ logPath }) {
   return [
     "@echo off",
-    "setlocal EnableExtensions",
+    "setlocal EnableExtensions DisableDelayedExpansion",
     "set \"APP_PID=%~1\"",
     "set \"INSTALLER=%~2\"",
     "set \"APP_EXE=%~3\"",
     "set \"ORIGINAL_APP_EXE=%APP_EXE%\"",
     `set "LOG_PATH=${escapeWindowsBatchSetValue(logPath)}"`,
     "echo Installing Codex Messenger update > \"%LOG_PATH%\"",
-    "echo Script: %~f0 >> \"%LOG_PATH%\"",
-    "echo Installer: %INSTALLER% >> \"%LOG_PATH%\"",
-    "echo Previous app exe: %APP_EXE% >> \"%LOG_PATH%\"",
+    "echo Script: \"%~f0\" >> \"%LOG_PATH%\"",
+    "echo Installer: \"%INSTALLER%\" >> \"%LOG_PATH%\"",
+    "echo Previous app exe: \"%APP_EXE%\" >> \"%LOG_PATH%\"",
     "if not exist \"%INSTALLER%\" (",
-    "  echo Installer missing: %INSTALLER% >> \"%LOG_PATH%\"",
+    "  echo Installer missing: \"%INSTALLER%\" >> \"%LOG_PATH%\"",
     "  exit /b 1",
     ")",
     ":wait_app",
@@ -244,31 +232,34 @@ export function windowsUpdateInstallerScript({ logPath }) {
     "echo Installer exit code: %INSTALL_EXIT% >> \"%LOG_PATH%\"",
     "if not \"%INSTALL_EXIT%\"==\"0\" exit /b %INSTALL_EXIT%",
     "call :resolve_app_exe",
-    "if defined APP_EXE if exist \"%APP_EXE%\" (",
-    "  echo Relaunching: %APP_EXE% >> \"%LOG_PATH%\"",
-    "  for %%I in (\"%APP_EXE%\") do set \"APP_DIR=%%~dpI\"",
-    "  start \"\" /D \"%APP_DIR%\" \"%APP_EXE%\"",
-    ") else (",
-    "  echo Codex Messenger exe not found after update. >> \"%LOG_PATH%\"",
-    ")",
+    "if not defined APP_EXE goto app_missing",
+    "if not exist \"%APP_EXE%\" goto app_missing",
+    "echo Relaunching: \"%APP_EXE%\" >> \"%LOG_PATH%\"",
+    "for %%I in (\"%APP_EXE%\") do start \"\" /D \"%%~dpI\" \"%%~fI\"",
+    "if errorlevel 1 exit /b 1",
     "endlocal",
     "exit /b 0",
     "",
+    ":app_missing",
+    "echo Codex Messenger exe not found after update. >> \"%LOG_PATH%\"",
+    "exit /b 1",
+    "",
     ":resolve_app_exe",
     "call :sanitize_app_exe",
-    "call :try_app_exe \"%LOCALAPPDATA%\\Programs\\codex-messenger\\Codex Messenger.exe\"",
+    "if defined APP_EXE if exist \"%APP_EXE%\" exit /b 0",
+    "set \"APP_EXE=\"",
+    "set \"CANDIDATE_EXE=%LOCALAPPDATA%\\Programs\\codex-messenger\\Codex Messenger.exe\"",
+    "call :try_app_exe",
     "if defined APP_EXE exit /b 0",
-    "call :try_app_exe \"%LOCALAPPDATA%\\Programs\\Codex Messenger\\Codex Messenger.exe\"",
+    "set \"CANDIDATE_EXE=%LOCALAPPDATA%\\Programs\\Codex Messenger\\Codex Messenger.exe\"",
+    "call :try_app_exe",
     "if defined APP_EXE exit /b 0",
-    "call :try_app_exe \"%ProgramFiles%\\Codex Messenger\\Codex Messenger.exe\"",
+    "set \"CANDIDATE_EXE=%ProgramFiles%\\Codex Messenger\\Codex Messenger.exe\"",
+    "call :try_app_exe",
     "if defined APP_EXE exit /b 0",
-    "call :try_app_exe \"%ProgramFiles(x86)%\\Codex Messenger\\Codex Messenger.exe\"",
+    "set \"CANDIDATE_EXE=%ProgramFiles(x86)%\\Codex Messenger\\Codex Messenger.exe\"",
+    "call :try_app_exe",
     "if defined APP_EXE exit /b 0",
-    "if defined ORIGINAL_APP_EXE (",
-    "  set \"APP_EXE=%ORIGINAL_APP_EXE%\"",
-    "  call :sanitize_app_exe",
-    "  if defined APP_EXE if exist \"%APP_EXE%\" exit /b 0",
-    ")",
     "set \"APP_EXE=\"",
     "exit /b 0",
     "",
@@ -280,15 +271,21 @@ export function windowsUpdateInstallerScript({ logPath }) {
     "exit /b 0",
     "",
     ":try_app_exe",
-    "if exist \"%~1\" set \"APP_EXE=%~1\"",
+    "if exist \"%CANDIDATE_EXE%\" set \"APP_EXE=%CANDIDATE_EXE%\"",
     "exit /b 0"
   ].join("\r\n");
 }
 
 export function windowsUpdateInstallerLaunch({ scriptPath, appPid, installerPath, appExe }) {
   return {
-    command: "cmd.exe",
-    args: ["/d", "/c", "call", scriptPath, String(appPid), installerPath, appExe]
+    command: process.env.ComSpec || "cmd.exe",
+    args: ["/d", "/v:off", "/s", "/c", '""%CODEX_MESSENGER_UPDATE_SCRIPT%" "%CODEX_MESSENGER_UPDATE_PID%" "%CODEX_MESSENGER_UPDATE_INSTALLER%" "%CODEX_MESSENGER_UPDATE_APP%""'],
+    options: { windowsVerbatimArguments: true, env: { ...process.env,
+      CODEX_MESSENGER_UPDATE_SCRIPT: scriptPath,
+      CODEX_MESSENGER_UPDATE_PID: String(appPid),
+      CODEX_MESSENGER_UPDATE_INSTALLER: installerPath,
+      CODEX_MESSENGER_UPDATE_APP: appExe
+    } }
   };
 }
 
@@ -376,23 +373,39 @@ export function createUpdateService({
   runCodexCommand,
   quitApplication,
   sendProgress,
-  logDebug = () => {}
+  logDebug = () => {},
+  platform = process.platform,
+  arch = process.arch,
+  executablePath = process.execPath,
+  appPid = process.pid,
+  fetchJsonImpl = fetchJson,
+  downloadFileImpl = downloadUpdateFile,
+  verifyFileImpl = verifyUpdateFile,
+  runCommandImpl = runUpdateCommand,
+  launchInstallerImpl = launchUpdateInstaller,
+  scheduleQuit = (callback) => setTimeout(callback, 500)
 }) {
   let updateCheckCache = null;
   let updateCheckPromise = null;
   let pendingFrontUpdate = null;
   let frontInstallPromise = null;
+  let frontApplyPromise = null;
   let codexInstallPromise = null;
   const appVersion = () => app.getVersion();
 
   async function latestFrontRelease() {
-    return fetchJson(frontLatestReleaseApiUrl, appVersion(), 15_000);
+    const release = await fetchJsonImpl(frontLatestReleaseApiUrl, appVersion(), 15_000);
+    if (release?.draft !== false || release?.prerelease !== false || !releaseVersionLabel(release)
+      || !Array.isArray(release.assets) || !release.assets.some((asset) => asset?.name && asset?.browser_download_url)) {
+      throw new Error("No published stable release with downloadable installers is available");
+    }
+    return release;
   }
 
   function currentMacAppBundlePath() {
-    if (process.platform !== "darwin") return "";
-    const marker = `${path.sep}Contents${path.sep}MacOS${path.sep}`;
-    const [bundlePath] = process.execPath.split(marker);
+    if (platform !== "darwin") return "";
+    const marker = "/Contents/MacOS/";
+    const [bundlePath] = executablePath.split(marker);
     return bundlePath && bundlePath.endsWith(".app")
       ? bundlePath
       : "";
@@ -417,14 +430,7 @@ export function createUpdateService({
       result.url = release.html_url || frontReleasesUrl;
       result.updateAvailable = updateAvailable(result.latestVersion, currentVersion);
     } catch (error) {
-      try {
-        const remotePackage = await fetchJson(frontPackageUrl, appVersion());
-        result.latestVersion = displayVersion(remotePackage.version);
-        result.updateAvailable = updateAvailable(result.latestVersion, currentVersion);
-        result.error = `Latest release unavailable: ${updateCheckError(error)}`;
-      } catch (fallbackError) {
-        result.error = `${updateCheckError(error)}; package fallback unavailable: ${updateCheckError(fallbackError)}`;
-      }
+      result.error = `Latest published release unavailable: ${updateCheckError(error)}`;
     }
     return result;
   }
@@ -459,7 +465,7 @@ export function createUpdateService({
     }
 
     try {
-      const latestPackage = await fetchJson(codexNpmRegistryUrl, appVersion());
+      const latestPackage = await fetchJsonImpl(codexNpmRegistryUrl, appVersion());
       result.latestVersion = displayVersion(latestPackage.version);
     } catch (error) {
       result.error = result.error
@@ -504,7 +510,7 @@ export function createUpdateService({
     sendProgress({ target: "codex", phase: "checking", indeterminate: true, message: "Verification de la version Codex app-server..." });
     const before = await checkCodexUpdate();
     sendProgress({ target: "codex", phase: "installing", indeterminate: true, message: "Installation de Codex app-server avec npm..." });
-    const output = await runUpdateCommand(npmCommand, args, { cwd: defaultCwd() });
+    const output = await runCommandImpl(npmCommand, args, { cwd: defaultCwd() });
     updateCheckCache = null;
     sendProgress({ target: "codex", phase: "verifying", indeterminate: true, message: "Verification de l'installation Codex app-server..." });
     const after = await checkCodexUpdate();
@@ -534,22 +540,29 @@ export function createUpdateService({
   }
 
   async function scheduleWindowsInstaller(installerPath, latestVersion) {
-    const signatureCheck = windowsInstallerSignatureCommand(installerPath, process.execPath);
-    await runUpdateCommand(signatureCheck.command, signatureCheck.args);
+    const signatureCheck = windowsInstallerSignatureCommand(installerPath, executablePath);
+    try {
+      await runCommandImpl(signatureCheck.command, signatureCheck.args);
+    } catch (error) {
+      shell.showItemInFolder(installerPath);
+      logDebug("update.front.manual.required", { platform, error: updateCheckError(error) });
+      return { quitStarted: false, needsRestart: false, manualInstall: true,
+        message: `Mise a jour ${latestVersion} telechargee et verifiee. La signature editeur ne permet pas une installation automatique; l'installeur est affiche dans l'Explorateur pour l'installer manuellement.` };
+    }
     const updateDir = path.join(app.getPath("userData"), "updates");
     await fs.mkdir(updateDir, { recursive: true });
     const scriptPath = path.join(updateDir, "install-codex-messenger-update.cmd");
     const logPath = path.join(updateDir, "install-codex-messenger-update.log");
-    const appExe = process.execPath;
+    const appExe = executablePath;
     const script = windowsUpdateInstallerScript({ logPath });
     await fs.writeFile(scriptPath, script, "utf8");
     const launch = windowsUpdateInstallerLaunch({
       scriptPath,
-      appPid: process.pid,
+      appPid,
       installerPath,
       appExe
     });
-    await launchUpdateInstaller(launch.command, launch.args, { windowsHide: false });
+    await launchInstallerImpl(launch.command, launch.args, { windowsHide: true, ...launch.options });
     logDebug("update.front.installer.scheduled", {
       platform: "win32",
       installerPath,
@@ -557,7 +570,7 @@ export function createUpdateService({
       appExe,
       latestVersion
     });
-    setTimeout(() => quitApplication(), 500);
+    scheduleQuit(quitApplication);
     return {
       quitStarted: true,
       message: `Mise a jour ${latestVersion} telechargee. Codex Messenger va se fermer puis lancer l'installeur automatiquement.`
@@ -582,8 +595,8 @@ export function createUpdateService({
     let signingTeam = "";
     try {
       if (!targetApp) throw new Error("Installed app bundle unavailable");
-      await runUpdateCommand("/usr/bin/codesign", ["--verify", "--deep", "--strict", targetApp]);
-      const identity = await runUpdateCommand("/usr/bin/codesign", ["-dv", "--verbose=4", targetApp]);
+      await runCommandImpl("/usr/bin/codesign", ["--verify", "--deep", "--strict", targetApp]);
+      const identity = await runCommandImpl("/usr/bin/codesign", ["-dv", "--verbose=4", targetApp]);
       signingTeam = [identity.stdout, identity.stderr].join("\n").match(/^TeamIdentifier=([A-Z0-9]{5,20})$/m)?.[1] || "";
     } catch (error) {
       logDebug("update.front.manual.required", { error: updateCheckError(error) });
@@ -597,9 +610,9 @@ export function createUpdateService({
     const script = macUpdateInstallerScript(signingTeam);
     await fs.writeFile(scriptPath, script, { encoding: "utf8", mode: 0o755 });
     await fs.chmod(scriptPath, 0o755);
-    await launchUpdateInstaller("/bin/zsh", [scriptPath, String(process.pid), dmgPath, targetApp, logPath]);
+    await launchInstallerImpl("/bin/zsh", [scriptPath, String(appPid), dmgPath, targetApp, logPath]);
     logDebug("update.front.installer.scheduled", { platform: "darwin", dmgPath, targetApp, scriptPath, latestVersion });
-    setTimeout(() => quitApplication(), 500);
+    scheduleQuit(quitApplication);
     return {
       quitStarted: true,
       message: `Mise a jour ${latestVersion} telechargee. Codex Messenger va se fermer, installer l'app, puis se relancer.`
@@ -607,7 +620,7 @@ export function createUpdateService({
   }
 
   function canPrepareFrontUpdateForRestart() {
-    return app.isPackaged && ["darwin", "win32"].includes(process.platform);
+    return app.isPackaged && ["darwin", "win32"].includes(platform);
   }
 
   function frontUpdateReadyMessage(latestVersion) {
@@ -618,12 +631,13 @@ export function createUpdateService({
     return Boolean(pendingFrontUpdate);
   }
 
-  async function applyPendingFrontUpdate() {
+  async function performPendingFrontUpdate() {
+    if (frontInstallPromise) await frontInstallPromise;
     if (!pendingFrontUpdate) {
       throw new Error("Aucune mise a jour Codex Messenger n'est prete a installer.");
     }
     const pending = pendingFrontUpdate;
-    await verifyUpdateFile(pending.filePath, pending.sha256, pending.bytes);
+    await verifyFileImpl(pending.filePath, pending.sha256, pending.bytes);
     const message = `Installation de la mise a jour ${pending.latestVersion}. Codex Messenger va se fermer puis se relancer.`;
     logDebug("update.front.apply.requested", {
       latestVersion: pending.latestVersion,
@@ -631,18 +645,9 @@ export function createUpdateService({
       filePath: pending.filePath,
       sha256: pending.sha256
     });
-    sendProgress({
-      target: "front",
-      phase: "restarting",
-      percent: 100,
-      latestVersion: pending.latestVersion,
-      assetName: pending.assetName,
-      quitStarted: true,
-      message
-    });
     const launch = await launchDownloadedFrontUpdate(pending.filePath, pending.latestVersion);
     pendingFrontUpdate = null;
-    return {
+    const result = {
       ok: true,
       target: "front",
       latestVersion: pending.latestVersion,
@@ -655,11 +660,21 @@ export function createUpdateService({
       manualInstall: Boolean(launch.manualInstall),
       message: launch.message || message
     };
+    sendProgress({ target: "front", phase: result.quitStarted ? "restarting" : "ready", percent: 100,
+      latestVersion: result.latestVersion, assetName: result.assetName,
+      quitStarted: result.quitStarted, needsRestart: result.needsRestart,
+      manualInstall: result.manualInstall, message: result.message });
+    return result;
+  }
+
+  function applyPendingFrontUpdate() {
+    if (!frontApplyPromise) frontApplyPromise = performPendingFrontUpdate().finally(() => { frontApplyPromise = null; });
+    return frontApplyPromise;
   }
 
   async function launchDownloadedFrontUpdate(filePath, latestVersion) {
-    if (process.platform === "win32") return scheduleWindowsInstaller(filePath, latestVersion);
-    if (process.platform === "darwin") return scheduleMacDmgInstaller(filePath, latestVersion);
+    if (platform === "win32") return scheduleWindowsInstaller(filePath, latestVersion);
+    if (platform === "darwin") return scheduleMacDmgInstaller(filePath, latestVersion);
     const openError = await shell.openPath(filePath);
     if (openError) throw new Error(openError);
     return {
@@ -688,7 +703,7 @@ export function createUpdateService({
 
     const release = await latestFrontRelease();
     const latestVersion = releaseVersionLabel(release) || versionLabelForResult(before.latestVersion);
-    const asset = selectFrontReleaseAsset(release);
+    const asset = selectFrontReleaseAsset(release, { platform, arch });
     if (!asset) {
       throw new Error("Aucun installeur compatible trouve dans la derniere release Codex Messenger.");
     }
@@ -698,7 +713,7 @@ export function createUpdateService({
     const targetPath = path.join(updateDir, safeAssetFileName(asset.name));
     const expectedSha256 = assertUpdateDigest(assetDigestSha256(asset));
     sendProgress({ target: "front", phase: "download", percent: 0, assetName: asset.name, latestVersion, message: `Telechargement de ${asset.name}...` });
-    const download = await downloadUpdateFile(asset.browser_download_url, targetPath, appVersion(), {
+    const download = await downloadFileImpl(asset.browser_download_url, targetPath, appVersion(), {
       expectedSha256,
       expectedBytes: Number.isSafeInteger(asset.size) ? asset.size : null,
       timeoutMs: 15 * 60_000,
@@ -781,6 +796,7 @@ export function createUpdateService({
   }
 
   function installFrontUpdate() {
+    if (frontApplyPromise) return frontApplyPromise;
     if (!frontInstallPromise) frontInstallPromise = performFrontUpdate().finally(() => { frontInstallPromise = null; });
     return frontInstallPromise;
   }

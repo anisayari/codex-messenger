@@ -118,7 +118,8 @@ test("Windows update installer script avoids launching a broken root path", () =
   assert.ok(script.includes('if /I "%APP_EXE:~0,4%"=="\\\\?\\" set "APP_EXE=%APP_EXE:~4%"'));
   assert.match(script, /%LOCALAPPDATA%\\Programs\\codex-messenger\\Codex Messenger\.exe/);
   assert.match(script, /if defined APP_EXE if exist "%APP_EXE%"/);
-  assert.match(script, /start "" \/D "%APP_DIR%" "%APP_EXE%"/);
+  assert.match(script, /for %%I in \("%APP_EXE%"\) do start "" \/D "%%~dpI" "%%~fI"/);
+  assert.doesNotMatch(script, /%APP_DIR%/);
   assert.doesNotMatch(script, /if exist "%APP_EXE%" start/);
 
   const launch = windowsUpdateInstallerLaunch({
@@ -127,20 +128,28 @@ test("Windows update installer script avoids launching a broken root path", () =
     installerPath: "C:\\Users\\Anis\\Downloads\\Codex Messenger Setup.exe",
     appExe: "C:\\Users\\Anis\\AppData\\Local\\Programs\\codex-messenger\\Codex Messenger.exe"
   });
-  assert.equal(launch.command, "cmd.exe");
-  assert.deepEqual(launch.args.slice(0, 3), ["/d", "/c", "call"]);
-  assert.equal(launch.args[3], "C:\\Users\\Anis\\AppData\\Roaming\\Codex Messenger\\updates\\install.cmd");
+  assert.equal(launch.command, process.env.ComSpec || "cmd.exe");
+  assert.deepEqual(launch.args.slice(0, 4), ["/d", "/v:off", "/s", "/c"]);
+  assert.equal(launch.options.env.CODEX_MESSENGER_UPDATE_SCRIPT, "C:\\Users\\Anis\\AppData\\Roaming\\Codex Messenger\\updates\\install.cmd");
+  assert.equal(launch.options.env.CODEX_MESSENGER_UPDATE_PID, "1234");
+  assert.equal(launch.options.env.CODEX_MESSENGER_UPDATE_INSTALLER, "C:\\Users\\Anis\\Downloads\\Codex Messenger Setup.exe");
+  assert.equal(launch.options.env.CODEX_MESSENGER_UPDATE_APP, "C:\\Users\\Anis\\AppData\\Local\\Programs\\codex-messenger\\Codex Messenger.exe");
+  assert.equal(launch.options.windowsVerbatimArguments, true);
   assert.ok(!launch.args.includes("start"));
-  assert.ok(!launch.args.includes("/s"));
+  assert.ok(!launch.args.includes("call"));
 });
 
-test("Windows installer relaunches the app during silent legacy updates", () => {
+test("Windows installer protects shared directories and never launches the app during silent updates", () => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf8"));
   const nsisScript = fs.readFileSync(path.join(rootDir, "build", "installer.nsh"), "utf8");
   assert.equal(packageJson.build?.nsis?.include, "build/installer.nsh");
   assert.match(nsisScript, /!macro customInstall/);
-  assert.match(nsisScript, /IfSilent 0 \+3/);
-  assert.match(nsisScript, /Exec '"\$INSTDIR\\\$\{APP_EXECUTABLE_FILENAME\}"'/);
+  assert.match(nsisScript, /!macro customInit/);
+  assert.match(nsisScript, /!macro customUnInit/);
+  assert.match(nsisScript, /!include "\$\{BUILD_RESOURCES_DIR\}\/installer-files.generated.nsh"/);
+  assert.match(nsisScript, /SetErrorLevel 42/);
+  assert.match(nsisScript, /\/SD IDOK/);
+  assert.doesNotMatch(nsisScript, /\bExec(?:Wait)?\s+['"]/);
 });
 
 test("project opening chooses the newest active thread, including hidden tabs", () => {

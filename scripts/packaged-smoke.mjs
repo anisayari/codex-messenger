@@ -5,6 +5,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { canonicalReleaseVersion } from './release-metadata.mjs';
+import { sha256File } from './release-artifacts.mjs';
 
 const errorKinds = ['preloadError', 'loadFailure', 'rendererGone', 'pageError', 'consoleError'];
 const emptyErrors = () => Object.fromEntries(errorKinds.map(key => [key, 0]));
@@ -65,7 +66,8 @@ export function errorsFromPrivateLog(text) {
     try { record = JSON.parse(line); } catch { continue; }
     if (!record || typeof record !== 'object' || Array.isArray(record)) continue;
     if (Object.hasOwn(events, record.event)) errors[events[record.event]] += 1;
-    if (['react.render.error', 'bootstrap.main.error', 'bootstrap.app.error', 'window.error', 'window.unhandledrejection'].includes(record.event)) errors.pageError += 1;
+    const rendererEvent = typeof record.event === 'string' ? record.event.replace(/^renderer\./, '') : record.event;
+    if (['react.render.error', 'bootstrap.main.error', 'bootstrap.app.error', 'window.error', 'window.unhandledrejection'].includes(rendererEvent)) errors.pageError += 1;
     if (record.event === 'window.console-message' && (Number(record.level) >= 3 || record.level === 'error')) errors.consoleError += 1;
   }
   return errors;
@@ -125,14 +127,19 @@ async function closeOwnedApplication(application) {
   return { closed: Boolean(child && (child.exitCode !== null || child.signalCode !== null)), forced, exitCode: child?.exitCode ?? null };
 }
 
-async function runPackagedSmoke(options) {
+export async function runPackagedSmoke(options, { files: suppliedFiles, writeReport = true } = {}) {
   const started = Date.now();
   const report = initialSmokeReport(options);
   let application, temporary, stage = 'PACKAGE_FILES';
   const pageErrors = emptyErrors();
   try {
     await within((async () => {
-      const files = await findPackagedExecutable(options);
+      const files = suppliedFiles || await findPackagedExecutable(options);
+      if (suppliedFiles) {
+        const stats = await Promise.all([fs.stat(files.executable), fs.stat(files.asar)]);
+        assert.ok(stats.every(stat => stat.isFile() && stat.size > 0), 'Installed executable and app.asar must be present');
+      }
+      report.appAsarSha256 = await sha256File(files.asar);
       stage = 'HOST_PLATFORM';
       assert.equal(process.platform, options.platform === 'windows' ? 'win32' : 'darwin', 'Smoke must run on its native platform');
       temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-messenger-packaged-'));
@@ -212,10 +219,12 @@ async function runPackagedSmoke(options) {
   if (Object.values(report.errors).some(count => count > 0)) report.failure ||= 'RUNTIME_ERRORS';
   report.passed = Boolean(application && report.failure === null && report.process.closed && !report.process.forced && report.process.exitCode === 0);
   report.durationMs = Date.now() - started;
-  await fs.mkdir(path.dirname(path.resolve(options.report)), { recursive: true });
-  await fs.writeFile(options.report, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
-  console.log(JSON.stringify(report));
-  process.exitCode = report.passed ? 0 : 1;
+  if (writeReport) {
+    await fs.mkdir(path.dirname(path.resolve(options.report)), { recursive: true });
+    await fs.writeFile(options.report, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
+    console.log(JSON.stringify(report));
+  }
+  return report;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -223,7 +232,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   try {
     const options = parseSmokeArguments(process.argv.slice(2));
     watchdog = setTimeout(() => { console.error('Packaged smoke failed (HARD_TIMEOUT).'); process.exit(1); }, 85000);
-    await runPackagedSmoke(options);
+    const report = await runPackagedSmoke(options);
+    process.exitCode = report.passed ? 0 : 1;
   } catch { console.error('Packaged smoke failed (ARGUMENTS_OR_REPORT).'); process.exitCode = 1; }
   finally { clearTimeout(watchdog); }
 }

@@ -22,10 +22,9 @@ export function selectFrontReleaseAsset(release = {}, { platform = process.platf
   }
   if (platform === "darwin") {
     const dmgAssets = named.filter((asset) => /\.dmg$/i.test(asset.name) && !/\.blockmap$/i.test(asset.name));
-    const wantedArch = arch === "x64" ? "x64" : "arm64";
-    return dmgAssets.find((asset) => asset.name.toLowerCase().includes(wantedArch))
-      ?? dmgAssets.find((asset) => asset.name.toLowerCase().includes("arm64"))
-      ?? dmgAssets[0]
+    if (!["x64", "arm64"].includes(arch)) return null;
+    return dmgAssets.find((asset) => new RegExp(`(?:^|[-_. ])${arch}(?:[-_. ]|$)`, "i").test(asset.name))
+      ?? dmgAssets.find((asset) => /(?:^|[-_. ])universal(?:[-_. ]|$)/i.test(asset.name))
       ?? null;
   }
   return null;

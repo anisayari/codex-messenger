@@ -87,8 +87,9 @@ test('private startup log exports only bounded error category counts, including 
     JSON.stringify({ event: 'window.console-message', level: 3, message: 'private-console' }),
     JSON.stringify({ event: 'window.console-message', level: 'error' }), JSON.stringify({ event: 'window.console-message', level: 2 }),
     JSON.stringify({ event: 'react.render.error' }), JSON.stringify({ event: 'window.unhandledrejection' }),
+    JSON.stringify({ event: 'renderer.bootstrap.app.error' }),
     JSON.stringify({ event: 'codex.spawn.error', text: 'Expected missing CLI' })].join('\r\n');
-  assert.deepEqual(errorsFromPrivateLog(text), { preloadError: 1, loadFailure: 1, rendererGone: 1, pageError: 2, consoleError: 2 });
+  assert.deepEqual(errorsFromPrivateLog(text), { preloadError: 1, loadFailure: 1, rendererGone: 1, pageError: 3, consoleError: 2 });
   assert.equal(JSON.stringify(errorsFromPrivateLog(text)).includes('private'), false);
 });
 

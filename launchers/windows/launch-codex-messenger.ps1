@@ -1,283 +1,136 @@
-param(
-  [switch]$NoUi
-)
+#requires -Version 5.1
+param([switch]$NoUi, [switch]$TestMode)
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'launcher-common.ps1')
+$repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).ProviderPath
+$script:LauncherExitCode = 0
 
-$releaseUrl = "https://github.com/anisayari/codex-messenger/releases"
-$packageUrl = "https://raw.githubusercontent.com/anisayari/codex-messenger/main/package.json"
-$nodeDownloadUrl = "https://nodejs.org/en/download"
-$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$repoRoot = Resolve-Path (Join-Path $scriptRoot "..\..")
-$packagePath = Join-Path $repoRoot "package.json"
-
-function Get-RepoVersion {
-  if (!(Test-Path -LiteralPath $packagePath)) { return "" }
-  try {
-    return ((Get-Content -LiteralPath $packagePath -Raw) | ConvertFrom-Json).version
-  } catch {
-    return ""
-  }
-}
-
-function Get-LatestVersion {
-  try {
-    return (Invoke-RestMethod -Uri $packageUrl -TimeoutSec 8).version
-  } catch {
-    return ""
-  }
-}
-
-function Get-InstallRegistryEntry {
-  $roots = @(
-    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall",
-    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall",
-    "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-  )
-  foreach ($root in $roots) {
-    if (!(Test-Path $root)) { continue }
-    foreach ($entry in Get-ChildItem $root -ErrorAction SilentlyContinue) {
-      $props = Get-ItemProperty $entry.PSPath -ErrorAction SilentlyContinue
-      if ($props.DisplayName -eq "Codex Messenger") { return $props }
-    }
-  }
-  return $null
-}
-
-function Get-InstallCandidates {
-  $dirs = @()
-  if ($env:LOCALAPPDATA) {
-    $dirs += Join-Path $env:LOCALAPPDATA "Programs\Codex Messenger"
-    $dirs += Join-Path $env:LOCALAPPDATA "Programs\codex-messenger"
-  }
-  if ($env:ProgramFiles) {
-    $dirs += Join-Path $env:ProgramFiles "Codex Messenger"
-  }
-  $dirs += Join-Path $repoRoot "release\windows\win-unpacked"
-  $dirs += Join-Path $repoRoot "release\win-unpacked"
-
-  foreach ($dir in $dirs | Select-Object -Unique) {
-    if (!(Test-Path -LiteralPath $dir)) { continue }
-    foreach ($name in @("Codex Messenger.exe", "CodexMessenger.exe")) {
-      $exe = Join-Path $dir $name
-      if (Test-Path -LiteralPath $exe) {
-        [pscustomobject]@{
-          InstallDir = $dir
-          Exe = $exe
-        }
-      }
-    }
-  }
-}
-
-function Get-CodexMessengerInstall {
-  $registry = Get-InstallRegistryEntry
-  $candidate = Get-InstallCandidates | Select-Object -First 1
-  $version = ""
-
-  if ($registry -and $registry.DisplayVersion) {
-    $version = $registry.DisplayVersion
-  } elseif ($candidate -and (Test-Path -LiteralPath $candidate.Exe)) {
-    try { $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($candidate.Exe).ProductVersion } catch {}
-  } else {
-    $version = Get-RepoVersion
-  }
-
-  [pscustomobject]@{
-    Installed = [bool]($registry -or $candidate)
-    Version = $version
-    Exe = if ($candidate) { $candidate.Exe } else { "" }
-    InstallDir = if ($candidate) { $candidate.InstallDir } elseif ($registry) { $registry.InstallLocation } else { "" }
-    UninstallString = if ($registry) { $registry.UninstallString } else { "" }
-    QuietUninstallString = if ($registry) { $registry.QuietUninstallString } else { "" }
-  }
-}
-
-function Start-CodexMessenger {
-  if (!(Test-CodexReady)) {
-    Start-CodexSetup
-    return
-  }
-
-  $install = Get-CodexMessengerInstall
-  if ($install.Exe -and (Test-Path -LiteralPath $install.Exe)) {
-    Start-Process -FilePath $install.Exe
-    return
-  }
-
-  $npm = (Get-Command npm.cmd -ErrorAction SilentlyContinue).Source
-  if (!$npm) {
-    throw "npm.cmd was not found. Install from the GitHub release or install Node.js/npm for source mode."
-  }
-  Start-Process -FilePath $npm -ArgumentList @("run", "electron:dev") -WorkingDirectory $repoRoot -WindowStyle Hidden
-}
-
-function Test-CodexReady {
-  $codex = (Get-Command codex -ErrorAction SilentlyContinue).Source
-  if (!$codex) { return $false }
-  $process = Start-Process -FilePath $codex -ArgumentList @("login", "status") -NoNewWindow -Wait -PassThru -RedirectStandardOutput "$env:TEMP\codex-login-status.out" -RedirectStandardError "$env:TEMP\codex-login-status.err"
-  return $process.ExitCode -eq 0
-}
-
-function Start-CodexSetup {
-  $node = (Get-Command node.exe -ErrorAction SilentlyContinue).Source
-  if (!$node) {
-    Start-Process $nodeDownloadUrl
-    throw "Node.js/npm is required to install Codex CLI. Install Node.js, then run the launcher again."
-  }
-
-  $setupScript = Join-Path $repoRoot "scripts\bootstrap-codex-env.mjs"
-  if (!(Test-Path -LiteralPath $setupScript)) {
-    throw "Codex setup script was not found: $setupScript"
-  }
-
-  $escapedRepoRoot = $repoRoot.ToString().Replace("'", "''")
-  $command = "Set-Location -LiteralPath '$escapedRepoRoot'; node scripts/bootstrap-codex-env.mjs --ensure; Write-Host ''; Read-Host 'Setup finished. Press Enter, then launch Codex Messenger again'"
-  Start-Process -FilePath "powershell.exe" -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $command)
-}
-
-function Invoke-UninstallString {
-  param([string]$CommandLine)
-  if (!$CommandLine) { return $false }
-  if ($CommandLine -match '^\s*"([^"]+)"\s*(.*)$') {
-    Start-Process -FilePath $matches[1] -ArgumentList $matches[2] -Wait
-  } else {
-    Start-Process -FilePath "cmd.exe" -ArgumentList @("/c", $CommandLine) -Wait
-  }
-  return $true
-}
-
-function Remove-PortableInstall {
-  param([string]$InstallDir)
-  if (!$InstallDir) { return $false }
-
-  $resolved = [System.IO.Path]::GetFullPath($InstallDir)
-  $allowedRoots = @()
-  if ($env:LOCALAPPDATA) { $allowedRoots += [System.IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA "Programs")) }
-  if ($env:ProgramFiles) { $allowedRoots += [System.IO.Path]::GetFullPath($env:ProgramFiles) }
-  $isAllowed = $allowedRoots | Where-Object { $resolved.StartsWith($_, [System.StringComparison]::OrdinalIgnoreCase) }
-  if (!$isAllowed) { return $false }
-
-  Remove-Item -LiteralPath $resolved -Recurse -Force
-  foreach ($shortcut in @(
-    (Join-Path ([Environment]::GetFolderPath("Desktop")) "Codex Messenger.lnk"),
-    (Join-Path ([Environment]::GetFolderPath("StartMenu")) "Programs\Codex Messenger.lnk")
-  )) {
-    if (Test-Path -LiteralPath $shortcut) { Remove-Item -LiteralPath $shortcut -Force }
-  }
-  return $true
-}
-
-function Uninstall-CodexMessengerFront {
-  Add-Type -AssemblyName System.Windows.Forms
-  $install = Get-CodexMessengerInstall
-  if (!$install.Installed) {
-    [System.Windows.Forms.MessageBox]::Show("Codex Messenger does not look installed on this machine.", "Codex Messenger", "OK", "Information") | Out-Null
-    return
-  }
-
-  $message = "Uninstall only the Codex Messenger front client?`n`nCodex conversations, Codex CLI data, and project files will not be touched."
-  $answer = [System.Windows.Forms.MessageBox]::Show($message, "Uninstall Codex Messenger", "YesNo", "Warning")
-  if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) { return }
-
-  $uninstallCommand = if ($install.QuietUninstallString) { $install.QuietUninstallString } else { $install.UninstallString }
-  if (Invoke-UninstallString $uninstallCommand) {
-    return
-  }
-  if (!(Remove-PortableInstall $install.InstallDir)) {
-    [System.Windows.Forms.MessageBox]::Show("No safe uninstaller or install folder was found. Nothing was removed.", "Codex Messenger", "OK", "Warning") | Out-Null
-  }
-}
-
-function Show-Launcher {
+function Show-MessengerLauncher {
   Add-Type -AssemblyName System.Windows.Forms
   Add-Type -AssemblyName System.Drawing
   [System.Windows.Forms.Application]::EnableVisualStyles()
-
-  $install = Get-CodexMessengerInstall
-  $latest = Get-LatestVersion
-  $current = if ($install.Version) { $install.Version } else { Get-RepoVersion }
-  $status = if ($install.Installed) { "Installed" } else { "Source / not installed" }
-  $pathText = if ($install.InstallDir) { $install.InstallDir } else { $repoRoot }
-
+  $readInstall = ${function:Get-CodexMessengerInstall}
+  $readRelease = ${function:Get-LatestMessengerRelease}
+  $startApplication = ${function:Start-MessengerApplication}
+  $runUninstaller = ${function:Invoke-MessengerUninstaller}
+  $state = @{ Install = (& $readInstall $repoRoot); Latest = (& $readRelease); ExitCode = 0 }
   $form = New-Object System.Windows.Forms.Form
-  $form.Text = "Codex Messenger Launcher"
-  $form.StartPosition = "CenterScreen"
-  $form.FormBorderStyle = "FixedDialog"
+  $form.Text = 'Codex Messenger Launcher'
+  $form.StartPosition = 'CenterScreen'
+  $form.FormBorderStyle = 'FixedDialog'
   $form.MaximizeBox = $false
   $form.MinimizeBox = $false
-  $form.ClientSize = New-Object System.Drawing.Size(460, 230)
-
+  $form.ClientSize = New-Object System.Drawing.Size(510, 270)
   $title = New-Object System.Windows.Forms.Label
-  $title.Text = "Codex Messenger"
-  $title.Font = New-Object System.Drawing.Font("Tahoma", 16, [System.Drawing.FontStyle]::Bold)
+  $title.Text = 'Codex Messenger'
+  $title.Font = New-Object System.Drawing.Font('Tahoma', 16, [System.Drawing.FontStyle]::Bold)
   $title.Location = New-Object System.Drawing.Point(16, 14)
-  $title.Size = New-Object System.Drawing.Size(420, 28)
+  $title.Size = New-Object System.Drawing.Size(470, 28)
   $form.Controls.Add($title)
-
   $info = New-Object System.Windows.Forms.Label
-  $info.Text = "Status: $status`r`nCurrent version: $(if ($current) { $current } else { 'unknown' })`r`nLatest version: $(if ($latest) { $latest } else { 'not checked' })`r`nPath: $pathText"
   $info.Location = New-Object System.Drawing.Point(18, 54)
-  $info.Size = New-Object System.Drawing.Size(420, 72)
+  $info.Size = New-Object System.Drawing.Size(470, 92)
   $form.Controls.Add($info)
-
   $notice = New-Object System.Windows.Forms.Label
-  $notice.Text = "Use at your own risk. Uninstall removes only the Codex Messenger front client. Codex conversations and project data are left untouched."
-  $notice.Location = New-Object System.Drawing.Point(18, 132)
-  $notice.Size = New-Object System.Drawing.Size(420, 36)
+  $notice.Text = 'The installed app manages its own Codex setup. Source mode uses a visible console. Uninstall preserves Codex conversations, CLI data and projects.'
+  $notice.Location = New-Object System.Drawing.Point(18, 150)
+  $notice.Size = New-Object System.Drawing.Size(470, 42)
   $form.Controls.Add($notice)
-
   $launch = New-Object System.Windows.Forms.Button
-  $launch.Text = "Launch"
-  $launch.Location = New-Object System.Drawing.Point(18, 180)
-  $launch.Size = New-Object System.Drawing.Size(90, 28)
+  $launch.Text = 'Launch'
+  $launch.Location = New-Object System.Drawing.Point(18, 210)
+  $launch.Size = New-Object System.Drawing.Size(82, 30)
+  $form.Controls.Add($launch)
+  $check = New-Object System.Windows.Forms.Button
+  $check.Text = 'Check updates'
+  $check.Location = New-Object System.Drawing.Point(106, 210)
+  $check.Size = New-Object System.Drawing.Size(105, 30)
+  $form.Controls.Add($check)
+  $update = New-Object System.Windows.Forms.Button
+  $update.Text = 'Open release'
+  $update.Location = New-Object System.Drawing.Point(217, 210)
+  $update.Size = New-Object System.Drawing.Size(95, 30)
+  $form.Controls.Add($update)
+  $uninstall = New-Object System.Windows.Forms.Button
+  $uninstall.Text = 'Uninstall'
+  $uninstall.Location = New-Object System.Drawing.Point(318, 210)
+  $uninstall.Size = New-Object System.Drawing.Size(82, 30)
+  $form.Controls.Add($uninstall)
+  $close = New-Object System.Windows.Forms.Button
+  $close.Text = 'Close'
+  $close.Location = New-Object System.Drawing.Point(406, 210)
+  $close.Size = New-Object System.Drawing.Size(82, 30)
+  $form.Controls.Add($close)
+  $refresh = {
+    $state.Install = & $readInstall $repoRoot
+    $install = $state.Install
+    $status = if (!$install.Exe) { 'Source' } elseif ($install.Kind -eq 'registered') { 'Installed' } elseif ($install.Kind -eq 'portable') { 'Portable' } else { 'Local app / no registered uninstaller' }
+    $current = if ($install.Version) { $install.Version } else { 'unknown' }
+    $latest = if ($state.Latest) { $state.Latest.Version } else { 'unavailable' }
+    $path = if ($install.Exe) { $install.Exe } else { $repoRoot }
+    $info.Text = @("Status: $status", "Current version: $current", "Latest stable release: $latest", "Path: $path") -join [Environment]::NewLine
+    $uninstall.Enabled = $install.Kind -in @('registered', 'portable')
+  }.GetNewClosure()
+  & $refresh
   $launch.Add_Click({
     try {
-      Start-CodexMessenger
+      $form.Hide()
+      $code = & $startApplication $repoRoot
+      $state.ExitCode = [int]$code
+      if ($code -ne 0) { throw "Source launch exited with code $code. See the console output." }
       $form.Close()
     } catch {
-      [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, "Launch failed", "OK", "Error") | Out-Null
+      if ($state.ExitCode -eq 0) { $state.ExitCode = 1 }
+      $form.Show()
+      [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Launch failed', 'OK', 'Error') | Out-Null
     }
-  })
-  $form.Controls.Add($launch)
-
-  $check = New-Object System.Windows.Forms.Button
-  $check.Text = "Check updates"
-  $check.Location = New-Object System.Drawing.Point(116, 180)
-  $check.Size = New-Object System.Drawing.Size(108, 28)
+  }.GetNewClosure())
   $check.Add_Click({
-    $latestNow = Get-LatestVersion
-    $currentNow = (Get-CodexMessengerInstall).Version
-    [System.Windows.Forms.MessageBox]::Show("Current: $(if ($currentNow) { $currentNow } else { 'unknown' })`nLatest: $(if ($latestNow) { $latestNow } else { 'unavailable' })", "Codex Messenger updates", "OK", "Information") | Out-Null
-  })
-  $form.Controls.Add($check)
-
-  $update = New-Object System.Windows.Forms.Button
-  $update.Text = "Update"
-  $update.Location = New-Object System.Drawing.Point(232, 180)
-  $update.Size = New-Object System.Drawing.Size(76, 28)
-  $update.Add_Click({ Start-Process $releaseUrl })
-  $form.Controls.Add($update)
-
-  $uninstall = New-Object System.Windows.Forms.Button
-  $uninstall.Text = "Uninstall"
-  $uninstall.Location = New-Object System.Drawing.Point(316, 180)
-  $uninstall.Size = New-Object System.Drawing.Size(82, 28)
-  $uninstall.Add_Click({ Uninstall-CodexMessengerFront })
-  $form.Controls.Add($uninstall)
-
-  $close = New-Object System.Windows.Forms.Button
-  $close.Text = "Close"
-  $close.Location = New-Object System.Drawing.Point(404, 180)
-  $close.Size = New-Object System.Drawing.Size(42, 28)
-  $close.Add_Click({ $form.Close() })
-  $form.Controls.Add($close)
-
+    try {
+      $state.Latest = & $readRelease
+      & $refresh
+      $latest = if ($state.Latest) { $state.Latest.Version } else { 'unavailable; no update was installed' }
+      [System.Windows.Forms.MessageBox]::Show("Latest stable release: $latest", 'Codex Messenger updates', 'OK', 'Information') | Out-Null
+    } catch {
+      [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Update check failed', 'OK', 'Error') | Out-Null
+    }
+  }.GetNewClosure())
+  $update.Add_Click({
+    try {
+      $release = & $readRelease
+      $url = if ($release) { $release.Url } else { 'https://github.com/anisayari/codex-messenger/releases/latest' }
+      Start-Process -FilePath $url -ErrorAction Stop | Out-Null
+    } catch {
+      [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Could not open release', 'OK', 'Error') | Out-Null
+    }
+  }.GetNewClosure())
+  $uninstall.Add_Click({
+    try {
+      $install = & $readInstall $repoRoot
+      if (!$install.Exe) { throw 'The application is no longer installed.' }
+      $message = @('Uninstall the Codex Messenger front client at:', $install.InstallDir, '', 'Codex conversations, CLI data and project files are preserved.') -join [Environment]::NewLine
+      $answer = [System.Windows.Forms.MessageBox]::Show($message, 'Uninstall Codex Messenger', 'YesNo', 'Warning')
+      if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) { return }
+      $state.ExitCode = & $runUninstaller $install
+      & $refresh
+    } catch {
+      $state.ExitCode = 1
+      [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Uninstall failed', 'OK', 'Error') | Out-Null
+      & $refresh
+    }
+  }.GetNewClosure())
+  $close.Add_Click({ $form.Close() }.GetNewClosure())
   [void]$form.ShowDialog()
+  $script:LauncherExitCode = $state.ExitCode
+  $form.Dispose()
 }
 
-if ($NoUi) {
-  Start-CodexMessenger
-} else {
-  Show-Launcher
+if ($TestMode) { return }
+try {
+  if ($NoUi) { $script:LauncherExitCode = Start-MessengerApplication $repoRoot } else { Show-MessengerLauncher }
+  exit ([int]$script:LauncherExitCode)
+} catch {
+  Write-Error -Message $_.Exception.Message -ErrorAction Continue
+  exit 1
 }

@@ -18,3 +18,4 @@ msn-*.png
 !public/screenshots/*.png
 !codexmessenger.net/assets/screenshots/*.png
 login-people-logo.png
+build/installer-files.generated.nsh

@@ -2,10 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-URL="http://127.0.0.1:5174/"
-
+source "$ROOT_DIR/launchers/macos/launcher-common.sh"
+launcher_require_node
+launcher_ensure_dependencies preview
 cd "$ROOT_DIR"
-npm run dev &
-sleep 2
-open "$URL"
-wait
+exec "$LAUNCHER_NODE" "$ROOT_DIR/scripts/web-preview.mjs" "$@"

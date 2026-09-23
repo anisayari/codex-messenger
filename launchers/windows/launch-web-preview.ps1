@@ -1,10 +1,14 @@
-$ErrorActionPreference = "Stop"
+#requires -Version 5.1
+param([switch]$NoUi, [switch]$TestMode)
 
-$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$repoRoot = Resolve-Path (Join-Path $scriptRoot "..\..")
-$npm = (Get-Command npm.cmd -ErrorAction Stop).Source
-$url = "http://127.0.0.1:5174/"
-
-Start-Process -FilePath $npm -ArgumentList @("run", "dev") -WorkingDirectory $repoRoot
-Start-Sleep -Seconds 2
-Start-Process $url
+$ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'launcher-common.ps1')
+$repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).ProviderPath
+if ($TestMode) { return }
+try {
+  # The Node helper owns strictPort, readiness, browser opening and cleanup.
+  exit ([int](Invoke-SourceLauncher $repoRoot 'preview'))
+} catch {
+  Write-Error -Message $_.Exception.Message -ErrorAction Continue
+  exit 1
+}

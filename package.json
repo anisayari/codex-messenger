@@ -1,6 +1,6 @@
 {
   "name": "codex-messenger",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "MSN Messenger-inspired Electron desktop client for running Codex locally.",
   "author": "Anis AYARI",
   "license": "MIT",
@@ -54,9 +54,10 @@
   },
   "homepage": "https://github.com/anisayari/codex-messenger#readme",
   "build": {
+    "afterPack": "./scripts/nsis-owned-files.mjs",
     "appId": "com.codex.messenger",
     "productName": "Codex Messenger",
-    "buildVersion": "0.0.3",
+    "buildVersion": "0.0.4",
     "asar": true,
     "directories": {
       "output": "release"
@@ -105,7 +106,7 @@
     },
     "nsis": {
       "include": "build/installer.nsh",
-      "artifactName": "${productName} Setup ${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}",
+      "artifactName": "Codex-Messenger-Setup-${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
@@ -115,7 +116,8 @@
       "shortcutName": "Codex Messenger"
     },
     "portable": {
-      "artifactName": "${productName} ${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}"
+      "unpackDirName": false,
+      "artifactName": "Codex-Messenger-${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}"
     }
   },
   "engines": {

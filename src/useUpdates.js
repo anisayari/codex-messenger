@@ -98,7 +98,15 @@ export function useUpdates({ api, appVersion = "", userAgent = "", initialCheck 
       message
     }));
     try {
-      return await api.restartForUpdate(cleanTarget);
+      const result = await api.restartForUpdate(cleanTarget);
+      setUpdateActionMessage(result?.message || message);
+      setUpdateProgress((current) => ({ ...(current ?? {}), target: cleanTarget,
+        phase: result?.ok === false ? "error" : result?.quitStarted ? "restarting" : "ready",
+        percent: 100, quitStarted: Boolean(result?.quitStarted),
+        needsRestart: Boolean(result?.needsRestart), manualInstall: Boolean(result?.manualInstall),
+        message: result?.message || message }));
+      if (!result?.quitStarted) setInstallingUpdateTarget("");
+      return result;
     } catch (error) {
       const errorMessage = error.message || "Redemarrage impossible.";
       setInstallingUpdateTarget("");

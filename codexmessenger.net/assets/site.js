@@ -154,7 +154,7 @@
     setText("downloadIntelNote", text.downloadIntelNote);
     setText("page-desc", text.svgDescription);
     document.querySelectorAll("[data-download-label]").forEach(element => { element.textContent = text.downloadButton; });
-    document.querySelectorAll("[data-release-label]").forEach(element => { element.textContent = text.downloadVersionPrefix + " v0.0.3"; });
+    document.querySelectorAll("[data-release-label]").forEach(element => { element.textContent = text.downloadVersionPrefix + " v0.0.4"; });
     document.querySelectorAll("[data-preview-caption]").forEach(element => { element.textContent = text.previewCaption; });
     document.querySelectorAll("[data-preview-conversation]").forEach(element => { element.alt = text.previewConversation; });
     document.querySelectorAll("[data-preview-roster]").forEach(element => { element.alt = text.previewRoster; });

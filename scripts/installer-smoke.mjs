@@ -1,0 +1,492 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn, execFile } from 'node:child_process';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { randomUUID } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { expectedInstallers, sha256File } from './release-artifacts.mjs';
+import { parseSmokeArguments, findPackagedExecutable, runPackagedSmoke, isolatedSmokeEnvironment, errorsFromPrivateLog } from './packaged-smoke.mjs';
+
+const packagedChecks = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation',
+  'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
+const errorKinds = ['preloadError', 'loadFailure', 'rendererGone', 'pageError', 'consoleError'];
+const nativeScope = new AsyncLocalStorage();
+const abortError = () => Object.assign(new Error('HARD_TIMEOUT'), { installerSmokeCode: 'HARD_TIMEOUT' });
+const checkAbort = () => { if (nativeScope.getStore()?.signal?.aborted) throw abortError(); };
+const cleanupOwned = task => nativeScope.run({ ...nativeScope.getStore(), cleanup: true }, task);
+export const installerChecks = {
+  nsis: ['installed', 'silentNoAutoLaunch', 'foreignUninstallRefused', 'foreignFilePreserved', 'uninstalled', 'registrationRemoved', 'protectedFilesPreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved', 'originAsar', 'privateTempCleanup'],
+  portable: ['actualWrapperExecution', 'wrapperVersion', 'wrapperPackaged', 'wrapperRendererReady', 'wrapperCleanExit', 'wrapperRuntimeErrorsZero', 'originAsar', 'privateTempCleanup'],
+  dmg: ['mountedReadOnly', 'copiedApplication', 'mountDetached', 'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup'],
+  zip: ['extractedApplication', 'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup']
+};
+
+export const parseInstallerSmokeArguments = parseSmokeArguments;
+
+export function isOwnedPath(root, candidate, platform = process.platform) {
+  const paths = platform === 'win32' ? path.win32 : path.posix;
+  if (!paths.isAbsolute(root) || !paths.isAbsolute(candidate)) return false;
+  const relative = paths.relative(root, candidate);
+  return Boolean(relative && relative !== '..' && !relative.startsWith('..' + paths.sep) && !paths.isAbsolute(relative));
+}
+
+export function nsisInstallArguments(directory) {
+  assert.ok(path.win32.isAbsolute(directory) && !/["\r\n\0]/.test(directory), 'Expected an absolute private NSIS directory');
+  return ['/S', '/currentuser', '--no-desktop-shortcut', `/D=${directory}`];
+}
+
+export function validateInstallerApplication(smoke, options) {
+  assert.equal(smoke?.schemaVersion, 1);
+  assert.equal(smoke.passed, true);
+  for (const key of ['version', 'platform', 'arch']) assert.equal(smoke[key], options[key]);
+  assert.deepEqual(Object.keys(smoke.checks || {}).sort(), [...packagedChecks].sort());
+  assert.ok(packagedChecks.every(key => smoke.checks[key] === true));
+  assert.deepEqual(Object.keys(smoke.errors || {}).sort(), [...errorKinds].sort());
+  assert.ok(errorKinds.every(key => smoke.errors[key] === 0));
+  assert.equal(smoke.failure, null);
+  assert.deepEqual(smoke.process, { closed: true, forced: false, exitCode: 0 });
+  assert.match(smoke.appAsarSha256, /^[0-9a-f]{64}(?![\s\S])/);
+}
+
+export function validateOriginAsar(actual, origin) {
+  assert.match(actual, /^[0-9a-f]{64}(?![\s\S])/);
+  assert.equal(actual, origin, 'Installer application must contain the original unpacked app.asar');
+}
+
+export function validatePortableWrapper(log, result, { version, privateRoot, userData }) {
+  assert.ok(result.started && !result.timedOut && !result.forced && result.code === 0 && result.signal === null, 'Portable wrapper must exit naturally with its child exit zero');
+  const records = log.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line));
+  assert.ok(records.every(record => record && typeof record === 'object' && !Array.isArray(record)));
+  const starts = records.filter(record => record.event === 'app.start');
+  assert.equal(starts.length, 1, 'The actual wrapper must start one packaged application');
+  assert.equal(starts[0].version, version);
+  assert.equal(starts[0].packaged, true);
+  assert.equal(starts[0].dev, false);
+  assert.equal(starts[0].logPath, path.win32.join(userData, 'codex-messenger.log'));
+  const ready = records.filter(record => record.event === 'window.ready-to-show' && record.key === 'main');
+  assert.equal(ready.length, 1, 'The wrapper must load its actual main renderer');
+  const document = fileURLToPath(ready[0].url, { windows: true });
+  assert.ok(isOwnedPath(privateRoot, document, 'win32') && /\\resources\\app\.asar\\dist\\index\.html$/i.test(document));
+  const normalized = records.map(record => ({ ...record, event: String(record.event || '').replace(/^renderer\./, '') })).map(record => JSON.stringify(record)).join('\n');
+  assert.ok(Object.values(errorsFromPrivateLog(normalized)).every(count => count === 0), 'Portable wrapper cannot contain runtime errors');
+  return Object.fromEntries(installerChecks.portable.filter(key => key !== 'originAsar' && key !== 'privateTempCleanup').map(key => [key, true]));
+}
+
+export function validateReadOnlyMount(output, mountPoint) {
+  const matches = output.split(/\r?\n/).filter(line => line.includes(` on ${mountPoint} (`));
+  assert.equal(matches.length, 1, 'Expected the owned DMG mount');
+  assert.match(matches[0], /\([^)]*(?:^|[, ])read-only(?:[, )])/);
+}
+
+export function validateBundleIdentity(plist, architectures, options) {
+  assert.equal(plist?.CFBundleIdentifier, 'com.codex.messenger');
+  assert.equal(plist.CFBundleShortVersionString, options.version);
+  assert.equal(plist.CFBundleVersion, options.version);
+  assert.deepEqual(architectures.trim().split(/\s+/), [options.arch === 'x64' ? 'x86_64' : 'arm64']);
+}
+
+export function validateInstallerEntry(entry, kind, options) {
+  assert.equal(entry.passed, true);
+  assert.ok(Number.isSafeInteger(entry.bytes) && entry.bytes >= 1024);
+  assert.match(entry.sha256, /^[0-9a-f]{64}(?![\s\S])/);
+  assert.match(entry.appAsarSha256, /^[0-9a-f]{64}(?![\s\S])/);
+  assert.deepEqual(Object.keys(entry.checks || {}).sort(), [...installerChecks[kind]].sort());
+  assert.ok(installerChecks[kind].every(key => entry.checks[key] === true));
+  validateInstallerApplication(entry.smoke, options);
+  assert.equal(entry.smoke.appAsarSha256, entry.appAsarSha256);
+}
+
+async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 30000, input, verbatim = false } = {}) {
+  const signal = nativeScope.getStore()?.cleanup ? undefined : nativeScope.getStore()?.signal;
+  if (signal?.aborted) return { code: null, signal: null, started: false, timedOut: false, forced: false, aborted: true, stdout: '', stderr: '' };
+  return new Promise(resolve => {
+    const child = spawn(command, args, { env, cwd, shell: false, windowsHide: true, windowsVerbatimArguments: verbatim,
+      detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] });
+    let stdout = '', stderr = '', started = true, timedOut = false, forced = false, aborted = false, fallback, finished = false;
+    const finish = (code, childSignal) => {
+      if (finished) return; finished = true;
+      clearTimeout(timer); clearTimeout(fallback); signal?.removeEventListener('abort', onAbort);
+      resolve({ code, signal: childSignal, started, timedOut, forced, aborted, stdout, stderr });
+    };
+    const stop = () => {
+      forced = true;
+      if (child.pid && child.exitCode === null && child.signalCode === null) {
+        if (process.platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { timeout: 2000, windowsHide: true }, () => {});
+        else { try { process.kill(-child.pid, 'SIGKILL'); } catch { child.kill('SIGKILL'); } }
+      }
+      fallback ||= setTimeout(() => finish(null, null), 2500);
+    };
+    const timer = setTimeout(() => { timedOut = true; stop(); }, timeoutMs);
+    const onAbort = () => { aborted = true; stop(); };
+    signal?.addEventListener('abort', onAbort, { once: true });
+    if (signal?.aborted) onAbort();
+    for (const [stream, key] of [[child.stdout, 'stdout'], [child.stderr, 'stderr']]) {
+      stream.setEncoding('utf8');
+      stream.on('data', value => {
+        if (key === 'stdout') stdout += value; else stderr += value;
+        if (Buffer.byteLength(stdout) + Buffer.byteLength(stderr) > 1000000) { stdout = stdout.slice(0, 500000); stderr = stderr.slice(0, 500000); stop(); }
+      });
+    }
+    child.stdin.on('error', () => {});
+    child.stdin.end(input);
+    child.once('error', () => { started = false; finish(null, null); });
+    child.once('close', finish);
+  });
+}
+
+export function requireNativeCommandExit(result, expectedExitCode = 0) {
+  const code = result.aborted ? 'HARD_TIMEOUT' : !result.started ? 'NATIVE_COMMAND_NOT_STARTED' : result.timedOut ? 'NATIVE_COMMAND_TIMEOUT' : result.forced ? 'NATIVE_COMMAND_FORCED' :
+    result.signal !== null ? 'NATIVE_COMMAND_SIGNAL' : result.code !== expectedExitCode ? `NATIVE_COMMAND_EXIT_${Number.isSafeInteger(result.code) ? result.code : 'UNKNOWN'}` : null;
+  if (code) throw Object.assign(new Error(code), { installerSmokeCode: code, expectedExitCode });
+  return result.stdout;
+}
+const requireExitZero = result => requireNativeCommandExit(result);
+
+function privateEnvironment(root) {
+  const result = isolatedSmokeEnvironment(process.env, { userData: path.join(root, 'profile'), codexHome: path.join(root, 'codex-home'), unavailableCodex: path.join(root, 'codex-unavailable') });
+  for (const key of Object.keys(result)) if (['TEMP', 'TMP', 'TMPDIR', 'APPDATA', 'LOCALAPPDATA'].includes(key.toUpperCase())) delete result[key];
+  return { ...result, TEMP: path.join(root, 'temp with spaces'), TMP: path.join(root, 'temp with spaces'), TMPDIR: path.join(root, 'temp with spaces'), APPDATA: path.join(root, 'appdata'), LOCALAPPDATA: path.join(root, 'localappdata') };
+}
+
+const psQuote = value => "'" + value.replace(/'/g, "''") + "'";
+async function powershell(script, env, timeoutMs = 15000) {
+  return runOwned('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from("$ErrorActionPreference='Stop'; " + script, 'utf16le').toString('base64')], { env, timeoutMs });
+}
+
+async function registryState(guid, env) {
+  const script = `$entries=@(); foreach($hive in @('HKCU','HKLM')) { $install="$hive\`:\\Software\\${guid}"; $uninstall="$hive\`:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${guid}"; ` +
+    `if((Test-Path -LiteralPath $install) -or (Test-Path -LiteralPath $uninstall)) { $i=Get-ItemProperty -LiteralPath $install -ErrorAction SilentlyContinue; $u=Get-ItemProperty -LiteralPath $uninstall -ErrorAction SilentlyContinue; ` +
+    `$entries += [pscustomobject]@{hive=$hive;installKey=(Test-Path -LiteralPath $install);uninstallKey=(Test-Path -LiteralPath $uninstall);location=$i.InstallLocation;version=$u.DisplayVersion} } }; ` +
+    `$menu=Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs\\Codex Messenger.lnk'; $desktop=Join-Path ([Environment]::GetFolderPath('Desktop')) 'Codex Messenger.lnk'; ` +
+    `ConvertTo-Json -Compress -InputObject ([pscustomobject]@{entries=@($entries);menu=(Test-Path -LiteralPath $menu);desktop=(Test-Path -LiteralPath $desktop)})`;
+  return JSON.parse(requireExitZero(await powershell(script, env)));
+}
+
+export function validateInstalledRegistration(state, directory, version) {
+  assert.equal(state?.entries?.length, 1);
+  assert.deepEqual(state.entries[0], { hive: 'HKCU', installKey: true, uninstallKey: true, location: directory, version });
+  assert.equal(state.desktop, false, 'The test must not create a desktop shortcut');
+  assert.equal(state.menu, true, 'The actual Start Menu shortcut must be created');
+}
+
+export function validateOwnedRegistrationCleanup(state, { root, directory, version, owner }) {
+  assert.ok(isOwnedPath(root, directory, 'win32') && typeof owner === 'string' && owner);
+  assert.ok(Array.isArray(state.entries) && state.entries.length <= 1);
+  const uninstallCommand = `"${path.win32.join(directory, 'Uninstall Codex Messenger.exe')}" /currentuser`;
+  for (const record of state.entries) {
+    assert.equal(record.hive, 'HKCU');
+    assert.equal(typeof record.installKey, 'boolean'); assert.equal(typeof record.uninstallKey, 'boolean');
+    assert.ok(record.installKey || record.uninstallKey);
+    if (record.installKey) {
+      assert.equal(record.location, directory);
+      assert.ok(record.installOwner === null || record.installOwner === owner);
+      assert.ok(record.installOwner === owner || (record.uninstallKey && record.version === version));
+    }
+    if (record.uninstallKey) {
+      assert.ok(record.version === null || record.version === version);
+      assert.ok(record.uninstallOwner === null || record.uninstallOwner === owner);
+      assert.ok(record.uninstallCommand === null || record.uninstallCommand === uninstallCommand);
+      assert.ok(record.uninstallLocation === null || record.uninstallLocation === directory);
+      assert.ok((record.version === version && record.uninstallCommand === uninstallCommand) ||
+        (record.uninstallOwner === owner && record.uninstallLocation === directory));
+    }
+  }
+  assert.ok(Array.isArray(state.shortcuts) && state.shortcuts.length <= 2);
+  assert.equal(new Set(state.shortcuts.map(link => link.kind)).size, state.shortcuts.length);
+  for (const link of state.shortcuts) {
+    assert.ok(['menu', 'desktop'].includes(link.kind) && link.reparse === false);
+    assert.equal(path.win32.relative(path.win32.join(directory, 'Codex Messenger.exe'), link.target), '');
+  }
+}
+
+function cleanupSnapshotScript(guid) {
+  assert.match(guid, /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i);
+  return `function Get-OwnedState { $entries=@(); foreach($hive in @('HKCU','HKLM')) { ` +
+    `$iKey="$hive\`:\\Software\\${guid}"; $uKey="$hive\`:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${guid}"; ` +
+    `$hasI=Test-Path -LiteralPath $iKey; $hasU=Test-Path -LiteralPath $uKey; if($hasI -or $hasU){ ` +
+    `$i=Get-ItemProperty -LiteralPath $iKey -ErrorAction SilentlyContinue; $u=Get-ItemProperty -LiteralPath $uKey -ErrorAction SilentlyContinue; ` +
+    `$entries += [pscustomobject]@{hive=$hive;installKey=$hasI;uninstallKey=$hasU;location=$i.InstallLocation;version=$u.DisplayVersion;` +
+    `installOwner=$i.InstallerSmokeOwner;uninstallOwner=$u.InstallerSmokeOwner;uninstallLocation=$u.InstallerSmokeLocation;uninstallCommand=$u.UninstallString} } }; ` +
+    `$shortcuts=@(); $shell=$null; try { foreach($kind in @('menu','desktop')) { ` +
+    `$base=if($kind -eq 'menu'){Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs'}else{[Environment]::GetFolderPath('Desktop')}; ` +
+    `$file=Join-Path $base 'Codex Messenger.lnk'; if(Test-Path -LiteralPath $file){ $item=Get-Item -LiteralPath $file; ` +
+    `if($null -eq $shell){$shell=New-Object -ComObject WScript.Shell}; $link=$null; try { $link=$shell.CreateShortcut($file); ` +
+    `$shortcuts += [pscustomobject]@{kind=$kind;reparse=($item.PSIsContainer -or (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0));target=$link.TargetPath} ` +
+    `}finally{if($null -ne $link){[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link)}} } } ` +
+    `}finally{if($null -ne $shell){[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)}}; ` +
+    `return [pscustomobject]@{entries=@($entries);shortcuts=@($shortcuts)} }; `;
+}
+
+async function mutateOwnedRegistration(guid, identity, env, mark = false) {
+  const snapshotScript = cleanupSnapshotScript(guid);
+  const state = JSON.parse(requireExitZero(await powershell(snapshotScript + 'ConvertTo-Json -Compress -Depth 6 -InputObject (Get-OwnedState)', env)));
+  validateOwnedRegistrationCleanup(state, identity);
+  const iKey = `HKCU:\\Software\\${guid}`, uKey = `HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${guid}`;
+  const recheck = snapshotScript + `$before=ConvertFrom-Json -InputObject ${psQuote(JSON.stringify(state))}; $fresh=Get-OwnedState; ` +
+    `if((ConvertTo-Json -Compress -Depth 6 -InputObject $fresh) -cne (ConvertTo-Json -Compress -Depth 6 -InputObject $before)){throw 'Registration changed'}; `;
+  let mutation;
+  if (mark) {
+    mutation = `foreach($key in @(${psQuote(iKey)},${psQuote(uKey)})){if(Test-Path -LiteralPath $key){New-ItemProperty -LiteralPath $key -Name InstallerSmokeOwner -Value ${psQuote(identity.owner)} -PropertyType String -Force | Out-Null}}; ` +
+      `if(Test-Path -LiteralPath ${psQuote(uKey)}){New-ItemProperty -LiteralPath ${psQuote(uKey)} -Name InstallerSmokeLocation -Value ${psQuote(identity.directory)} -PropertyType String -Force | Out-Null};`;
+  } else {
+    mutation = `foreach($key in @(${psQuote(iKey)},${psQuote(uKey)})){if(Test-Path -LiteralPath $key){Remove-Item -LiteralPath $key -Recurse -Force}}; ` +
+      `foreach($link in $fresh.shortcuts){$base=if($link.kind -eq 'menu'){Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs'}else{[Environment]::GetFolderPath('Desktop')}; Remove-Item -LiteralPath (Join-Path $base 'Codex Messenger.lnk') -Force};`;
+  }
+  requireExitZero(await powershell(recheck + mutation, env));
+}
+
+async function ownedAppProcesses(executable, env, stop = false) {
+  const script = `$apps=@(Get-Process -ErrorAction SilentlyContinue | Where-Object { try { $_.Path -eq ${psQuote(executable)} } catch { $false } }); ` +
+    (stop ? '$apps | Stop-Process -Force; ' : '') + 'ConvertTo-Json -Compress -InputObject @($apps | ForEach-Object {$_.Id})';
+  return JSON.parse(requireExitZero(await powershell(script, env)));
+}
+
+async function legacyMigrationSmoke(installer, options, root, entry, guid, env) {
+  checkAbort();
+  assert.deepEqual(await registryState(guid, env), { entries: [], menu: false, desktop: false });
+  const directory = path.join(root, 'Codex Messenger Playground');
+  const target = path.join(root, 'migration target with spaces', 'Codex Messenger');
+  await fs.mkdir(directory, { mode: 0o700 });
+  const sentinel = 'owned legacy migration fixture; must never execute\n';
+  const files = ['foreign-project.txt', 'Codex Messenger.exe', 'Uninstall Codex Messenger.exe'].map(name => path.join(directory, name));
+  await Promise.all(files.map(file => fs.writeFile(file, sentinel, { flag: 'wx', mode: 0o600 })));
+  const installKey = `HKCU:\\Software\\${guid}`, uninstallKey = `HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${guid}`;
+  const owner = path.basename(root);
+  const fixture = `$i=${psQuote(installKey)}; $u=${psQuote(uninstallKey)}; if((Test-Path -LiteralPath $i) -or (Test-Path -LiteralPath $u)){throw 'Preexisting product'}; ` +
+    `New-Item -Path $i -Force | Out-Null; New-ItemProperty -LiteralPath $i -Name InstallerSmokeOwner -Value ${psQuote(owner)} -PropertyType String | Out-Null; ` +
+    `New-ItemProperty -LiteralPath $i -Name InstallLocation -Value ${psQuote(directory)} -PropertyType String | Out-Null; ` +
+    `New-Item -Path $u -Force | Out-Null; New-ItemProperty -LiteralPath $u -Name InstallerSmokeOwner -Value ${psQuote(owner)} -PropertyType String | Out-Null; ` +
+    `New-ItemProperty -LiteralPath $u -Name DisplayName -Value 'Codex Messenger 0.0.3' -PropertyType String | Out-Null; ` +
+    `New-ItemProperty -LiteralPath $u -Name DisplayVersion -Value '0.0.3' -PropertyType String | Out-Null; ` +
+    `New-ItemProperty -LiteralPath $u -Name UninstallString -Value ${psQuote('"' + files[2] + '" /currentuser')} -PropertyType String | Out-Null;`;
+  let attempted = false;
+  try {
+    attempted = true; requireExitZero(await powershell(fixture, env));
+    const before = await registryState(guid, env);
+    validateInstalledRegistration({ ...before, menu: true }, directory, '0.0.3');
+    const refused = await runOwned(installer, nsisInstallArguments(target), { env, cwd: root, timeoutMs: 30000, verbatim: true });
+    requireNativeCommandExit(refused, 42);
+    entry.checks.legacySharedDirectoryRefused = true;
+    assert.deepEqual(await registryState(guid, env), before);
+    for (const file of files) assert.equal(await fs.readFile(file, 'utf8'), sentinel);
+    await assert.rejects(fs.stat(path.join(target, 'Codex Messenger.exe')), { code: 'ENOENT' });
+    entry.checks.legacyFilesPreserved = true;
+  } finally {
+    if (attempted) {
+      const cleanup = `$i=${psQuote(installKey)}; $u=${psQuote(uninstallKey)}; ` +
+        `if(Test-Path -LiteralPath $i){$p=Get-ItemProperty -LiteralPath $i; if(($p.InstallerSmokeOwner -cne ${psQuote(owner)}) -or ($p.InstallLocation -cne ${psQuote(directory)})){throw 'Unowned install registration'}}; ` +
+        `if(Test-Path -LiteralPath $u){$p=Get-ItemProperty -LiteralPath $u; if(($p.InstallerSmokeOwner -cne ${psQuote(owner)}) -or ($p.DisplayVersion -cne '0.0.3')){throw 'Unowned uninstall registration'}}; ` +
+        `foreach($key in @($i,$u)){if(Test-Path -LiteralPath $key){Remove-Item -LiteralPath $key -Recurse -Force}}`;
+      await cleanupOwned(async () => {
+        requireExitZero(await powershell(cleanup, env));
+        assert.deepEqual(await registryState(guid, env), { entries: [], menu: false, desktop: false });
+      });
+    }
+  }
+}
+
+async function nsisSmoke(installer, options, root, entry, origin) {
+  const env = privateEnvironment(root), directory = path.join(root, 'custom install with spaces', 'Codex Messenger');
+  const files = { executable: path.join(directory, 'Codex Messenger.exe'), asar: path.join(directory, 'resources', 'app.asar') };
+  const pkg = JSON.parse(await fs.readFile(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'));
+  const { UUID } = createRequire(import.meta.url)('builder-util-runtime');
+  const guid = pkg.build.nsis.guid || UUID.v5(pkg.build.appId, UUID.parse('50e065bc-3134-11e6-9bab-38c9862bdaf3'));
+  const identity = { root, directory, version: options.version, owner: randomUUID() };
+  const before = await registryState(guid, env);
+  assert.deepEqual(before, { entries: [], menu: false, desktop: false }, 'Refuse to touch a pre-existing installation or shortcut');
+  const foreign = path.join(directory, 'installer-smoke-foreign.txt'), sentinel = 'owned installer smoke sentinel\n';
+  const protectedFiles = [path.join(root, 'profile', 'preserve.txt'), path.join(root, 'codex-home', 'preserve.txt'), path.join(root, 'project', 'preserve.txt')];
+  await Promise.all(protectedFiles.map(file => fs.writeFile(file, sentinel, { flag: 'wx', mode: 0o600 })));
+  const uninstall = async () => runOwned(path.join(directory, 'Uninstall Codex Messenger.exe'), ['/S', '/currentuser'], { env, cwd: root, timeoutMs: 30000 });
+  let attempted = false;
+  try {
+    attempted = true;
+    requireExitZero(await runOwned(installer, nsisInstallArguments(directory), { env, cwd: root, timeoutMs: 60000, verbatim: true }));
+    validateInstalledRegistration(await registryState(guid, env), directory, options.version);
+    await mutateOwnedRegistration(guid, identity, env, true);
+    assert.ok((await fs.stat(files.executable)).isFile());
+    entry.checks.installed = true;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    assert.deepEqual(await ownedAppProcesses(files.executable, env), []);
+    await assert.rejects(fs.stat(path.join(root, 'profile', 'codex-messenger.log')), { code: 'ENOENT' });
+    entry.checks.silentNoAutoLaunch = true;
+    entry.appAsarSha256 = await sha256File(files.asar); validateOriginAsar(entry.appAsarSha256, origin); entry.checks.originAsar = true;
+    checkAbort();
+    entry.smoke = await runPackagedSmoke(options, { files, writeReport: false }); validateInstallerApplication(entry.smoke, options);
+    checkAbort();
+    await fs.writeFile(foreign, sentinel, { flag: 'wx', mode: 0o600 });
+    const refused = await uninstall();
+    requireNativeCommandExit(refused, 42);
+    entry.checks.foreignUninstallRefused = true;
+    assert.equal(await fs.readFile(foreign, 'utf8'), sentinel); assert.ok((await fs.stat(files.executable)).isFile());
+    validateInstalledRegistration(await registryState(guid, env), directory, options.version);
+    entry.checks.foreignFilePreserved = true;
+    await fs.unlink(foreign);
+    requireExitZero(await uninstall());
+    await assert.rejects(fs.stat(files.executable), { code: 'ENOENT' }); entry.checks.uninstalled = true;
+    assert.deepEqual(await registryState(guid, env), { entries: [], menu: false, desktop: false }); entry.checks.registrationRemoved = true;
+    for (const file of protectedFiles) assert.equal(await fs.readFile(file, 'utf8'), sentinel);
+    entry.checks.protectedFilesPreserved = true;
+    await legacyMigrationSmoke(installer, options, root, entry, guid, env);
+  } finally {
+    if (attempted) {
+      await cleanupOwned(async () => {
+        await ownedAppProcesses(files.executable, env, true);
+        if (await fs.stat(foreign).then(() => true, () => false)) { assert.equal(await fs.readFile(foreign, 'utf8'), sentinel); await fs.unlink(foreign); }
+        const state = await registryState(guid, env);
+        if (state.entries.length || state.menu || state.desktop || await fs.stat(files.executable).then(() => true, () => false)) {
+          const cleanupState = JSON.parse(requireExitZero(await powershell(cleanupSnapshotScript(guid) + 'ConvertTo-Json -Compress -Depth 6 -InputObject (Get-OwnedState)', env)));
+          validateOwnedRegistrationCleanup(cleanupState, identity);
+          const uninstallFile = path.join(directory, 'Uninstall Codex Messenger.exe');
+          const regular = await fs.lstat(uninstallFile).then(stat => stat.isFile() && !stat.isSymbolicLink(), () => false);
+          if (regular && state.entries.every(record => record.location === directory)) await uninstall();
+          const remaining = await registryState(guid, env);
+          if (remaining.entries.length || remaining.menu || remaining.desktop) await mutateOwnedRegistration(guid, identity, env);
+        }
+        assert.deepEqual(await registryState(guid, env), { entries: [], menu: false, desktop: false });
+      });
+    }
+  }
+}
+
+export async function uniqueRegularPayload(root, name) {
+  const found = [];
+  const visit = async (directory, depth) => {
+    assert.ok(depth <= 8, 'Extracted payload exceeds the expected depth');
+    for (const child of await fs.readdir(directory, { withFileTypes: true })) {
+      const file = path.join(directory, child.name);
+      if (child.isSymbolicLink()) continue;
+      if (child.isDirectory()) await visit(file, depth + 1);
+      else if (child.isFile() && child.name === name) found.push(file);
+    }
+  };
+  await visit(root, 0);
+  assert.equal(found.length, 1, 'Expected one actual embedded portable payload');
+  return found[0];
+}
+
+async function portableSmoke(installer, options, root, entry, origin) {
+  const env = privateEnvironment(root), outer = path.join(root, 'outer'), payload = path.join(root, 'payload');
+  await Promise.all([outer, payload].map(directory => fs.mkdir(directory, { mode: 0o700 })));
+  const zip = requireExitZero(await powershell("(Get-Command 7z.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source", env)).trim();
+  assert.ok(path.isAbsolute(zip) && (await fs.stat(zip)).isFile(), 'Full 7-Zip is required for the actual NSIS portable payload');
+  requireExitZero(await runOwned(zip, ['x', installer, `-o${outer}`, '-y'], { env, timeoutMs: 60000 }));
+  const embedded = await uniqueRegularPayload(outer, 'app-64.7z');
+  requireExitZero(await runOwned(zip, ['x', embedded, `-o${payload}`, '-y'], { env, timeoutMs: 60000 }));
+  const files = { executable: path.join(payload, 'Codex Messenger.exe'), asar: path.join(payload, 'resources', 'app.asar') };
+  entry.appAsarSha256 = await sha256File(files.asar); validateOriginAsar(entry.appAsarSha256, origin); entry.checks.originAsar = true;
+  checkAbort();
+  entry.smoke = await runPackagedSmoke(options, { files, writeReport: false }); validateInstallerApplication(entry.smoke, options);
+  checkAbort();
+  const wrapperDirectory = path.join(root, 'actual portable with spaces');
+  await fs.mkdir(wrapperDirectory, { mode: 0o700 });
+  const wrapperFile = path.join(wrapperDirectory, path.basename(installer));
+  await fs.copyFile(installer, wrapperFile); assert.equal(await sha256File(wrapperFile), entry.sha256);
+  const wrapper = await runOwned(wrapperFile, ['--smoke-test'], { env, cwd: wrapperDirectory, timeoutMs: 45000 });
+  Object.assign(entry.checks, validatePortableWrapper(await fs.readFile(path.join(root, 'profile', 'codex-messenger.log'), 'utf8'), wrapper,
+    { version: options.version, privateRoot: path.join(root, 'temp with spaces'), userData: path.join(root, 'profile') }));
+  assert.deepEqual(await fs.readdir(path.join(root, 'temp with spaces')), [], 'Portable wrapper must remove its temporary payload');
+}
+
+async function macSmoke(installer, kind, options, root, entry, origin) {
+  const mountPoint = path.join(root, 'mount'), destination = path.join(root, 'extracted');
+  await fs.mkdir(destination, { mode: 0o700 });
+  let attached = false, attachAttempted = false;
+  try {
+    if (kind === 'dmg') {
+      await fs.mkdir(mountPoint, { mode: 0o700 });
+      attachAttempted = true;
+      requireExitZero(await runOwned('/usr/bin/hdiutil', ['attach', '-readonly', '-nobrowse', '-noautoopen', '-mountpoint', mountPoint, installer], { timeoutMs: 45000 }));
+      attached = true;
+      validateReadOnlyMount(requireExitZero(await runOwned('/sbin/mount', [])), mountPoint); entry.checks.mountedReadOnly = true;
+      requireExitZero(await runOwned('/usr/bin/ditto', [path.join(mountPoint, 'Codex Messenger.app'), path.join(destination, 'Codex Messenger.app')], { timeoutMs: 45000 }));
+      entry.checks.copiedApplication = true;
+    } else {
+      requireExitZero(await runOwned('/usr/bin/ditto', ['-x', '-k', installer, destination], { timeoutMs: 45000 }));
+      entry.checks.extractedApplication = true;
+    }
+    const contents = path.join(destination, 'Codex Messenger.app', 'Contents');
+    const files = { executable: path.join(contents, 'MacOS', 'Codex Messenger'), asar: path.join(contents, 'Resources', 'app.asar') };
+    const plist = JSON.parse(requireExitZero(await runOwned('/usr/bin/plutil', ['-convert', 'json', '-o', '-', path.join(contents, 'Info.plist')])));
+    const architectures = requireExitZero(await runOwned('/usr/bin/lipo', ['-archs', files.executable]));
+    validateBundleIdentity(plist, architectures, options); entry.checks.bundleArchitecture = true; entry.checks.bundleVersion = true;
+    entry.appAsarSha256 = await sha256File(files.asar); validateOriginAsar(entry.appAsarSha256, origin); entry.checks.originAsar = true;
+    checkAbort();
+    entry.smoke = await runPackagedSmoke(options, { files, writeReport: false }); validateInstallerApplication(entry.smoke, options);
+    checkAbort();
+  } finally {
+    if (attachAttempted) {
+      await cleanupOwned(async () => {
+      const mounted = requireExitZero(await runOwned('/sbin/mount', [])).split(/\r?\n/).some(line => line.includes(` on ${mountPoint} (`));
+      if (mounted) {
+        const detached = await runOwned('/usr/bin/hdiutil', ['detach', mountPoint], { timeoutMs: 15000 });
+        if (detached.code !== 0 || detached.forced) requireExitZero(await runOwned('/usr/bin/hdiutil', ['detach', '-force', mountPoint], { timeoutMs: 15000 }));
+      }
+      assert.ok(!requireExitZero(await runOwned('/sbin/mount', [])).split(/\r?\n/).some(line => line.includes(` on ${mountPoint} (`)));
+      if (attached) entry.checks.mountDetached = true;
+      });
+    }
+  }
+}
+
+export async function runInstallerSmoke(options, { signal } = {}) {
+  return nativeScope.run({ signal, cleanup: false }, () => executeInstallerSmoke(options));
+}
+
+async function executeInstallerSmoke(options) {
+  const report = { schemaVersion: 1, passed: false, version: options.version, platform: options.platform, arch: options.arch, installers: [], failure: null, failureDetail: null,
+    scope: 'Actual installer containers and local packaged startup only; no credentials, inference, signing or notarization validation' };
+  let stage = 'HOST_TARGET';
+  try {
+    checkAbort();
+    assert.equal(process.platform, options.platform === 'windows' ? 'win32' : 'darwin'); assert.equal(process.arch, options.arch);
+    const origin = await sha256File((await findPackagedExecutable(options)).asar);
+    for (const [index, name] of expectedInstallers(options).entries()) {
+      checkAbort();
+      const kind = options.platform === 'windows' ? (index === 0 ? 'nsis' : 'portable') : (index === 0 ? 'dmg' : 'zip');
+      stage = kind.toUpperCase();
+      const installer = path.resolve(options.output, name), stat = await fs.lstat(installer);
+      assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size >= 1024);
+      const entry = { name, bytes: stat.size, sha256: await sha256File(installer), passed: false, checks: {}, appAsarSha256: null, smoke: null };
+      report.installers.push(entry);
+      const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), `codex-messenger-${kind}-`)));
+      await fs.chmod(root, 0o700);
+      try {
+        await Promise.all(['profile', 'codex-home', 'project', 'temp with spaces', 'appdata', 'localappdata'].map(directory => fs.mkdir(path.join(root, directory), { mode: 0o700 })));
+        if (kind === 'nsis') await nsisSmoke(installer, options, root, entry, origin);
+        else if (kind === 'portable') await portableSmoke(installer, options, root, entry, origin);
+        else await macSmoke(installer, kind, options, root, entry, origin);
+        assert.equal(await sha256File(installer), entry.sha256, 'Actual installer must not change during validation');
+      } finally {
+        await fs.rm(root, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+        entry.checks.privateTempCleanup = true;
+      }
+      checkAbort();
+      entry.passed = true;
+      try { validateInstallerEntry(entry, kind, options); } catch (error) { entry.passed = false; throw error; }
+    }
+    report.passed = report.installers.length === 2 && report.installers.every(entry => entry.passed);
+  } catch (error) {
+    report.failure = stage;
+    report.failureDetail = nativeScope.getStore()?.signal?.aborted ? 'HARD_TIMEOUT' : error.installerSmokeCode || (/^[A-Z0-9_]{1,64}$/.test(error.code || '') ? error.code : 'VALIDATION_FAILED');
+    if (Number.isSafeInteger(error.expectedExitCode)) report.expectedExitCode = error.expectedExitCode;
+  }
+  return report;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  let watchdog;
+  try {
+    const options = parseInstallerSmokeArguments(process.argv.slice(2));
+    const controller = new AbortController();
+    watchdog = setTimeout(() => controller.abort(), 360000);
+    const report = await runInstallerSmoke(options, { signal: controller.signal });
+    await fs.mkdir(path.dirname(path.resolve(options.report)), { recursive: true });
+    await fs.writeFile(options.report, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
+    console.log(JSON.stringify(report)); process.exitCode = report.passed ? 0 : 1;
+  } catch { console.error('Installer smoke failed (ARGUMENTS_OR_REPORT).'); process.exitCode = 1; }
+  finally { clearTimeout(watchdog); }
+}

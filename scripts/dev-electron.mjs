@@ -1,92 +1,76 @@
-import http from "node:http";
-import { spawn } from "node:child_process";
-import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { spawn } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { startPreviewServer, waitForChild, stopChild } from './web-preview.mjs';
 
-const port = 5174;
-const url = `http://127.0.0.1:${port}/`;
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-
-function waitForVite(target, timeoutMs = 30000) {
-  const started = Date.now();
-  return new Promise((resolve, reject) => {
-    const tick = () => {
-      const req = http.get(target, (res) => {
-        res.resume();
-        resolve();
-      });
-      req.on("error", () => {
-        if (Date.now() - started > timeoutMs) {
-          reject(new Error(`Vite did not answer on ${target}`));
-          return;
-        }
-        setTimeout(tick, 250);
-      });
-      req.setTimeout(1000, () => {
-        req.destroy();
-      });
-    };
-    tick();
-  });
-}
+export const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 async function run(command, args) {
-  await new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: "ignore", shell: false });
-    child.on("exit", (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`${command} ${args.join(" ")} exited with ${code}`));
-    });
-    child.on("error", reject);
-  });
+  const child = spawn(command, args, { cwd: rootDir, stdio: 'ignore', shell: false });
+  const code = await waitForChild(child);
+  if (code !== 0) throw new Error(`${path.basename(command)} failed (${code}).`);
 }
 
-async function devElectronCommand() {
-  if (process.platform !== "darwin") return { command: npxCommand, args: ["electron", "."] };
+export function electronArguments(projectRoot, args = []) {
+  return [path.resolve(projectRoot), ...args];
+}
 
-  const sourceApp = path.join(rootDir, "node_modules", "electron", "dist", "Electron.app");
-  const devApp = path.join(rootDir, ".tmp", "Codex Messenger Dev.app");
-  const resourcesDir = path.join(devApp, "Contents", "Resources");
-  const plistPath = path.join(devApp, "Contents", "Info.plist");
-  const iconPath = path.join(rootDir, "public", "icons", "codex-messenger.icns");
-
-  await fs.rm(devApp, { recursive: true, force: true });
+export async function devElectronCommand(args = []) {
+  if (process.platform !== 'darwin') {
+    const { default: executable } = await import('electron');
+    return { command: executable, args: electronArguments(rootDir, args) };
+  }
+  const sourceApp = path.join(rootDir, 'node_modules', 'electron', 'dist', 'Electron.app');
+  const devApp = path.join(rootDir, '.tmp', 'Codex Messenger Dev.app');
+  const plist = path.join(devApp, 'Contents', 'Info.plist');
   await fs.mkdir(path.dirname(devApp), { recursive: true });
-  await run("/bin/cp", ["-R", sourceApp, devApp]);
-  await fs.copyFile(iconPath, path.join(resourcesDir, "electron.icns"));
-  await run("/usr/libexec/PlistBuddy", ["-c", "Set :CFBundleName Codex Messenger Dev", plistPath]);
-  await run("/usr/libexec/PlistBuddy", ["-c", "Set :CFBundleDisplayName Codex Messenger Dev", plistPath]);
-  await run("/usr/libexec/PlistBuddy", ["-c", "Set :CFBundleIdentifier com.codex.messenger.dev", plistPath]);
-
-  return { command: path.join(devApp, "Contents", "MacOS", "Electron"), args: ["."] };
+  await fs.rm(devApp, { recursive: true, force: true });
+  await run('/bin/cp', ['-R', sourceApp, devApp]);
+  await fs.copyFile(path.join(rootDir, 'public', 'icons', 'codex-messenger.icns'), path.join(devApp, 'Contents', 'Resources', 'electron.icns'));
+  for (const [key, value] of Object.entries({ CFBundleName: 'Codex Messenger Dev', CFBundleDisplayName: 'Codex Messenger Dev', CFBundleIdentifier: 'com.codex.messenger.dev' })) {
+    await run('/usr/libexec/PlistBuddy', ['-c', `Set :${key} ${value}`, plist]);
+  }
+  const config = JSON.parse(await fs.readFile(path.join(rootDir, 'package.json'), 'utf8'));
+  for (const key of ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription']) {
+    const value = config.build?.mac?.extendInfo?.[key];
+    if (typeof value !== 'string' || !value.trim() || /[\r\n]/.test(value)) throw new Error(`Missing ${key}.`);
+    await run('/usr/libexec/PlistBuddy', ['-c', `Delete :${key}`, plist]).catch(() => {});
+    await run('/usr/libexec/PlistBuddy', ['-c', `Add :${key} string ${value}`, plist]);
+  }
+  // Changing the vendor bundle's metadata invalidates its resource seal. Keep
+  // this development identity locally signed after updating its icon and plist.
+  await run('/usr/bin/codesign', ['--force', '--deep', '--sign', '-', '--preserve-metadata=entitlements', devApp]);
+  await run('/usr/bin/codesign', ['--verify', '--deep', '--strict', devApp]);
+  return { command: path.join(devApp, 'Contents', 'MacOS', 'Electron'), args: electronArguments(rootDir, args) };
 }
 
-const vite = spawn(npmCommand, ["run", "dev", "--", "--strictPort"], {
-  stdio: "inherit",
-  shell: false
-});
-
-try {
-  await waitForVite(url);
-  const electronCommand = await devElectronCommand();
-  const electron = spawn(electronCommand.command, electronCommand.args, {
-    stdio: "inherit",
-    shell: false,
-    env: {
-      ...process.env,
-      VITE_DEV_SERVER_URL: url
+export async function runDevelopment(args = [], { createServer, command = devElectronCommand, spawnChild = spawn } = {}) {
+  let server, child;
+  let interrupted = false;
+  const onSignal = () => { interrupted = true; void stopChild(child).catch(() => {}); };
+  process.once('SIGINT', onSignal);
+  process.once('SIGTERM', onSignal);
+  try {
+    server = await startPreviewServer({ root: rootDir, createServer });
+    if (interrupted) return 130;
+    const launch = await command(args);
+    if (interrupted) return 130;
+    child = spawnChild(launch.command, launch.args, { cwd: rootDir, stdio: 'inherit', shell: false,
+      env: { ...process.env, VITE_DEV_SERVER_URL: 'http://127.0.0.1:5174/' } });
+    const code = await waitForChild(child);
+    return interrupted ? 130 : code;
+  } finally {
+    try { await stopChild(child); }
+    finally {
+      await server?.close();
+      process.removeListener('SIGINT', onSignal);
+      process.removeListener('SIGTERM', onSignal);
     }
-  });
+  }
+}
 
-  electron.on("exit", (code) => {
-    vite.kill();
-    process.exit(code ?? 0);
-  });
-} catch (error) {
-  console.error(error);
-  vite.kill();
-  process.exit(1);
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { process.exitCode = await runDevelopment(process.argv.slice(2)); }
+  catch (error) { console.error(`Codex Messenger development launch failed: ${error.message}`); process.exitCode = 1; }
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { spawn } from "node:child_process";
-import { codexLoginStatus, codexVersion, codexVersionSupport, findCodexCommand, findNpmCommand, installCodexCli, nodeDownloadUrl, unsupportedCodexVersionMessage } from "../shared/codexSetup.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { codexLoginStatus, codexVersion, codexVersionSupport, findCodexCommand, findNpmCommand, installCodexCli, nodeDownloadUrl, spawnCommand, unsupportedCodexVersionMessage } from "../shared/codexSetup.js";
 
 const mode = process.argv.includes("--check")
   ? "check"
@@ -24,7 +25,7 @@ async function resolveCodexOrNull() {
 
 function runInteractive(command, args = []) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
+    const child = spawnCommand(command, args, {
       stdio: "inherit",
       shell: false
     });
@@ -36,19 +37,21 @@ function runInteractive(command, args = []) {
   });
 }
 
-async function ensureInstalled() {
-  let found = await resolveCodexOrNull();
-  if (found) return found;
+export async function ensureInstalled({ resolve = resolveCodexOrNull, versionOf = codexVersion, npmOf = findNpmCommand, install = installCodexCli } = {}) {
+  let found = await resolve();
+  if (found && codexVersionSupport(await versionOf(found.command)).ok) return found;
 
-  const npm = await findNpmCommand();
+  const npm = await npmOf();
   if (!npm.ok) {
     throw new Error(`npm is missing. Install Node.js/npm first: ${nodeDownloadUrl}`);
   }
 
-  printStep("Codex CLI not found. Installing @openai/codex with npm...");
-  await installCodexCli({ stdio: "inherit" });
-  found = await resolveCodexOrNull();
+  printStep(found ? "Updating the unsupported Codex CLI with npm..." : "Codex CLI not found. Installing @openai/codex with npm...");
+  await install({ stdio: "inherit" });
+  found = await resolve();
   if (!found) throw new Error("Codex CLI was installed, but it is still not visible in PATH. Restart your terminal/session and try again.");
+  const version = await versionOf(found.command);
+  if (!codexVersionSupport(version).ok) throw new Error(`${unsupportedCodexVersionMessage(version)} Select the updated CLI path if CODEX_MESSENGER_CODEX_PATH points to another installation.`);
   return found;
 }
 
@@ -77,6 +80,7 @@ async function ensureSupportedVersion(command) {
   return version;
 }
 
+async function main() {
 if (mode === "check") {
   const npm = await findNpmCommand();
   console.log(`npm: ${npm.ok ? npm.command : "missing"}`);
@@ -108,4 +112,10 @@ if (mode === "check") {
   printStep(`Codex CLI ready: ${found.command}`);
   await ensureSupportedVersion(found.command);
   await ensureLoggedIn(found.command);
+}
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { await main(); }
+  catch (error) { console.error(`[codex-setup] ${error.message}`); process.exitCode = 1; }
 }

@@ -105,6 +105,15 @@ jobs:
           CODEX_HOME: ${{ runner.temp }}/codex-messenger-source-codex
         run: node node_modules/electron/cli.js . --smoke-test
 
+      - name: Smoke development and web preview launchers on the native host
+        run: >-
+          node scripts/launcher-smoke.mjs
+          --platform ${{ matrix.platform }}
+          --arch ${{ matrix.arch }}
+          --output "${{ matrix.output }}"
+          --version "${{ steps.metadata.outputs.version }}"
+          --report release-proof/launcher-smoke.json
+
       - name: Package Windows x64 without publishing
         if: matrix.platform == 'windows'
         run: npm run package:win -- --publish never
@@ -122,6 +131,15 @@ jobs:
           --version "${{ steps.metadata.outputs.version }}"
           --report release-proof/packaged-smoke.json
 
+      - name: Install and launch every distributed installer on its native host
+        run: >-
+          node scripts/installer-smoke.mjs
+          --platform ${{ matrix.platform }}
+          --arch ${{ matrix.arch }}
+          --output "${{ matrix.output }}"
+          --version "${{ steps.metadata.outputs.version }}"
+          --report release-proof/installer-smoke.json
+
       - name: Verify installers and generate SHA256SUMS
         run: >-
           node scripts/release-artifacts.mjs
@@ -132,6 +150,8 @@ jobs:
           --commit "${{ steps.metadata.outputs.commit }}"
           --upload-dir release-upload
           --proof release-proof/packaged-smoke.json
+          --installer-proof release-proof/installer-smoke.json
+          --launcher-proof release-proof/launcher-smoke.json
           --codex-version 0.156.1
           --codex-proof release-proof/codex-native.json
           --codex-tap release-proof/codex-native.tap
@@ -143,6 +163,15 @@ jobs:
           path: release-upload/*
           if-no-files-found: error
           retention-days: 30
+
+      - name: Preserve bounded native diagnostics when validation fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-failure-${{ steps.metadata.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: release-proof/*
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Record the publication handoff
         env:
@@ -158,6 +187,8 @@ jobs:
             echo "- Source: $RELEASE_SOURCE"
             echo "- Platform: $RELEASE_PLATFORM $RELEASE_ARCH"
             echo "- Packaged application launched and checked on its native host."
+            echo "- Both distributed installer containers executed, extracted and checked against the original app.asar."
+            echo "- Development startup and owned web preview tested on the native host."
             echo "- No signing credentials supplied; macOS Developer ID signing/notarization and Windows Authenticode signing are not performed."
             echo "- Nothing was published. Publish only after all three matrix jobs succeed."
           } >> "$GITHUB_STEP_SUMMARY"

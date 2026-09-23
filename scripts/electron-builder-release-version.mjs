@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { displayVersion } from "../shared/versionUtils.js";
+import { preparePortableLauncher } from "./portable-launcher-patch.mjs";
 
 export function builderInvocation(rootDir, args, nodeExecutable = process.execPath) {
   return { command: nodeExecutable, args: [path.join(rootDir, "node_modules", "electron-builder", "cli.js"), ...args] };
@@ -11,6 +12,7 @@ export function builderInvocation(rootDir, args, nodeExecutable = process.execPa
 async function main() {
   const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
   const packageJson = JSON.parse(await fs.readFile(path.join(rootDir, "package.json"), "utf8"));
+  if (process.argv.slice(2).includes("portable")) await preparePortableLauncher(rootDir);
   const invocation = builderInvocation(rootDir, process.argv.slice(2));
   const child = spawn(invocation.command, invocation.args, {
     cwd: rootDir,

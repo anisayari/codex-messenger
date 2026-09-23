@@ -18,7 +18,7 @@ The Windows and macOS installers are not committed to Git and are not mirrored o
 
 An arrival without a valid explicit language query is always English, including browsers with a French locale or an old saved French preference. French is available at `?lang=fr`; the selector updates the URL and browser Back/Forward restores the language. No stored preference overrides the landing default.
 
-The source currently describes Messenger `v0.0.3`, requiring Codex `0.156.1`. The platform choices lead to the official GitHub release page for Apple Silicon, Intel macOS and Windows x64 installers. The final publication and assets are verified by the release workflow; this directory contains no installers. Keep visible version labels aligned with the release being published.
+The source currently describes Messenger `v0.0.4`, requiring Codex `0.156.1`. The platform choices lead to the official GitHub release page for Apple Silicon, Intel macOS and Windows x64 installers. The final publication and assets are verified by the release workflow; this directory contains no installers. Keep visible version labels aligned with the release being published.
 
 Feature copy is based on `docs/VALIDATION.md` and the migration matrix, with voice access and microphone permissions stated explicitly. It makes no promise that every provider feature, closed MSN service or private desktop service is available.
 
