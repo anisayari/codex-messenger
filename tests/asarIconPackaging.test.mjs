@@ -51,9 +51,11 @@ test('Windows ICO assets retain their original bytes outside ASAR while PNG and 
 
   const archive = path.join(resourcePath, 'app.asar');
   for (const [name, bytes] of originalBytes) {
-    assert.deepEqual(asar.extractFile(archive, name), bytes, `${name} is readable through ASAR with unchanged bytes`);
+    // @electron/asar traverses archive directories using this host's path.sep.
+    const archiveName = path.normalize(name);
+    assert.deepEqual(asar.extractFile(archive, archiveName), bytes, `${name} is readable through ASAR with unchanged bytes`);
     const shouldBeUnpacked = iconNames.includes(name);
-    assert.equal(Boolean(asar.statFile(archive, name).unpacked), shouldBeUnpacked,
+    assert.equal(Boolean(asar.statFile(archive, archiveName).unpacked), shouldBeUnpacked,
       `${name} must ${shouldBeUnpacked ? 'be available as a real ICO file' : 'remain in the archive'}`);
     const unpackedFile = path.join(archive + '.unpacked', name);
     if (shouldBeUnpacked) {
