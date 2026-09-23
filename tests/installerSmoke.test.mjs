@@ -11,7 +11,8 @@ import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, valida
   parseInstallerTrace, sanitizeWindowsTimeoutDiagnostics, captureWindowsTimeoutDiagnostics, snapshotInstallerCaches,
   cleanupInstallerCaches, validateNativeInstallerFolders, snapshotInstalledPayload, validateRunningInstalledApplication,
   readRunningApplicationLog, waitForRunningInstalledApplication, snapshotPortableTemp, classifyPortableTemp,
-  requirePortableTempCleanup, portableWrapperEnvironment, requirePortableToolingTempPreserved } from '../scripts/installer-smoke.mjs';
+  requirePortableTempCleanup, portableWrapperEnvironment, requirePortableToolingTempPreserved, portableTempHeaderFormat,
+  describePortableUnknownFiles } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -239,6 +240,44 @@ test('portable TEMP snapshot detects baseline content changes and leftover entri
   assert.throws(() => requirePortableTempCleanup(baseline, after), error => error.installerSmokeCode === 'PORTABLE_TEMP_NOT_EMPTY');
   assert.throws(() => requirePortableTempCleanup(before, []), error => error.installerSmokeCode === 'PORTABLE_TEMP_BASELINE_CHANGED');
   assert.throws(() => requirePortableToolingTempPreserved(before, []), error => error.installerSmokeCode === 'PORTABLE_TOOLING_TEMP_CHANGED');
+});
+
+test('unknown TEMP format diagnostics recognize bounded standard headers without returning any content', () => {
+  const pe = Buffer.alloc(128); pe.write('MZ'); pe.writeUInt32LE(80, 60); pe.set([0x50, 0x45, 0, 0], 80);
+  assert.equal(portableTempHeaderFormat(pe, pe.length), 'PE');
+  assert.equal(portableTempHeaderFormat(Buffer.from([0x7f, 0x45, 0x4c, 0x46]), 64), 'ELF');
+  assert.equal(portableTempHeaderFormat(Buffer.from([0x50, 0x4b, 3, 4]), 200), 'ZIP');
+  assert.equal(portableTempHeaderFormat(Buffer.from([0, 0, 1, 0, 1, 0]), 124195), 'ICO');
+  assert.equal(portableTempHeaderFormat(Buffer.from([0, 0, 1, 0, 0, 0]), 124195), 'BINARY');
+  const json = Buffer.from('{"unit":"private content"}');
+  assert.equal(portableTempHeaderFormat(json, json.length), 'JSON');
+  assert.equal(portableTempHeaderFormat(json, 1000), 'TEXT_UTF8');
+  assert.equal(portableTempHeaderFormat(Buffer.from('private text'), 12), 'TEXT_UTF8');
+  assert.equal(portableTempHeaderFormat(Buffer.from([0xff, 0, 0xff]), 3), 'BINARY');
+  assert.equal(portableTempHeaderFormat(Buffer.alloc(0), 0), 'EMPTY');
+  assert.throws(() => portableTempHeaderFormat(Buffer.alloc(513), 513));
+  assert.throws(() => portableTempHeaderFormat(Buffer.alloc(0), 1));
+});
+
+test('unknown TEMP file diagnostics include only hashes and enum classifications, cap at ten files and reject paths outside the private root', async t => {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'portable-unknown-unit-')));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const bytes = Buffer.from([0, 0, 1, 0, 1, 0]);
+  const file = path.join(root, 'secret-private-name.ico');
+  await fs.writeFile(file, bytes);
+  const records = await snapshotPortableTemp(root);
+  const descriptor = await describePortableUnknownFiles(root, records);
+  assert.deepEqual(descriptor, { files: [{ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), extension: 'ICO', format: 'ICO' }], omittedCount: 0 });
+  assert.ok(!JSON.stringify(descriptor).includes('secret-private'));
+  const capped = await describePortableUnknownFiles(root, Array.from({ length: 11 }, () => records[0]));
+  assert.equal(capped.files.length, 10); assert.equal(capped.omittedCount, 1);
+  const other = path.join(root, 'secret-other-extension.private');
+  await fs.writeFile(other, 'unit text fixture');
+  const otherRecords = (await snapshotPortableTemp(root)).filter(record => record.name === 'secret-other-extension.private');
+  assert.equal((await describePortableUnknownFiles(root, otherRecords)).files[0].extension, 'OTHER');
+  await assert.rejects(describePortableUnknownFiles(root, [{ ...records[0], name: '../outside.ico' }]));
+  await fs.writeFile(file, 'changed unit fixture');
+  await assert.rejects(describePortableUnknownFiles(root, records));
 });
 
 test('DMG receipt and Mac bundle identity require a readonly owned mount, exact version and exact architecture', () => {

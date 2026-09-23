@@ -816,6 +816,51 @@ export function classifyPortableTemp(records) {
   return [...counts].sort(([left], [right]) => left.localeCompare(right)).map(([, summary]) => summary);
 }
 
+export function portableTempHeaderFormat(header, bytes) {
+  assert.ok(Buffer.isBuffer(header) && header.length <= 512 && Number.isSafeInteger(bytes) && bytes >= header.length && (bytes === 0 || header.length > 0));
+  if (bytes === 0) return 'EMPTY';
+  if (header.length >= 6 && header.subarray(0, 4).equals(Buffer.from([0, 0, 1, 0])) && header.readUInt16LE(4) > 0) return 'ICO';
+  if (header.length >= 64 && header[0] === 0x4d && header[1] === 0x5a) {
+    const offset = header.readUInt32LE(60);
+    if (offset <= header.length - 4 && header.subarray(offset, offset + 4).equals(Buffer.from([0x50, 0x45, 0, 0]))) return 'PE';
+  }
+  if (header.length >= 4 && header.subarray(0, 4).equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46]))) return 'ELF';
+  if (header.length >= 4 && header[0] === 0x50 && header[1] === 0x4b &&
+    [[3, 4], [5, 6], [7, 8]].some(([left, right]) => header[2] === left && header[3] === right)) return 'ZIP';
+  let text;
+  try { text = new TextDecoder('utf-8', { fatal: true }).decode(header, { stream: header.length < bytes }); }
+  catch { return 'BINARY'; }
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(text)) return 'BINARY';
+  if (header.length === bytes) { try { JSON.parse(text); return 'JSON'; } catch {} }
+  return 'TEXT_UTF8';
+}
+
+export async function describePortableUnknownFiles(directory, records) {
+  assert.ok(Array.isArray(records) && records.length <= 4096 && path.isAbsolute(directory));
+  const unknown = records.filter(record => record.kind === 'file' && classifyPortableTemp([record])[0].category === 'OTHER_TEMP');
+  const files = [];
+  const extensions = new Set(['TMP', 'LOG', 'DLL', 'EXE', 'TXT', 'JSON', 'DMP', 'DAT', 'ICO']);
+  for (const record of unknown.slice(0, 10)) {
+    assert.match(record.sha256, /^[0-9a-f]{64}(?![\s\S])/);
+    const file = path.resolve(directory, record.name);
+    assert.ok(isOwnedPath(directory, file) && isOwnedPath(directory, await fs.realpath(file)), 'Unknown TEMP diagnostics must remain in their private root');
+    const stat = await fs.lstat(file);
+    assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size === record.bytes, 'Unknown TEMP file identity changed');
+    const extension = path.extname(record.name.split(/[\\/]/).at(-1)).slice(1).toUpperCase();
+    const handle = await fs.open(file, 'r');
+    try {
+      const current = await handle.stat();
+      assert.ok(current.isFile() && current.size === record.bytes && current.dev === stat.dev && current.ino === stat.ino, 'Unknown TEMP file identity changed');
+      const header = Buffer.alloc(Math.min(512, record.bytes));
+      const { bytesRead } = await handle.read(header, 0, header.length, 0);
+      assert.equal(bytesRead, header.length, 'Unknown TEMP header changed');
+      files.push({ bytes: record.bytes, sha256: record.sha256, extension: extensions.has(extension) ? extension : 'OTHER',
+        format: portableTempHeaderFormat(header, record.bytes) });
+    } finally { await handle.close(); }
+  }
+  return { files, omittedCount: Math.max(0, unknown.length - files.length) };
+}
+
 const containerValidationError = (code, operation) => Object.assign(new Error(code), { installerSmokeCode: code, installerSmokeOperation: operation });
 
 export function portableWrapperEnvironment(environment, directory, { platform = process.platform } = {}) {
@@ -872,6 +917,7 @@ async function portableSmoke(installer, options, root, entry, origin) {
     { version: options.version, privateRoot: tempDirectory, userData: path.join(root, 'profile') }));
   const remaining = await snapshotPortableTemp(tempDirectory);
   entry.portableTempRemaining = classifyPortableTemp(remaining);
+  entry.portableTempUnknownFiles = await describePortableUnknownFiles(tempDirectory, remaining);
   const baselineByName = new Map(baseline.map(record => [record.name, record]));
   entry.portableTempAdded = classifyPortableTemp(remaining.filter(record => !baselineByName.has(record.name)));
   entry.portableTempBaselineUnchanged = baseline.every(record => {

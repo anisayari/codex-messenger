@@ -1,4 +1,4 @@
-name: Diagnose the native Windows installer
+name: Diagnose the native Windows portable launcher
 
 on:
   workflow_dispatch:
@@ -26,8 +26,6 @@ jobs:
       - id: metadata
         run: node scripts/release-metadata.mjs
       - run: npm ci
-      - name: Observe bounded PowerShell startup and command discovery
-        run: node scripts/windows-powershell-diagnostics.mjs --report release-proof/windows-powershell-diagnostics.json
       - id: package
         run: npm run package:win -- --publish never
       - name: Diagnose the actual Windows portable container
