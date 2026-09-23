@@ -1,0 +1,894 @@
+{
+  "frozen": true,
+  "file": "codexmessenger.net/index.html",
+  "bytes": 59274,
+  "sha256": "ee8db7d91372f1cad2b2370e6f0730833bbc96f3fc3e0edb424cff7cc40da665",
+  "threshold": 379,
+  "checks": [
+    {
+      "width": 320,
+      "lang": "en",
+      "status": "pass",
+      "measurement": {
+        "lang": "en",
+        "width": 320,
+        "scrollWidth": 320,
+        "columns": "139.5px 139.5px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 16,
+            "right": 155.5,
+            "contentLeft": 65.984375,
+            "contentRight": 105.5,
+            "innerLeft": 18,
+            "innerRight": 153.5
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 164.5,
+            "right": 304,
+            "contentLeft": 188.203125,
+            "contentRight": 280.28125,
+            "innerLeft": 166.5,
+            "innerRight": 302
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 16,
+            "right": 155.5,
+            "contentLeft": 45.09375,
+            "contentRight": 126.40625,
+            "innerLeft": 18,
+            "innerRight": 153.5
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 164.5,
+            "right": 304,
+            "contentLeft": 187.890625,
+            "contentRight": 280.59375,
+            "innerLeft": 166.5,
+            "innerRight": 302
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 16,
+            "right": 155.5,
+            "contentLeft": 33.359375,
+            "contentRight": 138.125,
+            "innerLeft": 18,
+            "innerRight": 153.5
+          }
+        ]
+      }
+    },
+    {
+      "width": 320,
+      "lang": "fr",
+      "status": "pass",
+      "measurement": {
+        "lang": "fr",
+        "width": 320,
+        "scrollWidth": 320,
+        "columns": "139.5px 139.5px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 16,
+            "right": 155.5,
+            "contentLeft": 65.984375,
+            "contentRight": 105.5,
+            "innerLeft": 18,
+            "innerRight": 153.5
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 164.5,
+            "right": 304,
+            "contentLeft": 188.203125,
+            "contentRight": 280.28125,
+            "innerLeft": 166.5,
+            "innerRight": 302
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 16,
+            "right": 155.5,
+            "contentLeft": 45.09375,
+            "contentRight": 126.40625,
+            "innerLeft": 18,
+            "innerRight": 153.5
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 164.5,
+            "right": 304,
+            "contentLeft": 187.890625,
+            "contentRight": 280.59375,
+            "innerLeft": 166.5,
+            "innerRight": 302
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 136,
+            "scrollWidth": 136,
+            "left": 16,
+            "right": 155.5,
+            "contentLeft": 33.359375,
+            "contentRight": 138.125,
+            "innerLeft": 18,
+            "innerRight": 153.5
+          }
+        ]
+      }
+    },
+    {
+      "width": 360,
+      "lang": "en",
+      "status": "pass",
+      "measurement": {
+        "lang": "en",
+        "width": 360,
+        "scrollWidth": 360,
+        "columns": "159.5px 159.5px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 175.5,
+            "contentLeft": 75.984375,
+            "contentRight": 115.5,
+            "innerLeft": 18,
+            "innerRight": 173.5
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 184.5,
+            "right": 344,
+            "contentLeft": 218.203125,
+            "contentRight": 310.28125,
+            "innerLeft": 186.5,
+            "innerRight": 342
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 175.5,
+            "contentLeft": 55.09375,
+            "contentRight": 136.40625,
+            "innerLeft": 18,
+            "innerRight": 173.5
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 184.5,
+            "right": 344,
+            "contentLeft": 217.890625,
+            "contentRight": 310.59375,
+            "innerLeft": 186.5,
+            "innerRight": 342
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 175.5,
+            "contentLeft": 43.359375,
+            "contentRight": 148.125,
+            "innerLeft": 18,
+            "innerRight": 173.5
+          }
+        ]
+      }
+    },
+    {
+      "width": 360,
+      "lang": "fr",
+      "status": "pass",
+      "measurement": {
+        "lang": "fr",
+        "width": 360,
+        "scrollWidth": 360,
+        "columns": "159.5px 159.5px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 175.5,
+            "contentLeft": 75.984375,
+            "contentRight": 115.5,
+            "innerLeft": 18,
+            "innerRight": 173.5
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 184.5,
+            "right": 344,
+            "contentLeft": 218.203125,
+            "contentRight": 310.28125,
+            "innerLeft": 186.5,
+            "innerRight": 342
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 175.5,
+            "contentLeft": 55.09375,
+            "contentRight": 136.40625,
+            "innerLeft": 18,
+            "innerRight": 173.5
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 184.5,
+            "right": 344,
+            "contentLeft": 217.890625,
+            "contentRight": 310.59375,
+            "innerLeft": 186.5,
+            "innerRight": 342
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 175.5,
+            "contentLeft": 43.359375,
+            "contentRight": 148.125,
+            "innerLeft": 18,
+            "innerRight": 173.5
+          }
+        ]
+      }
+    },
+    {
+      "width": 361,
+      "lang": "en",
+      "status": "pass",
+      "measurement": {
+        "lang": "en",
+        "width": 361,
+        "scrollWidth": 361,
+        "columns": "160px 160px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 176,
+            "contentLeft": 76.234375,
+            "contentRight": 115.75,
+            "innerLeft": 18,
+            "innerRight": 174
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 185,
+            "right": 345,
+            "contentLeft": 218.953125,
+            "contentRight": 311.03125,
+            "innerLeft": 187,
+            "innerRight": 343
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 176,
+            "contentLeft": 55.34375,
+            "contentRight": 136.65625,
+            "innerLeft": 18,
+            "innerRight": 174
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 185,
+            "right": 345,
+            "contentLeft": 218.640625,
+            "contentRight": 311.34375,
+            "innerLeft": 187,
+            "innerRight": 343
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 176,
+            "contentLeft": 43.609375,
+            "contentRight": 148.375,
+            "innerLeft": 18,
+            "innerRight": 174
+          }
+        ]
+      }
+    },
+    {
+      "width": 361,
+      "lang": "fr",
+      "status": "pass",
+      "measurement": {
+        "lang": "fr",
+        "width": 361,
+        "scrollWidth": 361,
+        "columns": "160px 160px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 176,
+            "contentLeft": 76.234375,
+            "contentRight": 115.75,
+            "innerLeft": 18,
+            "innerRight": 174
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 185,
+            "right": 345,
+            "contentLeft": 218.953125,
+            "contentRight": 311.03125,
+            "innerLeft": 187,
+            "innerRight": 343
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 176,
+            "contentLeft": 55.34375,
+            "contentRight": 136.65625,
+            "innerLeft": 18,
+            "innerRight": 174
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 185,
+            "right": 345,
+            "contentLeft": 218.640625,
+            "contentRight": 311.34375,
+            "innerLeft": 187,
+            "innerRight": 343
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 156,
+            "scrollWidth": 156,
+            "left": 16,
+            "right": 176,
+            "contentLeft": 43.609375,
+            "contentRight": 148.375,
+            "innerLeft": 18,
+            "innerRight": 174
+          }
+        ]
+      }
+    },
+    {
+      "width": 379,
+      "lang": "en",
+      "status": "pass",
+      "measurement": {
+        "lang": "en",
+        "width": 379,
+        "scrollWidth": 379,
+        "columns": "169px 169px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 16,
+            "right": 185,
+            "contentLeft": 80.734375,
+            "contentRight": 120.25,
+            "innerLeft": 18,
+            "innerRight": 183
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 194,
+            "right": 363,
+            "contentLeft": 232.453125,
+            "contentRight": 324.53125,
+            "innerLeft": 196,
+            "innerRight": 361
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 16,
+            "right": 185,
+            "contentLeft": 59.84375,
+            "contentRight": 141.15625,
+            "innerLeft": 18,
+            "innerRight": 183
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 194,
+            "right": 363,
+            "contentLeft": 232.140625,
+            "contentRight": 324.84375,
+            "innerLeft": 196,
+            "innerRight": 361
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 16,
+            "right": 185,
+            "contentLeft": 48.109375,
+            "contentRight": 152.875,
+            "innerLeft": 18,
+            "innerRight": 183
+          }
+        ]
+      }
+    },
+    {
+      "width": 379,
+      "lang": "fr",
+      "status": "pass",
+      "measurement": {
+        "lang": "fr",
+        "width": 379,
+        "scrollWidth": 379,
+        "columns": "169px 169px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 16,
+            "right": 185,
+            "contentLeft": 80.734375,
+            "contentRight": 120.25,
+            "innerLeft": 18,
+            "innerRight": 183
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 194,
+            "right": 363,
+            "contentLeft": 232.453125,
+            "contentRight": 324.53125,
+            "innerLeft": 196,
+            "innerRight": 361
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 16,
+            "right": 185,
+            "contentLeft": 59.84375,
+            "contentRight": 141.15625,
+            "innerLeft": 18,
+            "innerRight": 183
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 194,
+            "right": 363,
+            "contentLeft": 232.140625,
+            "contentRight": 324.84375,
+            "innerLeft": 196,
+            "innerRight": 361
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 165,
+            "scrollWidth": 165,
+            "left": 16,
+            "right": 185,
+            "contentLeft": 48.109375,
+            "contentRight": 152.875,
+            "innerLeft": 18,
+            "innerRight": 183
+          }
+        ]
+      }
+    },
+    {
+      "width": 380,
+      "lang": "en",
+      "status": "pass",
+      "measurement": {
+        "lang": "en",
+        "width": 380,
+        "scrollWidth": 380,
+        "columns": "110px 110px 110px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 16,
+            "right": 126,
+            "contentLeft": 51.234375,
+            "contentRight": 90.75,
+            "innerLeft": 18,
+            "innerRight": 124
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 135,
+            "right": 245,
+            "contentLeft": 143.953125,
+            "contentRight": 236.03125,
+            "innerLeft": 137,
+            "innerRight": 243
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 254,
+            "right": 364,
+            "contentLeft": 268.34375,
+            "contentRight": 349.65625,
+            "innerLeft": 256,
+            "innerRight": 362
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 16,
+            "right": 126,
+            "contentLeft": 24.640625,
+            "contentRight": 117.34375,
+            "innerLeft": 18,
+            "innerRight": 124
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 135,
+            "right": 245,
+            "contentLeft": 137.609375,
+            "contentRight": 242.375,
+            "innerLeft": 137,
+            "innerRight": 243
+          }
+        ]
+      }
+    },
+    {
+      "width": 380,
+      "lang": "fr",
+      "status": "pass",
+      "measurement": {
+        "lang": "fr",
+        "width": 380,
+        "scrollWidth": 380,
+        "columns": "110px 110px 110px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 16,
+            "right": 126,
+            "contentLeft": 51.234375,
+            "contentRight": 90.75,
+            "innerLeft": 18,
+            "innerRight": 124
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 135,
+            "right": 245,
+            "contentLeft": 143.953125,
+            "contentRight": 236.03125,
+            "innerLeft": 137,
+            "innerRight": 243
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 254,
+            "right": 364,
+            "contentLeft": 268.34375,
+            "contentRight": 349.65625,
+            "innerLeft": 256,
+            "innerRight": 362
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 16,
+            "right": 126,
+            "contentLeft": 24.640625,
+            "contentRight": 117.34375,
+            "innerLeft": 18,
+            "innerRight": 124
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 106,
+            "scrollWidth": 106,
+            "left": 135,
+            "right": 245,
+            "contentLeft": 137.609375,
+            "contentRight": 242.375,
+            "innerLeft": 137,
+            "innerRight": 243
+          }
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "lang": "en",
+      "status": "pass",
+      "measurement": {
+        "lang": "en",
+        "width": 390,
+        "scrollWidth": 390,
+        "columns": "113.328px 113.328px 113.344px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 16,
+            "right": 129.328125,
+            "contentLeft": 52.90625,
+            "contentRight": 92.421875,
+            "innerLeft": 18,
+            "innerRight": 127.328125
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 138.328125,
+            "right": 251.65625,
+            "contentLeft": 148.953125,
+            "contentRight": 241.03125,
+            "innerLeft": 140.328125,
+            "innerRight": 249.65625
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 260.65625,
+            "right": 374,
+            "contentLeft": 276.671875,
+            "contentRight": 357.984375,
+            "innerLeft": 262.65625,
+            "innerRight": 372
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 16,
+            "right": 129.328125,
+            "contentLeft": 26.3125,
+            "contentRight": 119.015625,
+            "innerLeft": 18,
+            "innerRight": 127.328125
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 138.328125,
+            "right": 251.65625,
+            "contentLeft": 142.609375,
+            "contentRight": 247.375,
+            "innerLeft": 140.328125,
+            "innerRight": 249.65625
+          }
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "lang": "fr",
+      "status": "pass",
+      "measurement": {
+        "lang": "fr",
+        "width": 390,
+        "scrollWidth": 390,
+        "columns": "113.328px 113.328px 113.344px",
+        "links": [
+          {
+            "text": "X",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 16,
+            "right": 129.328125,
+            "contentLeft": 52.90625,
+            "contentRight": 92.421875,
+            "innerLeft": 18,
+            "innerRight": 127.328125
+          },
+          {
+            "text": "LinkedIn",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 138.328125,
+            "right": 251.65625,
+            "contentLeft": 148.953125,
+            "contentRight": 241.03125,
+            "innerLeft": 140.328125,
+            "innerRight": 249.65625
+          },
+          {
+            "text": "GitHub",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 260.65625,
+            "right": 374,
+            "contentLeft": 276.671875,
+            "contentRight": 357.984375,
+            "innerLeft": 262.65625,
+            "innerRight": 372
+          },
+          {
+            "text": "YouTube",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 16,
+            "right": 129.328125,
+            "contentLeft": 26.3125,
+            "contentRight": 119.015625,
+            "innerLeft": 18,
+            "innerRight": 127.328125
+          },
+          {
+            "text": "Instagram",
+            "height": 52,
+            "clientWidth": 109,
+            "scrollWidth": 109,
+            "left": 138.328125,
+            "right": 251.65625,
+            "contentLeft": 142.609375,
+            "contentRight": 247.375,
+            "innerLeft": 140.328125,
+            "innerRight": 249.65625
+          }
+        ]
+      }
+    }
+  ],
+  "issues": [],
+  "originalIdentical": true,
+  "status": "pass",
+  "environment": {
+    "browser": "153.0.8010.50",
+    "playwright": "1.62.1",
+    "url": "http://127.0.0.1:53711/"
+  },
+  "productionVerificationPending": true
+}

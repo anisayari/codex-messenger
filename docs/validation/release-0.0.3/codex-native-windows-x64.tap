@@ -1,0 +1,18 @@
+TAP version 13
+# Subtest: actual 0.156.1 binary: discovery, metadata and unmaterialized history capability
+ok 1 - actual 0.156.1 binary: discovery, metadata and unmaterialized history capability
+  ---
+  duration_ms: 1183.3236
+  type: 'test'
+  ...
+# Unmaterialized-history response: -32600: thread 01a0cec0-7d87-7f82-9f76-065e913d65ef is not materialized yet; thread/turns/list is unavailable before first user message
+# History is unavailable for this unmaterialized thread; metadata reads work.
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1277.225

@@ -1,0 +1,35 @@
+{
+  "version": "0.0.3",
+  "tag": "v0.0.3",
+  "commit": "592462a66d471b236eb8c9c2eef550c1ad3c9f9f",
+  "platform": "windows",
+  "arch": "x64",
+  "developerIdSigningOrNotarization": "not performed by this workflow",
+  "windowsAuthenticodeSigning": "not performed by this workflow",
+  "packagedSmoke": "packaged-smoke-windows-x64.json",
+  "nativeCodex": {
+    "version": "0.156.1",
+    "sha256": "70bcb05f9bf1a4e7306edd0cd1b57d02af3267ad02a34b26f45c8c4bb20a3301",
+    "proof": "codex-native-windows-x64.json",
+    "tap": "codex-native-windows-x64.tap"
+  },
+  "files": [
+    {
+      "name": "Codex.Messenger.Setup.0.0.3.exe",
+      "bytes": 164640131,
+      "sha256": "ebd00c0a1682c9cce9a7ce273565de022bf8875e20c6b228844ab2a979fd1266",
+      "buildFileName": "Codex Messenger Setup 0.0.3.exe"
+    },
+    {
+      "name": "Codex.Messenger.0.0.3.exe",
+      "bytes": 164308987,
+      "sha256": "f33d01dd2e66f22d98b7772fc82fd6e137ad123952406c28e3399e24ccbc3bfa",
+      "buildFileName": "Codex Messenger 0.0.3.exe"
+    }
+  ],
+  "publicationStage": {
+    "releaseUrl": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+    "assetNames": "GitHub normalizes spaces to periods; binary contents remain unchanged",
+    "originalArtifact": "codex-messenger-v0.0.3-windows-x64"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "verifiedAt": "2026-09-23T15:03:50.484Z",
+  "passed": true,
+  "url": "https://codexmessenger.net/",
+  "status": 200,
+  "tls": "HTTPS accepted by native Node certificate validation",
+  "sourceCommit": "1b3542f731a81c8537830258df033668967717fa",
+  "html": {
+    "bytes": 59157,
+    "sha256": "b288a5fb6826ce1c8f00e26acb562a861237be4cbd33ca5dbbaf9ca49fc9ee70",
+    "exactDeploymentTransform": true
+  },
+  "script": {
+    "url": "https://codexmessenger.net/assets/site.js?v=site-0.0.3-20260923",
+    "bytes": 15500,
+    "sha256": "5539948a66c459a11c17a1f6275adae31b428ecf874563c8604ec00b5d427450",
+    "exactSource": true
+  },
+  "headers": {
+    "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'; upgrade-insecure-requests",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "cache-control": "no-cache"
+  },
+  "redirects": [
+    {
+      "url": "http://codexmessenger.net/",
+      "status": 301,
+      "location": "https://codexmessenger.net/"
+    },
+    {
+      "url": "https://www.codexmessenger.net/",
+      "status": 301,
+      "location": "https://codexmessenger.net/"
+    }
+  ]
+}

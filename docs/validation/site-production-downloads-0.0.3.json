@@ -1,0 +1,54 @@
+{
+  "verifiedAt": "2026-09-23T15:04:09.831Z",
+  "passed": true,
+  "unauthenticated": true,
+  "method": "HEAD; no installer binary downloaded again",
+  "installers": [
+    {
+      "name": "Codex-Messenger-0.0.3-arm64.dmg",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-arm64.dmg",
+      "status": 200,
+      "bytes": 197041665,
+      "downloadHost": "release-assets.githubusercontent.com"
+    },
+    {
+      "name": "Codex-Messenger-0.0.3-arm64.zip",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-arm64.zip",
+      "status": 200,
+      "bytes": 195706474,
+      "downloadHost": "release-assets.githubusercontent.com"
+    },
+    {
+      "name": "Codex-Messenger-0.0.3-x64.dmg",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-x64.dmg",
+      "status": 200,
+      "bytes": 202898701,
+      "downloadHost": "release-assets.githubusercontent.com"
+    },
+    {
+      "name": "Codex-Messenger-0.0.3-x64.zip",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-x64.zip",
+      "status": 200,
+      "bytes": 201603546,
+      "downloadHost": "release-assets.githubusercontent.com"
+    },
+    {
+      "name": "Codex.Messenger.0.0.3.exe",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex.Messenger.0.0.3.exe",
+      "status": 200,
+      "bytes": 164308987,
+      "downloadHost": "release-assets.githubusercontent.com"
+    },
+    {
+      "name": "Codex.Messenger.Setup.0.0.3.exe",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex.Messenger.Setup.0.0.3.exe",
+      "status": 200,
+      "bytes": 164640131,
+      "downloadHost": "release-assets.githubusercontent.com"
+    }
+  ],
+  "legacyWindows": {
+    "status": 302,
+    "location": "https://github.com/anisayari/codex-messenger/releases/latest"
+  }
+}

@@ -32,7 +32,7 @@ The updated static website passes real-browser checks. English is the default on
 - GitHub releases/latest was readable and resolved v0.0.2.9 at this prepublication check. Release v0.0.3 installers are a pending root publication step, not a website QA claim.
 - Codex 0.156.1 primary release exists. App feature wording is based on repository validation; live voice still depends on account/server availability and microphone permissions.
 
-App claims follow [repository validation](/Users/anisayari/Desktop/01_Projects/codex-messenger/docs/VALIDATION.md). [Codex 0.156.1](https://github.com/openai/codex/releases/tag/rust-v0.156.1) and the [official download destination](https://github.com/anisayari/codex-messenger/releases/latest) were read during verification. The site states voice access and microphone requirements rather than promising universal availability.
+App claims follow [repository validation](VALIDATION.md). [Codex 0.156.1](https://github.com/openai/codex/releases/tag/rust-v0.156.1) and the [official download destination](https://github.com/anisayari/codex-messenger/releases/latest) were read during verification. The site states voice access and microphone requirements rather than promising universal availability.
 
 ## Evidence
 

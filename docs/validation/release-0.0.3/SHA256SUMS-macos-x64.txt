@@ -1,0 +1,2 @@
+d63b113da5fae4d32abc8a675681cfbbd54ef3331a43bb6141b90dbab47ef10a *Codex-Messenger-0.0.3-x64.dmg
+85b5875320c58da707ba8b46141e8e7137035a303650b0e35cba6ed18cf651ca *Codex-Messenger-0.0.3-x64.zip

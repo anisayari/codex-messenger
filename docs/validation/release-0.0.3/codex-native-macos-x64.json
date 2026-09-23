@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "version": "0.156.1",
+  "platform": "macos",
+  "arch": "x64",
+  "source": "official npm package",
+  "fixture": "codexLiveContract",
+  "nativeSha256": "389da6f942f964618cfd095b84fd2abbb96bb74b94934bf0ddfdff93e1f8c0a2",
+  "testSummary": {
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "failure": null,
+  "scope": "Unauthenticated local metadata and unmaterialized-history capability only; no model inference or persisted-history validation",
+  "durationMs": 3020
+}

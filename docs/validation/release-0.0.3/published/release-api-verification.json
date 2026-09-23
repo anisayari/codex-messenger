@@ -1,0 +1,138 @@
+{
+  "verifiedAt": "2026-09-23T15:02:21.438Z",
+  "passed": true,
+  "tag": "v0.0.3",
+  "sourceCommit": "592462a66d471b236eb8c9c2eef550c1ad3c9f9f",
+  "publishedAt": "2026-09-23T15:00:50Z",
+  "releaseUrl": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+  "assetCount": 21,
+  "verification": "Every remote SHA256 and size equals local bytes; Windows publication checksums use GitHub-normalized names; original build proofs retained separately",
+  "assets": [
+    {
+      "name": "artifact-manifest-macos-arm64.json",
+      "bytes": 913,
+      "sha256": "6903294452da15ddf1b54b72d4602dfa9290000274489fcdbb9837732096079f",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/artifact-manifest-macos-arm64.json"
+    },
+    {
+      "name": "artifact-manifest-macos-x64.json",
+      "bytes": 901,
+      "sha256": "c5fd8972ee5e2c7e14a0f263c688a74c85deaf85d198efdd645f72e72c230cc4",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/artifact-manifest-macos-x64.json"
+    },
+    {
+      "name": "artifact-manifest-windows-x64.json",
+      "bytes": 1284,
+      "sha256": "2f54fe4253958046a8e0a2765d2fe1aa7f64e4e10d492791fa89ddc3ae6fc512",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/artifact-manifest-windows-x64.json"
+    },
+    {
+      "name": "Codex-Messenger-0.0.3-arm64.dmg",
+      "bytes": 197041665,
+      "sha256": "1a9b316ada928286e061df36d78e75cb5bb56d89f3f0929e247501c618563ec7",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-arm64.dmg"
+    },
+    {
+      "name": "Codex-Messenger-0.0.3-arm64.zip",
+      "bytes": 195706474,
+      "sha256": "456fa386d503471508e56c4761be900517115780571e78a199a45177af1c879a",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-arm64.zip"
+    },
+    {
+      "name": "Codex-Messenger-0.0.3-x64.dmg",
+      "bytes": 202898701,
+      "sha256": "d63b113da5fae4d32abc8a675681cfbbd54ef3331a43bb6141b90dbab47ef10a",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-x64.dmg"
+    },
+    {
+      "name": "Codex-Messenger-0.0.3-x64.zip",
+      "bytes": 201603546,
+      "sha256": "85b5875320c58da707ba8b46141e8e7137035a303650b0e35cba6ed18cf651ca",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-x64.zip"
+    },
+    {
+      "name": "codex-native-macos-arm64.json",
+      "bytes": 545,
+      "sha256": "a5ee00bf0a18302198db07d54989d67e432fc177f1e8ebf23446c590a7332c8e",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/codex-native-macos-arm64.json"
+    },
+    {
+      "name": "codex-native-macos-arm64.tap",
+      "bytes": 600,
+      "sha256": "193dbbb3f1cfa0550f4606c85f81bb4cab81e7d10fbd707303d4f0f5e0f34ef5",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/codex-native-macos-arm64.tap"
+    },
+    {
+      "name": "codex-native-macos-x64.json",
+      "bytes": 544,
+      "sha256": "d463ea4b113513698278ba4d0cd28b3324ace32ed05f2f92d87f2736f0a52d79",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/codex-native-macos-x64.json"
+    },
+    {
+      "name": "codex-native-macos-x64.tap",
+      "bytes": 602,
+      "sha256": "6ef19d935b4369033ae4016c0c338d39bd6f41ff6bb764b43b22c8e5f3f78911",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/codex-native-macos-x64.tap"
+    },
+    {
+      "name": "codex-native-windows-x64.json",
+      "bytes": 546,
+      "sha256": "9a82c616d1f0e3be8d4f41fb928e9b3846a793e194d5320184ea7c696d7548f6",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/codex-native-windows-x64.json"
+    },
+    {
+      "name": "codex-native-windows-x64.tap",
+      "bytes": 598,
+      "sha256": "e4dc6d988179737e60a40c28fc94b18161f6b5a308c5d459095c411a1e88edc0",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/codex-native-windows-x64.tap"
+    },
+    {
+      "name": "Codex.Messenger.0.0.3.exe",
+      "bytes": 164308987,
+      "sha256": "f33d01dd2e66f22d98b7772fc82fd6e137ad123952406c28e3399e24ccbc3bfa",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex.Messenger.0.0.3.exe"
+    },
+    {
+      "name": "Codex.Messenger.Setup.0.0.3.exe",
+      "bytes": 164640131,
+      "sha256": "ebd00c0a1682c9cce9a7ce273565de022bf8875e20c6b228844ab2a979fd1266",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex.Messenger.Setup.0.0.3.exe"
+    },
+    {
+      "name": "packaged-smoke-macos-arm64.json",
+      "bytes": 1134,
+      "sha256": "22dba448b98a30d51c618818ed1b86dadaf97eda2742759a129dbec6b96781d3",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/packaged-smoke-macos-arm64.json"
+    },
+    {
+      "name": "packaged-smoke-macos-x64.json",
+      "bytes": 1126,
+      "sha256": "c74dd39fa7974ed7a5f2403f0da988694dc99bf38a1311add4fc40dbe75505ac",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/packaged-smoke-macos-x64.json"
+    },
+    {
+      "name": "packaged-smoke-windows-x64.json",
+      "bytes": 1141,
+      "sha256": "0c3dfbea5966cd83b2de1697fe7d3e0367166bef0a35805d544a8baedde27eba",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/packaged-smoke-windows-x64.json"
+    },
+    {
+      "name": "SHA256SUMS-macos-arm64.txt",
+      "bytes": 196,
+      "sha256": "c8600061d705ef546323e5d88f9e67e660a162541a18f87e44cb1e8460df0532",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/SHA256SUMS-macos-arm64.txt"
+    },
+    {
+      "name": "SHA256SUMS-macos-x64.txt",
+      "bytes": 192,
+      "sha256": "529264255a3a07aadd37158edd499a7cecaeea6f11e36e72e91357bfaf115fba",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/SHA256SUMS-macos-x64.txt"
+    },
+    {
+      "name": "SHA256SUMS-windows-x64.txt",
+      "bytes": 190,
+      "sha256": "32343036c2bf746a20e5e2c558bc7baa1057bbdb2cb4985b707c7b8d13e26bad",
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/SHA256SUMS-windows-x64.txt"
+    }
+  ]
+}

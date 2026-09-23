@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "version": "0.0.3",
+  "platform": "windows",
+  "arch": "x64",
+  "packageLayout": "win-unpacked",
+  "checks": {
+    "packaged": true,
+    "asar": true,
+    "version": true,
+    "platform": true,
+    "architecture": true,
+    "privateProfile": true,
+    "sandbox": true,
+    "contextIsolation": true,
+    "nodeIntegrationDisabled": true,
+    "webSecurity": true,
+    "preloadBootstrap": true,
+    "rendererNodeIsolated": true,
+    "packagedDocument": true,
+    "renderedDom": true
+  },
+  "errors": {
+    "preloadError": 0,
+    "loadFailure": 0,
+    "rendererGone": 0,
+    "pageError": 0,
+    "consoleError": 0
+  },
+  "failure": null,
+  "isolation": "temporary userData and CODEX_HOME; host CLI disabled; no credentials supplied",
+  "signing": {
+    "buildMode": "not_assessed",
+    "verified": false,
+    "credentialsProvided": false
+  },
+  "scope": "Packaged startup, renderer, preload and isolation only; no Codex model, authentication, terminal or audio tests",
+  "electronVersion": "41.10.7",
+  "process": {
+    "closed": true,
+    "forced": false,
+    "exitCode": 0
+  },
+  "durationMs": 2052
+}

@@ -37,7 +37,7 @@ The website download popup points to the official GitHub release page instead of
 ### Option 1: Windows installer
 
 1. Open the [Releases](https://github.com/anisayari/codex-messenger/releases) page.
-2. Download the Windows `.exe` asset, or use the Windows button on [codexmessenger.net](https://codexmessenger.net/).
+2. Download `Codex.Messenger.Setup.0.0.3.exe`, or use the Windows button on [codexmessenger.net](https://codexmessenger.net/).
 3. Run the installer.
 4. On first launch, confirm that Codex is detected or manually select the path to `codex`, `codex.cmd`, or `codex.exe`.
 
@@ -56,7 +56,7 @@ The macOS build is unsigned. If Gatekeeper blocks the first launch, use right-cl
 
 ### Option 3: portable Windows build
 
-Download the portable Windows `.exe` from the releases page and run it directly. No installer is required.
+Download `Codex.Messenger.0.0.3.exe` from the releases page and run it directly. No installer is required.
 
 ### Option 4: from source
 
@@ -158,7 +158,7 @@ Codex Messenger checks for updates on startup:
 
 When an update is available, an `Update` button appears at the top of the main window. You can also open `File -> About Codex Messenger...` or `File -> Check for updates` to see the current version and run a manual check.
 
-The Codex Messenger front update button downloads the latest GitHub release asset for the current platform, requires and verifies its SHA-256 digest from GitHub release metadata, then starts the installer. On Windows it runs the NSIS installer after the app exits. On macOS, automatic replacement requires a validated app signed by the same team, Gatekeeper acceptance and a rollback backup. Unsigned builds open the verified DMG for manual installation. The Codex app-server update button runs `npm install -g @openai/codex@latest`.
+The Codex Messenger front update button downloads the latest GitHub release asset for the current platform, requires and verifies its SHA-256 digest from GitHub release metadata, then starts the installer. On Windows, automatic installation requires a valid installed-app and installer signature from the same publisher; unsigned releases such as v0.0.3 must be installed manually from the release page. On macOS, automatic replacement requires a validated app signed by the same team, Gatekeeper acceptance and a rollback backup. Unsigned builds open the verified DMG for manual installation. The Codex app-server update button runs `npm install -g @openai/codex@latest`.
 
 ## Uninstall
 
@@ -340,6 +340,8 @@ Generated Windows files are written to `release/windows/`:
 - `Codex Messenger Setup 0.0.3.exe`: Windows installer.
 - `Codex Messenger 0.0.3.exe`: portable build.
 - `win-unpacked/`: unpacked folder for local testing.
+
+GitHub normalizes spaces in asset names to periods. The published Windows files are `Codex.Messenger.Setup.0.0.3.exe` and `Codex.Messenger.0.0.3.exe`; the published Windows SHA256SUMS and manifest use these download names. The build artifact retains the original local filenames.
 
 The build is not signed. For broad public distribution, add Windows code signing.
 

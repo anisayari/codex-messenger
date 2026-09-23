@@ -1,0 +1,688 @@
+{
+  "status": "pass",
+  "checkedAt": "2026-09-23T15:07:51.859Z",
+  "url": "https://codexmessenger.net/",
+  "release": "v0.0.3",
+  "codexMinimum": "0.156.1",
+  "deployment": {
+    "runId": 35878432705,
+    "url": "https://github.com/anisayari/codex-messenger/actions/runs/35878432705",
+    "headSha": "1b3542f731a81c8537830258df033668967717fa",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Verify published installers match the site",
+        "conclusion": "success",
+        "completedAt": "2026-09-23T15:02:55Z"
+      },
+      {
+        "name": "Build static deployment bundle",
+        "conclusion": "success",
+        "completedAt": "2026-09-23T15:02:55Z"
+      },
+      {
+        "name": "Deploy to VPS",
+        "conclusion": "success",
+        "completedAt": "2026-09-23T15:03:01Z"
+      }
+    ]
+  },
+  "environment": {
+    "browser": "153.0.8010.50",
+    "browserName": "System Google Chrome, headless, isolated profile",
+    "playwright": "1.62.1",
+    "locale": "fr-FR",
+    "initialStorage": {
+      "codexMessengerLang": "fr"
+    },
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 900
+      },
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 320,
+        "height": 568
+      }
+    ],
+    "browserPlugin": "unavailable; regular Playwright used"
+  },
+  "summary": {
+    "functionalChecks": 35,
+    "totalChecks": 37,
+    "passed": 37,
+    "failed": 0,
+    "exceptionsAndConsoleErrors": 0,
+    "httpErrors": 0
+  },
+  "securityHeaders": {
+    "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'; upgrade-insecure-requests",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "cache-control": "no-cache",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), xr-spatial-tracking=()",
+    "cross-origin-opener-policy": "same-origin",
+    "cross-origin-resource-policy": "same-origin",
+    "last-modified": "Wed, 23 Sep 2026 15:02:55 GMT"
+  },
+  "checks": [
+    {
+      "name": "Raw production HTML language and mobile copy",
+      "status": "pass",
+      "details": {
+        "status": 200,
+        "sha256": "b288a5fb6826ce1c8f00e26acb562a861237be4cbd33ca5dbbaf9ca49fc9ee70",
+        "actual": {
+          "lang": "en",
+          "mobileFeatures": [
+            {
+              "id": "mobileFeatureOne",
+              "text": "Models, skills, MCP and approvals"
+            },
+            {
+              "id": "mobileFeatureTwo",
+              "text": "Files, history, search and terminal"
+            },
+            {
+              "id": "mobileFeatureThree",
+              "text": "69 classic emoticons & 15 real winks"
+            },
+            {
+              "id": "mobileFeatureFour",
+              "text": "Voice controls, diagrams & equations"
+            },
+            {
+              "id": "mobileFeatureFive",
+              "text": "Local tic-tac-toe. Open-source code."
+            }
+          ],
+          "downloads": [
+            "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3"
+          ]
+        },
+        "expected": [
+          "Models, skills, MCP and approvals",
+          "Files, history, search and terminal",
+          "69 classic emoticons & 15 real winks",
+          "Voice controls, diagrams & equations",
+          "Local tic-tac-toe. Open-source code."
+        ]
+      }
+    },
+    {
+      "name": "Production HTTPS response",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/",
+        "status": 200,
+        "headers": {
+          "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'; upgrade-insecure-requests",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "cache-control": "no-cache",
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "referrer-policy": "strict-origin-when-cross-origin",
+          "permissions-policy": "accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), xr-spatial-tracking=()",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "last-modified": "Wed, 23 Sep 2026 15:02:55 GMT"
+        }
+      }
+    },
+    {
+      "name": "English default with French locale/stale preference",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/",
+        "title": "Codex Messenger - MSN-style desktop client for Codex",
+        "lang": "en",
+        "stored": "fr",
+        "hasRelease": true,
+        "hasCodex": true,
+        "viewport": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "name": "Release and minimum versions",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/",
+        "title": "Codex Messenger - MSN-style desktop client for Codex",
+        "lang": "en",
+        "stored": "fr",
+        "hasRelease": true,
+        "hasCodex": true,
+        "viewport": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "name": "French selector",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/?lang=fr"
+      }
+    },
+    {
+      "name": "English selector",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/?lang=en"
+      }
+    },
+    {
+      "name": "Back restores French",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/?lang=fr"
+      }
+    },
+    {
+      "name": "Reload keeps explicit French",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/?lang=fr"
+      }
+    },
+    {
+      "name": "Forward restores English",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/?lang=en"
+      }
+    },
+    {
+      "name": "Direct French URL",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/?lang=fr"
+      }
+    },
+    {
+      "name": "Unsupported language falls back to English",
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "desktop modal open/focus/background",
+      "status": "pass",
+      "details": {
+        "hidden": false,
+        "closeFocused": true,
+        "background": [
+          {
+            "inert": true
+          },
+          {
+            "inert": true
+          }
+        ],
+        "links": [
+          {
+            "text": "Mac macOS · Apple Silicon Choose the arm64 DMG on GitHub v0.0.3",
+            "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "visible": true
+          },
+          {
+            "text": "Mac macOS · IntelChoose the x64 DMG on GitHub v0.0.3",
+            "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "visible": true
+          },
+          {
+            "text": "Win Windows · x64 Choose the x64 installer on GitHub v0.0.3",
+            "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop official three-platform release links",
+      "status": "pass",
+      "details": [
+        {
+          "text": "Mac macOS · Apple Silicon Choose the arm64 DMG on GitHub v0.0.3",
+          "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+          "target": "_blank",
+          "rel": "noopener noreferrer",
+          "visible": true
+        },
+        {
+          "text": "Mac macOS · IntelChoose the x64 DMG on GitHub v0.0.3",
+          "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+          "target": "_blank",
+          "rel": "noopener noreferrer",
+          "visible": true
+        },
+        {
+          "text": "Win Windows · x64 Choose the x64 installer on GitHub v0.0.3",
+          "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+          "target": "_blank",
+          "rel": "noopener noreferrer",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "name": "desktop modal keyboard loop",
+      "status": "pass",
+      "details": {
+        "last": true,
+        "first": true
+      }
+    },
+    {
+      "name": "desktop Escape and focus restoration",
+      "status": "pass",
+      "details": {
+        "restored": true
+      }
+    },
+    {
+      "name": "desktop modal reopening",
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "desktop backdrop dismissal",
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "Observed production CSP",
+      "status": "pass",
+      "details": {
+        "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'; upgrade-insecure-requests"
+      }
+    },
+    {
+      "name": "Production images loaded",
+      "status": "pass",
+      "details": [
+        {
+          "src": "./assets/screenshots/conversation-demo.png",
+          "complete": true,
+          "naturalWidth": 1000
+        },
+        {
+          "src": "./assets/screenshots/roster-demo.png",
+          "complete": true,
+          "naturalWidth": 634
+        },
+        {
+          "src": "./assets/codex-messenger-people.webp",
+          "complete": true,
+          "naturalWidth": 768
+        },
+        {
+          "src": "./assets/screenshots/conversation-demo.png",
+          "complete": true,
+          "naturalWidth": 1000
+        },
+        {
+          "src": "./assets/screenshots/roster-demo.png",
+          "complete": true,
+          "naturalWidth": 634
+        },
+        {
+          "src": "./assets/icons/open-source.svg",
+          "complete": true,
+          "naturalWidth": 150
+        },
+        {
+          "src": "./assets/icons/x.svg",
+          "complete": true,
+          "naturalWidth": 150
+        },
+        {
+          "src": "./assets/icons/linkedin.svg",
+          "complete": true,
+          "naturalWidth": 150
+        },
+        {
+          "src": "./assets/icons/github.svg",
+          "complete": true,
+          "naturalWidth": 150
+        },
+        {
+          "src": "./assets/icons/youtube.svg",
+          "complete": true,
+          "naturalWidth": 150
+        },
+        {
+          "src": "./assets/icons/instagram.svg",
+          "complete": true,
+          "naturalWidth": 150
+        }
+      ]
+    },
+    {
+      "name": "Desktop horizontal bounds",
+      "status": "pass",
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "name": "Served JavaScript equals publication source",
+      "status": "pass",
+      "details": {
+        "status": 200,
+        "url": "https://codexmessenger.net/assets/site.js?v=site-0.0.3-20260923",
+        "sha256": "5539948a66c459a11c17a1f6275adae31b428ecf874563c8604ec00b5d427450"
+      }
+    },
+    {
+      "name": "Mobile English arrival with French locale/stale preference",
+      "status": "pass",
+      "details": {
+        "lang": "en",
+        "stored": "fr",
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "name": "Mobile390 horizontal bounds",
+      "status": "pass",
+      "details": {
+        "lang": "en",
+        "stored": "fr",
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "name": "mobile modal open/focus/background",
+      "status": "pass",
+      "details": {
+        "hidden": false,
+        "closeFocused": true,
+        "background": [
+          {
+            "inert": true
+          },
+          {
+            "inert": true
+          }
+        ],
+        "links": [
+          {
+            "text": "Mac macOS · Apple Silicon Choose the arm64 DMG on GitHub v0.0.3",
+            "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "visible": true
+          },
+          {
+            "text": "Mac macOS · IntelChoose the x64 DMG on GitHub v0.0.3",
+            "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "visible": true
+          },
+          {
+            "text": "Win Windows · x64 Choose the x64 installer on GitHub v0.0.3",
+            "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "mobile official three-platform release links",
+      "status": "pass",
+      "details": [
+        {
+          "text": "Mac macOS · Apple Silicon Choose the arm64 DMG on GitHub v0.0.3",
+          "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+          "target": "_blank",
+          "rel": "noopener noreferrer",
+          "visible": true
+        },
+        {
+          "text": "Mac macOS · IntelChoose the x64 DMG on GitHub v0.0.3",
+          "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+          "target": "_blank",
+          "rel": "noopener noreferrer",
+          "visible": true
+        },
+        {
+          "text": "Win Windows · x64 Choose the x64 installer on GitHub v0.0.3",
+          "href": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+          "target": "_blank",
+          "rel": "noopener noreferrer",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "name": "mobile modal keyboard loop",
+      "status": "pass",
+      "details": {
+        "last": true,
+        "first": true
+      }
+    },
+    {
+      "name": "mobile Escape and focus restoration",
+      "status": "pass",
+      "details": {
+        "restored": true
+      }
+    },
+    {
+      "name": "mobile modal reopening",
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "mobile backdrop dismissal",
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "Mobile explicit French selector",
+      "status": "pass",
+      "details": {
+        "url": "https://codexmessenger.net/?lang=fr"
+      }
+    },
+    {
+      "name": "Mobile320 French horizontal bounds",
+      "status": "pass",
+      "details": {
+        "lang": "fr",
+        "width": 320,
+        "scrollWidth": 320,
+        "cta": [
+          {
+            "scrollWidth": 275,
+            "clientWidth": 275
+          },
+          {
+            "scrollWidth": 221,
+            "clientWidth": 221
+          }
+        ]
+      }
+    },
+    {
+      "name": "Mobile320 three-card modal bounds",
+      "status": "pass",
+      "details": {
+        "width": 320,
+        "height": 568,
+        "scrollWidth": 320,
+        "links": [
+          {
+            "top": 214.453125,
+            "bottom": 302.453125,
+            "visible": true
+          },
+          {
+            "top": 312.453125,
+            "bottom": 400.453125,
+            "visible": true
+          },
+          {
+            "top": 410.453125,
+            "bottom": 498.453125,
+            "visible": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Mobile touchscreen close control",
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "Platform card opens official release in new tab",
+      "status": "pass",
+      "details": {
+        "url": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3"
+      }
+    },
+    {
+      "name": "Public release and three installers",
+      "status": "pass",
+      "details": {
+        "tag": "v0.0.3",
+        "url": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.3",
+        "isDraft": false,
+        "isPrerelease": false,
+        "assets": [
+          {
+            "name": "Codex-Messenger-0.0.3-arm64.dmg",
+            "size": 197041665,
+            "state": "uploaded",
+            "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-arm64.dmg"
+          },
+          {
+            "name": "Codex-Messenger-0.0.3-arm64.zip",
+            "size": 195706474,
+            "state": "uploaded",
+            "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-arm64.zip"
+          },
+          {
+            "name": "Codex-Messenger-0.0.3-x64.dmg",
+            "size": 202898701,
+            "state": "uploaded",
+            "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-x64.dmg"
+          },
+          {
+            "name": "Codex-Messenger-0.0.3-x64.zip",
+            "size": 201603546,
+            "state": "uploaded",
+            "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex-Messenger-0.0.3-x64.zip"
+          },
+          {
+            "name": "Codex.Messenger.0.0.3.exe",
+            "size": 164308987,
+            "state": "uploaded",
+            "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex.Messenger.0.0.3.exe"
+          },
+          {
+            "name": "Codex.Messenger.Setup.0.0.3.exe",
+            "size": 164640131,
+            "state": "uploaded",
+            "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.3/Codex.Messenger.Setup.0.0.3.exe"
+          }
+        ]
+      }
+    },
+    {
+      "name": "No production JavaScript/console/HTTP errors",
+      "status": "pass",
+      "details": {
+        "exceptionsAndConsole": [],
+        "httpErrors": []
+      }
+    },
+    {
+      "name": "Visual review of published UI",
+      "status": "pass",
+      "details": {
+        "reviewed": [
+          "desktop English 1440x900",
+          "mobile French 390x844",
+          "French three-card chooser 320x568"
+        ],
+        "observation": "At 320 px only, some social labels extend up to about 7.4 px beyond button borders while remaining inside the viewport and separate from other targets."
+      }
+    }
+  ],
+  "cosmeticObservations": [
+    {
+      "viewport": 320,
+      "area": "social link labels",
+      "detail": "LinkedIn/YouTube/Instagram content extends slightly beyond button borders; maximum observed horizontal extension about 7.4 px. No document overflow, target intersection or broken navigation observed."
+    }
+  ],
+  "scopeLimits": [
+    "Chrome desktop and emulated touch/mobile viewports tested; physical devices and other browser engines not tested.",
+    "No new binary download or installer execution performed in this browser check; public release API metadata verified. See parent HTTP/download reports for six anonymous installer HEAD checks.",
+    "This verifies website language, links and UI; app feature and live voice validation remain covered by app validation reports."
+  ],
+  "relatedReports": [
+    "docs/validation/site-production-http-0.0.3.json",
+    "docs/validation/site-production-downloads-0.0.3.json"
+  ],
+  "screenshots": [
+    {
+      "path": "docs/assets/newsite0.0.3/production/production-desktop-en.png",
+      "bytes": 714771,
+      "sha256": "18f79aa5f3a2a99c97420d2df65036352b8add5a757df865b40fb03b9c094f6b"
+    },
+    {
+      "path": "docs/assets/newsite0.0.3/production/production-desktop-fr.png",
+      "bytes": 714439,
+      "sha256": "30600d0ce87d60c7e3e25b7ee4cfe7ffe7f5d326699f7afc27a1c96af03adecb"
+    },
+    {
+      "path": "docs/assets/newsite0.0.3/production/production-download-desktop.png",
+      "bytes": 680655,
+      "sha256": "a2365fbb5ecf21f69cd4fa62152b8a864c5a7548f484656943b83e63ccc55efe"
+    },
+    {
+      "path": "docs/assets/newsite0.0.3/production/production-download-mobile.png",
+      "bytes": 257607,
+      "sha256": "06c7b0279614986eb10434a2b5be47f27625326b675547ce482f513aecc7e703"
+    },
+    {
+      "path": "docs/assets/newsite0.0.3/production/production-mobile-en.png",
+      "bytes": 292682,
+      "sha256": "a060d7e88d14173c0919a063b3df5faefbb706ebcc9f8dadb1f7587eeab43a0d"
+    },
+    {
+      "path": "docs/assets/newsite0.0.3/production/production-mobile-fr.png",
+      "bytes": 293647,
+      "sha256": "1388fcf44b286927ddf70244bab6e28f7823b421222c226f826b6eac27ce6c03"
+    },
+    {
+      "path": "docs/assets/newsite0.0.3/production/production-mobile320-download-fr.png",
+      "bytes": 96537,
+      "sha256": "37a89802f162cbab34ee1b21e79107760b4ceabea20a8798334fd598f97694a3"
+    }
+  ]
+}
