@@ -116,7 +116,16 @@ async function forceStopOwnedChild(child) {
   } else child.kill('SIGKILL');
 }
 
-export async function closeOwnedApplication(application, { forceStop = forceStopOwnedChild } = {}) {
+export async function requestQuitFromPage(page) {
+  return page.evaluate(() => {
+    if (typeof window.codexMsn?.app?.quit !== 'function') throw new Error('QUIT_BRIDGE_UNAVAILABLE');
+    // Let the evaluation return before the existing user action destroys its renderer.
+    setTimeout(() => { void window.codexMsn.app.quit().catch(() => {}); }, 0);
+    return true;
+  });
+}
+
+export async function closeOwnedApplication(application, { forceStop = forceStopOwnedChild, requestQuit } = {}) {
   const child = application?.process();
   if (!child) return { process: { closed: false, forced: false, exitCode: null },
     closeDiagnostic: { apiClose: 'NOT_STARTED', processClose: 'MISSING', signaled: null, forceStop: 'NOT_ATTEMPTED' } };
@@ -127,10 +136,12 @@ export async function closeOwnedApplication(application, { forceStop = forceStop
     child.once('close', observeClose);
   });
   // Observe the real process before asking Playwright to quit: its protocol can reject after a clean exit.
-  const apiClosed = Promise.resolve().then(() => application.close()).then(
+  const apiClosed = Promise.resolve().then(() => requestQuit ? requestQuit() : application.close()).then(
     () => { apiClose = 'RESOLVED'; }, () => { apiClose = 'REJECTED'; });
+  // With a user quit request, release Playwright only after the real process has closed.
+  const driverClosed = requestQuit ? closed.then(() => application.close()).catch(() => {}) : Promise.resolve();
   try {
-    await within(Promise.all([apiClosed, closed]), 6000, 'CLOSE_TIMEOUT').catch(() => {});
+    await within(Promise.all([apiClosed, closed, driverClosed]), 6000, 'CLOSE_TIMEOUT').catch(() => {});
     if (!observedClose && child.pid && child.exitCode === null && child.signalCode === null) {
       forced = true;
       forceStopResult = 'ATTEMPTED';
@@ -147,7 +158,7 @@ export async function closeOwnedApplication(application, { forceStop = forceStop
 export async function runPackagedSmoke(options, { files: suppliedFiles, writeReport = true } = {}) {
   const started = Date.now();
   const report = initialSmokeReport(options);
-  let application, temporary, stage = 'PACKAGE_FILES';
+  let application, page, temporary, stage = 'PACKAGE_FILES';
   const pageErrors = emptyErrors();
   try {
     await within((async () => {
@@ -188,7 +199,7 @@ export async function runPackagedSmoke(options, { files: suppliedFiles, writeRep
         BrowserWindow.getAllWindows().forEach(attach);
         app.on('browser-window-created', (_event, window) => attach(window));
       });
-      const page = await application.firstWindow({ timeout: 20000 });
+      page = await application.firstWindow({ timeout: 20000 });
       stage = 'RENDERER_READY';
       await page.waitForFunction(() => typeof window.codexMsn?.bootstrap === 'function' && document.readyState === 'complete' &&
         document.querySelector('#root')?.childElementCount > 0 && document.querySelector('main.msn-window') &&
@@ -221,7 +232,7 @@ export async function runPackagedSmoke(options, { files: suppliedFiles, writeRep
     })(), 70000, 'GLOBAL_TIMEOUT');
   } catch (error) { report.failure = error.smokeCode || stage; }
   finally {
-    const closed = await closeOwnedApplication(application);
+    const closed = await closeOwnedApplication(application, { requestQuit: page ? () => requestQuitFromPage(page) : undefined });
     report.process = closed.process;
     report.closeDiagnostic = closed.closeDiagnostic;
     if (application && (!closed.process.closed || closed.process.forced || closed.process.exitCode !== 0 || closed.closeDiagnostic.signaled !== false)) report.failure ||= 'NATIVE_EXIT';

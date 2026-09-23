@@ -5,8 +5,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { EventEmitter, once } from 'node:events';
+import vm from 'node:vm';
 import { parseSmokeArguments, packagedPaths, findPackagedExecutable, isolatedSmokeEnvironment, errorsFromPrivateLog,
-  validatePackagedObservation, initialSmokeReport, closeOwnedApplication } from '../scripts/packaged-smoke.mjs';
+  validatePackagedObservation, initialSmokeReport, closeOwnedApplication, requestQuitFromPage } from '../scripts/packaged-smoke.mjs';
 
 const options = { platform: 'windows', arch: 'x64', output: 'release/windows', version: '0.0.3', report: 'release-proof/packaged-smoke.json' };
 const argumentsFor = value => Object.entries(value).flatMap(([key, argument]) => ['--' + key, argument]);
@@ -179,4 +180,42 @@ test('close-event observation preserves a nonzero exit and a signal instead of r
     assert.equal(outcome.closeDiagnostic.signaled, signal !== null);
     assert.ok(code !== 0 || outcome.closeDiagnostic.signaled, 'a nonzero exit or signal fails the natural-exit contract');
   }
+});
+
+test('the smoke quit request invokes the actual preload app:quit route and refuses a missing bridge', async () => {
+  const calls = [], scheduled = [];
+  const window = { location: { search: '' } };
+  const context = vm.createContext({ window, URLSearchParams, setTimeout: callback => scheduled.push(callback),
+    require: name => {
+      assert.equal(name, 'electron');
+      return { contextBridge: { exposeInMainWorld: (key, api) => { window[key] = api; } },
+        ipcRenderer: { invoke: channel => { calls.push(channel); return Promise.resolve({ ok: true }); } }, webUtils: {} };
+    } });
+  vm.runInContext(await fs.readFile(new URL('../electron/preload.cjs', import.meta.url), 'utf8'), context);
+  const page = { evaluate: async callback => vm.runInContext(`(${callback.toString()})()`, context) };
+  assert.equal(await requestQuitFromPage(page), true);
+  assert.deepEqual(calls, []);
+  assert.equal(scheduled.length, 1);
+  scheduled[0]();
+  assert.deepEqual(calls, ['app:quit']);
+  window.codexMsn = {};
+  await assert.rejects(requestQuitFromPage(page), /QUIT_BRIDGE_UNAVAILABLE/);
+  assert.equal(scheduled.length, 1, 'an unavailable route cannot schedule a successful quit');
+});
+
+test('a custom user quit observes process close before releasing the Playwright driver', async () => {
+  const child = fakeChild();
+  const order = [];
+  const outcome = await closeOwnedApplication({ process: () => child, close: async () => {
+    assert.equal(child.exitCode, 0, 'the driver must not call direct app.quit while the process is alive');
+    order.push('driver-release');
+  } }, { requestQuit: async () => {
+    order.push('user-quit');
+    assert.ok(child.listenerCount('close') > 0, 'real close observation starts before the user action');
+    child.exitCode = 0;
+    child.emit('close', 0, null);
+  }, forceStop: async () => assert.fail('natural user quit must not force an exit') });
+  assert.deepEqual(order, ['user-quit', 'driver-release']);
+  assert.deepEqual(outcome.process, { closed: true, forced: false, exitCode: 0 });
+  assert.deepEqual(outcome.closeDiagnostic, { apiClose: 'RESOLVED', processClose: 'OBSERVED', signaled: false, forceStop: 'NOT_ATTEMPTED' });
 });
