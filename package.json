@@ -59,6 +59,9 @@
     "productName": "Codex Messenger",
     "buildVersion": "0.0.4",
     "asar": true,
+    "asarUnpack": [
+      "public/icons/*.ico"
+    ],
     "directories": {
       "output": "release"
     },
