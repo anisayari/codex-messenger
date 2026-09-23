@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { CodexAppServerClient } from "../electron/codexAppServerClient.js";
+import { createOwnedCodexFixture } from "./helpers/ownedCodexFixture.mjs";
 
 const executable = process.env.CODEX_MESSENGER_TEST_CODEX;
 
@@ -12,7 +12,8 @@ test("actual 0.156.1 binary: discovery, metadata and unmaterialized history capa
   skip: !executable,
   timeout: 30000
 }, async (t) => {
-  const temp = await fs.mkdtemp(path.join(os.tmpdir(), "messenger-codex-contract-"));
+  const fixture = await createOwnedCodexFixture();
+  const temp = fixture.directory;
   const home = path.join(temp, "codex-data");
   await fs.mkdir(home);
   const environment = {
@@ -24,17 +25,7 @@ test("actual 0.156.1 binary: discovery, metadata and unmaterialized history capa
     delete environment[key];
   }
   let client;
-  t.after(async () => {
-    const child = client?.child;
-    client?.dispose();
-    if (child && child.exitCode === null && child.signalCode === null) {
-      await new Promise((resolve) => {
-        const timeout = setTimeout(resolve, 2000);
-        child.once("close", () => { clearTimeout(timeout); resolve(); });
-      });
-    }
-    await fs.rm(temp, { recursive: true, force: true });
-  });
+  t.after(() => fixture.disposeAndRemove(() => client?.dispose()));
 
   assert.match(execFileSync(executable, ["--version"], {
     encoding: "utf8", env: environment, timeout: 5000
@@ -48,9 +39,13 @@ test("actual 0.156.1 binary: discovery, metadata and unmaterialized history capa
     logDebug: () => {},
     loadedThreads: new Set(),
     requestTimeoutMs: 5000,
-    spawnProcess: (command, args, options) => spawn(command, args, {
-      ...options, env: { ...environment, CODEX_INTERNAL_ORIGINATOR_OVERRIDE: "Codex Messenger" }
-    })
+    spawnProcess: (command, args, options) => {
+      const child = spawn(command, args, {
+        ...options, env: { ...environment, CODEX_INTERNAL_ORIGINATOR_OVERRIDE: "Codex Messenger" }
+      });
+      fixture.observe(child);
+      return child;
+    }
   });
   const initialization = await client.ensureReady();
   assert.ok(initialization.userAgent);
