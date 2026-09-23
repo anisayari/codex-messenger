@@ -7,7 +7,8 @@ import { createHash } from 'node:crypto';
 import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, validateInstallerApplication, validateOriginAsar,
   validatePortableWrapper, validateReadOnlyMount, validateBundleIdentity, validateInstalledRegistration, uniqueRegularPayload,
   installerChecks, validateInstallerEntry, requireNativeCommandExit, validateOwnedRegistrationCleanup, runInstallerSmoke,
-  nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller, runWithOwnedCleanup, privateEnvironment, powershell } from '../scripts/installer-smoke.mjs';
+  nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller, runWithOwnedCleanup, privateEnvironment, powershell,
+  parseInstallerTrace, sanitizeWindowsTimeoutDiagnostics, captureWindowsTimeoutDiagnostics } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -145,6 +146,32 @@ test('installer cleanup always runs, preserves the original native failure and r
   await assert.rejects(runWithOwnedCleanup(async () => 0, async () => { throw cleanup; }), error => error === cleanup);
   assert.equal(await runWithOwnedCleanup(async () => 7, async () => { cleaned++; }), 7);
   assert.equal(cleaned, 2);
+});
+
+test('installer timeout diagnostics retain only the owned PID, public product window and bounded class and phase tokens', () => {
+  assert.deepEqual(parseInstallerTrace('PREINIT_BEGIN\r\nCUSTOM_INIT_BEGIN\r\n'), ['PREINIT_BEGIN', 'CUSTOM_INIT_BEGIN']);
+  for (const text of ['private/path\n', 'x'.repeat(16385), 'A\n'.repeat(129), 'A'.repeat(65), 'PUBLIC_TOKEN\nprivate message']) assert.throws(() => parseInstallerTrace(text));
+  const actual = sanitizeWindowsTimeoutDiagnostics({ status: 'CAPTURED', running: true, executableMatches: true, visible: true,
+    title: 'Codex Messenger 0.0.4 Setup', className: '#32770', silentSwitchPresent: true, currentUserSwitchPresent: true, targetLast: true,
+    commandLine: 'C:\\private\\secret', executable: 'C:\\private\\secret.exe', pid: 77 }, 123);
+  assert.deepEqual(actual, { pid: 123, status: 'CAPTURED', running: true, executableMatches: true, visible: true,
+    silentSwitchPresent: true, currentUserSwitchPresent: true, targetLast: true, title: 'Codex Messenger 0.0.4 Setup', className: '#32770' });
+  const redacted = sanitizeWindowsTimeoutDiagnostics({ status: 'CAPTURED', visible: true, title: 'C:\\private\\secret', className: 'private/secret' }, 123);
+  assert.deepEqual(redacted, { pid: 123, status: 'CAPTURED', visible: true, title: 'OTHER_TITLE', className: 'OTHER_CLASS' });
+  assert.deepEqual(sanitizeWindowsTimeoutDiagnostics({ status: 'C:\\private\\secret', title: 'private' }, 123), { pid: 123, status: 'DIAGNOSTIC_FAILED' });
+  assert.deepEqual(sanitizeWindowsTimeoutDiagnostics({ status: 'PROCESS_NOT_FOUND', visible: true, title: 'private' }, 123), { pid: 123, status: 'PROCESS_NOT_FOUND' });
+});
+
+test('Windows timeout diagnostics have an independent bounded budget and never expose native stderr or a foreign process title', async () => {
+  const input = { command: 'C:\\private\\Codex-Messenger-Setup-0.0.4.exe', args: ['/S', '/currentuser', '/D=C:\\private\\Codex Messenger'], pid: 123, env: {} };
+  let script;
+  const captured = await captureWindowsTimeoutDiagnostics(input, { execute: async value => { script = value; return { status: 'CAPTURED', visible: true, title: 'private secret', className: '#32770' }; } });
+  assert.match(script, /Get-Process -Id 123/); assert.match(script, /\$p\.Path -ine/);
+  assert.equal(captured.title, 'OTHER_TITLE'); assert.equal(captured.className, '#32770');
+  const started = Date.now();
+  assert.deepEqual(await captureWindowsTimeoutDiagnostics(input, { execute: () => new Promise(() => {}), budgetMs: 20 }), { pid: 123, status: 'DIAGNOSTIC_TIMEOUT' });
+  assert.ok(Date.now() - started < 1000);
+  assert.deepEqual(await captureWindowsTimeoutDiagnostics(input, { execute: async () => { throw new Error('/private/secret stderr'); } }), { pid: 123, status: 'DIAGNOSTIC_FAILED' });
 });
 
 test('native Windows PowerShell reads its own isolated AppData and real registry before installer execution', { skip: process.platform !== 'win32' }, async t => {

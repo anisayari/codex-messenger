@@ -22,9 +22,28 @@ Var cmGuardMask
 Var cmGuardLastError
 Var cmGuardFindData
 Var cmGuardFindResult
+Var cmTracePhase
+Var cmTraceEnabled
+Var cmTraceFile
+; The vendor process-check wrapper below retains its normal GetProcessInfo helper.
+!include "getProcessInfo.nsh"
+Var pid
 !ifndef BUILD_UNINSTALLER
 Var cmGuardOldPath
 !endif
+
+Function ${CM_GUARD_PREFIX}cmTracePhase
+  Pop $cmTracePhase
+  ReadEnvStr $cmTraceEnabled "CODEX_MESSENGER_INSTALLER_SMOKE_TRACE"
+  StrCmp $cmTraceEnabled "1" 0 cm_trace_done
+  ; QA opts in with an isolated TEMP. Never accept an arbitrary trace destination.
+  FileOpen $cmTraceFile "$TEMP\codex-messenger-installer-smoke.trace" a
+  IfErrors cm_trace_done
+  FileWrite $cmTraceFile "$cmTracePhase$\r$\n"
+  FileClose $cmTraceFile
+cm_trace_done:
+  ClearErrors
+FunctionEnd
 
 Function ${CM_GUARD_PREFIX}cmFindDirectoryLeaf
   StrCpy $cmGuardLeaf ""
@@ -43,6 +62,8 @@ FunctionEnd
 
 Function ${CM_GUARD_PREFIX}cmGuardInstallDirectory
   Pop $cmGuardPath
+  Push "DIRECTORY_GUARD_ENTER"
+  Call ${CM_GUARD_PREFIX}cmTracePhase
   GetFullPathName $cmGuardPath "$cmGuardPath"
   Call ${CM_GUARD_PREFIX}cmFindDirectoryLeaf
   StrCmp $cmGuardLeaf "${APP_FILENAME}" cm_leaf_valid
@@ -62,6 +83,8 @@ cm_leaf_valid:
   Push ""
   Call ${CM_GUARD_PREFIX}cmGuardPayloadTree
 cm_guard_done:
+  Push "DIRECTORY_GUARD_DONE"
+  Call ${CM_GUARD_PREFIX}cmTracePhase
   Return
 cm_guard_missing:
   ; Only a genuinely absent target is safe. Access errors must fail closed.
@@ -149,6 +172,8 @@ FunctionEnd
 
 !ifndef BUILD_UNINSTALLER
 Function cmNormalizeInstallDirectory
+  Push "NORMALIZE_ENTER"
+  Call cmTracePhase
   GetFullPathName $INSTDIR "$INSTDIR"
   StrCpy $cmGuardPath "$INSTDIR"
   Call cmFindDirectoryLeaf
@@ -158,6 +183,8 @@ Function cmNormalizeInstallDirectory
 cm_target_check:
   Push "$INSTDIR"
   Call cmGuardInstallDirectory
+  Push "NORMALIZE_DONE"
+  Call cmTracePhase
 FunctionEnd
 
 Function cmCheckDirectoryPage
@@ -166,7 +193,16 @@ Function cmCheckDirectoryPage
 FunctionEnd
 !endif
 
+!macro preInit
+  !ifndef BUILD_UNINSTALLER
+  Push "PRE_INIT"
+  Call cmTracePhase
+  !endif
+!macroend
+
 !macro customInit
+  Push "CUSTOM_INIT_ENTER"
+  Call cmTracePhase
   ; Guard legacy locations before electron-builder invokes their old uninstaller.
   ReadRegStr $cmGuardOldPath HKCU "${INSTALL_REGISTRY_KEY}" InstallLocation
   StrCmp $cmGuardOldPath "" +3
@@ -177,6 +213,31 @@ FunctionEnd
   Push "$cmGuardOldPath"
   Call cmGuardInstallDirectory
   Call cmNormalizeInstallDirectory
+  Push "CUSTOM_INIT_DONE"
+  Call cmTracePhase
+!macroend
+
+!macro customCheckAppRunning
+  Push "PROCESS_CHECK_ENTER"
+  !ifdef BUILD_UNINSTALLER
+    Call un.cmTracePhase
+  !else
+    Call cmTracePhase
+  !endif
+  !insertmacro IS_POWERSHELL_AVAILABLE
+  Push "POWERSHELL_AVAILABLE_CHECK_DONE"
+  !ifdef BUILD_UNINSTALLER
+    Call un.cmTracePhase
+  !else
+    Call cmTracePhase
+  !endif
+  !insertmacro _CHECK_APP_RUNNING
+  Push "PROCESS_CHECK_DONE"
+  !ifdef BUILD_UNINSTALLER
+    Call un.cmTracePhase
+  !else
+    Call cmTracePhase
+  !endif
 !macroend
 
 !macro customPageAfterChangeDir
@@ -184,12 +245,23 @@ FunctionEnd
 !macroend
 
 !macro customUnInit
+  Push "UNINSTALL_INIT_ENTER"
+  Call un.cmTracePhase
   Push "$INSTDIR"
   Call un.cmGuardInstallDirectory
+  Push "UNINSTALL_INIT_DONE"
+  Call un.cmTracePhase
 !macroend
 
 !macro customInstall
+  Push "INSTALL_DONE"
+  Call cmTracePhase
   ; No autostart: silent and automated installs leave launching to the caller.
+!macroend
+
+!macro customFiles_x64
+  Push "PAYLOAD_EXTRACTION_DONE"
+  Call cmTracePhase
 !macroend
 
 !undef CM_GUARD_PREFIX

@@ -52,7 +52,7 @@ If Codex Messenger is already installed, use the launcher or the Windows app ent
 3. Open `Codex Messenger.app`.
 4. On first launch, confirm that Codex is detected or manually select the path to `codex`.
 
-The macOS build is unsigned. If Gatekeeper blocks the first launch, use right-click -> `Open` and continue only if the file comes from the official GitHub release.
+The macOS build is unsigned. After copying the app to Applications and trying to open it, macOS may block the first launch. Open `System Settings` → `Privacy & Security` → `Open Anyway`, then confirm `Open` for this app from the official GitHub release. See [Apple's first-launch instructions](https://support.apple.com/en-us/102445).
 
 ### Option 3: portable Windows build
 

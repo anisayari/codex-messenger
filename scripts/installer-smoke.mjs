@@ -133,19 +133,115 @@ export function validateInstallerEntry(entry, kind, options) {
   assert.equal(entry.smoke.appAsarSha256, entry.appAsarSha256);
 }
 
+const nsisOperation = operation => /^NSIS_(?:INSTALL|UNINSTALL|LEGACY_INSTALL)$/.test(operation);
+const traceFileName = 'codex-messenger-installer-smoke.trace';
+const diagnosticStatuses = new Set(['CAPTURED', 'PROCESS_NOT_FOUND', 'EXECUTABLE_MISMATCH', 'DIAGNOSTIC_FAILED', 'DIAGNOSTIC_TIMEOUT']);
+const diagnosticClasses = new Set(['#32770', 'NSISDialog', 'NSIS:Dialog', 'ConsoleWindowClass']);
+
+export function parseInstallerTrace(text) {
+  assert.ok(typeof text === 'string' && Buffer.byteLength(text) <= 16384, 'Trace exceeds its private diagnostic limit');
+  const tokens = text.split(/\r?\n/).filter(Boolean);
+  assert.ok(tokens.length <= 128 && tokens.every(token => /^[A-Z0-9_]{1,64}$/.test(token)), 'Trace must contain only bounded phase tokens');
+  return tokens;
+}
+
+export function sanitizeWindowsTimeoutDiagnostics(raw, pid) {
+  assert.ok(Number.isSafeInteger(pid) && pid > 0);
+  const result = { pid, status: diagnosticStatuses.has(raw?.status) ? raw.status : 'DIAGNOSTIC_FAILED' };
+  if (result.status !== 'CAPTURED') return result;
+  for (const key of ['running', 'executableMatches', 'visible', 'silentSwitchPresent', 'currentUserSwitchPresent', 'targetLast']) {
+    if (typeof raw[key] === 'boolean') result[key] = raw[key];
+  }
+  if (raw.visible === true) {
+    result.title = typeof raw.title === 'string' && raw.title.length <= 96 && /^(?:Uninstall )?Codex Messenger(?: \d+\.\d+\.\d+)?(?: Setup| Uninstall)?$/.test(raw.title) ? raw.title : 'OTHER_TITLE';
+    result.className = diagnosticClasses.has(raw.className) ? raw.className : 'OTHER_CLASS';
+  }
+  return result;
+}
+
+async function prepareNsisTrace(env, operation) {
+  if (process.platform !== 'win32' || !nsisOperation(operation) || env.CODEX_MESSENGER_INSTALLER_SMOKE_TRACE !== '1') return null;
+  assert.ok(typeof env.TEMP === 'string' && path.isAbsolute(env.TEMP));
+  const directory = await fs.lstat(env.TEMP);
+  assert.ok(directory.isDirectory() && !directory.isSymbolicLink());
+  const file = path.join(env.TEMP, traceFileName);
+  const existing = await fs.lstat(file).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+  if (existing) { assert.ok(existing.isFile() && !existing.isSymbolicLink()); await fs.unlink(file); }
+  return file;
+}
+
+async function readNsisTrace(file) {
+  if (!file) return null;
+  try {
+    const stat = await fs.lstat(file);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 16384) return { traceStatus: 'INVALID_TRACE' };
+    return { traceStatus: 'READ', trace: parseInstallerTrace(await fs.readFile(file, 'utf8')) };
+  } catch (error) { return { traceStatus: error.code === 'ENOENT' ? 'NO_TRACE' : 'INVALID_TRACE' }; }
+}
+
+function executeWindowsDiagnostic(script, env) {
+  return new Promise(resolve => {
+    let settled = false, hard;
+    const finish = result => { if (settled) return; settled = true; clearTimeout(hard); resolve(result); };
+    const child = execFile('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')],
+      { env, windowsHide: true, timeout: 6000, maxBuffer: 16384 }, (error, stdout) => {
+        if (error) finish({ status: error.killed ? 'DIAGNOSTIC_TIMEOUT' : 'DIAGNOSTIC_FAILED' });
+        else { try { finish(JSON.parse(stdout.trim())); } catch { finish({ status: 'DIAGNOSTIC_FAILED' }); } }
+      });
+    hard = setTimeout(() => {
+      // An exited process can leave pipes inherited by a descendant. Do not
+      // let those diagnostic pipes keep the installer driver alive.
+      const close = () => {
+        if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+        child.stdin?.destroy(); child.stdout?.destroy(); child.stderr?.destroy(); child.unref();
+        finish({ status: 'DIAGNOSTIC_TIMEOUT' });
+      };
+      if (child.pid && child.exitCode === null && child.signalCode === null) {
+        execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { timeout: 1000, windowsHide: true }, close);
+      } else close();
+    }, 6500);
+  });
+}
+
+export async function captureWindowsTimeoutDiagnostics({ command, args, pid, env }, { execute = executeWindowsDiagnostic, budgetMs = 8000 } = {}) {
+  assert.ok(path.win32.isAbsolute(command) && Number.isSafeInteger(pid) && pid > 0);
+  assert.ok(Number.isSafeInteger(budgetMs) && budgetMs > 0 && budgetMs <= 8000);
+  const target = args.at(-1);
+  const script = `$ErrorActionPreference='Stop'; $p=Get-Process -Id ${pid} -ErrorAction SilentlyContinue; ` +
+    `if($null -eq $p){ConvertTo-Json -Compress -InputObject @{status='PROCESS_NOT_FOUND'};exit}; ` +
+    `if($p.Path -ine ${psQuote(command)}){ConvertTo-Json -Compress -InputObject @{status='EXECUTABLE_MISMATCH'};exit}; ` +
+    `$result=@{status='CAPTURED';running=$true;executableMatches=$true;visible=($p.MainWindowHandle -ne [IntPtr]::Zero)}; ` +
+    `try { $c=Get-CimInstance -ClassName Win32_Process -Filter 'ProcessId=${pid}'; if($null -ne $c){$result.silentSwitchPresent=($c.CommandLine -cmatch '(?:^| )/S(?: |$)'); ` +
+    `$result.currentUserSwitchPresent=($c.CommandLine -imatch '(?:^| )/currentuser(?: |$)'); $result.targetLast=([string]$c.CommandLine).EndsWith(${psQuote(target)})} }catch{}; ` +
+    `if($result.visible){$result.title=$p.MainWindowTitle; try { Add-Type -AssemblyName UIAutomationClient; ` +
+    `$w=[Windows.Automation.AutomationElement]::FromHandle($p.MainWindowHandle); if($w.Current.ProcessId -eq ${pid}){$result.className=$w.Current.ClassName} }catch{}}; ` +
+    `ConvertTo-Json -Compress -InputObject $result`;
+  let timer;
+  try {
+    const raw = await Promise.race([execute(script, env), new Promise(resolve => { timer = setTimeout(() => resolve({ status: 'DIAGNOSTIC_TIMEOUT' }), budgetMs); })]);
+    return sanitizeWindowsTimeoutDiagnostics(raw, pid);
+  } catch { return { pid, status: 'DIAGNOSTIC_FAILED' }; }
+  finally { clearTimeout(timer); }
+}
+
 async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 30000, input, verbatim = false, operation = 'NATIVE_COMMAND' } = {}) {
   assert.match(operation, /^[A-Z0-9_]{1,64}$/);
   const signal = nativeScope.getStore()?.cleanup ? undefined : nativeScope.getStore()?.signal;
   if (signal?.aborted) return { code: null, signal: null, started: false, timedOut: false, forced: false, aborted: true, stdout: '', stderr: '', operation };
+  const traceFile = await prepareNsisTrace(env, operation);
   return new Promise(resolve => {
     const child = spawn(command, args, { env, cwd, shell: false, windowsHide: true,
       ...(verbatim ? nsisVerbatimCommand(command) : { windowsVerbatimArguments: false }),
       detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] });
-    let stdout = '', stderr = '', started = true, timedOut = false, forced = false, aborted = false, fallback, finished = false;
-    const finish = (code, childSignal) => {
+    let stdout = '', stderr = '', started = true, timedOut = false, forced = false, aborted = false, fallback, finished = false, diagnostic, processAtTimeout;
+    const finish = async (code, childSignal) => {
       if (finished) return; finished = true;
       clearTimeout(timer); clearTimeout(fallback); signal?.removeEventListener('abort', onAbort);
-      resolve({ code, signal: childSignal, started, timedOut, forced, aborted, stdout, stderr, operation });
+      const windows = diagnostic ? await diagnostic : null;
+      const trace = await readNsisTrace(traceFile);
+      resolve({ code, signal: childSignal, started, timedOut, forced, aborted, stdout, stderr, operation,
+        ...((windows || trace || processAtTimeout) ? { nativeDiagnostics: { ...(windows ? { windows } : {}),
+          ...(processAtTimeout ? { processAtTimeout } : {}), ...trace } } : {}) });
     };
     const stop = () => {
       forced = true;
@@ -155,7 +251,14 @@ async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 300
       }
       fallback ||= setTimeout(() => finish(null, null), 2500);
     };
-    const timer = setTimeout(() => { timedOut = true; stop(); }, timeoutMs);
+    const timer = setTimeout(() => {
+      timedOut = true;
+      if (process.platform === 'win32' && nsisOperation(operation) && child.pid) {
+        processAtTimeout = { pid: child.pid, exitCode: child.exitCode, signalCode: child.signalCode };
+        diagnostic = captureWindowsTimeoutDiagnostics({ command, args, pid: child.pid, env });
+        void diagnostic.finally(stop);
+      } else stop();
+    }, timeoutMs);
     const onAbort = () => { aborted = true; stop(); };
     signal?.addEventListener('abort', onAbort, { once: true });
     if (signal?.aborted) onAbort();
@@ -177,7 +280,8 @@ export function requireNativeCommandExit(result, expectedExitCode = 0) {
   const code = result.aborted ? 'HARD_TIMEOUT' : !result.started ? 'NATIVE_COMMAND_NOT_STARTED' : result.timedOut ? 'NATIVE_COMMAND_TIMEOUT' : result.forced ? 'NATIVE_COMMAND_FORCED' :
     result.signal !== null ? 'NATIVE_COMMAND_SIGNAL' : result.code !== expectedExitCode ? `NATIVE_COMMAND_EXIT_${Number.isSafeInteger(result.code) ? result.code : 'UNKNOWN'}` : null;
   if (code) throw Object.assign(new Error(code), { installerSmokeCode: code, expectedExitCode,
-    ...(/^[A-Z0-9_]{1,64}$/.test(result.operation || '') ? { installerSmokeOperation: result.operation } : {}) });
+    ...(/^[A-Z0-9_]{1,64}$/.test(result.operation || '') ? { installerSmokeOperation: result.operation } : {}),
+    ...(result.nativeDiagnostics ? { installerSmokeNativeDiagnostics: result.nativeDiagnostics } : {}) });
   return result.stdout;
 }
 const requireExitZero = result => requireNativeCommandExit(result);
@@ -195,6 +299,7 @@ export async function runWithOwnedCleanup(task, cleanup) {
       if (!primary) throw error;
       primary.installerSmokeCleanupCode = boundedFailureCode(error);
       if (/^[A-Z0-9_]{1,64}$/.test(error?.installerSmokeOperation || '')) primary.installerSmokeCleanupOperation = error.installerSmokeOperation;
+      if (error?.installerSmokeNativeDiagnostics) primary.installerSmokeCleanupDiagnostics = error.installerSmokeNativeDiagnostics;
     }
   }
 }
@@ -202,7 +307,8 @@ export async function runWithOwnedCleanup(task, cleanup) {
 export function privateEnvironment(root) {
   const result = isolatedSmokeEnvironment(process.env, { userData: path.join(root, 'profile'), codexHome: path.join(root, 'codex-home'), unavailableCodex: path.join(root, 'codex-unavailable') });
   for (const key of Object.keys(result)) if (['TEMP', 'TMP', 'TMPDIR', 'APPDATA', 'LOCALAPPDATA'].includes(key.toUpperCase())) delete result[key];
-  return { ...result, TEMP: path.join(root, 'temp with spaces'), TMP: path.join(root, 'temp with spaces'), TMPDIR: path.join(root, 'temp with spaces'), APPDATA: path.join(root, 'appdata'), LOCALAPPDATA: path.join(root, 'localappdata') };
+  return { ...result, TEMP: path.join(root, 'temp with spaces'), TMP: path.join(root, 'temp with spaces'), TMPDIR: path.join(root, 'temp with spaces'), APPDATA: path.join(root, 'appdata'), LOCALAPPDATA: path.join(root, 'localappdata'),
+    CODEX_MESSENGER_INSTALLER_SMOKE_TRACE: '1' };
 }
 
 const psQuote = value => "'" + value.replace(/'/g, "''") + "'";
@@ -540,6 +646,8 @@ async function executeInstallerSmoke(options) {
     if (/^[A-Z0-9_]{1,64}$/.test(error.installerSmokeOperation || '')) report.failureOperation = error.installerSmokeOperation;
     if (/^[A-Z0-9_]{1,64}$/.test(error.installerSmokeCleanupCode || '')) report.cleanupFailureDetail = error.installerSmokeCleanupCode;
     if (/^[A-Z0-9_]{1,64}$/.test(error.installerSmokeCleanupOperation || '')) report.cleanupFailureOperation = error.installerSmokeCleanupOperation;
+    if (error.installerSmokeNativeDiagnostics) report.nativeDiagnostics = error.installerSmokeNativeDiagnostics;
+    if (error.installerSmokeCleanupDiagnostics) report.cleanupNativeDiagnostics = error.installerSmokeCleanupDiagnostics;
   }
   return report;
 }

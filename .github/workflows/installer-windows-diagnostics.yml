@@ -1,0 +1,43 @@
+name: Diagnose the native Windows installer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - id: metadata
+        run: node scripts/release-metadata.mjs
+      - run: npm ci
+      - run: npm run package:win -- --publish never
+      - name: Execute both actual containers with private bounded diagnostics
+        run: >-
+          node scripts/installer-smoke.mjs
+          --platform windows --arch x64 --output release/windows
+          --version "${{ steps.metadata.outputs.version }}"
+          --report release-proof/installer-smoke.json
+      - name: Preserve the validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-diagnostics-${{ github.sha }}
+          path: release-proof/*
+          if-no-files-found: ignore
+          retention-days: 7
