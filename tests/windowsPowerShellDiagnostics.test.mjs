@@ -37,7 +37,7 @@ test('stalled diagnostic commands are bounded, forcibly stop only their owned pr
     timeoutMs: 50, launch: (...args) => { owned = spawn(...args); return owned; }
   });
   assert.equal(actual.outcome, 'TIMEOUT'); assert.equal(actual.timedOut, true); assert.equal(actual.forced, true); assert.equal(actual.markerObserved, false);
+  assert.equal(actual.closed, true);
   assert.ok(Date.now() - startedAt < 2500);
-  if (owned.exitCode === null && owned.signalCode === null) await new Promise(resolve => owned.once('exit', resolve));
   assert.ok(owned.exitCode !== null || owned.signalCode !== null);
 });

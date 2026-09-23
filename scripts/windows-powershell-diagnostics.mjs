@@ -45,15 +45,16 @@ export async function measureProbe(command, args, environment, marker, { timeout
     };
     const stop = () => {
       forced = true;
-      const close = () => {
+      const signalOwnedParent = () => {
         if (child?.pid && child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
-        finish();
       };
-      cleanupTimer = setTimeout(close, 1250);
+      // Keep the owned process referenced until its real close event. Closing
+      // its streams and unref'ing immediately can hide a pending termination.
+      cleanupTimer = setTimeout(() => { signalOwnedParent(); finish(); }, 1250);
       if (child?.pid && child.exitCode === null && child.signalCode === null) {
-        if (platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { timeout: 1000, windowsHide: true }, close);
-        else { try { process.kill(-child.pid, 'SIGKILL'); } catch { child.kill('SIGKILL'); } close(); }
-      } else close();
+        if (platform === 'win32') execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { timeout: 1000, windowsHide: true }, signalOwnedParent);
+        else { try { process.kill(-child.pid, 'SIGKILL'); } catch { child.kill('SIGKILL'); } }
+      }
     };
     try { child = launch(command, args, { env: environment, shell: false, windowsHide: true, detached: platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] }); }
     catch { finish(); return; }

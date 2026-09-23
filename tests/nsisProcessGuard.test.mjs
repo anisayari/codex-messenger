@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 
-const source = await fs.readFile(new URL('../build/installer.nsh', import.meta.url), 'utf8');
+const source = (await fs.readFile(new URL('../build/installer.nsh', import.meta.url), 'utf8')).replace(/\r\n/g, '\n');
 const body = source.match(/Function \$\{CM_GUARD_PREFIX\}cmCheckAppRunning\n([\s\S]*?)\nFunctionEnd/)[1];
 
 // Execute the production NSIS control flow with injected native results. This
