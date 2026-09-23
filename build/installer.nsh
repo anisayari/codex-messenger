@@ -58,9 +58,13 @@ Function ${CM_GUARD_PREFIX}cmTracePhase
   ReadEnvStr $cmTraceEnabled "CODEX_MESSENGER_INSTALLER_SMOKE_TRACE"
   StrCmp $cmTraceEnabled "1" 0 cm_trace_done
   ; QA opts in with an isolated TEMP. Never accept an arbitrary trace destination.
+  ClearErrors
   FileOpen $cmTraceFile "$TEMP\codex-messenger-installer-smoke.trace" a
   IfErrors cm_trace_done
+  FileSeek $cmTraceFile 0 END
+  IfErrors cm_trace_close
   FileWrite $cmTraceFile "$cmTracePhase$\r$\n"
+cm_trace_close:
   FileClose $cmTraceFile
 cm_trace_done:
   ClearErrors

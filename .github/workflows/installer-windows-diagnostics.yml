@@ -26,13 +26,37 @@ jobs:
       - id: metadata
         run: node scripts/release-metadata.mjs
       - run: npm ci
-      - run: npm run package:win -- --publish never
-      - name: Execute both actual containers with private bounded diagnostics
+      - id: package
+        run: npm run package:win -- --publish never
+      - name: Observe the artificial Windows folder environment
+        id: private
+        continue-on-error: true
+        env:
+          CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS: "0"
         run: >-
           node scripts/installer-smoke.mjs
           --platform windows --arch x64 --output release/windows
           --version "${{ steps.metadata.outputs.version }}"
-          --report release-proof/installer-smoke.json
+          --report release-proof/installer-private-folders.json
+      - name: Validate the same containers with the native Windows folders
+        if: always() && steps.package.outcome == 'success'
+        env:
+          CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS: "1"
+        run: >-
+          node scripts/installer-smoke.mjs
+          --platform windows --arch x64 --output release/windows
+          --version "${{ steps.metadata.outputs.version }}"
+          --report release-proof/installer-native-folders.json
+      - name: Require native success and identical observed installer bytes
+        if: success()
+        run: >-
+          node --input-type=module -e
+          'import fs from "node:fs"; import assert from "node:assert/strict";
+          const a=JSON.parse(fs.readFileSync("release-proof/installer-private-folders.json","utf8"));
+          const b=JSON.parse(fs.readFileSync("release-proof/installer-native-folders.json","utf8"));
+          assert.equal(b.passed,true);
+          for(const observed of a.installers){const same=b.installers.find(x=>x.name===observed.name);
+          assert.ok(same);assert.equal(same.sha256,observed.sha256);assert.equal(same.bytes,observed.bytes);}'
       - name: Preserve the validation report
         if: always()
         uses: actions/upload-artifact@v4

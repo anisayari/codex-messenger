@@ -304,11 +304,81 @@ export async function runWithOwnedCleanup(task, cleanup) {
   }
 }
 
-export function privateEnvironment(root) {
-  const result = isolatedSmokeEnvironment(process.env, { userData: path.join(root, 'profile'), codexHome: path.join(root, 'codex-home'), unavailableCodex: path.join(root, 'codex-unavailable') });
+function environmentEntry(environment, name) {
+  const entries = Object.entries(environment).filter(([key]) => key.toUpperCase() === name);
+  assert.ok(entries.length <= 1 || entries.every(([, value]) => value === entries[0][1]), 'Conflicting Windows environment values');
+  return entries[0];
+}
+
+export function privateEnvironment(root, baseEnvironment = process.env, { platform = process.platform } = {}) {
+  const paths = platform === 'win32' ? path.win32 : path;
+  const result = isolatedSmokeEnvironment(baseEnvironment, { userData: paths.join(root, 'profile'), codexHome: paths.join(root, 'codex-home'), unavailableCodex: paths.join(root, 'codex-unavailable') });
   for (const key of Object.keys(result)) if (['TEMP', 'TMP', 'TMPDIR', 'APPDATA', 'LOCALAPPDATA'].includes(key.toUpperCase())) delete result[key];
-  return { ...result, TEMP: path.join(root, 'temp with spaces'), TMP: path.join(root, 'temp with spaces'), TMPDIR: path.join(root, 'temp with spaces'), APPDATA: path.join(root, 'appdata'), LOCALAPPDATA: path.join(root, 'localappdata'),
-    CODEX_MESSENGER_INSTALLER_SMOKE_TRACE: '1' };
+  const nativeFolders = platform === 'win32' && environmentEntry(baseEnvironment, 'CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS')?.[1] === '1';
+  if (nativeFolders) {
+    for (const name of ['APPDATA', 'LOCALAPPDATA']) {
+      const entry = environmentEntry(baseEnvironment, name);
+      assert.ok(entry && typeof entry[1] === 'string' && paths.isAbsolute(entry[1]) && !/[\r\n\0]/.test(entry[1]), 'Missing native Windows folder');
+      assert.ok(paths.relative(root, entry[1]) !== '' && !isOwnedPath(root, entry[1], 'win32'), 'Native Windows folder must remain outside the private fixture');
+      result[entry[0]] = entry[1];
+    }
+  } else { result.APPDATA = paths.join(root, 'appdata'); result.LOCALAPPDATA = paths.join(root, 'localappdata'); }
+  return { ...result, TEMP: paths.join(root, 'temp with spaces'), TMP: paths.join(root, 'temp with spaces'), TMPDIR: paths.join(root, 'temp with spaces'),
+    CODEX_MESSENGER_INSTALLER_SMOKE_TRACE: '1', CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS: nativeFolders ? '1' : '0' };
+}
+
+export async function validateNativeInstallerFolders(root, environment, { platform = process.platform } = {}) {
+  if (platform !== 'win32' || environment.CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS !== '1') return;
+  const realRoot = await fs.realpath(root);
+  for (const name of ['APPDATA', 'LOCALAPPDATA']) {
+    const folder = environmentEntry(environment, name)?.[1];
+    assert.ok(typeof folder === 'string' && path.win32.isAbsolute(folder) && !isOwnedPath(root, folder, 'win32'));
+    const native = environmentEntry(process.env, name)?.[1];
+    assert.ok(typeof native === 'string' && path.win32.relative(native, folder) === '', 'The setup must retain the actual OS environment folder');
+    assert.ok((await fs.stat(folder)).isDirectory(), 'The native Windows folder must exist');
+    const realFolder = await fs.realpath(folder);
+    assert.ok(path.win32.relative(realRoot, realFolder) !== '' && !isOwnedPath(realRoot, realFolder, 'win32'));
+  }
+}
+
+const updaterCacheDirectory = 'codex-messenger-updater';
+const cacheError = code => Object.assign(new Error(code), { installerSmokeCode: code, installerSmokeOperation: 'INSTALLER_CACHE_CLEANUP' });
+
+export async function snapshotInstallerCaches(localFolders, expectedSha256, expectedBytes) {
+  assert.match(expectedSha256, /^[0-9a-f]{64}$/);
+  assert.ok(Number.isSafeInteger(expectedBytes) && expectedBytes >= 1024);
+  const result = [], seen = new Set();
+  for (const base of localFolders) {
+    assert.ok(typeof base === 'string' && path.isAbsolute(base));
+    const realBase = await fs.realpath(base), normalized = process.platform === 'win32' ? realBase.toLowerCase() : realBase;
+    if (seen.has(normalized)) continue; seen.add(normalized);
+    const directory = path.join(realBase, updaterCacheDirectory), file = path.join(directory, 'installer.exe');
+    const parent = await fs.lstat(directory).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+    if (parent && (!parent.isDirectory() || parent.isSymbolicLink() || await fs.realpath(directory) !== directory)) throw cacheError('CACHE_DIRECTORY_UNOWNED');
+    const existing = await fs.lstat(file).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+    if (existing) throw cacheError('CACHE_PREEXISTING');
+    result.push({ base: realBase, directory, file, directoryExisted: Boolean(parent), expectedSha256, expectedBytes });
+  }
+  return result;
+}
+
+export async function cleanupInstallerCaches(snapshots) {
+  const files = [];
+  for (const snapshot of snapshots) {
+    assert.equal(snapshot.directory, path.join(snapshot.base, updaterCacheDirectory));
+    assert.equal(snapshot.file, path.join(snapshot.directory, 'installer.exe'));
+    const stat = await fs.lstat(snapshot.file).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+    if (!stat) continue;
+    const parent = await fs.lstat(snapshot.directory);
+    if (!parent.isDirectory() || parent.isSymbolicLink() || await fs.realpath(snapshot.directory) !== snapshot.directory) throw cacheError('CACHE_DIRECTORY_UNOWNED');
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.size !== snapshot.expectedBytes || await sha256File(snapshot.file) !== snapshot.expectedSha256) throw cacheError('CACHE_IDENTITY_MISMATCH');
+    files.push(snapshot);
+  }
+  // Validate every candidate before deleting any cache file.
+  for (const snapshot of files) {
+    await fs.unlink(snapshot.file);
+    if (!snapshot.directoryExisted) await fs.rmdir(snapshot.directory).catch(error => { if (!['ENOTEMPTY', 'EEXIST', 'ENOENT'].includes(error.code)) throw error; });
+  }
 }
 
 const psQuote = value => "'" + value.replace(/'/g, "''") + "'";
@@ -450,13 +520,21 @@ async function legacyMigrationSmoke(installer, options, root, entry, guid, env) 
 
 async function nsisSmoke(installer, options, root, entry, origin) {
   const env = privateEnvironment(root), directory = path.join(root, 'custom install with spaces', 'Codex Messenger');
+  await validateNativeInstallerFolders(root, env);
+  entry.environmentMode = env.CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS === '1' ? 'native' : 'private';
   const files = { executable: path.join(directory, 'Codex Messenger.exe'), asar: path.join(directory, 'resources', 'app.asar') };
   const pkg = JSON.parse(await fs.readFile(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'));
   const { UUID } = createRequire(import.meta.url)('builder-util-runtime');
   const guid = pkg.build.nsis.guid || UUID.v5(pkg.build.appId, UUID.parse('50e065bc-3134-11e6-9bab-38c9862bdaf3'));
   const identity = { root, directory, version: options.version, owner: randomUUID() };
+  const baselineStarted = Date.now();
   const before = await registryState(guid, env);
+  entry.registryBaselineDurationMs = Date.now() - baselineStarted;
   assert.deepEqual(before, { entries: [], menu: false, desktop: false }, 'Refuse to touch a pre-existing installation or shortcut');
+  assert.equal(pkg.name, 'codex-messenger', 'The cache namespace must match the packaged product');
+  const nativeLocalFolder = environmentEntry(process.env, 'LOCALAPPDATA')?.[1];
+  assert.ok(typeof nativeLocalFolder === 'string' && path.isAbsolute(nativeLocalFolder), 'Missing native Windows cache folder');
+  const cacheSnapshots = await snapshotInstallerCaches([nativeLocalFolder, environmentEntry(env, 'LOCALAPPDATA')[1]], entry.sha256, entry.bytes);
   const foreign = path.join(directory, 'installer-smoke-foreign.txt'), sentinel = 'owned installer smoke sentinel\n';
   const protectedFiles = [path.join(root, 'profile', 'preserve.txt'), path.join(root, 'codex-home', 'preserve.txt'), path.join(root, 'project', 'preserve.txt')];
   await Promise.all(protectedFiles.map(file => fs.writeFile(file, sentinel, { flag: 'wx', mode: 0o600 })));
@@ -503,7 +581,7 @@ async function nsisSmoke(installer, options, root, entry, origin) {
     await legacyMigrationSmoke(installer, options, root, entry, guid, env);
   }, async () => {
     if (attempted) {
-      await cleanupOwned(async () => {
+      await cleanupOwned(() => runWithOwnedCleanup(async () => {
         await ownedAppProcesses(files.executable, env, true);
         if (await fs.stat(foreign).then(() => true, () => false)) { assert.equal(await fs.readFile(foreign, 'utf8'), sentinel); await fs.unlink(foreign); }
         const state = await registryState(guid, env);
@@ -517,7 +595,7 @@ async function nsisSmoke(installer, options, root, entry, origin) {
           if (remaining.entries.length || remaining.menu || remaining.desktop) await mutateOwnedRegistration(guid, identity, env);
         }
         assert.deepEqual(await registryState(guid, env), { entries: [], menu: false, desktop: false });
-      });
+      }, () => cleanupInstallerCaches(cacheSnapshots)));
     }
   });
 }
@@ -540,6 +618,8 @@ export async function uniqueRegularPayload(root, name) {
 
 async function portableSmoke(installer, options, root, entry, origin) {
   const env = privateEnvironment(root), outer = path.join(root, 'outer'), payload = path.join(root, 'payload');
+  await validateNativeInstallerFolders(root, env);
+  entry.environmentMode = env.CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS === '1' ? 'native' : 'private';
   await Promise.all([outer, payload].map(directory => fs.mkdir(directory, { mode: 0o700 })));
   const zip = requireExitZero(await powershell("(Get-Command 7z.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source", env)).trim();
   assert.ok(path.isAbsolute(zip) && (await fs.stat(zip)).isFile(), 'Full 7-Zip is required for the actual NSIS portable payload');

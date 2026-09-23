@@ -8,7 +8,8 @@ import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, valida
   validatePortableWrapper, validateReadOnlyMount, validateBundleIdentity, validateInstalledRegistration, uniqueRegularPayload,
   installerChecks, validateInstallerEntry, requireNativeCommandExit, validateOwnedRegistrationCleanup, runInstallerSmoke,
   nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller, runWithOwnedCleanup, privateEnvironment, powershell,
-  parseInstallerTrace, sanitizeWindowsTimeoutDiagnostics, captureWindowsTimeoutDiagnostics } from '../scripts/installer-smoke.mjs';
+  parseInstallerTrace, sanitizeWindowsTimeoutDiagnostics, captureWindowsTimeoutDiagnostics, snapshotInstallerCaches,
+  cleanupInstallerCaches, validateNativeInstallerFolders } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -183,6 +184,71 @@ test('native Windows PowerShell reads its own isolated AppData and real registry
     `ConvertTo-Json -Compress -InputObject ([pscustomobject]@{appdata=$env:APPDATA;localappdata=$env:LOCALAPPDATA;temp=$env:TEMP;registry=([string]$version.CurrentBuildNumber).Length -gt 0})`;
   const actual = JSON.parse(requireNativeCommandExit(await powershell(script, env, 60000, 'POWERSHELL_PRIVATE_ENVIRONMENT')));
   assert.deepEqual(actual, { appdata: env.APPDATA, localappdata: env.LOCALAPPDATA, temp: env.TEMP, registry: true });
+});
+
+test('optional installer A/B mode keeps the native Windows folder casing without exposing host credentials or app profiles', () => {
+  const root = 'C:\\Users\\runner\\AppData\\Local\\Temp\\owned-fixture';
+  const base = { AppData: 'C:\\Users\\runner\\AppData\\Roaming', LocalAppData: 'C:\\Users\\runner\\AppData\\Local', Path: 'C:\\Windows\\System32',
+    TEMP: 'C:\\host-temp', CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS: '1', OPENAI_API_KEY: 'private-key', GH_TOKEN: 'private-token' };
+  const actual = privateEnvironment(root, base, { platform: 'win32' });
+  assert.equal(actual.AppData, base.AppData); assert.equal(actual.LocalAppData, base.LocalAppData);
+  assert.equal(Object.keys(actual).filter(key => key.toUpperCase() === 'APPDATA').length, 1);
+  assert.equal(Object.keys(actual).filter(key => key.toUpperCase() === 'LOCALAPPDATA').length, 1);
+  assert.equal(Object.hasOwn(actual, 'APPDATA'), false); assert.equal(Object.hasOwn(actual, 'LOCALAPPDATA'), false);
+  assert.equal(actual.TEMP, root + '\\temp with spaces'); assert.equal(actual.CODEX_HOME, root + '\\codex-home');
+  assert.equal(actual.CODEX_MESSENGER_USER_DATA_DIR, root + '\\profile'); assert.equal(actual.CODEX_MESSENGER_CODEX_PATH, root + '\\codex-unavailable');
+  assert.equal(Object.hasOwn(actual, 'OPENAI_API_KEY'), false); assert.equal(Object.hasOwn(actual, 'GH_TOKEN'), false);
+  const defaults = privateEnvironment(root, { ...base, CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS: '0' }, { platform: 'win32' });
+  assert.equal(defaults.APPDATA, root + '\\appdata'); assert.equal(defaults.LOCALAPPDATA, root + '\\localappdata');
+  for (const change of [{ AppData: undefined }, { LocalAppData: 'relative' }, { AppData: root }, { LocalAppData: root + '\\localappdata' }, { APPDATA: 'C:\\foreign' }]) {
+    assert.throws(() => privateEnvironment(root, { ...base, ...change }, { platform: 'win32' }));
+  }
+  const duplicate = privateEnvironment(root, { ...base, APPDATA: base.AppData }, { platform: 'win32' });
+  assert.equal(Object.keys(duplicate).filter(key => key.toUpperCase() === 'APPDATA').length, 1);
+});
+
+test('installer cache cleanup deletes only a newly created regular cache with exact observed installer bytes and preserves adjacent files', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'installer-cache-unit-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const data = Buffer.alloc(2048, 0x43), digest = createHash('sha256').update(data).digest('hex');
+  const snapshots = await snapshotInstallerCaches([root, root], digest, data.length);
+  assert.equal(snapshots.length, 1);
+  const [snapshot] = snapshots;
+  await fs.mkdir(snapshot.directory); await fs.writeFile(snapshot.file, data); await fs.writeFile(path.join(snapshot.directory, 'preserve.txt'), 'foreign adjacent file');
+  await cleanupInstallerCaches(snapshots);
+  await assert.rejects(fs.stat(snapshot.file), { code: 'ENOENT' });
+  assert.equal(await fs.readFile(path.join(snapshot.directory, 'preserve.txt'), 'utf8'), 'foreign adjacent file');
+  await fs.writeFile(snapshot.file, data);
+  await assert.rejects(snapshotInstallerCaches([root], digest, data.length), error => error.installerSmokeCode === 'CACHE_PREEXISTING');
+  assert.deepEqual(await fs.readFile(snapshot.file), data);
+});
+
+test('cache identity and links are checked for every candidate before any cache deletion', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'installer-cache-guard-unit-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const bases = ['first', 'second'].map(name => path.join(root, name));
+  await Promise.all(bases.map(base => fs.mkdir(base)));
+  const data = Buffer.alloc(2048, 0x44), digest = createHash('sha256').update(data).digest('hex');
+  const snapshots = await snapshotInstallerCaches(bases, digest, data.length);
+  await Promise.all(snapshots.map(snapshot => fs.mkdir(snapshot.directory)));
+  await fs.writeFile(snapshots[0].file, data); await fs.writeFile(snapshots[1].file, Buffer.alloc(data.length, 0x45));
+  await assert.rejects(cleanupInstallerCaches(snapshots), error => error.installerSmokeCode === 'CACHE_IDENTITY_MISMATCH');
+  assert.deepEqual(await fs.readFile(snapshots[0].file), data);
+  await fs.unlink(snapshots[1].file);
+  await fs.symlink(process.platform === 'win32' ? snapshots[0].directory : snapshots[0].file, snapshots[1].file, process.platform === 'win32' ? 'junction' : 'file');
+  await assert.rejects(cleanupInstallerCaches(snapshots), error => error.installerSmokeCode === 'CACHE_IDENTITY_MISMATCH');
+  assert.deepEqual(await fs.readFile(snapshots[0].file), data);
+});
+
+test('native Windows A/B setup folders must exist before launching an installer', { skip: process.platform !== 'win32' }, async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'installer-native-folders-unit-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const env = privateEnvironment(root, { ...process.env, CODEX_MESSENGER_INSTALLER_KEEP_OS_FOLDERS: '1' });
+  await validateNativeInstallerFolders(root, env);
+  const modified = { ...env };
+  const key = Object.keys(modified).find(name => name.toUpperCase() === 'APPDATA');
+  modified[key] = path.join(path.dirname(root), 'missing-native-folder-' + path.basename(root));
+  await assert.rejects(validateNativeInstallerFolders(root, modified));
 });
 
 test('partial NSIS cleanup requires exact owned registration and shortcut targets before any deletion', () => {
