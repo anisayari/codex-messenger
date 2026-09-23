@@ -25,7 +25,24 @@ export const installerChecks = {
   zip: ['extractedApplication', 'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup']
 };
 
-export const parseInstallerSmokeArguments = parseSmokeArguments;
+export function parseInstallerSmokeArguments(args) {
+  const regular = [];
+  let diagnosticContainer;
+  for (let index = 0; index < args.length; index += 2) {
+    if (args[index] === '--diagnostic-container') {
+      assert.equal(diagnosticContainer, undefined, 'Duplicate diagnostic container');
+      assert.equal(args[index + 1], 'portable', 'Only the portable container has a diagnostic mode');
+      diagnosticContainer = 'portable';
+    } else regular.push(args[index], args[index + 1]);
+  }
+  const options = parseSmokeArguments(regular);
+  if (diagnosticContainer) {
+    assert.equal(options.platform, 'windows', 'Portable diagnostics require Windows x64');
+    assert.equal(options.arch, 'x64', 'Portable diagnostics require Windows x64');
+    options.diagnosticContainer = diagnosticContainer;
+  }
+  return options;
+}
 
 export function isOwnedPath(root, candidate, platform = process.platform) {
   const paths = platform === 'win32' ? path.win32 : path.posix;
@@ -745,6 +762,58 @@ export async function uniqueRegularPayload(root, name) {
   return found[0];
 }
 
+export async function snapshotPortableTemp(directory) {
+  assert.ok(path.isAbsolute(directory));
+  const root = await fs.lstat(directory);
+  assert.ok(root.isDirectory() && !root.isSymbolicLink() && path.relative(directory, await fs.realpath(directory)) === '', 'Expected the canonical private portable TEMP');
+  const records = [];
+  const visit = async (parent, depth) => {
+    assert.ok(depth <= 8 && records.length <= 4096, 'Portable TEMP exceeds its diagnostic bounds');
+    for (const name of (await fs.readdir(parent)).sort()) {
+      const file = path.join(parent, name), stat = await fs.lstat(file), relative = path.relative(directory, file);
+      const kind = stat.isSymbolicLink() ? 'link' : stat.isDirectory() ? 'directory' : stat.isFile() ? 'file' : 'other';
+      const record = { name: relative, kind };
+      if (kind === 'file') Object.assign(record, { bytes: stat.size, sha256: await sha256File(file) });
+      records.push(record);
+      assert.ok(records.length <= 4096, 'Portable TEMP exceeds its diagnostic bounds');
+      if (kind === 'directory') await visit(file, depth + 1);
+    }
+  };
+  await visit(directory, 0);
+  return records;
+}
+
+export function classifyPortableTemp(records) {
+  assert.ok(Array.isArray(records) && records.length <= 4096);
+  const counts = new Map();
+  for (const record of records) {
+    assert.ok(typeof record.name === 'string' && ['file', 'directory', 'link', 'other'].includes(record.kind));
+    const name = record.name.split(/[\\/]/).at(-1);
+    let category = 'OTHER_TEMP';
+    if (/^__PSScriptPolicyTest_[a-z0-9]{1,32}(?:\.[a-z0-9]{1,16}){0,2}\.ps(?:1|m1)$/i.test(name)) category = 'POWERSHELL_POLICY_TEMP';
+    else if (/^ns[a-f0-9]{4}\.tmp$/i.test(name)) category = record.kind === 'directory' ? 'NSIS_PLUGIN_DIRECTORY' : 'NSIS_TEMP_FILE';
+    else if (record.kind === 'directory' && name.toLowerCase() === 'app') category = 'PORTABLE_PAYLOAD_DIRECTORY';
+    else if (record.kind === 'directory' && /^[a-z0-9]{27}$/i.test(name)) category = 'KSUID_DIRECTORY';
+    else if (record.kind === 'directory' && /^(?:cache|code cache|gpucache|dawncache|crashpad|blob_storage|session storage)$/i.test(name)) category = 'CACHE_DIRECTORY';
+    const key = `${category}:${record.kind}`;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return [...counts].sort(([left], [right]) => left.localeCompare(right)).map(([key, count]) => {
+    const [category, kind] = key.split(':');
+    return { category, kind, count };
+  });
+}
+
+const containerValidationError = (code, operation) => Object.assign(new Error(code), { installerSmokeCode: code, installerSmokeOperation: operation });
+
+export function requirePortableTempCleanup(baseline, remaining) {
+  // Keep the original empty-TEMP requirement until native diagnostics explain
+  // whether a tool created a baseline file before the wrapper was launched.
+  if (remaining.length > 0) throw containerValidationError('PORTABLE_TEMP_NOT_EMPTY', 'PORTABLE_TEMP_RECHECK');
+  try { assert.deepEqual(remaining, baseline); }
+  catch { throw containerValidationError('PORTABLE_TEMP_BASELINE_CHANGED', 'PORTABLE_TEMP_RECHECK'); }
+}
+
 async function portableSmoke(installer, options, root, entry, origin) {
   const env = privateEnvironment(root), outer = path.join(root, 'outer'), payload = path.join(root, 'payload');
   await validateNativeInstallerFolders(root, env);
@@ -764,10 +833,21 @@ async function portableSmoke(installer, options, root, entry, origin) {
   await fs.mkdir(wrapperDirectory, { mode: 0o700 });
   const wrapperFile = path.join(wrapperDirectory, path.basename(installer));
   await fs.copyFile(installer, wrapperFile); assert.equal(await sha256File(wrapperFile), entry.sha256);
+  const tempDirectory = path.join(root, 'temp with spaces');
+  const baseline = await snapshotPortableTemp(tempDirectory);
+  entry.portableTempBaseline = classifyPortableTemp(baseline);
   const wrapper = await runOwned(wrapperFile, ['--smoke-test'], { env, cwd: wrapperDirectory, timeoutMs: 45000 });
   Object.assign(entry.checks, validatePortableWrapper(await fs.readFile(path.join(root, 'profile', 'codex-messenger.log'), 'utf8'), wrapper,
     { version: options.version, privateRoot: path.join(root, 'temp with spaces'), userData: path.join(root, 'profile') }));
-  assert.deepEqual(await fs.readdir(path.join(root, 'temp with spaces')), [], 'Portable wrapper must remove its temporary payload');
+  const remaining = await snapshotPortableTemp(tempDirectory);
+  entry.portableTempRemaining = classifyPortableTemp(remaining);
+  const baselineByName = new Map(baseline.map(record => [record.name, record]));
+  entry.portableTempAdded = classifyPortableTemp(remaining.filter(record => !baselineByName.has(record.name)));
+  entry.portableTempBaselineUnchanged = baseline.every(record => {
+    const after = remaining.find(candidate => candidate.name === record.name);
+    return after !== undefined && JSON.stringify(record) === JSON.stringify(after);
+  });
+  requirePortableTempCleanup(baseline, remaining);
 }
 
 async function macSmoke(installer, kind, options, root, entry, origin) {
@@ -816,14 +896,20 @@ export async function runInstallerSmoke(options, { signal } = {}) {
 }
 
 async function executeInstallerSmoke(options) {
+  const diagnosticOnly = options.diagnosticContainer === 'portable';
   const report = { schemaVersion: 1, passed: false, version: options.version, platform: options.platform, arch: options.arch, installers: [], failure: null, failureDetail: null,
+    ...(diagnosticOnly ? { diagnosticOnly: true } : {}),
     scope: 'Actual installer containers and local packaged startup only; no credentials, inference, signing or notarization validation' };
   let stage = 'HOST_TARGET';
   try {
     checkAbort();
     assert.equal(process.platform, options.platform === 'windows' ? 'win32' : 'darwin'); assert.equal(process.arch, options.arch);
+    if (Object.hasOwn(options, 'diagnosticContainer')) {
+      assert.ok(diagnosticOnly && options.platform === 'windows' && options.arch === 'x64', 'Unsupported diagnostic container');
+    }
     const origin = await sha256File((await findPackagedExecutable(options)).asar);
     for (const [index, name] of expectedInstallers(options).entries()) {
+      if (diagnosticOnly && index !== 1) continue;
       checkAbort();
       const kind = options.platform === 'windows' ? (index === 0 ? 'nsis' : 'portable') : (index === 0 ? 'dmg' : 'zip');
       stage = kind.toUpperCase();
@@ -838,16 +924,18 @@ async function executeInstallerSmoke(options) {
         if (kind === 'nsis') await nsisSmoke(installer, options, root, entry, origin);
         else if (kind === 'portable') await portableSmoke(installer, options, root, entry, origin);
         else await macSmoke(installer, kind, options, root, entry, origin);
-        assert.equal(await sha256File(installer), entry.sha256, 'Actual installer must not change during validation');
+        try { assert.equal(await sha256File(installer), entry.sha256, 'Actual installer must not change during validation'); }
+        catch { throw containerValidationError('CONTAINER_MUTATED', 'CONTAINER_RECHECK'); }
       } finally {
         await fs.rm(root, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
         entry.checks.privateTempCleanup = true;
       }
       checkAbort();
       entry.passed = true;
-      try { validateInstallerEntry(entry, kind, options); } catch (error) { entry.passed = false; throw error; }
+      try { validateInstallerEntry(entry, kind, options); }
+      catch { entry.passed = false; throw containerValidationError('RECEIPT_INVALID', 'INSTALLER_RECEIPT_VALIDATION'); }
     }
-    report.passed = report.installers.length === 2 && report.installers.every(entry => entry.passed);
+    report.passed = report.installers.length === (diagnosticOnly ? 1 : 2) && report.installers.every(entry => entry.passed);
   } catch (error) {
     report.failure = stage;
     report.failureDetail = nativeScope.getStore()?.signal?.aborted ? 'HARD_TIMEOUT' : error.installerSmokeCode || (/^[A-Z0-9_]{1,64}$/.test(error.code || '') ? error.code : 'VALIDATION_FAILED');

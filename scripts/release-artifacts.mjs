@@ -65,6 +65,7 @@ export function validatePackagedSmoke(proof, target, label = 'Packaged applicati
 
 export function validateInstallerSmoke(proof, target, appAsarSha256) {
   matchingTarget(proof, target, 'Installer smoke');
+  assert.ok(!Object.hasOwn(proof, 'diagnosticOnly') || proof.diagnosticOnly === false, 'Diagnostic-only installer receipts cannot be uploaded as release evidence');
   assert.ok(Array.isArray(proof.installers), 'Installer smoke must contain installer receipts');
   const names = expectedInstallers(target);
   assert.deepEqual(proof.installers.map(receipt => receipt?.name).sort(), [...names].sort(), 'Installer smoke must cover each expected installer exactly once');

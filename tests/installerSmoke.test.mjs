@@ -10,7 +10,8 @@ import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, valida
   nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller, runWithOwnedCleanup, privateEnvironment, powershell,
   parseInstallerTrace, sanitizeWindowsTimeoutDiagnostics, captureWindowsTimeoutDiagnostics, snapshotInstallerCaches,
   cleanupInstallerCaches, validateNativeInstallerFolders, snapshotInstalledPayload, validateRunningInstalledApplication,
-  readRunningApplicationLog, waitForRunningInstalledApplication } from '../scripts/installer-smoke.mjs';
+  readRunningApplicationLog, waitForRunningInstalledApplication, snapshotPortableTemp, classifyPortableTemp,
+  requirePortableTempCleanup } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -29,6 +30,15 @@ test('installer smoke CLI and NSIS arguments preserve the last unquoted private 
   assert.deepEqual(nsisInstallArguments('C:\\private\\custom path'), ['/S', '/currentuser', '--no-desktop-shortcut', '/D=C:\\private\\custom path']);
   for (const bad of ['relative', 'C:\\private\\bad"path', 'C:\\private\\bad\npath']) assert.throws(() => nsisInstallArguments(bad));
   assert.throws(() => parseInstallerSmokeArguments(['--version', '0.0.4\n']));
+});
+
+test('portable diagnostic CLI is explicitly marked and accepts only the Windows x64 portable target', () => {
+  const args = Object.entries(options).flatMap(([key, value]) => ['--' + key, value]);
+  assert.deepEqual(parseInstallerSmokeArguments([...args, '--diagnostic-container', 'portable']), { ...options, diagnosticContainer: 'portable' });
+  for (const value of ['nsis', 'dmg', '', 'portable\n']) assert.throws(() => parseInstallerSmokeArguments([...args, '--diagnostic-container', value]));
+  assert.throws(() => parseInstallerSmokeArguments([...args, '--diagnostic-container', 'portable', '--diagnostic-container', 'portable']));
+  const macArgs = Object.entries({ ...options, platform: 'macos', arch: 'arm64' }).flatMap(([key, value]) => ['--' + key, value]);
+  assert.throws(() => parseInstallerSmokeArguments([...macArgs, '--diagnostic-container', 'portable']));
 });
 
 test('direct NSIS uninstall waits on the copied executable with only argv0 quoted and the install directory last and unquoted', () => {
@@ -160,6 +170,46 @@ test('actual portable wrapper proof rejects missing startup, foreign document, r
     wrapperLog() + '\n' + JSON.stringify({ event: 'window.preload-error' }), wrapperLog() + '\n' + JSON.stringify({ event: 'window.console-message', level: 'error' }),
     wrapperLog() + '\n' + wrapperLog().split('\n')[0]]) assert.throws(() => validatePortableWrapper(invalid, result, wrapperOptions));
   for (const changes of [{ timedOut: true }, { forced: true }, { code: 1 }, { code: null }, { signal: 'SIGKILL' }, { started: false }]) assert.throws(() => validatePortableWrapper(wrapperLog(), { ...result, ...changes }, wrapperOptions));
+});
+
+test('portable TEMP diagnostics expose only bounded categories and kinds, including PowerShell policy files and NSIS or payload directories', () => {
+  const records = [
+    { name: '__PSScriptPolicyTest_a1b2c3.d4e5.ps1', kind: 'file' },
+    { name: '__PSScriptPolicyTest_a1b2c3.d4e5.psm1', kind: 'file' },
+    { name: 'nsAB12.tmp', kind: 'directory' }, { name: 'nsCD34.tmp', kind: 'file' },
+    { name: 'nsAB12.tmp/app', kind: 'directory' }, { name: 'GpuCache', kind: 'directory' },
+    { name: '123456789012345678901234567', kind: 'directory' },
+    { name: 'secret-private-username', kind: 'file' }, { name: 'secret-private-link', kind: 'link' }
+  ];
+  const classified = classifyPortableTemp(records);
+  assert.deepEqual(classified, [
+    { category: 'CACHE_DIRECTORY', kind: 'directory', count: 1 },
+    { category: 'KSUID_DIRECTORY', kind: 'directory', count: 1 },
+    { category: 'NSIS_PLUGIN_DIRECTORY', kind: 'directory', count: 1 },
+    { category: 'NSIS_TEMP_FILE', kind: 'file', count: 1 },
+    { category: 'OTHER_TEMP', kind: 'file', count: 1 }, { category: 'OTHER_TEMP', kind: 'link', count: 1 },
+    { category: 'PORTABLE_PAYLOAD_DIRECTORY', kind: 'directory', count: 1 },
+    { category: 'POWERSHELL_POLICY_TEMP', kind: 'file', count: 2 }
+  ]);
+  assert.ok(!JSON.stringify(classified).includes('secret-private'));
+  assert.throws(() => classifyPortableTemp([{ name: 'private', kind: 'arbitrary-kind' }]));
+});
+
+test('portable TEMP snapshot detects baseline content changes and leftover entries without weakening the empty-TEMP requirement', async t => {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'portable-temp-unit-')));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const baseline = await snapshotPortableTemp(root);
+  assert.deepEqual(baseline, []); requirePortableTempCleanup(baseline, baseline);
+  const policy = path.join(root, '__PSScriptPolicyTest_a1.b2.ps1');
+  await fs.writeFile(policy, 'unit policy fixture');
+  const before = await snapshotPortableTemp(root);
+  assert.throws(() => requirePortableTempCleanup(before, before), error => error.installerSmokeCode === 'PORTABLE_TEMP_NOT_EMPTY' && error.installerSmokeOperation === 'PORTABLE_TEMP_RECHECK');
+  await fs.writeFile(policy, 'changed unit policy fixture');
+  assert.notDeepEqual(await snapshotPortableTemp(root), before);
+  await fs.mkdir(path.join(root, 'nsAB12.tmp')); await fs.writeFile(path.join(root, 'nsAB12.tmp', 'unit.txt'), 'unit temporary fixture');
+  const after = await snapshotPortableTemp(root);
+  assert.throws(() => requirePortableTempCleanup(baseline, after), error => error.installerSmokeCode === 'PORTABLE_TEMP_NOT_EMPTY');
+  assert.throws(() => requirePortableTempCleanup(before, []), error => error.installerSmokeCode === 'PORTABLE_TEMP_BASELINE_CHANGED');
 });
 
 test('DMG receipt and Mac bundle identity require a readonly owned mount, exact version and exact architecture', () => {
@@ -341,4 +391,8 @@ test('global installer timeout returns failure before host or installer I/O and 
   const controller = new AbortController(); controller.abort();
   const report = await runInstallerSmoke(options, { signal: controller.signal });
   assert.equal(report.passed, false); assert.equal(report.failureDetail, 'HARD_TIMEOUT'); assert.deepEqual(report.installers, []);
+  assert.equal(Object.hasOwn(report, 'diagnosticOnly'), false);
+  const diagnostic = await runInstallerSmoke({ ...options, diagnosticContainer: 'portable' }, { signal: controller.signal });
+  assert.equal(diagnostic.diagnosticOnly, true); assert.equal(diagnostic.passed, false);
+  assert.equal(diagnostic.failureDetail, 'HARD_TIMEOUT'); assert.deepEqual(diagnostic.installers, []);
 });

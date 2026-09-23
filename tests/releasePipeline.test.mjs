@@ -131,6 +131,8 @@ test('Windows receipt requires real portable wrapper execution and protected NSI
     appAsarSha256: applicationSha, smoke: packagedProof(selected), checks: checksFor(requiredInstallerChecks(name, selected)) }));
   const proof = { schemaVersion: 1, passed: true, ...selected, installers };
   validateInstallerSmoke(proof, selected, applicationSha);
+  assert.throws(() => validateInstallerSmoke({ ...proof, diagnosticOnly: true }, selected, applicationSha), /Diagnostic-only/);
+  assert.throws(() => validateInstallerSmoke({ ...proof, diagnosticOnly: true, installers: [installers[1]] }, selected, applicationSha), /Diagnostic-only/);
   for (const [index, key] of [[0, 'runningAppInstallRefused'], [0, 'runningAppPreserved'], [0, 'foreignUninstallRefused'], [0, 'foreignFilePreserved'], [0, 'protectedFilesPreserved'],
     [0, 'uninstalled'], [0, 'registrationRemoved'], [1, 'actualWrapperExecution'], [1, 'wrapperCleanExit'], [1, 'wrapperRuntimeErrorsZero']]) {
     const changed = structuredClone(proof);
