@@ -1,13 +1,13 @@
 {
-  "verifiedAt": "2026-09-23T15:03:50.484Z",
+  "verifiedAt": "2026-09-23T15:12:46.850Z",
   "passed": true,
   "url": "https://codexmessenger.net/",
   "status": 200,
   "tls": "HTTPS accepted by native Node certificate validation",
-  "sourceCommit": "1b3542f731a81c8537830258df033668967717fa",
+  "sourceCommit": "ea557a2904bad7c1612b55004fb6c89e99354b03",
   "html": {
-    "bytes": 59157,
-    "sha256": "b288a5fb6826ce1c8f00e26acb562a861237be4cbd33ca5dbbaf9ca49fc9ee70",
+    "bytes": 59286,
+    "sha256": "0c44b86a10c9af25991c594d1e16582d2cd37d57760474acd5cef923ce0d4253",
     "exactDeploymentTransform": true
   },
   "script": {
@@ -34,5 +34,10 @@
       "status": 301,
       "location": "https://codexmessenger.net/"
     }
-  ]
+  ],
+  "previousDeployment": {
+    "sourceCommit": "1b3542f731a81c8537830258df033668967717fa",
+    "verifiedAt": "2026-09-23T15:03:50.484Z",
+    "htmlSha256": "b288a5fb6826ce1c8f00e26acb562a861237be4cbd33ca5dbbaf9ca49fc9ee70"
+  }
 }

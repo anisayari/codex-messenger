@@ -7424,5 +7424,7 @@
       "bytes": 459,
       "sha256": "54131a3615c3c151882ac173c8c9837de309fbaa29d97f6857f102fb9af07cdc"
     }
-  ]
+  ],
+  "sourceCommit": "592462a66d471b236eb8c9c2eef550c1ad3c9f9f",
+  "scope": "Immutable desktop release source; subsequent website and documentation commits are attested by the production site reports."
 }
