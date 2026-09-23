@@ -133,9 +133,10 @@ export function validateInstallerEntry(entry, kind, options) {
   assert.equal(entry.smoke.appAsarSha256, entry.appAsarSha256);
 }
 
-async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 30000, input, verbatim = false } = {}) {
+async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 30000, input, verbatim = false, operation = 'NATIVE_COMMAND' } = {}) {
+  assert.match(operation, /^[A-Z0-9_]{1,64}$/);
   const signal = nativeScope.getStore()?.cleanup ? undefined : nativeScope.getStore()?.signal;
-  if (signal?.aborted) return { code: null, signal: null, started: false, timedOut: false, forced: false, aborted: true, stdout: '', stderr: '' };
+  if (signal?.aborted) return { code: null, signal: null, started: false, timedOut: false, forced: false, aborted: true, stdout: '', stderr: '', operation };
   return new Promise(resolve => {
     const child = spawn(command, args, { env, cwd, shell: false, windowsHide: true,
       ...(verbatim ? nsisVerbatimCommand(command) : { windowsVerbatimArguments: false }),
@@ -144,7 +145,7 @@ async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 300
     const finish = (code, childSignal) => {
       if (finished) return; finished = true;
       clearTimeout(timer); clearTimeout(fallback); signal?.removeEventListener('abort', onAbort);
-      resolve({ code, signal: childSignal, started, timedOut, forced, aborted, stdout, stderr });
+      resolve({ code, signal: childSignal, started, timedOut, forced, aborted, stdout, stderr, operation });
     };
     const stop = () => {
       forced = true;
@@ -175,20 +176,38 @@ async function runOwned(command, args, { env = process.env, cwd, timeoutMs = 300
 export function requireNativeCommandExit(result, expectedExitCode = 0) {
   const code = result.aborted ? 'HARD_TIMEOUT' : !result.started ? 'NATIVE_COMMAND_NOT_STARTED' : result.timedOut ? 'NATIVE_COMMAND_TIMEOUT' : result.forced ? 'NATIVE_COMMAND_FORCED' :
     result.signal !== null ? 'NATIVE_COMMAND_SIGNAL' : result.code !== expectedExitCode ? `NATIVE_COMMAND_EXIT_${Number.isSafeInteger(result.code) ? result.code : 'UNKNOWN'}` : null;
-  if (code) throw Object.assign(new Error(code), { installerSmokeCode: code, expectedExitCode });
+  if (code) throw Object.assign(new Error(code), { installerSmokeCode: code, expectedExitCode,
+    ...(/^[A-Z0-9_]{1,64}$/.test(result.operation || '') ? { installerSmokeOperation: result.operation } : {}) });
   return result.stdout;
 }
 const requireExitZero = result => requireNativeCommandExit(result);
 
-function privateEnvironment(root) {
+const boundedFailureCode = error => /^[A-Z0-9_]{1,64}$/.test(error?.installerSmokeCode || '') ? error.installerSmokeCode :
+  /^[A-Z0-9_]{1,64}$/.test(error?.code || '') ? error.code : 'VALIDATION_FAILED';
+
+export async function runWithOwnedCleanup(task, cleanup) {
+  let primary;
+  try { return await task(); }
+  catch (error) { primary = error; throw error; }
+  finally {
+    try { await cleanup(); }
+    catch (error) {
+      if (!primary) throw error;
+      primary.installerSmokeCleanupCode = boundedFailureCode(error);
+      if (/^[A-Z0-9_]{1,64}$/.test(error?.installerSmokeOperation || '')) primary.installerSmokeCleanupOperation = error.installerSmokeOperation;
+    }
+  }
+}
+
+export function privateEnvironment(root) {
   const result = isolatedSmokeEnvironment(process.env, { userData: path.join(root, 'profile'), codexHome: path.join(root, 'codex-home'), unavailableCodex: path.join(root, 'codex-unavailable') });
   for (const key of Object.keys(result)) if (['TEMP', 'TMP', 'TMPDIR', 'APPDATA', 'LOCALAPPDATA'].includes(key.toUpperCase())) delete result[key];
   return { ...result, TEMP: path.join(root, 'temp with spaces'), TMP: path.join(root, 'temp with spaces'), TMPDIR: path.join(root, 'temp with spaces'), APPDATA: path.join(root, 'appdata'), LOCALAPPDATA: path.join(root, 'localappdata') };
 }
 
 const psQuote = value => "'" + value.replace(/'/g, "''") + "'";
-async function powershell(script, env, timeoutMs = 15000) {
-  return runOwned('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from("$ErrorActionPreference='Stop'; " + script, 'utf16le').toString('base64')], { env, timeoutMs });
+export async function powershell(script, env, timeoutMs = 60000, operation = 'POWERSHELL') {
+  return runOwned('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from("$ErrorActionPreference='Stop'; " + script, 'utf16le').toString('base64')], { env, timeoutMs, operation });
 }
 
 async function registryState(guid, env) {
@@ -197,7 +216,7 @@ async function registryState(guid, env) {
     `$entries += [pscustomobject]@{hive=$hive;installKey=(Test-Path -LiteralPath $install);uninstallKey=(Test-Path -LiteralPath $uninstall);location=$i.InstallLocation;version=$u.DisplayVersion} } }; ` +
     `$menu=Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs\\Codex Messenger.lnk'; $desktop=Join-Path ([Environment]::GetFolderPath('Desktop')) 'Codex Messenger.lnk'; ` +
     `ConvertTo-Json -Compress -InputObject ([pscustomobject]@{entries=@($entries);menu=(Test-Path -LiteralPath $menu);desktop=(Test-Path -LiteralPath $desktop)})`;
-  return JSON.parse(requireExitZero(await powershell(script, env)));
+  return JSON.parse(requireExitZero(await powershell(script, env, 60000, 'REGISTRY_STATE')));
 }
 
 export function validateInstalledRegistration(state, directory, version) {
@@ -257,7 +276,7 @@ function cleanupSnapshotScript(guid) {
 
 async function mutateOwnedRegistration(guid, identity, env, mark = false) {
   const snapshotScript = cleanupSnapshotScript(guid);
-  const state = JSON.parse(requireExitZero(await powershell(snapshotScript + 'ConvertTo-Json -Compress -Depth 6 -InputObject (Get-OwnedState)', env)));
+  const state = JSON.parse(requireExitZero(await powershell(snapshotScript + 'ConvertTo-Json -Compress -Depth 6 -InputObject (Get-OwnedState)', env, 60000, 'REGISTRATION_CLEANUP_SNAPSHOT')));
   validateOwnedRegistrationCleanup(state, identity);
   const iKey = `HKCU:\\Software\\${guid}`, uKey = `HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${guid}`;
   const recheck = snapshotScript + `$before=ConvertFrom-Json -InputObject ${psQuote(JSON.stringify(state))}; $fresh=Get-OwnedState; ` +
@@ -270,13 +289,13 @@ async function mutateOwnedRegistration(guid, identity, env, mark = false) {
     mutation = `foreach($key in @(${psQuote(iKey)},${psQuote(uKey)})){if(Test-Path -LiteralPath $key){Remove-Item -LiteralPath $key -Recurse -Force}}; ` +
       `foreach($link in $fresh.shortcuts){$base=if($link.kind -eq 'menu'){Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs'}else{[Environment]::GetFolderPath('Desktop')}; Remove-Item -LiteralPath (Join-Path $base 'Codex Messenger.lnk') -Force};`;
   }
-  requireExitZero(await powershell(recheck + mutation, env));
+  requireExitZero(await powershell(recheck + mutation, env, 60000, mark ? 'REGISTRATION_MARK_OWNER' : 'REGISTRATION_REMOVE_OWNED'));
 }
 
 async function ownedAppProcesses(executable, env, stop = false) {
-  const script = `$apps=@(Get-Process -ErrorAction SilentlyContinue | Where-Object { try { $_.Path -eq ${psQuote(executable)} } catch { $false } }); ` +
+  const script = `$apps=@(Get-Process -Name ${psQuote(path.win32.parse(executable).name)} -ErrorAction SilentlyContinue | Where-Object { try { $_.Path -eq ${psQuote(executable)} } catch { $false } }); ` +
     (stop ? '$apps | Stop-Process -Force; ' : '') + 'ConvertTo-Json -Compress -InputObject @($apps | ForEach-Object {$_.Id})';
-  return JSON.parse(requireExitZero(await powershell(script, env)));
+  return JSON.parse(requireExitZero(await powershell(script, env, 60000, stop ? 'APP_PROCESSES_STOP_OWNED' : 'APP_PROCESSES_STATE')));
 }
 
 async function legacyMigrationSmoke(installer, options, root, entry, guid, env) {
@@ -302,7 +321,7 @@ async function legacyMigrationSmoke(installer, options, root, entry, guid, env) 
     attempted = true; requireExitZero(await powershell(fixture, env));
     const before = await registryState(guid, env);
     validateInstalledRegistration({ ...before, menu: true }, directory, '0.0.3');
-    const refused = await runOwned(installer, nsisInstallArguments(target), { env, cwd: root, timeoutMs: 30000, verbatim: true });
+    const refused = await runOwned(installer, nsisInstallArguments(target), { env, cwd: root, timeoutMs: 30000, verbatim: true, operation: 'NSIS_LEGACY_INSTALL' });
     requireNativeCommandExit(refused, 42);
     entry.checks.legacySharedDirectoryRefused = true;
     assert.deepEqual(await registryState(guid, env), before);
@@ -339,13 +358,13 @@ async function nsisSmoke(installer, options, root, entry, origin) {
   const uninstall = async () => {
     const copy = await copyOwnedUninstaller(root, directory, uninstallerSha256);
     try {
-      return await runOwned(copy.executable, nsisUninstallArguments(directory), { env, cwd: root, timeoutMs: 30000, verbatim: true });
+      return await runOwned(copy.executable, nsisUninstallArguments(directory), { env, cwd: root, timeoutMs: 30000, verbatim: true, operation: 'NSIS_UNINSTALL' });
     } finally { await fs.rm(copy.copyDirectory, { recursive: true, force: true }); }
   };
   let attempted = false;
-  try {
+  await runWithOwnedCleanup(async () => {
     attempted = true;
-    requireExitZero(await runOwned(installer, nsisInstallArguments(directory), { env, cwd: root, timeoutMs: 60000, verbatim: true }));
+    requireExitZero(await runOwned(installer, nsisInstallArguments(directory), { env, cwd: root, timeoutMs: 60000, verbatim: true, operation: 'NSIS_INSTALL' }));
     validateInstalledRegistration(await registryState(guid, env), directory, options.version);
     await mutateOwnedRegistration(guid, identity, env, true);
     assert.ok((await fs.stat(files.executable)).isFile());
@@ -376,14 +395,14 @@ async function nsisSmoke(installer, options, root, entry, origin) {
     for (const file of protectedFiles) assert.equal(await fs.readFile(file, 'utf8'), sentinel);
     entry.checks.protectedFilesPreserved = true;
     await legacyMigrationSmoke(installer, options, root, entry, guid, env);
-  } finally {
+  }, async () => {
     if (attempted) {
       await cleanupOwned(async () => {
         await ownedAppProcesses(files.executable, env, true);
         if (await fs.stat(foreign).then(() => true, () => false)) { assert.equal(await fs.readFile(foreign, 'utf8'), sentinel); await fs.unlink(foreign); }
         const state = await registryState(guid, env);
         if (state.entries.length || state.menu || state.desktop || await fs.stat(files.executable).then(() => true, () => false)) {
-          const cleanupState = JSON.parse(requireExitZero(await powershell(cleanupSnapshotScript(guid) + 'ConvertTo-Json -Compress -Depth 6 -InputObject (Get-OwnedState)', env)));
+          const cleanupState = JSON.parse(requireExitZero(await powershell(cleanupSnapshotScript(guid) + 'ConvertTo-Json -Compress -Depth 6 -InputObject (Get-OwnedState)', env, 60000, 'NSIS_CLEANUP_SNAPSHOT')));
           validateOwnedRegistrationCleanup(cleanupState, identity);
           const uninstallFile = path.join(directory, 'Uninstall Codex Messenger.exe');
           const regular = await fs.lstat(uninstallFile).then(stat => stat.isFile() && !stat.isSymbolicLink(), () => false);
@@ -394,7 +413,7 @@ async function nsisSmoke(installer, options, root, entry, origin) {
         assert.deepEqual(await registryState(guid, env), { entries: [], menu: false, desktop: false });
       });
     }
-  }
+  });
 }
 
 export async function uniqueRegularPayload(root, name) {
@@ -518,6 +537,9 @@ async function executeInstallerSmoke(options) {
     report.failure = stage;
     report.failureDetail = nativeScope.getStore()?.signal?.aborted ? 'HARD_TIMEOUT' : error.installerSmokeCode || (/^[A-Z0-9_]{1,64}$/.test(error.code || '') ? error.code : 'VALIDATION_FAILED');
     if (Number.isSafeInteger(error.expectedExitCode)) report.expectedExitCode = error.expectedExitCode;
+    if (/^[A-Z0-9_]{1,64}$/.test(error.installerSmokeOperation || '')) report.failureOperation = error.installerSmokeOperation;
+    if (/^[A-Z0-9_]{1,64}$/.test(error.installerSmokeCleanupCode || '')) report.cleanupFailureDetail = error.installerSmokeCleanupCode;
+    if (/^[A-Z0-9_]{1,64}$/.test(error.installerSmokeCleanupOperation || '')) report.cleanupFailureOperation = error.installerSmokeCleanupOperation;
   }
   return report;
 }

@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, validateInstallerApplication, validateOriginAsar,
   validatePortableWrapper, validateReadOnlyMount, validateBundleIdentity, validateInstalledRegistration, uniqueRegularPayload,
   installerChecks, validateInstallerEntry, requireNativeCommandExit, validateOwnedRegistrationCleanup, runInstallerSmoke,
-  nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller } from '../scripts/installer-smoke.mjs';
+  nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller, runWithOwnedCleanup, privateEnvironment, powershell } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -131,6 +131,31 @@ test('native command failures expose only bounded exit or timeout codes and reta
     assert.throws(() => requireNativeCommandExit({ ...result, ...changes, stderr: '/private/secret/fixture' }), error => error.installerSmokeCode === code && !error.message.includes('/private'));
   }
   assert.throws(() => requireNativeCommandExit(result, 42), error => error.installerSmokeCode === 'NATIVE_COMMAND_EXIT_0' && error.expectedExitCode === 42);
+  assert.throws(() => requireNativeCommandExit({ ...result, code: 42, operation: 'NSIS_INSTALL' }), error => error.installerSmokeOperation === 'NSIS_INSTALL');
+  assert.throws(() => requireNativeCommandExit({ ...result, code: 42, operation: '/private/secret' }), error => !Object.hasOwn(error, 'installerSmokeOperation'));
+});
+
+test('installer cleanup always runs, preserves the original native failure and reports a second cleanup failure without private output', async () => {
+  let cleaned = 0;
+  const original = Object.assign(new Error('NATIVE_COMMAND_EXIT_42'), { installerSmokeCode: 'NATIVE_COMMAND_EXIT_42', installerSmokeOperation: 'NSIS_INSTALL' });
+  const cleanup = Object.assign(new Error('/private/secret'), { installerSmokeCode: 'NATIVE_COMMAND_TIMEOUT', installerSmokeOperation: 'APP_PROCESSES_STOP_OWNED' });
+  await assert.rejects(runWithOwnedCleanup(async () => { throw original; }, async () => { cleaned++; throw cleanup; }), error =>
+    error === original && error.installerSmokeCleanupCode === 'NATIVE_COMMAND_TIMEOUT' && error.installerSmokeCleanupOperation === 'APP_PROCESSES_STOP_OWNED' && !error.message.includes('/private'));
+  assert.equal(cleaned, 1);
+  await assert.rejects(runWithOwnedCleanup(async () => 0, async () => { throw cleanup; }), error => error === cleanup);
+  assert.equal(await runWithOwnedCleanup(async () => 7, async () => { cleaned++; }), 7);
+  assert.equal(cleaned, 2);
+});
+
+test('native Windows PowerShell reads its own isolated AppData and real registry before installer execution', { skip: process.platform !== 'win32' }, async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'installer-powershell-unit-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await Promise.all(['temp with spaces', 'appdata', 'localappdata'].map(directory => fs.mkdir(path.join(root, directory))));
+  const env = privateEnvironment(root);
+  const script = `$version=Get-ItemProperty -LiteralPath 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion'; ` +
+    `ConvertTo-Json -Compress -InputObject ([pscustomobject]@{appdata=$env:APPDATA;localappdata=$env:LOCALAPPDATA;temp=$env:TEMP;registry=([string]$version.CurrentBuildNumber).Length -gt 0})`;
+  const actual = JSON.parse(requireNativeCommandExit(await powershell(script, env, 60000, 'POWERSHELL_PRIVATE_ENVIRONMENT')));
+  assert.deepEqual(actual, { appdata: env.APPDATA, localappdata: env.LOCALAPPDATA, temp: env.TEMP, registry: true });
 });
 
 test('partial NSIS cleanup requires exact owned registration and shortcut targets before any deletion', () => {
