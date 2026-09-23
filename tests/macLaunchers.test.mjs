@@ -306,9 +306,11 @@ macTest("a compatible PATH runtime remains preferred to a newer NVM runtime", as
   assert.equal(records.some(r => r[0] === "node" && r[1].includes("controlled nvm")), false);
 });
 
-macTest("source runtime version checks follow the actual Vite engine boundaries", async t => {
+macTest("source runtime version checks follow the locked Electron engine boundaries", async t => {
+  const project = JSON.parse(await fs.readFile(path.join(repoRoot, "package.json"), "utf8"));
+  assert.equal(project.engines.node, ">=22.12.0");
   for (const [version, supported] of [
-    ["v20.18.9", false], ["v20.19.0", true], ["v20.20.0", true],
+    ["v20.18.9", false], ["v20.19.0", false], ["v20.20.0", false],
     ["v21.7.0", false], ["v22.11.9", false], ["v22.12.0", true],
     ["v23.0.0", true], ["v24.19.0", true], ["v24.0.0-rc.1", false]
   ]) {

@@ -8,8 +8,19 @@ RELEASE_DIR="$ROOT_DIR/release/macos"
 
 cd "$ROOT_DIR"
 
-kill_existing() {
-  pkill -x "$APP_NAME" >/dev/null 2>&1 || true
+ensure_app_closed() {
+  local probe_status
+  if pgrep -x "$APP_NAME" >/dev/null 2>&1; then
+    echo "$APP_NAME is already running. Close it manually before rebuilding." >&2
+    return 1
+  else
+    probe_status=$?
+  fi
+  if [[ "$probe_status" -ne 1 ]]; then
+    echo "Unable to check whether $APP_NAME is running (pgrep exit $probe_status)." >&2
+    return "$probe_status"
+  fi
+  return 0
 }
 
 build_app() {
@@ -31,9 +42,16 @@ open_app() {
 }
 
 verify_app() {
+  local probe_status
   for _ in {1..30}; do
-    if pgrep -x "$APP_NAME" >/dev/null; then
+    if pgrep -x "$APP_NAME" >/dev/null 2>&1; then
       return 0
+    else
+      probe_status=$?
+    fi
+    if [[ "$probe_status" -ne 1 ]]; then
+      echo "Unable to check whether $APP_NAME is running (pgrep exit $probe_status)." >&2
+      return "$probe_status"
     fi
     sleep 0.5
   done
@@ -43,7 +61,7 @@ verify_app() {
 
 case "$MODE" in
   run|--logs|logs|--telemetry|telemetry|--verify|verify|--debug|debug)
-    kill_existing
+    ensure_app_closed
     build_app
     APP_BUNDLE="$(find_app_bundle)"
     if [[ -z "$APP_BUNDLE" ]]; then

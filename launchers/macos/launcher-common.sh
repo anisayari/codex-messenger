@@ -19,8 +19,7 @@ launcher_supported_node() {
   LAUNCHER_CANDIDATE_MAJOR=$((10#${BASH_REMATCH[1]}))
   LAUNCHER_CANDIDATE_MINOR=$((10#${BASH_REMATCH[2]}))
   LAUNCHER_CANDIDATE_PATCH=$((10#${BASH_REMATCH[3]}))
-  (( (LAUNCHER_CANDIDATE_MAJOR == 20 && LAUNCHER_CANDIDATE_MINOR >= 19) ||
-     (LAUNCHER_CANDIDATE_MAJOR == 22 && LAUNCHER_CANDIDATE_MINOR >= 12) ||
+  (( (LAUNCHER_CANDIDATE_MAJOR == 22 && LAUNCHER_CANDIDATE_MINOR >= 12) ||
      LAUNCHER_CANDIDATE_MAJOR > 22 ))
 }
 
@@ -82,7 +81,7 @@ launcher_require_node() {
   if launcher_find_node; then
     return 0
   fi
-  printf '%s\n' "Use Node.js 20 (20.19+) or Node.js 22.12+ to run Codex Messenger from source." >&2
+  printf '%s\n' "Use Node.js 22.12+ to run Codex Messenger from source." >&2
   printf '%s\n' "Install a supported Node.js runtime, then double-click this launcher again." >&2
   open "https://nodejs.org/en/download" || true
   return 1

@@ -62,7 +62,7 @@ Download `Codex-Messenger-0.0.4.exe` from the releases page and run it directly.
 
 Requirements:
 
-- Node.js 20.19 or newer on the 20.x line, or Node.js 22.12 or newer (the Vite 7 requirement).
+- Node.js 22.12 or newer (required by the locked Electron 41.10.7 and Electron rebuild toolchain).
 - npm.
 - Codex CLI installed locally.
 

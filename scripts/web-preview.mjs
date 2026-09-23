@@ -53,9 +53,10 @@ export async function runWebPreview({ createServer, openBrowser } = {}) {
   let server, opener, interrupted = false;
   let stop;
   const stopped = new Promise(resolve => { stop = resolve; });
-  const onSignal = () => { interrupted = true; stop(); void stopChild(opener).catch(() => {}); };
-  process.once('SIGINT', onSignal);
-  process.once('SIGTERM', onSignal);
+  const onSignal = () => { if (interrupted) return; interrupted = true; stop(); void stopChild(opener).catch(() => {}); };
+  // Keep our listener until cleanup completes: Rolldown re-raises unhandled signals.
+  process.on('SIGINT', onSignal);
+  process.on('SIGTERM', onSignal);
   try {
     server = await startPreviewServer({ createServer });
     if (interrupted) return;
