@@ -1,0 +1,31 @@
+{
+  "version": "0.0.4",
+  "tag": "v0.0.4",
+  "commit": "608a349b060e14ed3b2f4cc8fa0181e9e80c5c69",
+  "platform": "macos",
+  "arch": "arm64",
+  "developerIdSigningOrNotarization": "not performed by this workflow",
+  "windowsAuthenticodeSigning": "not performed by this workflow",
+  "packagedSmoke": "packaged-smoke-macos-arm64.json",
+  "installerSmoke": "installer-smoke-macos-arm64.json",
+  "launcherSmoke": "launcher-smoke-macos-arm64.json",
+  "applicationArchiveSha256": "eb372729b556da0751221902bed9b72a80dddc661811bbb43628d4e6838df8da",
+  "nativeCodex": {
+    "version": "0.156.1",
+    "sha256": "0196e89fe5a7598f816ee54232c3d7c26d75e502ab5cfe2c9240e81d90f7255a",
+    "proof": "codex-native-macos-arm64.json",
+    "tap": "codex-native-macos-arm64.tap"
+  },
+  "files": [
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.dmg",
+      "bytes": 197033510,
+      "sha256": "eae837704f7db1b6e077505dbf302f37f23ec8570f662c5a399e9285d03741d0"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.zip",
+      "bytes": 195710582,
+      "sha256": "35d5bbbfc00bb0932a2bd15b54087ef4ec97ad045f7059e0155ea625b806ce18"
+    }
+  ]
+}

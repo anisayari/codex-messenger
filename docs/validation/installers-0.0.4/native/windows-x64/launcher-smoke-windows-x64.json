@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "version": "0.0.4",
+  "platform": "windows",
+  "arch": "x64",
+  "checks": {
+    "developmentStartup": true,
+    "developmentVersion": true,
+    "developmentRendererReady": true,
+    "developmentCleanExit": true,
+    "developmentServerClosed": true,
+    "previewHttpReady": true,
+    "previewCleanStop": true,
+    "previewPortClosed": true,
+    "privateProfileCleanup": true
+  },
+  "errors": {
+    "preloadError": 0,
+    "loadFailure": 0,
+    "rendererGone": 0,
+    "pageError": 0,
+    "consoleError": 0
+  },
+  "failure": null,
+  "scope": "Native development runner and owned Vite preview; no authentication, model calls or hardware tests.",
+  "process": {
+    "closed": true,
+    "forced": false,
+    "exitCode": 0
+  },
+  "durationMs": 4015
+}

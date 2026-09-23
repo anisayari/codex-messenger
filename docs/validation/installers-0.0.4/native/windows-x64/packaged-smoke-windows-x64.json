@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "version": "0.0.4",
+  "platform": "windows",
+  "arch": "x64",
+  "packageLayout": "win-unpacked",
+  "checks": {
+    "packaged": true,
+    "asar": true,
+    "version": true,
+    "platform": true,
+    "architecture": true,
+    "privateProfile": true,
+    "sandbox": true,
+    "contextIsolation": true,
+    "nodeIntegrationDisabled": true,
+    "webSecurity": true,
+    "preloadBootstrap": true,
+    "rendererNodeIsolated": true,
+    "packagedDocument": true,
+    "renderedDom": true
+  },
+  "errors": {
+    "preloadError": 0,
+    "loadFailure": 0,
+    "rendererGone": 0,
+    "pageError": 0,
+    "consoleError": 0
+  },
+  "failure": null,
+  "isolation": "temporary userData and CODEX_HOME; host CLI disabled; no credentials supplied",
+  "signing": {
+    "buildMode": "not_assessed",
+    "verified": false,
+    "credentialsProvided": false
+  },
+  "scope": "Packaged startup, renderer, preload and isolation only; no Codex model, authentication, terminal or audio tests",
+  "appAsarSha256": "a89263de49648f116899f3ba8440c1f8de3f1e7cc8344d007abd6823bc8f171c",
+  "electronVersion": "41.10.7",
+  "process": {
+    "closed": true,
+    "forced": false,
+    "exitCode": 0
+  },
+  "closeDiagnostic": {
+    "apiClose": "RESOLVED",
+    "processClose": "OBSERVED",
+    "signaled": false,
+    "forceStop": "NOT_ATTEMPTED"
+  },
+  "durationMs": 2613
+}

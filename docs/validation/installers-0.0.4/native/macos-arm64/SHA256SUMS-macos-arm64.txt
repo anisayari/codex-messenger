@@ -1,0 +1,2 @@
+eae837704f7db1b6e077505dbf302f37f23ec8570f662c5a399e9285d03741d0 *Codex-Messenger-0.0.4-arm64.dmg
+35d5bbbfc00bb0932a2bd15b54087ef4ec97ad045f7059e0155ea625b806ce18 *Codex-Messenger-0.0.4-arm64.zip

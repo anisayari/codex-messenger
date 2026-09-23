@@ -1,0 +1,172 @@
+{
+  "passed": true,
+  "version": "0.0.4",
+  "codexVersion": "0.156.1",
+  "commit": "608a349b060e14ed3b2f4cc8fa0181e9e80c5c69",
+  "assetCount": 27,
+  "platforms": [
+    {
+      "platform": "windows",
+      "arch": "x64",
+      "applicationArchiveSha256": "a89263de49648f116899f3ba8440c1f8de3f1e7cc8344d007abd6823bc8f171c",
+      "packagedChecks": 14,
+      "launcherChecks": 9,
+      "installers": [
+        {
+          "name": "Codex-Messenger-Setup-0.0.4.exe",
+          "checks": {
+            "installed": true,
+            "silentNoAutoLaunch": true,
+            "originAsar": true,
+            "runningAppInstallRefused": true,
+            "runningAppPreserved": true,
+            "foreignUninstallRefused": true,
+            "foreignFilePreserved": true,
+            "uninstalled": true,
+            "registrationRemoved": true,
+            "protectedFilesPreserved": true,
+            "legacySharedDirectoryRefused": true,
+            "legacyFilesPreserved": true,
+            "privateTempCleanup": true
+          },
+          "passed": true
+        },
+        {
+          "name": "Codex-Messenger-0.0.4.exe",
+          "checks": {
+            "originAsar": true,
+            "actualWrapperExecution": true,
+            "wrapperVersion": true,
+            "wrapperPackaged": true,
+            "wrapperRendererReady": true,
+            "privateLaunchDirectory": true,
+            "wrapperCleanExit": true,
+            "wrapperRuntimeErrorsZero": true,
+            "privateTempCleanup": true
+          },
+          "passed": true
+        }
+      ],
+      "nativeCodex": {
+        "version": "0.156.1",
+        "sha256": "70bcb05f9bf1a4e7306edd0cd1b57d02af3267ad02a34b26f45c8c4bb20a3301",
+        "proof": "codex-native-windows-x64.json",
+        "tap": "codex-native-windows-x64.tap"
+      },
+      "files": [
+        {
+          "name": "Codex-Messenger-Setup-0.0.4.exe",
+          "bytes": 164727327,
+          "sha256": "ce758a7ee02b75529153802067a4cf02b96b015e4b45246e8b1608de85e22208"
+        },
+        {
+          "name": "Codex-Messenger-0.0.4.exe",
+          "bytes": 164400094,
+          "sha256": "574e321e43f0c1cc58ba883036b6c2f9bad7f414ebd96d913d22873dc776b952"
+        }
+      ]
+    },
+    {
+      "platform": "macos",
+      "arch": "arm64",
+      "applicationArchiveSha256": "eb372729b556da0751221902bed9b72a80dddc661811bbb43628d4e6838df8da",
+      "packagedChecks": 14,
+      "launcherChecks": 9,
+      "installers": [
+        {
+          "name": "Codex-Messenger-0.0.4-arm64.dmg",
+          "checks": {
+            "mountedReadOnly": true,
+            "copiedApplication": true,
+            "bundleArchitecture": true,
+            "bundleVersion": true,
+            "originAsar": true,
+            "mountDetached": true,
+            "privateTempCleanup": true
+          },
+          "passed": true
+        },
+        {
+          "name": "Codex-Messenger-0.0.4-arm64.zip",
+          "checks": {
+            "extractedApplication": true,
+            "bundleArchitecture": true,
+            "bundleVersion": true,
+            "originAsar": true,
+            "privateTempCleanup": true
+          },
+          "passed": true
+        }
+      ],
+      "nativeCodex": {
+        "version": "0.156.1",
+        "sha256": "0196e89fe5a7598f816ee54232c3d7c26d75e502ab5cfe2c9240e81d90f7255a",
+        "proof": "codex-native-macos-arm64.json",
+        "tap": "codex-native-macos-arm64.tap"
+      },
+      "files": [
+        {
+          "name": "Codex-Messenger-0.0.4-arm64.dmg",
+          "bytes": 197033510,
+          "sha256": "eae837704f7db1b6e077505dbf302f37f23ec8570f662c5a399e9285d03741d0"
+        },
+        {
+          "name": "Codex-Messenger-0.0.4-arm64.zip",
+          "bytes": 195710582,
+          "sha256": "35d5bbbfc00bb0932a2bd15b54087ef4ec97ad045f7059e0155ea625b806ce18"
+        }
+      ]
+    },
+    {
+      "platform": "macos",
+      "arch": "x64",
+      "applicationArchiveSha256": "eb372729b556da0751221902bed9b72a80dddc661811bbb43628d4e6838df8da",
+      "packagedChecks": 14,
+      "launcherChecks": 9,
+      "installers": [
+        {
+          "name": "Codex-Messenger-0.0.4-x64.dmg",
+          "checks": {
+            "mountedReadOnly": true,
+            "copiedApplication": true,
+            "bundleArchitecture": true,
+            "bundleVersion": true,
+            "originAsar": true,
+            "mountDetached": true,
+            "privateTempCleanup": true
+          },
+          "passed": true
+        },
+        {
+          "name": "Codex-Messenger-0.0.4-x64.zip",
+          "checks": {
+            "extractedApplication": true,
+            "bundleArchitecture": true,
+            "bundleVersion": true,
+            "originAsar": true,
+            "privateTempCleanup": true
+          },
+          "passed": true
+        }
+      ],
+      "nativeCodex": {
+        "version": "0.156.1",
+        "sha256": "389da6f942f964618cfd095b84fd2abbb96bb74b94934bf0ddfdff93e1f8c0a2",
+        "proof": "codex-native-macos-x64.json",
+        "tap": "codex-native-macos-x64.tap"
+      },
+      "files": [
+        {
+          "name": "Codex-Messenger-0.0.4-x64.dmg",
+          "bytes": 202892852,
+          "sha256": "b88f37a03df3e44b70b66807bafd9a76b8dfaad247b8b3e5d7ab16f43826e33f"
+        },
+        {
+          "name": "Codex-Messenger-0.0.4-x64.zip",
+          "bytes": 201607654,
+          "sha256": "a5c830b0f0f2dd455ce57e042152c137f69029aa8451d6a23f01055562184954"
+        }
+      ]
+    }
+  ]
+}

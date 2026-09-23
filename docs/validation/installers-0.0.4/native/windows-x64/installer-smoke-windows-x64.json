@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "version": "0.0.4",
+  "platform": "windows",
+  "arch": "x64",
+  "installers": [
+    {
+      "name": "Codex-Messenger-Setup-0.0.4.exe",
+      "bytes": 164727327,
+      "sha256": "ce758a7ee02b75529153802067a4cf02b96b015e4b45246e8b1608de85e22208",
+      "passed": true,
+      "checks": {
+        "installed": true,
+        "silentNoAutoLaunch": true,
+        "originAsar": true,
+        "runningAppInstallRefused": true,
+        "runningAppPreserved": true,
+        "foreignUninstallRefused": true,
+        "foreignFilePreserved": true,
+        "uninstalled": true,
+        "registrationRemoved": true,
+        "protectedFilesPreserved": true,
+        "legacySharedDirectoryRefused": true,
+        "legacyFilesPreserved": true,
+        "privateTempCleanup": true
+      },
+      "appAsarSha256": "a89263de49648f116899f3ba8440c1f8de3f1e7cc8344d007abd6823bc8f171c",
+      "smoke": {
+        "schemaVersion": 1,
+        "passed": true,
+        "version": "0.0.4",
+        "platform": "windows",
+        "arch": "x64",
+        "packageLayout": "win-unpacked",
+        "checks": {
+          "packaged": true,
+          "asar": true,
+          "version": true,
+          "platform": true,
+          "architecture": true,
+          "privateProfile": true,
+          "sandbox": true,
+          "contextIsolation": true,
+          "nodeIntegrationDisabled": true,
+          "webSecurity": true,
+          "preloadBootstrap": true,
+          "rendererNodeIsolated": true,
+          "packagedDocument": true,
+          "renderedDom": true
+        },
+        "errors": {
+          "preloadError": 0,
+          "loadFailure": 0,
+          "rendererGone": 0,
+          "pageError": 0,
+          "consoleError": 0
+        },
+        "failure": null,
+        "isolation": "temporary userData and CODEX_HOME; host CLI disabled; no credentials supplied",
+        "signing": {
+          "buildMode": "not_assessed",
+          "verified": false,
+          "credentialsProvided": false
+        },
+        "scope": "Packaged startup, renderer, preload and isolation only; no Codex model, authentication, terminal or audio tests",
+        "appAsarSha256": "a89263de49648f116899f3ba8440c1f8de3f1e7cc8344d007abd6823bc8f171c",
+        "electronVersion": "41.10.7",
+        "process": {
+          "closed": true,
+          "forced": false,
+          "exitCode": 0
+        },
+        "closeDiagnostic": {
+          "apiClose": "RESOLVED",
+          "processClose": "OBSERVED",
+          "signaled": false,
+          "forceStop": "NOT_ATTEMPTED"
+        },
+        "durationMs": 1960
+      },
+      "environmentMode": "private",
+      "registryBaselineDurationMs": 22675
+    },
+    {
+      "name": "Codex-Messenger-0.0.4.exe",
+      "bytes": 164400094,
+      "sha256": "574e321e43f0c1cc58ba883036b6c2f9bad7f414ebd96d913d22873dc776b952",
+      "passed": true,
+      "checks": {
+        "originAsar": true,
+        "actualWrapperExecution": true,
+        "wrapperVersion": true,
+        "wrapperPackaged": true,
+        "wrapperRendererReady": true,
+        "privateLaunchDirectory": true,
+        "wrapperCleanExit": true,
+        "wrapperRuntimeErrorsZero": true,
+        "privateTempCleanup": true
+      },
+      "appAsarSha256": "a89263de49648f116899f3ba8440c1f8de3f1e7cc8344d007abd6823bc8f171c",
+      "smoke": {
+        "schemaVersion": 1,
+        "passed": true,
+        "version": "0.0.4",
+        "platform": "windows",
+        "arch": "x64",
+        "packageLayout": "win-unpacked",
+        "checks": {
+          "packaged": true,
+          "asar": true,
+          "version": true,
+          "platform": true,
+          "architecture": true,
+          "privateProfile": true,
+          "sandbox": true,
+          "contextIsolation": true,
+          "nodeIntegrationDisabled": true,
+          "webSecurity": true,
+          "preloadBootstrap": true,
+          "rendererNodeIsolated": true,
+          "packagedDocument": true,
+          "renderedDom": true
+        },
+        "errors": {
+          "preloadError": 0,
+          "loadFailure": 0,
+          "rendererGone": 0,
+          "pageError": 0,
+          "consoleError": 0
+        },
+        "failure": null,
+        "isolation": "temporary userData and CODEX_HOME; host CLI disabled; no credentials supplied",
+        "signing": {
+          "buildMode": "not_assessed",
+          "verified": false,
+          "credentialsProvided": false
+        },
+        "scope": "Packaged startup, renderer, preload and isolation only; no Codex model, authentication, terminal or audio tests",
+        "appAsarSha256": "a89263de49648f116899f3ba8440c1f8de3f1e7cc8344d007abd6823bc8f171c",
+        "electronVersion": "41.10.7",
+        "process": {
+          "closed": true,
+          "forced": false,
+          "exitCode": 0
+        },
+        "closeDiagnostic": {
+          "apiClose": "RESOLVED",
+          "processClose": "OBSERVED",
+          "signaled": false,
+          "forceStop": "NOT_ATTEMPTED"
+        },
+        "durationMs": 3730
+      },
+      "environmentMode": "private",
+      "portableToolingTempBaseline": [],
+      "portableTempBaseline": [],
+      "portableTempRemaining": [],
+      "portableTempUnknownFiles": {
+        "files": [],
+        "omittedCount": 0
+      },
+      "portableTempAdded": [],
+      "portableTempBaselineUnchanged": true,
+      "portableToolingTempRemaining": [],
+      "portableToolingTempBaselineUnchanged": true
+    }
+  ],
+  "failure": null,
+  "failureDetail": null,
+  "scope": "Actual installer containers and local packaged startup only; no credentials, inference, signing or notarization validation"
+}

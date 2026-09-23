@@ -1,0 +1,201 @@
+{
+  "passed": true,
+  "release": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.4",
+  "releaseId": 394987388,
+  "publishedAt": "2026-09-23T19:27:02Z",
+  "sourceCommit": "608a349b060e14ed3b2f4cc8fa0181e9e80c5c69",
+  "nativeBuildRun": "https://github.com/anisayari/codex-messenger/actions/runs/35907597979",
+  "remoteIntegrity": "The draft and published GitHub API responses were checked by verify-release-api.py against all 27 locally hashed upload files; exact names, uploaded states, byte sizes and SHA256 digests matched.",
+  "assetCount": 27,
+  "assets": [
+    {
+      "name": "artifact-manifest-macos-arm64.json",
+      "size": 1121,
+      "digest": "sha256:221bd408031068c93a291da1bd198333fcfad84d1b91ae8b3b6d2a48594d4ff1",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/artifact-manifest-macos-arm64.json"
+    },
+    {
+      "name": "artifact-manifest-macos-x64.json",
+      "size": 1105,
+      "digest": "sha256:a084c82301dc6612448aa3e14dccaa028d2853810a7efad50606a352b2f3feec",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/artifact-manifest-macos-x64.json"
+    },
+    {
+      "name": "artifact-manifest-windows-x64.json",
+      "size": 1115,
+      "digest": "sha256:dfddaec78771165ea9759593acb5eeebad08d934e05113c9b82e20b64c3ef08b",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/artifact-manifest-windows-x64.json"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.dmg",
+      "size": 197033510,
+      "digest": "sha256:eae837704f7db1b6e077505dbf302f37f23ec8570f662c5a399e9285d03741d0",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-arm64.dmg"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.zip",
+      "size": 195710582,
+      "digest": "sha256:35d5bbbfc00bb0932a2bd15b54087ef4ec97ad045f7059e0155ea625b806ce18",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-arm64.zip"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-x64.dmg",
+      "size": 202892852,
+      "digest": "sha256:b88f37a03df3e44b70b66807bafd9a76b8dfaad247b8b3e5d7ab16f43826e33f",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-x64.dmg"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-x64.zip",
+      "size": 201607654,
+      "digest": "sha256:a5c830b0f0f2dd455ce57e042152c137f69029aa8451d6a23f01055562184954",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-x64.zip"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4.exe",
+      "size": 164400094,
+      "digest": "sha256:574e321e43f0c1cc58ba883036b6c2f9bad7f414ebd96d913d22873dc776b952",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4.exe"
+    },
+    {
+      "name": "Codex-Messenger-Setup-0.0.4.exe",
+      "size": 164727327,
+      "digest": "sha256:ce758a7ee02b75529153802067a4cf02b96b015e4b45246e8b1608de85e22208",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-Setup-0.0.4.exe"
+    },
+    {
+      "name": "codex-native-macos-arm64.json",
+      "size": 545,
+      "digest": "sha256:279871c38698191114f06e43c0f1e287e51acb68fb90b716c218a2b47208a977",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/codex-native-macos-arm64.json"
+    },
+    {
+      "name": "codex-native-macos-arm64.tap",
+      "size": 597,
+      "digest": "sha256:c7bcb0d1f65234336e270fd6936142e16f2d630f66a803634c0a9a0f4bf21b68",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/codex-native-macos-arm64.tap"
+    },
+    {
+      "name": "codex-native-macos-x64.json",
+      "size": 544,
+      "digest": "sha256:1236a58b331cb2922e2ff5a9f4ac17670343d966886f943197a8c7b9d6923785",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/codex-native-macos-x64.json"
+    },
+    {
+      "name": "codex-native-macos-x64.tap",
+      "size": 603,
+      "digest": "sha256:7b82b2ea349eddf8d72114813739be05c2b4efc07ddf67a8a5d74e993317990a",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/codex-native-macos-x64.tap"
+    },
+    {
+      "name": "codex-native-windows-x64.json",
+      "size": 546,
+      "digest": "sha256:5b4322f8f360086fdb179f16212c73fa2cad5b37c6e957de2a51e5edf8c25cbf",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/codex-native-windows-x64.json"
+    },
+    {
+      "name": "codex-native-windows-x64.tap",
+      "size": 597,
+      "digest": "sha256:7bf0b900317996b97742d2b9ae429ddfdb18a006f3d0fb8de47d0d29806f05dc",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/codex-native-windows-x64.tap"
+    },
+    {
+      "name": "installer-smoke-macos-arm64.json",
+      "size": 4715,
+      "digest": "sha256:98b105e48236ac631c566c5ecb3c029dd26ce8970832d777a53a78264112e23f",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/installer-smoke-macos-arm64.json"
+    },
+    {
+      "name": "installer-smoke-macos-x64.json",
+      "size": 4693,
+      "digest": "sha256:20a8976ad250f515c4b0d09c123dff1e1c724e9999cc188d18d39b512f05b650",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/installer-smoke-macos-x64.json"
+    },
+    {
+      "name": "installer-smoke-windows-x64.json",
+      "size": 5610,
+      "digest": "sha256:c000a5d0d4f6cf440d65af88774d74b98417379899dd926670fab65ab0f47b89",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/installer-smoke-windows-x64.json"
+    },
+    {
+      "name": "launcher-smoke-macos-arm64.json",
+      "size": 787,
+      "digest": "sha256:e66716203e313276577ae7759d482ef1cf795b22d55eba7da7f41d281f453ca7",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/launcher-smoke-macos-arm64.json"
+    },
+    {
+      "name": "launcher-smoke-macos-x64.json",
+      "size": 785,
+      "digest": "sha256:62c5bf1ff9ac1ab753da90c485e462a04391bfadd077d9313820feb756dbe47d",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/launcher-smoke-macos-x64.json"
+    },
+    {
+      "name": "launcher-smoke-windows-x64.json",
+      "size": 787,
+      "digest": "sha256:07ae7f579c72b8035d9c31ad82fbeeb784691de2b72141375db5a6e898dd3816",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/launcher-smoke-windows-x64.json"
+    },
+    {
+      "name": "packaged-smoke-macos-arm64.json",
+      "size": 1365,
+      "digest": "sha256:662f21c5fcfecdcd749ce849ed4ba2e8f72639763a7d16c0918e40334da20ada",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/packaged-smoke-macos-arm64.json"
+    },
+    {
+      "name": "packaged-smoke-macos-x64.json",
+      "size": 1357,
+      "digest": "sha256:f9ef3f367c79b3f9c421e576ae07f8f293d1c92028460cd67810b79a3077dc52",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/packaged-smoke-macos-x64.json"
+    },
+    {
+      "name": "packaged-smoke-windows-x64.json",
+      "size": 1372,
+      "digest": "sha256:c1a0c239456468b6850f5f100e9b8182aff35d253fe64744dfab4691c9503d4f",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/packaged-smoke-windows-x64.json"
+    },
+    {
+      "name": "SHA256SUMS-macos-arm64.txt",
+      "size": 196,
+      "digest": "sha256:814a221c945d29569d74e41ba720e8f4de228724d1502699124399ea1a7b3dcf",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/SHA256SUMS-macos-arm64.txt"
+    },
+    {
+      "name": "SHA256SUMS-macos-x64.txt",
+      "size": 192,
+      "digest": "sha256:d7b1c631d8bc28164cc7ecd27a76ce22e43d07c10665dce976c6c82ed36223b5",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/SHA256SUMS-macos-x64.txt"
+    },
+    {
+      "name": "SHA256SUMS-windows-x64.txt",
+      "size": 190,
+      "digest": "sha256:b8a7d8824f8f3b5423b708ce2325909340e4cd51f4e7904607ecdd5cddce3316",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/SHA256SUMS-windows-x64.txt"
+    }
+  ]
+}

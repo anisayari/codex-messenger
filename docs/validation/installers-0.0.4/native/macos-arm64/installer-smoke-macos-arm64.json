@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "version": "0.0.4",
+  "platform": "macos",
+  "arch": "arm64",
+  "installers": [
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.dmg",
+      "bytes": 197033510,
+      "sha256": "eae837704f7db1b6e077505dbf302f37f23ec8570f662c5a399e9285d03741d0",
+      "passed": true,
+      "checks": {
+        "mountedReadOnly": true,
+        "copiedApplication": true,
+        "bundleArchitecture": true,
+        "bundleVersion": true,
+        "originAsar": true,
+        "mountDetached": true,
+        "privateTempCleanup": true
+      },
+      "appAsarSha256": "eb372729b556da0751221902bed9b72a80dddc661811bbb43628d4e6838df8da",
+      "smoke": {
+        "schemaVersion": 1,
+        "passed": true,
+        "version": "0.0.4",
+        "platform": "macos",
+        "arch": "arm64",
+        "packageLayout": "mac-arm64",
+        "checks": {
+          "packaged": true,
+          "asar": true,
+          "version": true,
+          "platform": true,
+          "architecture": true,
+          "privateProfile": true,
+          "sandbox": true,
+          "contextIsolation": true,
+          "nodeIntegrationDisabled": true,
+          "webSecurity": true,
+          "preloadBootstrap": true,
+          "rendererNodeIsolated": true,
+          "packagedDocument": true,
+          "renderedDom": true
+        },
+        "errors": {
+          "preloadError": 0,
+          "loadFailure": 0,
+          "rendererGone": 0,
+          "pageError": 0,
+          "consoleError": 0
+        },
+        "failure": null,
+        "isolation": "temporary userData and CODEX_HOME; host CLI disabled; no credentials supplied",
+        "signing": {
+          "buildMode": "unsigned",
+          "verified": false,
+          "credentialsProvided": false
+        },
+        "scope": "Packaged startup, renderer, preload and isolation only; no Codex model, authentication, terminal or audio tests",
+        "appAsarSha256": "eb372729b556da0751221902bed9b72a80dddc661811bbb43628d4e6838df8da",
+        "electronVersion": "41.10.7",
+        "process": {
+          "closed": true,
+          "forced": false,
+          "exitCode": 0
+        },
+        "closeDiagnostic": {
+          "apiClose": "RESOLVED",
+          "processClose": "OBSERVED",
+          "signaled": false,
+          "forceStop": "NOT_ATTEMPTED"
+        },
+        "durationMs": 7644
+      }
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.zip",
+      "bytes": 195710582,
+      "sha256": "35d5bbbfc00bb0932a2bd15b54087ef4ec97ad045f7059e0155ea625b806ce18",
+      "passed": true,
+      "checks": {
+        "extractedApplication": true,
+        "bundleArchitecture": true,
+        "bundleVersion": true,
+        "originAsar": true,
+        "privateTempCleanup": true
+      },
+      "appAsarSha256": "eb372729b556da0751221902bed9b72a80dddc661811bbb43628d4e6838df8da",
+      "smoke": {
+        "schemaVersion": 1,
+        "passed": true,
+        "version": "0.0.4",
+        "platform": "macos",
+        "arch": "arm64",
+        "packageLayout": "mac-arm64",
+        "checks": {
+          "packaged": true,
+          "asar": true,
+          "version": true,
+          "platform": true,
+          "architecture": true,
+          "privateProfile": true,
+          "sandbox": true,
+          "contextIsolation": true,
+          "nodeIntegrationDisabled": true,
+          "webSecurity": true,
+          "preloadBootstrap": true,
+          "rendererNodeIsolated": true,
+          "packagedDocument": true,
+          "renderedDom": true
+        },
+        "errors": {
+          "preloadError": 0,
+          "loadFailure": 0,
+          "rendererGone": 0,
+          "pageError": 0,
+          "consoleError": 0
+        },
+        "failure": null,
+        "isolation": "temporary userData and CODEX_HOME; host CLI disabled; no credentials supplied",
+        "signing": {
+          "buildMode": "unsigned",
+          "verified": false,
+          "credentialsProvided": false
+        },
+        "scope": "Packaged startup, renderer, preload and isolation only; no Codex model, authentication, terminal or audio tests",
+        "appAsarSha256": "eb372729b556da0751221902bed9b72a80dddc661811bbb43628d4e6838df8da",
+        "electronVersion": "41.10.7",
+        "process": {
+          "closed": true,
+          "forced": false,
+          "exitCode": 0
+        },
+        "closeDiagnostic": {
+          "apiClose": "RESOLVED",
+          "processClose": "OBSERVED",
+          "signaled": false,
+          "forceStop": "NOT_ATTEMPTED"
+        },
+        "durationMs": 2642
+      }
+    }
+  ],
+  "failure": null,
+  "failureDetail": null,
+  "scope": "Actual installer containers and local packaged startup only; no credentials, inference, signing or notarization validation"
+}

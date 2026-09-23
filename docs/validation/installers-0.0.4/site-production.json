@@ -1,0 +1,154 @@
+{
+  "passed": true,
+  "checkedAt": "2026-09-23T19:31:58.849Z",
+  "version": "0.0.4",
+  "browser": "153.0.8010.50",
+  "headless": false,
+  "locale": "fr-FR",
+  "desktop": {
+    "width": 1440,
+    "height": 1000
+  },
+  "mobile": {
+    "width": 320,
+    "height": 844,
+    "touch": true
+  },
+  "checks": [
+    {
+      "name": "desktop English default with French browser locale",
+      "passed": true
+    },
+    {
+      "name": "desktop published version 0.0.4",
+      "passed": true
+    },
+    {
+      "name": "desktop English download chooser",
+      "passed": true
+    },
+    {
+      "name": "all three release links target published 0.0.4",
+      "passed": true
+    },
+    {
+      "name": "all chooser versions 0.0.4",
+      "passed": true
+    },
+    {
+      "name": "chooser keyboard focus stays inside",
+      "passed": true
+    },
+    {
+      "name": "Escape closes chooser and returns focus",
+      "passed": true
+    },
+    {
+      "name": "French selector changes copy and URL",
+      "passed": true
+    },
+    {
+      "name": "history restores French selector",
+      "passed": true
+    },
+    {
+      "name": "history restores English selector",
+      "passed": true
+    },
+    {
+      "name": "real download click opens official published release",
+      "passed": true
+    },
+    {
+      "name": "explicit French arrival works",
+      "passed": true
+    },
+    {
+      "name": "mobile English default with French browser locale",
+      "passed": true
+    },
+    {
+      "name": "320 pixel page has no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "mobile touch opens published download chooser",
+      "passed": true
+    },
+    {
+      "name": "mobile chooser fits viewport",
+      "passed": true
+    },
+    {
+      "name": "mobile close button closes chooser",
+      "passed": true
+    },
+    {
+      "name": "mobile French touch selector",
+      "passed": true
+    },
+    {
+      "name": "mobile French download copy",
+      "passed": true
+    },
+    {
+      "name": "mobile English touch selector",
+      "passed": true
+    },
+    {
+      "name": "no browser page errors",
+      "passed": true
+    },
+    {
+      "name": "desktop French download chooser copy",
+      "passed": true
+    },
+    {
+      "name": "desktop backdrop closes chooser",
+      "passed": true
+    },
+    {
+      "name": "mobile underlined version opens chooser",
+      "passed": true
+    },
+    {
+      "name": "mobile Escape closes chooser",
+      "passed": true
+    },
+    {
+      "name": "open-source link opens the public repository",
+      "passed": true
+    },
+    {
+      "name": "no page errors after exploratory checks",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "docs/assets/installers-0.0.4/production/desktop.png",
+    "docs/assets/installers-0.0.4/production/desktop-downloads.png",
+    "docs/assets/installers-0.0.4/production/mobile.png",
+    "docs/assets/installers-0.0.4/production/mobile-downloads.png"
+  ],
+  "testAdjustment": "The initial popup load-state wait did not establish its destination; the actual popup navigation was then explicitly awaited with waitForURL before checking the published release.",
+  "scope": "Production website controls and public release navigation only; no inference or physical-device claim.",
+  "exploratory": {
+    "startedAt": "2026-09-23T19:31:13.463Z",
+    "finishedAt": "2026-09-23T19:31:58.849Z",
+    "durationMs": 45386,
+    "actions": [
+      "French desktop chooser",
+      "backdrop dismissal",
+      "underlined mobile version link",
+      "mobile Escape dismissal",
+      "scroll to mobile footer",
+      "open-source repository navigation"
+    ],
+    "observations": {
+      "mobileBackgroundOverflowWhileChooserOpen": "hidden",
+      "footerVisible": true,
+      "repositoryPopupClosed": true
+    }
+  }
+}

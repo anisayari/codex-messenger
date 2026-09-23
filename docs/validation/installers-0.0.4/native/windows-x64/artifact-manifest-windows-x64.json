@@ -1,0 +1,31 @@
+{
+  "version": "0.0.4",
+  "tag": "v0.0.4",
+  "commit": "608a349b060e14ed3b2f4cc8fa0181e9e80c5c69",
+  "platform": "windows",
+  "arch": "x64",
+  "developerIdSigningOrNotarization": "not performed by this workflow",
+  "windowsAuthenticodeSigning": "not performed by this workflow",
+  "packagedSmoke": "packaged-smoke-windows-x64.json",
+  "installerSmoke": "installer-smoke-windows-x64.json",
+  "launcherSmoke": "launcher-smoke-windows-x64.json",
+  "applicationArchiveSha256": "a89263de49648f116899f3ba8440c1f8de3f1e7cc8344d007abd6823bc8f171c",
+  "nativeCodex": {
+    "version": "0.156.1",
+    "sha256": "70bcb05f9bf1a4e7306edd0cd1b57d02af3267ad02a34b26f45c8c4bb20a3301",
+    "proof": "codex-native-windows-x64.json",
+    "tap": "codex-native-windows-x64.tap"
+  },
+  "files": [
+    {
+      "name": "Codex-Messenger-Setup-0.0.4.exe",
+      "bytes": 164727327,
+      "sha256": "ce758a7ee02b75529153802067a4cf02b96b015e4b45246e8b1608de85e22208"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4.exe",
+      "bytes": 164400094,
+      "sha256": "574e321e43f0c1cc58ba883036b6c2f9bad7f414ebd96d913d22873dc776b952"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "run": "https://github.com/anisayari/codex-messenger/actions/runs/35909394453",
+  "runId": 35909394453,
+  "jobId": 107345108246,
+  "sourceCommit": "608a349b060e14ed3b2f4cc8fa0181e9e80c5c69",
+  "event": "release",
+  "status": "completed",
+  "conclusion": "success",
+  "steps": [
+    {
+      "name": "Verify published installers match the site",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-23T19:28:02Z",
+      "completedAt": "2026-09-23T19:28:02Z"
+    },
+    {
+      "name": "Build static deployment bundle",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-23T19:28:02Z",
+      "completedAt": "2026-09-23T19:28:02Z"
+    },
+    {
+      "name": "Deploy to VPS",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-09-23T19:28:02Z",
+      "completedAt": "2026-09-23T19:28:09Z"
+    }
+  ],
+  "gate": "Execution of the gated bundle and VPS steps confirms steps.ready.outputs.deploy=true; deployment was not skipped."
+}

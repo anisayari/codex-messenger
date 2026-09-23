@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "version": "0.156.1",
+  "platform": "windows",
+  "arch": "x64",
+  "source": "official npm package",
+  "fixture": "codexLiveContract",
+  "nativeSha256": "70bcb05f9bf1a4e7306edd0cd1b57d02af3267ad02a34b26f45c8c4bb20a3301",
+  "testSummary": {
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "failure": null,
+  "scope": "Unauthenticated local metadata and unmaterialized-history capability only; no model inference or persisted-history validation",
+  "durationMs": 1929
+}

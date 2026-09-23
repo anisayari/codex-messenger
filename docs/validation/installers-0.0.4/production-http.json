@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "checkedAt": "2026-09-23T19:28:59.165Z",
+  "version": "0.0.4",
+  "releaseCommit": "608a349b060e14ed3b2f4cc8fa0181e9e80c5c69",
+  "htmlBytes": 59286,
+  "htmlSha256": "a970703156de2412a15c3256a30d1f02b563ce7bbc7775a153eac83b61bfda7d",
+  "siteJsBytes": 15500,
+  "siteJsSha256": "1d4ec7b2c893d529b0958af9bd6ff1d4b5f5e11dcdb304bb6d1162ea449b35b6",
+  "exactSourceMatches": true,
+  "headers": {
+    "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'; upgrade-insecure-requests",
+    "hsts": "max-age=31536000; includeSubDomains",
+    "nosniff": "nosniff"
+  },
+  "heads": [
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.dmg",
+      "bytes": 197033510,
+      "digest": "sha256:eae837704f7db1b6e077505dbf302f37f23ec8570f662c5a399e9285d03741d0",
+      "anonymousHead": 200,
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-arm64.dmg"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-arm64.zip",
+      "bytes": 195710582,
+      "digest": "sha256:35d5bbbfc00bb0932a2bd15b54087ef4ec97ad045f7059e0155ea625b806ce18",
+      "anonymousHead": 200,
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-arm64.zip"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-x64.dmg",
+      "bytes": 202892852,
+      "digest": "sha256:b88f37a03df3e44b70b66807bafd9a76b8dfaad247b8b3e5d7ab16f43826e33f",
+      "anonymousHead": 200,
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-x64.dmg"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4-x64.zip",
+      "bytes": 201607654,
+      "digest": "sha256:a5c830b0f0f2dd455ce57e042152c137f69029aa8451d6a23f01055562184954",
+      "anonymousHead": 200,
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4-x64.zip"
+    },
+    {
+      "name": "Codex-Messenger-0.0.4.exe",
+      "bytes": 164400094,
+      "digest": "sha256:574e321e43f0c1cc58ba883036b6c2f9bad7f414ebd96d913d22873dc776b952",
+      "anonymousHead": 200,
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-0.0.4.exe"
+    },
+    {
+      "name": "Codex-Messenger-Setup-0.0.4.exe",
+      "bytes": 164727327,
+      "digest": "sha256:ce758a7ee02b75529153802067a4cf02b96b015e4b45246e8b1608de85e22208",
+      "anonymousHead": 200,
+      "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.4/Codex-Messenger-Setup-0.0.4.exe"
+    }
+  ],
+  "redirects": [
+    {
+      "url": "http://codexmessenger.net/",
+      "status": 301,
+      "location": "https://codexmessenger.net/"
+    },
+    {
+      "url": "https://www.codexmessenger.net/",
+      "status": 301,
+      "location": "https://codexmessenger.net/"
+    }
+  ]
+}

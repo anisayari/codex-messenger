@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "releaseSourceCommit": "608a349b060e14ed3b2f4cc8fa0181e9e80c5c69",
+  "platform": "macos",
+  "arch": "arm64",
+  "node": "24.19.0",
+  "unitTests": { "tests": 387, "passed": 381, "failed": 0, "skipped": 6, "cancelled": 0, "todo": 0, "durationMs": 17643.466667 },
+  "runtimeEvidenceSourceCommit": "efa63b1d8204d9b67d9861ca1cb1a0d8e4d03c30",
+  "auditEvidenceSourceCommit": "aec8dffa1740e39c0ae25e90ca97304897eb5536",
+  "developmentPreviewEvidenceSourceCommit": "acf901873516146538410c49491982dbbedf7551",
+  "auditVulnerabilities": 0,
+  "releasePreflight": true,
+  "rendererBuild": true,
+  "sourceElectronSmoke": true,
+  "developmentAdHocSignatureVerified": true,
+  "developmentBundleIdentifier": "com.codex.messenger.dev",
+  "developmentPreviewChecks": 9,
+  "siteBrowserChecks": 11,
+  "officialCodexStableVersion": "0.156.1",
+  "scope": "Local startup, preview cleanup, regression and site controls; native distributed installer evidence is collected separately. No physical hardware, external OAuth, paid inference or Developer ID notarization claim."
+}
