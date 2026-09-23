@@ -28,6 +28,27 @@ Var cmTraceFile
 ; The vendor process-check wrapper below retains its normal GetProcessInfo helper.
 !include "getProcessInfo.nsh"
 Var pid
+; Trace calls must preserve the error flag used by GetOptions in vendor init.
+; Use native IfErrors through LogicLib, so tracing never loads a DLL first.
+!macro CM_INIT_TRACE PHASE
+  ${If} ${Errors}
+    Push "${PHASE}"
+    !ifdef BUILD_UNINSTALLER
+      Call un.cmTracePhase
+    !else
+      Call cmTracePhase
+    !endif
+    SetErrors
+  ${Else}
+    Push "${PHASE}"
+    !ifdef BUILD_UNINSTALLER
+      Call un.cmTracePhase
+    !else
+      Call cmTracePhase
+    !endif
+    ClearErrors
+  ${EndIf}
+!macroend
 !ifndef BUILD_UNINSTALLER
 Var cmGuardOldPath
 !endif
