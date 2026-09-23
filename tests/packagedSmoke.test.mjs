@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { EventEmitter, once } from 'node:events';
 import { parseSmokeArguments, packagedPaths, findPackagedExecutable, isolatedSmokeEnvironment, errorsFromPrivateLog,
-  validatePackagedObservation, initialSmokeReport } from '../scripts/packaged-smoke.mjs';
+  validatePackagedObservation, initialSmokeReport, closeOwnedApplication } from '../scripts/packaged-smoke.mjs';
 
 const options = { platform: 'windows', arch: 'x64', output: 'release/windows', version: '0.0.3', report: 'release-proof/packaged-smoke.json' };
 const argumentsFor = value => Object.entries(value).flatMap(([key, argument]) => ['--' + key, argument]);
@@ -104,4 +106,77 @@ test('initial release report is explicitly unexecuted and never claims signing o
   assert.equal(report.signing.credentialsProvided, false);
   assert.equal(JSON.stringify(report).includes('/private'), false);
   assert.deepEqual(report.checks, {});
+});
+
+test('an API rejection after a real Node child closes naturally does not invent a forced exit', { timeout: 10000 }, async t => {
+  // This is a controlled Node fixture, not evidence of an Electron or native installer exit.
+  const child = spawn(process.execPath, ['-e', 'process.once("message", () => process.disconnect()); process.send("ready");'],
+    { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+  const closed = new Promise(resolve => child.once('close', resolve));
+  t.after(async () => {
+    if (child.exitCode === null && child.signalCode === null) { child.kill(); await closed; }
+  });
+  await once(child, 'message');
+  let forcedStops = 0;
+  const outcome = await closeOwnedApplication({ process: () => child, close: async () => {
+    child.send('quit');
+    await closed;
+    throw new Error('injected private protocol rejection after exit');
+  } }, { forceStop: async () => { forcedStops += 1; } });
+  assert.deepEqual(outcome.process, { closed: true, forced: false, exitCode: 0 });
+  assert.deepEqual(outcome.closeDiagnostic, { apiClose: 'REJECTED', processClose: 'OBSERVED', signaled: false, forceStop: 'NOT_ATTEMPTED' });
+  assert.equal(forcedStops, 0);
+  assert.equal(JSON.stringify(outcome).includes('private'), false);
+});
+
+const fakeChild = () => Object.assign(new EventEmitter(), { pid: 12345, exitCode: null, signalCode: null });
+const flushMicrotasks = async () => { for (let index = 0; index < 8; index += 1) await Promise.resolve(); };
+
+test('an API rejection while a process remains live waits the existing deadline and records a real force-stop attempt', async t => {
+  // Explicit process double: no OS process is started or killed by this test.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const child = fakeChild();
+  let forcedStops = 0;
+  const result = closeOwnedApplication({ process: () => child, close: async () => { throw new Error('injected rejection'); } },
+    { forceStop: async () => { forcedStops += 1; child.exitCode = 1; child.emit('close', 1, null); } });
+  await flushMicrotasks();
+  t.mock.timers.tick(5999);
+  await flushMicrotasks();
+  assert.equal(forcedStops, 0);
+  t.mock.timers.tick(1);
+  const outcome = await result;
+  assert.equal(forcedStops, 1);
+  assert.deepEqual(outcome.process, { closed: true, forced: true, exitCode: 1 });
+  assert.deepEqual(outcome.closeDiagnostic, { apiClose: 'REJECTED', processClose: 'OBSERVED', signaled: false, forceStop: 'ATTEMPTED' });
+});
+
+test('missing process close cannot pass even when its exit flags claim success', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const child = fakeChild();
+  child.exitCode = 0;
+  let forcedStops = 0;
+  const result = closeOwnedApplication({ process: () => child, close: async () => {} },
+    { forceStop: async () => { forcedStops += 1; } });
+  await flushMicrotasks();
+  t.mock.timers.tick(6000);
+  const outcome = await result;
+  assert.deepEqual(outcome.process, { closed: false, forced: false, exitCode: null });
+  assert.deepEqual(outcome.closeDiagnostic, { apiClose: 'RESOLVED', processClose: 'TIMEOUT', signaled: null, forceStop: 'NOT_ATTEMPTED' });
+  assert.equal(forcedStops, 0);
+  assert.equal(child.listenerCount('close'), 0);
+});
+
+test('close-event observation preserves a nonzero exit and a signal instead of reporting a clean exit', async () => {
+  for (const [code, signal] of [[7, null], [0, 'SIGTERM']]) {
+    const child = fakeChild();
+    const outcome = await closeOwnedApplication({ process: () => child, close: async () => {
+      child.exitCode = code;
+      child.signalCode = signal;
+      child.emit('close', code, signal);
+    } }, { forceStop: async () => assert.fail('a closed process must not be killed') });
+    assert.deepEqual(outcome.process, { closed: true, forced: false, exitCode: code });
+    assert.equal(outcome.closeDiagnostic.apiClose, 'RESOLVED');
+    assert.equal(outcome.closeDiagnostic.signaled, signal !== null);
+    assert.ok(code !== 0 || outcome.closeDiagnostic.signaled, 'a nonzero exit or signal fails the natural-exit contract');
+  }
 });

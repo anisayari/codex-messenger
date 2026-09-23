@@ -109,22 +109,39 @@ async function within(promise, milliseconds, code) {
   finally { clearTimeout(timer); }
 }
 
-async function closeOwnedApplication(application) {
-  if (!application) return { closed: false, forced: false, exitCode: null };
-  const child = application.process();
-  let forced = false;
-  try { await within(application.close(), 6000, 'CLOSE_TIMEOUT'); }
-  catch {
-    forced = true;
-    if (child?.pid && child.exitCode === null && child.signalCode === null) {
-      if (process.platform === 'win32') await new Promise(resolve => execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'], { timeout: 2000, windowsHide: true }, resolve));
-      else child.kill('SIGKILL');
+async function forceStopOwnedChild(child) {
+  if (process.platform === 'win32') {
+    await new Promise((resolve, reject) => execFile('taskkill', ['/PID', String(child.pid), '/T', '/F'],
+      { timeout: 2000, windowsHide: true }, error => error ? reject(error) : resolve()));
+  } else child.kill('SIGKILL');
+}
+
+export async function closeOwnedApplication(application, { forceStop = forceStopOwnedChild } = {}) {
+  const child = application?.process();
+  if (!child) return { process: { closed: false, forced: false, exitCode: null },
+    closeDiagnostic: { apiClose: 'NOT_STARTED', processClose: 'MISSING', signaled: null, forceStop: 'NOT_ATTEMPTED' } };
+  let observedClose, apiClose = 'PENDING', forced = false, forceStopResult = 'NOT_ATTEMPTED';
+  let observeClose;
+  const closed = new Promise(resolve => {
+    observeClose = (code, signal) => { observedClose = { code, signal }; resolve(); };
+    child.once('close', observeClose);
+  });
+  // Observe the real process before asking Playwright to quit: its protocol can reject after a clean exit.
+  const apiClosed = Promise.resolve().then(() => application.close()).then(
+    () => { apiClose = 'RESOLVED'; }, () => { apiClose = 'REJECTED'; });
+  try {
+    await within(Promise.all([apiClosed, closed]), 6000, 'CLOSE_TIMEOUT').catch(() => {});
+    if (!observedClose && child.pid && child.exitCode === null && child.signalCode === null) {
+      forced = true;
+      forceStopResult = 'ATTEMPTED';
+      try { await forceStop(child); } catch { forceStopResult = 'FAILED'; }
+      if (!observedClose) await within(closed, 1500, 'EXIT_TIMEOUT').catch(() => {});
     }
-  }
-  if (child && child.exitCode === null && child.signalCode === null) {
-    await within(new Promise(resolve => child.once('close', resolve)), 1500, 'EXIT_TIMEOUT').catch(() => {});
-  }
-  return { closed: Boolean(child && (child.exitCode !== null || child.signalCode !== null)), forced, exitCode: child?.exitCode ?? null };
+    return { process: { closed: Boolean(observedClose), forced, exitCode: observedClose?.code ?? null },
+      closeDiagnostic: { apiClose: apiClose === 'PENDING' ? 'TIMEOUT' : apiClose,
+        processClose: observedClose ? 'OBSERVED' : 'TIMEOUT',
+        signaled: observedClose ? observedClose.signal !== null : null, forceStop: forceStopResult } };
+  } finally { child.removeListener('close', observeClose); }
 }
 
 export async function runPackagedSmoke(options, { files: suppliedFiles, writeReport = true } = {}) {
@@ -205,8 +222,9 @@ export async function runPackagedSmoke(options, { files: suppliedFiles, writeRep
   } catch (error) { report.failure = error.smokeCode || stage; }
   finally {
     const closed = await closeOwnedApplication(application);
-    report.process = closed;
-    if (application && (!closed.closed || closed.forced || closed.exitCode !== 0)) report.failure ||= 'NATIVE_EXIT';
+    report.process = closed.process;
+    report.closeDiagnostic = closed.closeDiagnostic;
+    if (application && (!closed.process.closed || closed.process.forced || closed.process.exitCode !== 0 || closed.closeDiagnostic.signaled !== false)) report.failure ||= 'NATIVE_EXIT';
     if (temporary) {
       try {
         const logErrors = errorsFromPrivateLog(await fs.readFile(path.join(temporary, 'profile', 'codex-messenger.log'), 'utf8'));
@@ -217,7 +235,8 @@ export async function runPackagedSmoke(options, { files: suppliedFiles, writeRep
     }
   }
   if (Object.values(report.errors).some(count => count > 0)) report.failure ||= 'RUNTIME_ERRORS';
-  report.passed = Boolean(application && report.failure === null && report.process.closed && !report.process.forced && report.process.exitCode === 0);
+  report.passed = Boolean(application && report.failure === null && report.process.closed && !report.process.forced &&
+    report.process.exitCode === 0 && report.closeDiagnostic.signaled === false);
   report.durationMs = Date.now() - started;
   if (writeReport) {
     await fs.mkdir(path.dirname(path.resolve(options.report)), { recursive: true });
