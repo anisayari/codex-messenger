@@ -4,7 +4,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { displayVersion } from "../shared/versionUtils.js";
 import { preparePortableLauncher } from "./portable-launcher-patch.mjs";
-import { prepareNsisInitTrace } from "./nsis-init-trace-patch.mjs";
 
 export function builderInvocation(rootDir, args, nodeExecutable = process.execPath) {
   return { command: nodeExecutable, args: [path.join(rootDir, "node_modules", "electron-builder", "cli.js"), ...args] };
@@ -21,7 +20,6 @@ async function main() {
   const packageJson = JSON.parse(await fs.readFile(path.join(rootDir, "package.json"), "utf8"));
   if (needsPortableLauncherPatch(process.argv.slice(2))) {
     await preparePortableLauncher(rootDir);
-    await prepareNsisInitTrace(rootDir);
   }
   const invocation = builderInvocation(rootDir, process.argv.slice(2));
   const child = spawn(invocation.command, invocation.args, {

@@ -9,7 +9,8 @@ import { parseInstallerSmokeArguments, isOwnedPath, nsisInstallArguments, valida
   installerChecks, validateInstallerEntry, requireNativeCommandExit, validateOwnedRegistrationCleanup, runInstallerSmoke,
   nsisUninstallArguments, nsisVerbatimCommand, copyOwnedUninstaller, runWithOwnedCleanup, privateEnvironment, powershell,
   parseInstallerTrace, sanitizeWindowsTimeoutDiagnostics, captureWindowsTimeoutDiagnostics, snapshotInstallerCaches,
-  cleanupInstallerCaches, validateNativeInstallerFolders } from '../scripts/installer-smoke.mjs';
+  cleanupInstallerCaches, validateNativeInstallerFolders, snapshotInstalledPayload, validateRunningInstalledApplication,
+  readRunningApplicationLog, waitForRunningInstalledApplication } from '../scripts/installer-smoke.mjs';
 
 const options = { version: '0.0.4', platform: 'windows', arch: 'x64', output: 'release/windows', report: 'proof.json' };
 const checkNames = ['packaged', 'asar', 'version', 'platform', 'architecture', 'privateProfile', 'sandbox', 'contextIsolation', 'nodeIntegrationDisabled', 'webSecurity', 'preloadBootstrap', 'rendererNodeIsolated', 'packagedDocument', 'renderedDom'];
@@ -82,10 +83,73 @@ test('installer proof requires all 14 real smoke checks, zero errors, clean exit
   assert.throws(() => validateOriginAsar('b'.repeat(64), 'a'.repeat(64)));
   const entry = { passed: true, bytes: 1024, sha256: 'a'.repeat(64), appAsarSha256: 'a'.repeat(64), smoke: smoke(), checks: Object.fromEntries(installerChecks.nsis.map(key => [key, true])) };
   validateInstallerEntry(entry, 'nsis', options);
-  for (const key of ['foreignFilePreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved']) {
+  for (const key of ['runningAppInstallRefused', 'runningAppPreserved', 'foreignFilePreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved']) {
     entry.checks[key] = false; assert.throws(() => validateInstallerEntry(entry, 'nsis', options)); entry.checks[key] = true;
   }
   entry.smoke.appAsarSha256 = 'b'.repeat(64); assert.throws(() => validateInstallerEntry(entry, 'nsis', options));
+});
+
+test('running installed application readiness requires one fresh packaged start and the exact installed renderer, with zero runtime errors', () => {
+  const expected = { version: '0.0.4', userData: 'C:\\private\\profile', asar: 'C:\\private\\installed app\\resources\\app.asar' };
+  const records = [
+    { event: 'app.start', version: expected.version, packaged: true, dev: false, logPath: 'C:\\private\\profile\\codex-messenger.log' },
+    { event: 'window.ready-to-show', key: 'main', url: 'file:///C:/private/installed%20app/resources/app.asar/dist/index.html' }
+  ];
+  const log = records.map(record => JSON.stringify(record)).join('\n');
+  validateRunningInstalledApplication(log, expected);
+  for (const changed of [records.slice(0, 1), [...records, records[0]], [records[0], { ...records[1], url: 'file:///C:/foreign/resources/app.asar/dist/index.html' }],
+    [{ ...records[0], packaged: false }, records[1]], [{ ...records[0], version: '0.0.3' }, records[1]],
+    [{ ...records[0], logPath: 'C:\\foreign\\codex-messenger.log' }, records[1]], [...records, { event: 'window.render-process-gone' }]]) {
+    assert.throws(() => validateRunningInstalledApplication(changed.map(record => JSON.stringify(record)).join('\n'), expected));
+  }
+});
+
+test('running application log offsets exclude stale readiness and refuse truncation or links', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'installer-running-log-unit-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const file = path.join(root, 'codex-messenger.log');
+  const previous = Buffer.from('{"event":"app.start","version":"stale"}\n');
+  await fs.writeFile(file, previous);
+  assert.equal(await readRunningApplicationLog(file, previous.length), '');
+  const fresh = '{"event":"app.start","version":"fresh"}\n';
+  await fs.appendFile(file, fresh);
+  assert.equal(await readRunningApplicationLog(file, previous.length), fresh);
+  await fs.writeFile(file, 'truncated');
+  await assert.rejects(readRunningApplicationLog(file, previous.length));
+  await fs.unlink(file); await fs.symlink(root, file, process.platform === 'win32' ? 'junction' : 'dir');
+  await assert.rejects(readRunningApplicationLog(file, 0));
+});
+
+test('running application readiness remains bounded and never converts missing startup, exit or renderer errors into a pass', async () => {
+  // An injected unit probe is not evidence of a running native Windows app.
+  const child = { pid: 123, exitCode: null, signalCode: null }, probe = () => {};
+  const expected = { version: '0.0.4', userData: 'C:\\private\\profile', asar: 'C:\\private\\resources\\app.asar' };
+  const started = Date.now();
+  await assert.rejects(waitForRunningInstalledApplication(child, expected, { readLog: async () => '', probe, timeoutMs: 25, pollMs: 5 }), error => error.installerSmokeCode === 'RUNNING_APP_READY_TIMEOUT');
+  assert.ok(Date.now() - started < 1000);
+  await assert.rejects(waitForRunningInstalledApplication(child, expected, { readLog: () => new Promise(() => {}), probe, timeoutMs: 25, pollMs: 5 }), error => error.installerSmokeCode === 'RUNNING_APP_READY_TIMEOUT');
+  await assert.rejects(waitForRunningInstalledApplication(child, expected, { readLog: async () => '{"event":"window.preload-error"}', probe, timeoutMs: 25, pollMs: 5 }), error => error.installerSmokeCode === 'RUNNING_APP_RUNTIME_ERRORS');
+  await assert.rejects(waitForRunningInstalledApplication(child, expected, { readLog: async () => '', probe: () => { throw Object.assign(new Error('RUNNING_APP_EXITED'), { installerSmokeCode: 'RUNNING_APP_EXITED' }); }, timeoutMs: 25, pollMs: 5 }), error => error.installerSmokeCode === 'RUNNING_APP_EXITED');
+  await assert.rejects(waitForRunningInstalledApplication(child, expected, { readLog: async () => '', probe, timeoutMs: 15001 }));
+});
+
+test('installed payload comparison binds every file and directory to the canonical owned root and catches altered, added or removed files', async t => {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'installer-running-payload-unit-')));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const directory = path.join(root, 'installed app'), resources = path.join(directory, 'resources'), executable = path.join(directory, 'Codex Messenger.exe');
+  await fs.mkdir(resources, { recursive: true });
+  await fs.writeFile(executable, 'unit executable fixture'); await fs.writeFile(path.join(resources, 'app.asar'), 'unit archive fixture');
+  const before = await snapshotInstalledPayload(root, directory);
+  assert.deepEqual(await snapshotInstalledPayload(root, directory), before);
+  await fs.writeFile(executable, 'modified executable fixture');
+  assert.notDeepEqual(await snapshotInstalledPayload(root, directory), before);
+  await fs.writeFile(executable, 'unit executable fixture'); await fs.writeFile(path.join(directory, 'foreign.txt'), 'added fixture');
+  assert.notDeepEqual(await snapshotInstalledPayload(root, directory), before);
+  await fs.unlink(path.join(directory, 'foreign.txt')); await fs.unlink(executable);
+  assert.notDeepEqual(await snapshotInstalledPayload(root, directory), before);
+  await fs.symlink(resources, executable, process.platform === 'win32' ? 'junction' : 'dir');
+  await assert.rejects(snapshotInstalledPayload(root, directory));
+  await assert.rejects(snapshotInstalledPayload(root, root));
 });
 
 test('actual portable wrapper proof rejects missing startup, foreign document, renderer errors and forced or failed exits', () => {

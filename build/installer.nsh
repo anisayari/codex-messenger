@@ -25,30 +25,8 @@ Var cmGuardFindResult
 Var cmTracePhase
 Var cmTraceEnabled
 Var cmTraceFile
-; The vendor process-check wrapper below retains its normal GetProcessInfo helper.
-!include "getProcessInfo.nsh"
-Var pid
-; Trace calls must preserve the error flag used by GetOptions in vendor init.
-; Use native IfErrors through LogicLib, so tracing never loads a DLL first.
-!macro CM_INIT_TRACE PHASE
-  ${If} ${Errors}
-    Push "${PHASE}"
-    !ifdef BUILD_UNINSTALLER
-      Call un.cmTracePhase
-    !else
-      Call cmTracePhase
-    !endif
-    SetErrors
-  ${Else}
-    Push "${PHASE}"
-    !ifdef BUILD_UNINSTALLER
-      Call un.cmTracePhase
-    !else
-      Call cmTracePhase
-    !endif
-    ClearErrors
-  ${EndIf}
-!macroend
+Var cmProcessResult
+Var cmProcessAttempts
 !ifndef BUILD_UNINSTALLER
 Var cmGuardOldPath
 !endif
@@ -68,6 +46,45 @@ cm_trace_close:
   FileClose $cmTraceFile
 cm_trace_done:
   ClearErrors
+FunctionEnd
+
+Function ${CM_GUARD_PREFIX}cmCheckAppRunning
+  StrCpy $cmProcessAttempts 0
+cm_process_retry:
+  ; Only 603 proves absence. Every enumeration error must stop before modifying files.
+  nsProcess::_FindProcess /NOUNLOAD "${PRODUCT_FILENAME}.exe"
+  Pop $cmProcessResult
+  StrCmp $cmProcessResult 603 cm_process_done
+  StrCmp $cmProcessResult 0 cm_process_running cm_process_error
+cm_process_running:
+  Push "PROCESS_FOUND"
+  Call ${CM_GUARD_PREFIX}cmTracePhase
+  IfSilent cm_process_wait cm_process_prompt
+cm_process_wait:
+  ; An updater may already be exiting. Give it two seconds without terminating it.
+  IntCmp $cmProcessAttempts 10 cm_process_stop cm_process_sleep cm_process_stop
+cm_process_sleep:
+  Sleep 200
+  IntOp $cmProcessAttempts $cmProcessAttempts + 1
+  Goto cm_process_retry
+cm_process_prompt:
+  MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Codex Messenger is running. Close the application, then click Retry to continue." /SD IDCANCEL IDRETRY cm_process_retry
+  Goto cm_process_stop
+cm_process_error:
+  Push "PROCESS_CHECK_ERROR"
+  Call ${CM_GUARD_PREFIX}cmTracePhase
+  DetailPrint "Cannot verify whether Codex Messenger is running (native process check: $cmProcessResult)."
+  MessageBox MB_OK|MB_ICONSTOP "Codex Messenger could not safely check running applications. Close the application and try again. No application files have been changed." /SD IDOK
+cm_process_stop:
+  nsProcess::_Unload
+  SetErrorLevel 42
+  Quit
+cm_process_done:
+  Push "PROCESS_ABSENT"
+  Call ${CM_GUARD_PREFIX}cmTracePhase
+  nsProcess::_Unload
+  ClearErrors
+  Return
 FunctionEnd
 
 Function ${CM_GUARD_PREFIX}cmFindDirectoryLeaf
@@ -249,14 +266,11 @@ FunctionEnd
   !else
     Call cmTracePhase
   !endif
-  !insertmacro IS_POWERSHELL_AVAILABLE
-  Push "POWERSHELL_AVAILABLE_CHECK_DONE"
   !ifdef BUILD_UNINSTALLER
-    Call un.cmTracePhase
+    Call un.cmCheckAppRunning
   !else
-    Call cmTracePhase
+    Call cmCheckAppRunning
   !endif
-  !insertmacro _CHECK_APP_RUNNING
   Push "PROCESS_CHECK_DONE"
   !ifdef BUILD_UNINSTALLER
     Call un.cmTracePhase

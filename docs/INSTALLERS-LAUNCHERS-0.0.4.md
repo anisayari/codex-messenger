@@ -8,6 +8,7 @@ This release corrects installation, startup, update state and uninstall behavior
 | Start source mode from a checkout with spaces in its path | Launcher dependency/runtime tests and native development runner smoke from a different working directory |
 | Open the web preview after its own server starts, and stop it cleanly | Busy-port regression and native HTTP/exit/port-release proof |
 | Windows installer works in a custom installation directory | Execute the actual NSIS installer, inspect registration and shortcut, launch the installed app |
+| Windows installation refuses to replace an application that is still open | Start the actual installed app in a private profile; require silent setup refusal with exit 42 while its PID, complete installed payload and registration remain unchanged |
 | Windows uninstallation protects unrelated files and profiles | Refused uninstall with a foreign sentinel; successful uninstall after removing only that test sentinel; project/Codex/profile sentinels preserved |
 | Legacy shared install directories are protected before the old uninstaller runs | Execute the new installer against an isolated legacy registry fixture and check refusal/preservation |
 | Portable Windows executable starts its actual bundled app | Execute the actual wrapper with private temporary paths containing spaces; inspect version, packaged renderer readiness and clean exit |
@@ -16,5 +17,9 @@ This release corrects installation, startup, update state and uninstall behavior
 | Website downloads match the release and open in English | Production browser checks, exact release links and public installer HEAD responses |
 
 Each installer is hashed before and after execution. Its app.asar must match the unpacked app tested on the same native host. Every packaged app observation requires version, architecture, rendered DOM, preload bootstrap, sandbox, isolated renderer and profile, zero runtime errors, and a normal exit. These observations do not demonstrate paid model calls, account login, physical microphone/camera behavior or signed replacement.
+
+The installer checks running applications through the bundled native nsProcess plugin. Only its documented `603` result confirms absence; an enumeration error stops installation. A running copy must be closed manually before Retry, including another installation with the same executable name. Silent installation waits at most two seconds for an exit already in progress, then refuses with 42. This removes the installer’s unbounded PowerShell startup and avoids terminating unrelated applications.
+
+The complete installer fixture has a ten-minute abort budget. Windows registry probes measured 23–29 seconds each on the native runner, and the live-app refusal case adds two such probes. Individual command limits remain fixed: 60 seconds for setup and PowerShell, 30 seconds for uninstallation or refused replacement, and 15 seconds for the additional running app to become ready. Its readiness log starts at the pre-launch end-of-file offset, and cleanup targets only the test's spawned PID and descendants.
 
 Publication evidence will be added after the native workflow and public deployment succeed. Signing credentials are not supplied to the unsigned release workflow.

@@ -19,7 +19,7 @@ const abortError = () => Object.assign(new Error('HARD_TIMEOUT'), { installerSmo
 const checkAbort = () => { if (nativeScope.getStore()?.signal?.aborted) throw abortError(); };
 const cleanupOwned = task => nativeScope.run({ ...nativeScope.getStore(), cleanup: true }, task);
 export const installerChecks = {
-  nsis: ['installed', 'silentNoAutoLaunch', 'foreignUninstallRefused', 'foreignFilePreserved', 'uninstalled', 'registrationRemoved', 'protectedFilesPreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved', 'originAsar', 'privateTempCleanup'],
+  nsis: ['installed', 'silentNoAutoLaunch', 'runningAppInstallRefused', 'runningAppPreserved', 'foreignUninstallRefused', 'foreignFilePreserved', 'uninstalled', 'registrationRemoved', 'protectedFilesPreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved', 'originAsar', 'privateTempCleanup'],
   portable: ['actualWrapperExecution', 'wrapperVersion', 'wrapperPackaged', 'wrapperRendererReady', 'wrapperCleanExit', 'wrapperRuntimeErrorsZero', 'originAsar', 'privateTempCleanup'],
   dmg: ['mountedReadOnly', 'copiedApplication', 'mountDetached', 'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup'],
   zip: ['extractedApplication', 'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup']
@@ -133,7 +133,7 @@ export function validateInstallerEntry(entry, kind, options) {
   assert.equal(entry.smoke.appAsarSha256, entry.appAsarSha256);
 }
 
-const nsisOperation = operation => /^NSIS_(?:INSTALL|UNINSTALL|LEGACY_INSTALL)$/.test(operation);
+const nsisOperation = operation => /^NSIS_(?:INSTALL|RUNNING_APP_INSTALL|UNINSTALL|LEGACY_INSTALL)$/.test(operation);
 const traceFileName = 'codex-messenger-installer-smoke.trace';
 const diagnosticStatuses = new Set(['CAPTURED', 'PROCESS_NOT_FOUND', 'EXECUTABLE_MISMATCH', 'DIAGNOSTIC_FAILED', 'DIAGNOSTIC_TIMEOUT']);
 const diagnosticClasses = new Set(['#32770', 'NSISDialog', 'NSIS:Dialog', 'ConsoleWindowClass']);
@@ -474,6 +474,133 @@ async function ownedAppProcesses(executable, env, stop = false) {
   return JSON.parse(requireExitZero(await powershell(script, env, 60000, stop ? 'APP_PROCESSES_STOP_OWNED' : 'APP_PROCESSES_STATE')));
 }
 
+export async function snapshotInstalledPayload(root, directory) {
+  assert.ok(isOwnedPath(root, directory));
+  const realRoot = await fs.realpath(root), realDirectory = await fs.realpath(directory);
+  assert.ok(isOwnedPath(realRoot, realDirectory) && path.relative(directory, realDirectory) === '', 'Installed payload must remain in its canonical owned directory');
+  const snapshot = [];
+  const visit = async (parent, depth) => {
+    assert.ok(depth <= 12, 'Installed payload exceeds its expected depth');
+    for (const name of (await fs.readdir(parent)).sort()) {
+      const file = path.join(parent, name), stat = await fs.lstat(file);
+      assert.ok(!stat.isSymbolicLink() && isOwnedPath(realDirectory, await fs.realpath(file)), 'Installed payload cannot escape through links');
+      const relative = path.relative(realDirectory, file);
+      if (stat.isDirectory()) {
+        snapshot.push({ name: relative, kind: 'directory' });
+        await visit(file, depth + 1);
+      } else {
+        assert.ok(stat.isFile(), 'Installed payload must contain only regular files and directories');
+        const sha256 = await sha256File(file), after = await fs.lstat(file);
+        assert.ok(after.isFile() && !after.isSymbolicLink() && stat.size === after.size && stat.mtimeMs === after.mtimeMs, 'Installed payload changed while being observed');
+        snapshot.push({ name: relative, kind: 'file', bytes: stat.size, sha256 });
+      }
+    }
+  };
+  await visit(realDirectory, 0);
+  assert.ok(snapshot.some(record => record.name === path.join('resources', 'app.asar') && record.kind === 'file'), 'Installed payload must contain its actual app.asar');
+  return snapshot;
+}
+
+export function validateRunningInstalledApplication(log, { version, userData, asar }) {
+  assert.ok(typeof log === 'string' && Buffer.byteLength(log) <= 1000000, 'Running application log exceeds its private limit');
+  const records = log.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line));
+  assert.ok(records.every(record => record && typeof record === 'object' && !Array.isArray(record)));
+  const starts = records.filter(record => record.event === 'app.start');
+  assert.equal(starts.length, 1, 'Expected one fresh actual installed application start');
+  assert.equal(starts[0].version, version);
+  assert.equal(starts[0].packaged, true);
+  assert.equal(starts[0].dev, false);
+  assert.equal(path.win32.relative(path.win32.join(userData, 'codex-messenger.log'), starts[0].logPath), '');
+  const ready = records.filter(record => record.event === 'window.ready-to-show' && record.key === 'main');
+  assert.equal(ready.length, 1, 'Expected the running installed main renderer');
+  assert.equal(path.win32.relative(path.win32.join(asar, 'dist', 'index.html'), fileURLToPath(ready[0].url, { windows: true })), '');
+  assert.ok(Object.values(errorsFromPrivateLog(log)).every(count => count === 0), 'Running installed application cannot contain runtime errors');
+}
+
+const runningApplicationError = code => Object.assign(new Error(code), { installerSmokeCode: code, installerSmokeOperation: 'APP_RUNNING_INSTALL_GUARD' });
+
+function requireOwnedChildRunning(child, pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0 || child.pid !== pid || child.exitCode !== null || child.signalCode !== null) throw runningApplicationError('RUNNING_APP_EXITED');
+  try { process.kill(pid, 0); } catch { throw runningApplicationError('RUNNING_APP_EXITED'); }
+}
+
+export async function readRunningApplicationLog(file, offset) {
+  assert.ok(Number.isSafeInteger(offset) && offset >= 0);
+  const stat = await fs.lstat(file);
+  assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size >= offset && stat.size <= offset + 1000000, 'Expected the owned bounded application log');
+  const bytes = await fs.readFile(file);
+  assert.ok(bytes.length >= offset && bytes.length <= offset + 1000000, 'Application log changed beyond its private limit');
+  return bytes.subarray(offset).toString('utf8');
+}
+
+export async function waitForRunningInstalledApplication(child, expected, { readLog, timeoutMs = 15000, pollMs = 100, probe = requireOwnedChildRunning } = {}) {
+  assert.ok(typeof readLog === 'function' && Number.isSafeInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 15000);
+  assert.ok(Number.isSafeInteger(pollMs) && pollMs > 0 && pollMs <= 100);
+  const pid = child.pid, deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    checkAbort(); probe(child, pid);
+    let log, readTimer;
+    try {
+      log = await Promise.race([readLog(), new Promise((_, reject) => {
+        readTimer = setTimeout(() => reject(runningApplicationError('RUNNING_APP_READY_TIMEOUT')), Math.max(1, deadline - Date.now()));
+      })]);
+    } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    finally { clearTimeout(readTimer); }
+    if (log !== undefined) {
+      if (Object.values(errorsFromPrivateLog(log)).some(count => count > 0)) throw runningApplicationError('RUNNING_APP_RUNTIME_ERRORS');
+      let ready = false;
+      try { validateRunningInstalledApplication(log, expected); ready = true; } catch {}
+      if (ready) { probe(child, pid); return; }
+    }
+    await new Promise(resolve => setTimeout(resolve, Math.min(pollMs, Math.max(1, deadline - Date.now()))));
+  }
+  throw runningApplicationError('RUNNING_APP_READY_TIMEOUT');
+}
+
+async function stopOwnedRunningApplication(child, pid) {
+  if (child.pid !== pid || !Number.isSafeInteger(pid) || pid <= 0) throw runningApplicationError('RUNNING_APP_CLEANUP_IDENTITY');
+  if (child.exitCode === null && child.signalCode === null) {
+    // The child handle must still own this live PID. Never stop by image name.
+    requireOwnedChildRunning(child, pid);
+    const stopped = await new Promise(resolve => execFile('taskkill', ['/PID', String(pid), '/T', '/F'], { timeout: 2000, windowsHide: true }, error => resolve(error)));
+    if (stopped && child.exitCode === null && child.signalCode === null) throw runningApplicationError('RUNNING_APP_CLEANUP_FAILED');
+  }
+  const deadline = Date.now() + 2500;
+  while (child.exitCode === null && child.signalCode === null && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 50));
+  if (child.exitCode === null && child.signalCode === null) { child.unref(); throw runningApplicationError('RUNNING_APP_CLEANUP_TIMEOUT'); }
+}
+
+async function runningApplicationInstallSmoke(installer, options, root, entry, files, env, guid, directory) {
+  checkAbort();
+  const beforePayload = await snapshotInstalledPayload(root, directory), beforeRegistration = await registryState(guid, env);
+  validateInstalledRegistration(beforeRegistration, directory, options.version);
+  const logFile = path.join(root, 'profile', 'codex-messenger.log');
+  const previous = await fs.lstat(logFile).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+  assert.ok(!previous || previous.isFile() && !previous.isSymbolicLink());
+  const offset = previous?.size || 0;
+  const child = spawn(files.executable, [], { env, cwd: root, shell: false, windowsHide: false, stdio: 'ignore' });
+  let startFailed = false;
+  child.once('error', () => { startFailed = true; });
+  const pid = child.pid;
+  await runWithOwnedCleanup(async () => {
+    if (startFailed || !Number.isSafeInteger(pid)) throw runningApplicationError('RUNNING_APP_NOT_STARTED');
+    await waitForRunningInstalledApplication(child, { version: options.version, userData: path.join(root, 'profile'), asar: files.asar },
+      { readLog: () => readRunningApplicationLog(logFile, offset) });
+    requireOwnedChildRunning(child, pid);
+    requireNativeCommandExit(await runOwned(installer, nsisInstallArguments(directory), { env, cwd: root, timeoutMs: 30000, verbatim: true, operation: 'NSIS_RUNNING_APP_INSTALL' }), 42);
+    entry.checks.runningAppInstallRefused = true;
+    requireOwnedChildRunning(child, pid);
+    assert.deepEqual(await snapshotInstalledPayload(root, directory), beforePayload, 'Refused setup must preserve the entire installed payload');
+    assert.equal(await sha256File(files.asar), entry.appAsarSha256);
+    assert.deepEqual(await registryState(guid, env), beforeRegistration, 'Refused setup must preserve installed registration and shortcuts');
+    validateRunningInstalledApplication(await readRunningApplicationLog(logFile, offset), { version: options.version, userData: path.join(root, 'profile'), asar: files.asar });
+    requireOwnedChildRunning(child, pid);
+    entry.checks.runningAppPreserved = true;
+  }, () => cleanupOwned(async () => {
+    if (Number.isSafeInteger(pid) && pid > 0) await stopOwnedRunningApplication(child, pid);
+  }));
+}
+
 async function legacyMigrationSmoke(installer, options, root, entry, guid, env) {
   checkAbort();
   assert.deepEqual(await registryState(guid, env), { entries: [], menu: false, desktop: false });
@@ -564,6 +691,8 @@ async function nsisSmoke(installer, options, root, entry, origin) {
     entry.appAsarSha256 = await sha256File(files.asar); validateOriginAsar(entry.appAsarSha256, origin); entry.checks.originAsar = true;
     checkAbort();
     entry.smoke = await runPackagedSmoke(options, { files, writeReport: false }); validateInstallerApplication(entry.smoke, options);
+    checkAbort();
+    await runningApplicationInstallSmoke(installer, options, root, entry, files, env, guid, directory);
     checkAbort();
     await fs.writeFile(foreign, sentinel, { flag: 'wx', mode: 0o600 });
     const refused = await uninstall();
@@ -737,7 +866,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   try {
     const options = parseInstallerSmokeArguments(process.argv.slice(2));
     const controller = new AbortController();
-    watchdog = setTimeout(() => controller.abort(), 360000);
+    // This covers the full two-container fixture, including measured Windows
+    // registry probes and the live-app refusal case. Command limits stay fixed.
+    watchdog = setTimeout(() => controller.abort(), 600000);
     const report = await runInstallerSmoke(options, { signal: controller.signal });
     await fs.mkdir(path.dirname(path.resolve(options.report)), { recursive: true });
     await fs.writeFile(options.report, JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });

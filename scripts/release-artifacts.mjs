@@ -28,7 +28,7 @@ export function requiredInstallerChecks(name, { platform, arch, version }) {
   if (platform === 'macos') return [...(name.endsWith('.dmg') ? ['mountedReadOnly', 'copiedApplication', 'mountDetached'] : ['extractedApplication']),
     'bundleArchitecture', 'bundleVersion', 'originAsar', 'privateTempCleanup'];
   return name === names[0]
-    ? ['installed', 'silentNoAutoLaunch', 'foreignUninstallRefused', 'foreignFilePreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved', 'uninstalled', 'registrationRemoved', 'protectedFilesPreserved', 'originAsar', 'privateTempCleanup']
+    ? ['installed', 'silentNoAutoLaunch', 'runningAppInstallRefused', 'runningAppPreserved', 'foreignUninstallRefused', 'foreignFilePreserved', 'legacySharedDirectoryRefused', 'legacyFilesPreserved', 'uninstalled', 'registrationRemoved', 'protectedFilesPreserved', 'originAsar', 'privateTempCleanup']
     : ['actualWrapperExecution', 'wrapperVersion', 'wrapperPackaged', 'wrapperRendererReady', 'wrapperCleanExit', 'wrapperRuntimeErrorsZero', 'originAsar', 'privateTempCleanup'];
 }
 
