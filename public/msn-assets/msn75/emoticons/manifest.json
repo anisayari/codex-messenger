@@ -426,5 +426,8 @@
       "source": "msnmsgr_PNG_2004_9.png",
       "frame": 0
     }
-  ]
+  ],
+  "catalogRole": "Preserved legacy animation-frame exports; not the active Messenger emoticon catalog",
+  "mappingProvenance": "Legacy application labels and shortcuts are not authoritative Microsoft mappings; use emoticons-classic/shortcuts.json",
+  "activeCatalog": "public/msn-assets/msn75/emoticons-classic/shortcuts.json"
 }

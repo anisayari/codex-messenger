@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<package
+    xmlns="http://messenger.msn.com/messengercontent/2.0" 
+    version="2.0"
+    type="dynamicbackground"
+    partnerid="bo"
+    xmlns:dynamicbackground="http://messenger.msn.com/dynamicbackground/2.0"
+    dynamicbackground:name="Koi Pond" 
+    contenttype='P'
+    contentid="demo1"
+    >
+
+<item
+    type="downlevelimage"
+    file="downlevel.jpg"
+    />
+
+<item
+    type="backgroundimage"
+    file="background.jpg"
+    />
+
+<item
+    type="animation"
+    file="koipond.swf"
+    contentid="Demo"
+    dynamicbackground:template="1"
+    dynamicbackground:version="1.0"
+    dynamicbackground:chrome_red="87"
+    dynamicbackground:chrome_green="134"
+    dynamicbackground:chrome_blue="98"
+    dynamicbackground:font_red="128"
+    dynamicbackground:font_green="128"
+    dynamicbackground:font_blue="0"
+    dynamicbackground:margin_top="0"
+    dynamicbackground:margin_bottom="90"
+    dynamicbackground:margin_left=""
+    dynamicbackground:margin_right="0"
+    dynamicbackground:nudge_hassound="false"
+    dynamicbackground:nudge_noshake="false"
+    dynamicbackground:locationURL=""
+    dynamicbackground:contlink1_text=""
+    dynamicbackground:contlink1_cmd=""
+    dynamicbackground:contlink1_arg=""
+    dynamicbackground:contlink2_text=""
+    dynamicbackground:contlink2_cmd=""
+    dynamicbackground:contlink2_arg=""
+    />
+</package>

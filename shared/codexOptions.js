@@ -9,7 +9,9 @@ export const codexReasoningOptions = [
   { value: "low", label: "Rapide" },
   { value: "medium", label: "Normal" },
   { value: "high", label: "Approfondi" },
-  { value: "xhigh", label: "Tres approfondi" }
+  { value: "xhigh", label: "Tres approfondi" },
+  { value: "max", label: "Maximum" },
+  { value: "ultra", label: "Ultra" }
 ];
 
 export const codexCwdOptions = [
@@ -27,7 +29,6 @@ export const codexSandboxOptions = [
 export const codexApprovalOptions = [
   { value: "never", label: "Jamais demander" },
   { value: "on-request", label: "Sur demande" },
-  { value: "on-failure", label: "Si echec" },
   { value: "untrusted", label: "Non fiable" }
 ];
 
@@ -70,10 +71,13 @@ function normalizeSandboxChoice(value) {
 export function normalizeCodexOptions(options = {}) {
   return {
     model: normalizeModelChoice(options.model),
-    reasoningEffort: normalizeChoice(options.reasoningEffort, codexReasoningOptions, defaultCodexOptions.reasoningEffort),
+    reasoningEffort: /^[a-z0-9_]{1,64}$/.test(String(options.reasoningEffort ?? "")) ? String(options.reasoningEffort) : "",
     cwdMode: normalizeChoice(options.cwdMode, codexCwdOptions, defaultCodexOptions.cwdMode),
     sandbox: normalizeSandboxChoice(options.sandbox),
-    approvalPolicy: normalizeChoice(options.approvalPolicy, codexApprovalOptions, defaultCodexOptions.approvalPolicy)
+    approvalPolicy: normalizeChoice(options.approvalPolicy === "on-failure" ? "on-request" : options.approvalPolicy, codexApprovalOptions, defaultCodexOptions.approvalPolicy),
+    ...(options.permissions ? { permissions: String(options.permissions).trim() } : {}),
+    ...(options.serviceTier ? { serviceTier: String(options.serviceTier).trim() } : {}),
+    ...(options.collaborationMode && ["default", "plan"].includes(options.collaborationMode.mode) && typeof options.collaborationMode.settings?.model === "string" ? { collaborationMode: { mode: options.collaborationMode.mode, settings: { model: options.collaborationMode.settings.model, reasoning_effort: options.collaborationMode.settings.reasoning_effort ?? null, developer_instructions: null } } } : {})
   };
 }
 
@@ -86,7 +90,6 @@ export function sandboxPolicyForMode(mode) {
   if (sandbox === "readOnly") {
     return {
       type: "readOnly",
-      access: { type: "fullAccess" },
       networkAccess: false
     };
   }
@@ -95,7 +98,6 @@ export function sandboxPolicyForMode(mode) {
   return {
     type: "workspaceWrite",
     writableRoots: [],
-    readOnlyAccess: { type: "fullAccess" },
     networkAccess: true,
     excludeTmpdirEnvVar: false,
     excludeSlashTmp: false

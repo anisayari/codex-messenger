@@ -1,0 +1,37 @@
+.realtime-panel {
+  padding: 12px;
+  color: #183455;
+  border: 1px solid #93b4d6;
+  border-radius: 5px;
+  background: linear-gradient(#faffff, #e6f3ff);
+  box-shadow: inset 0 1px white;
+  font-size: 12px;
+}
+
+.realtime-heading { display: flex; gap: 9px; align-items: center; }
+.realtime-heading > img { width: 32px; height: 32px; object-fit: contain; }
+.realtime-heading > div { flex: 1; min-width: 0; }
+.realtime-heading strong, .realtime-heading span { display: block; }
+.realtime-heading span { padding-top: 3px; color: #477d42; }
+.realtime-heading > button { align-self: flex-start; min-width: 24px; }
+.realtime-help { margin: 10px 0; color: #426582; }
+.realtime-controls, .realtime-voices, .realtime-text > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.realtime-panel button, .realtime-panel select, .realtime-panel input {
+  font: inherit;
+  color: inherit;
+  border: 1px solid #86a7c7;
+  border-radius: 3px;
+}
+.realtime-panel button { padding: 4px 8px; cursor: pointer; background: linear-gradient(white, #e0edf8); }
+.realtime-panel button:disabled { color: #7b8793; cursor: default; opacity: .72; }
+.realtime-panel button:hover:enabled { border-color: #3374b5; background: linear-gradient(white, #cce4fb); }
+.realtime-panel button:focus-visible, .realtime-panel input:focus-visible, .realtime-panel select:focus-visible { outline: 2px solid #317ec4; outline-offset: 2px; }
+.realtime-voices { align-items: center; margin-top: 10px; }
+.realtime-voices label { display: flex; align-items: center; gap: 7px; }
+.realtime-panel select { max-width: 220px; padding: 3px; background: white; }
+.realtime-error { margin: 10px 0 0; color: #983a2e; overflow-wrap: anywhere; }
+.realtime-transcript { margin-top: 10px; padding: 5px 9px; max-height: 180px; overflow-y: auto; border: 1px solid #b8cfe3; background: white; }
+.realtime-transcript p { margin: 6px 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.realtime-text { margin-top: 12px; }
+.realtime-text > label { display: block; margin-bottom: 5px; }
+.realtime-text > input { display: block; width: 100%; box-sizing: border-box; padding: 5px; margin-bottom: 6px; background: white; }

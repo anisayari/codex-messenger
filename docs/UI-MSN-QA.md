@@ -1,0 +1,43 @@
+# Validation UI MSN / Codex Messenger
+
+Date : 22 septembre 2026. Cible Codex 0.156.0, publiée pendant cette mise à jour. Les parcours HTTP ci-dessous utilisent un renderer de production et une API locale simulée. Une simulation ne prouve pas un appel Codex authentifié ou une permission matérielle.
+
+## Produit et reproductibilité
+
+Les sources du renderer sont copiées explicitement dans /tmp/codex-messenger-qa-runtime/app avec les gels transmis par leurs auteurs. Dépendances réelles : React 19.1.1, Vite 7.3.6, Mermaid 11.17.2, KaTeX 0.18.7 et DOMPurify 3.4.15 ; Chromium 151. Le package produit déclare les mêmes trois dépendances de rendu. L'ancien Mermaid 11.15.0 n'est pas utilisé dans le build final.
+
+Build final : exit 0,2163 modules,6.46 s. main-D9JmipHE.js 507.89kB / main-CNqMJJpB.css 125.87kB, entrée index-B0RYN9kJ.js. Les 1449 fichiers de dist (49.66MB) ont été copiés intégralement dans le dépôt par staging puis rename,exit 0. Log /tmp/codex-messenger-qa-runtime/build-01560-final.log ; manifeste SHA256 /tmp/codex-messenger-qa-runtime/dist-01560-final-manifest.json. QA HTTP production sur le port 5189 avec CSP stricte ; aucun fichier src/shared vide parmi les 58 entrées du manifeste renderer-01560-manifest.json.
+
+Gels vérifiés : main.jsx d387bb2dd45ba2fca842fa07bb42ce65e511703b8ff9c0dc0cf31ac707465379 ; useCodexEvents.js95ff621f4066a15264c2ba10aa02ec4dd966b8b50717e86144d7aeb1b3b46ecc ; codexTimeline.js54f076f13f57d6155f36c8527beca51a341231274dc2560ef0b1e1826087eed6. Le manifeste des six modules/tests du nouveau rendu Markdown est /tmp/codex-messenger-qa-runtime/rich-01560-manifest.json.
+
+Public préserve 1325 fichiers :79 icônes de la bande MSN 7.5 originale,15 clins d'œil SWF,4 fonds dynamiques et leurs membres, ainsi que Ruffle 0.6.0 et son lecteur isolé. La palette affiche69 raccourcis attestés par la page Microsoft. Dix icônes sans raccourci attesté restent inventoriées ; aucun code n'a été inventé pour elles.
+
+## Parcours effectivement observés
+
+- Conversation 1000×720 et 620×680 : outils, historique, composer et palette visibles sans débordement horizontal ; les 69 images de la palette sont chargées, insertion du raccourci original choisie par clic. Unicode 😢/😀 conservé ; le raccourci MSN :) utilise la vraie icône.
+- Compositeur : Entrée pendant une composition IME n'envoie rien ; Maj+Entrée conserve un saut de ligne. Pièces jointes multiples, images et fichiers locaux restent distincts ; limite 8. Aucun texte d'image fictif. Échec IPC conserve brouillon et fichiers, succès retire uniquement le brouillon capturé, aucun double envoi.
+- Un lien vers un fichier avec espaces et position source ouvre le chemin réel. Les hôtes distants et schémas dangereux ne sont pas interprétés comme fichiers locaux. Les médias retournés par un outil affichent leurs pièces jointes fournies.
+- Jeux : morpion local à deux joueurs, victoire puis remise à zéro ; grille 48 px visible. Aucun appel Codex n'est associé à ces actions locales. Les invitations à un faux Codex joueur et Wizz Reflex inventé ont été supprimés.
+- Fonds : neuf fonds originaux (cinq statiques et quatre dynamiques) sélectionnables ; les variantes statiques compatibles sont explicites lorsque le rendu dynamique n'est pas supporté.
+- Clins d'œil dans la vraie conversation : Heart utilise son SWF original, durée observée 6964 ms et disparition ; Crying animé par symboles imbriqués reste visible après 1.6 s. Bouton Son passe volume 0→1 sur la même iframe, fermeture supprime le lecteur. Aucun déplacement CSS ni son synthétique ne remplace le SWF.
+- Dialogues : focus initial, Tab/Maj+Tab bouclent, flèches des onglets déplacent sélection et focus ; Échap ferme et restaure un ouvreur encore connecté. La recherche serveur affiche les résultats réellement fournis, le retrait paginé relit l'historique ; une relecture incertaine efface l'ancien historique et montre son erreur.
+- Terminal simulé : IME n'écrit ni ne démarre ; Entrée ordinaire envoie une unique écriture stdin. Échap nettoie le terminal actif. Cela ne remplace pas le test PTY réel décrit séparément.
+- Voix : la préférence juniper annoncée par le getter est chargée ; sélection maple ne sauvegarde rien, clic explicite Enregistrer appelle une fois le setter(maple), sans capture micro. Absence d'autorisation micro produit un message et nettoie la session ; aucune capture physique utilisée. F8 fermé ouvre le panneau sans appel micro ni démarrage IPC ; deuxième F8 déclenche la demande simulée refusée, aucun démarrage IPC, un nettoyage. Échap ferme.
+- Codex0.156 : deux diagrammes (flowchart Créer→Tester→Valider et séquence Alice/Bob) dessinés, avec viewBox et géométrie non nulle, et une équation E=mc² lisible. Source conservée dans un volet. Rendu lazy sans modification du contenu Markdown initial.
+- Blocs riches invalides : image HTTPS interdite avant rendu, syntaxe Mermaid invalide et fraction TeX incomplète affichent leur erreur et leur source ouverte. Une commande TeX href JavaScript ne produit aucun lien ni exécution. Aucune exception, violation CSP ou requête externe dans ces essais. Le filtre SVG garde la géométrie et supprime les liens, scripts, images distantes, événements et CSS externe.
+- Flux 156 : ha+ha reste haha, outil intercalé unique et deuxième message agent séparé. Done d'un sous-agent rattaché laisse le parent en rédaction ; interrupted du parent conserve le texte partiel et revient au repos.
+- Options 156 : mode Plan réellement annoncé au bootstrap visible en lecture seule ; activité d'un autre fil ignorée ; observation null du fil actif affiche inconnu. Aucune action ou sauvegarde provoquée par cette observation. Le dialog est maintenant 760 px sur viewport 1000 px ; tableau neuf colonnes 820 px dans un wrapper 704 px avec défilement contenu et libellés entiers. Usage : zéro affiché 0, null affiché Non renseigné, microcrédits 1250000 affichés 1.25. Inventaires d'activités/extensions distincts d'un compteur d'exécution.
+
+## Validation et preuves
+
+21/21 tests locaux ciblés passent,0 ignoré :13 composer/Markdown/chemins,8 assets/règles Flash. Log : /tmp/codex-messenger-qa-runtime/ui-01560-unit-results.log. Les tests vérifient entre autres les frontières IME, code inachevé en streaming, prix non mathématiques, blocs $$ et\[\], bornes des diagrammes, pixels des79 icônes, labels Microsoft,68 membres de paquet,16 membres de fonds et8 fichiers Ruffle. Les suites globales Codex/backend sont consignées par leurs auteurs.
+
+Les captures 01–18 correspondent à la baseline avant intégration 156 ;19–24 couvrent les ajouts 156. Captures brutes externes au dépôt : /tmp/codex-messenger-qa-runtime/screenshots, fichiers 01–24. Captures inspectées :02 grille/jeu,13 Crying,16 erreur d'historique,17–18 palette,19 diagrammes/équation,20 sources invalides,22 Plan observé,23 usage. Les données de ces captures sont des fixtures locales identifiées.
+
+Le backend a vérifié séparément Electron natif : lecteur Heart, volume 0→1→0, fermeture, accès SWF/WASM autorisé et requêtes interdites bloquées. Les wrappers utilisent uniquement le protocole readonly msn-asset://local en mode file ; le composant parent contrôle source iframe, token et origine null. Capstone final Electron réel PASS sur ce même dist et CLI 0.156.0 : une fixture textuelle explicitement synthétique est injectée sans remplacer bootstrap/preload/IPC ; Mermaid sous file:// produit viewBox 0 0 269.265625 65 avec 8 path[d], KaTeX produit 1 élément, aucune erreur de rendu. Heart réel animé, son 0→1→0, fermeture et blocage CSP confirmés. Le processus --smoke-test quitte code 0 en 1736 ms sans timeout. Cela prouve le rendu natif et le fonctionnement IPC, sans prétendre à une sortie de modèle authentifiée.
+
+## Limites explicites
+
+Aucune authentification ou exécution de modèle n'est simulée comme réelle. Les usages de compte, recherche serveur selon moteur, MCP OAuth, appareil photo, micro matériel et appels nécessitent l'accès correspondant ; leurs erreurs restent visibles. Les jeux sont locaux. Une vidéo du micro ou une transcription automatique d'un clip n'est pas fabriquée. Les activités/médias MSN propriétaires restent des assets préservés avec provenance, sans promesse d'un service MSN arrêté.
+
+Sources primaires : [publication Codex 0.156.0](https://github.com/openai/codex/releases/tag/rust-v0.156.0), [API Mermaid](https://mermaid.js.org/config/usage.html), [options KaTeX](https://katex.org/docs/options.html), [raccourcis Microsoft archivés](https://web.archive.org/web/20140204231459id_/http://messenger.msn.com/Resource/Emoticons.aspx). Provenance et empreintes détaillées dans ASSET-INVENTORY.md.

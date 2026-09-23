@@ -91,7 +91,27 @@ jobs:
             echo "release_url=$release_url"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Verify published installers match the site
+        id: ready
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          expected_tag="v$(node --input-type=module -e 'import fs from "node:fs"; console.log(JSON.parse(fs.readFileSync("package.json", "utf8")).version.replace(/-(\d+)$/, ".$1"))')"
+          if [[ "$RELEASE_TAG" != "$expected_tag" ]]; then
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "Waiting for the published $expected_tag installers; production stays on its existing release." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          jq -e '
+            .draft == false and .prerelease == false and
+            ([.assets[] | select(.state == "uploaded" and .size > 0 and (.digest | test("^sha256:[0-9a-f]{64}$")) and (.name | test("Setup.*\\.exe$"; "i")))] | length > 0) and
+            ([.assets[] | select(.state == "uploaded" and .size > 0 and (.digest | test("^sha256:[0-9a-f]{64}$")) and (.name | test("arm64\\.dmg$")))] | length > 0)
+          ' "$RUNNER_TEMP/latest-release.json" > /dev/null
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+
       - name: Build static deployment bundle
+        if: steps.ready.outputs.deploy == 'true'
         env:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_URL: ${{ steps.release.outputs.release_url }}
@@ -146,6 +166,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Deploy to VPS
+        if: steps.ready.outputs.deploy == 'true'
         env:
           SSH_HOST: ${{ secrets.CODEXMESSENGER_DEPLOY_HOST }}
           SSH_PORT: ${{ secrets.CODEXMESSENGER_DEPLOY_PORT }}

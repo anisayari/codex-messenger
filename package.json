@@ -1,6 +1,6 @@
 {
   "name": "codex-messenger",
-  "version": "0.0.2-9",
+  "version": "0.0.3",
   "description": "MSN Messenger-inspired Electron desktop client for running Codex locally.",
   "author": "Anis AYARI",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "electron:dev": "node scripts/dev-electron.mjs",
     "electron:start": "npm run build && electron .",
     "electron:smoke": "npm run build && electron . --smoke-test",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node scripts/run-tests.mjs",
     "audit:security": "npm audit --audit-level=moderate",
     "test:release": "node scripts/release-check.mjs",
     "ci": "npm run audit:security && npm run test && npm run test:release && npm run build && npm run electron:smoke",
@@ -32,6 +32,9 @@
     "dist:mac:release": "npm run package:mac:release"
   },
   "dependencies": {
+    "dompurify": "3.4.15",
+    "katex": "0.18.7",
+    "mermaid": "11.17.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
@@ -53,7 +56,7 @@
   "build": {
     "appId": "com.codex.messenger",
     "productName": "Codex Messenger",
-    "buildVersion": "0.0.2.9",
+    "buildVersion": "0.0.3",
     "asar": true,
     "directories": {
       "output": "release"
@@ -97,7 +100,7 @@
       ],
       "extendInfo": {
         "NSCameraUsageDescription": "Codex Messenger utilise la camera uniquement pour capturer une image a envoyer dans une conversation.",
-        "NSMicrophoneUsageDescription": "Codex Messenger utilise le micro uniquement pour enregistrer un clip vocal a envoyer dans une conversation."
+        "NSMicrophoneUsageDescription": "Codex Messenger utilise le micro pour un appel vocal Codex ou un clip vocal demandé dans une conversation."
       }
     },
     "nsis": {
@@ -114,5 +117,8 @@
     "portable": {
       "artifactName": "${productName} ${env.CODEX_MESSENGER_RELEASE_VERSION}.${ext}"
     }
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

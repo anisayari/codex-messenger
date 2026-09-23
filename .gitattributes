@@ -1,0 +1,2 @@
+# Preserve the original bytes and checksums of extracted MSN assets.
+public/msn-assets/** -text

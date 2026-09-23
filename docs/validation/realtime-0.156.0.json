@@ -1,0 +1,135 @@
+{
+  "version": "0.156.0",
+  "scope": "Realtime voice and public Codex user voice preference",
+  "schemaAudit": {
+    "files": 23,
+    "changed": 0
+  },
+  "passed": 22,
+  "total": 22,
+  "runner": "Exact node:test callbacks registered and executed sequentially with node:assert/strict; frozen module source and previously loaded actual security dependency",
+  "jsxParsed": true,
+  "realAccountOrMicrophoneUsed": false,
+  "configurationContract": {
+    "read": "config/read {includeLayers:false,cwd:null}",
+    "write": "config/value/write {keyPath:realtime.voice,value:string|null,mergeStrategy:upsert,filePath:null,expectedVersion:null}",
+    "source": "https://github.com/openai/codex/blob/rust-v0.156.0/codex-rs/core/config.schema.json"
+  },
+  "manifest": [
+    {
+      "path": "electron/realtimeService.js",
+      "bytes": 14219,
+      "sha256": "a8c5eb3ee12556242353ead50df5755e2d456a2e803403f538418aa698afe514"
+    },
+    {
+      "path": "src/realtimePanel.jsx",
+      "bytes": 12421,
+      "sha256": "0e9a6b88f5d42356f300239ee92b2b3ae2797f85895a22972775be7f9842a784"
+    },
+    {
+      "path": "src/realtimeAudio.js",
+      "bytes": 10056,
+      "sha256": "2dc78eea0d61f2a2e6f45f070c98a4e935920c4ac10840f70e7f2280134a86c5"
+    },
+    {
+      "path": "src/realtimeShortcut.js",
+      "bytes": 199,
+      "sha256": "24363fb8a10ee0613824c38358d858b4b0aa746b398f61857987f37cccdbbd2c"
+    },
+    {
+      "path": "tests/realtime.test.mjs",
+      "bytes": 22231,
+      "sha256": "4818b575c893fb9d1e72a38f033ed9b7d2ce5b6c2c54e7b620c95b5af2a60faa"
+    }
+  ],
+  "results": [
+    {
+      "name": "realtime uses exact V3 websocket contract and waits for the connected notification",
+      "status": "passed"
+    },
+    {
+      "name": "V3 validates voices against the actual V1 voice list and enforces one call",
+      "status": "passed"
+    },
+    {
+      "name": "stop cancels a pending thread lookup before microphone transport starts",
+      "status": "passed"
+    },
+    {
+      "name": "realtime events stay scoped to a known call and server loss releases call state",
+      "status": "passed"
+    },
+    {
+      "name": "a Codex voice error cleans the remote session and concurrent stops send one request",
+      "status": "passed"
+    },
+    {
+      "name": "microphone frames reject corrupt base64, wrong sample rates, stereo and inconsistent lengths",
+      "status": "passed"
+    },
+    {
+      "name": "unavailable and unauthorized voice errors explain the actual Codex limitation",
+      "status": "passed"
+    },
+    {
+      "name": "realtime IPC maps only the verified request endpoints",
+      "status": "passed"
+    },
+    {
+      "name": "PCM encoding clips finite samples and reads little endian interleaved channels",
+      "status": "passed"
+    },
+    {
+      "name": "PCM resampling preserves fractional timing across input chunk boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "browser audio captures PCM, immediately mutes the real track and schedules contiguous playback",
+      "status": "passed"
+    },
+    {
+      "name": "closing a call during the microphone permission prompt stops a late acquired microphone",
+      "status": "passed"
+    },
+    {
+      "name": "audio congestion closes the microphone instead of retaining an unbounded recording",
+      "status": "passed"
+    },
+    {
+      "name": "audio worklet averages input channels and sends complete float frames",
+      "status": "passed"
+    },
+    {
+      "name": "canonical voice transcripts replace compatibility streams without duplicate speech",
+      "status": "passed"
+    },
+    {
+      "name": "short microphone transport bursts preserve every unmuted PCM frame",
+      "status": "passed"
+    },
+    {
+      "name": "rapid mute and unmute never replay microphone frames captured before mute",
+      "status": "passed"
+    },
+    {
+      "name": "a paused playback clock retains a forty second incoming speech burst in order",
+      "status": "passed"
+    },
+    {
+      "name": "the official F8 call shortcut yields to repeats, modifiers and handled shortcuts",
+      "status": "passed"
+    },
+    {
+      "name": "voice preference reads the public Codex user setting and writes only its leaf",
+      "status": "passed"
+    },
+    {
+      "name": "a removed saved voice becomes Auto and uses the discovered server default without rewriting settings",
+      "status": "passed"
+    },
+    {
+      "name": "voice preference preserves managed overrides and exposes failed writes",
+      "status": "passed"
+    }
+  ]
+}

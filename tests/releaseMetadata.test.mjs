@@ -42,8 +42,12 @@ test("release build keeps Codex app-server integration stable", () => {
   const main = read("electron/main.js");
   assert.match(main, /method === "thread\/started"/);
   assert.match(main, /method === "turn\/completed"/);
-  assert.match(main, /async function ensureLoadedThread/);
-  assert.match(main, /acceptForSession/);
+  assert.match(main, /(?:async\s+)?function ensureLoadedThread\s*\(/);
+  assert.match(main, /import \{ createServerRequestsController \} from "\.\/serverRequests\.js"/);
+  assert.match(main, /const serverRequests = createServerRequestsController\s*\(/);
+  assert.match(main, /serverRequests\.receive\(message\)/);
+  assert.match(main, /serverRequests\.handleNotification\(message\)/);
+  assert.match(main, /ipcMain\.handle\("serverRequests:respond"/);
   assert.doesNotMatch(main, /acceptSettings/);
   assert.doesNotMatch(main, /persistExtendedHistory|experimentalRawEvents|persistFullHistory/);
 });

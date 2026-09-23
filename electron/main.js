@@ -1,10 +1,18 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, screen, shell, Tray } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, screen, shell, Tray, systemPreferences, protocol } from "electron";
 import { execFile, spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { randomUUID } from "node:crypto";
+import { normalizeConversationInputs } from "../shared/conversationInputs.js";
+import { decodeMediaDataUrl } from "../shared/mediaData.js";
+import { createServerRequestsController } from "./serverRequests.js";
+import { createCodexFeatureService, registerCodexFeatureIpcHandlers } from "./codexFeatureService.js";
+import { RealtimeService, registerRealtimeIpcHandlers } from "./realtimeService.js";
+import { createTerminalService, registerTerminalIpcHandlers } from "./terminalService.js";
+import { renderCodexItem, mapCodexActivityNotification } from "../shared/codexTimeline.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { defaultCodexOptions, normalizeCodexOptions, sandboxPolicyForMode } from "../shared/codexOptions.js";
 import { codexImageFromItem, isCodexImageItem } from "../shared/codexImages.js";
@@ -14,10 +22,11 @@ import { newestThreadForProject, threadTimeMs } from "../shared/threadSelection.
 import { CodexAppServerClient } from "./codexAppServerClient.js";
 import { registerUpdateIpcHandlers, registerWindowIpcHandlers } from "./ipcHandlers.js";
 import { createNotificationService, toastPreview } from "./notifications.js";
-import { assertEnum, assertObject, assertString, isSafeExternalUrl } from "./security.js";
+import { assertEnum, assertObject, assertString, isSafeExternalUrl, installIpcSenderValidation } from "./security.js";
 import { createSettingsStore } from "./settingsStore.js";
 import { codexNpmUrl, createUpdateService, frontReleasesUrl } from "./updateService.js";
 import { createBaseWindowFactory, setStableWindowTitle } from "./windowManager.js";
+import { registerMsnAssetScheme, installMsnAssetProtocol } from "./msnAssetProtocol.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -37,7 +46,14 @@ const toastIconPath = path.join(rootDir, "public", "icons", "codex-messenger-peo
 const threadListPageSize = 20;
 const codexHistoryPageSize = 10;
 
+registerMsnAssetScheme(protocol);
 app.setName("Codex Messenger");
+const isolatedUserDataPath = process.env.CODEX_MESSENGER_USER_DATA_DIR;
+if (isolatedUserDataPath) {
+  if (!path.isAbsolute(isolatedUserDataPath) || isolatedUserDataPath.includes("\0")) throw new Error("CODEX_MESSENGER_USER_DATA_DIR must be an absolute path");
+  mkdirSync(isolatedUserDataPath, { recursive: true, mode: 0o700 });
+  app.setPath("userData", isolatedUserDataPath);
+}
 if (process.platform === "win32") app.setAppUserModelId("com.codex.messenger");
 
 const contacts = [
@@ -791,8 +807,17 @@ async function loadSettings() {
   return settingsCache;
 }
 
-async function saveSettings(nextSettings = {}) {
+let settingsSaveQueue = Promise.resolve();
+function saveSettings(nextSettings = {}) {
+  const operation = settingsSaveQueue.then(() => persistSettings(nextSettings));
+  settingsSaveQueue = operation.catch(() => {});
+  return operation;
+}
+
+async function persistSettings(nextSettings = {}) {
   const current = await loadSettings();
+  if (typeof nextSettings === "function") nextSettings = await nextSettings(current);
+  assertObject(nextSettings, "settings patch");
   const previousDemoMode = demoModeIsEnabled(current);
   const nextLanguage = normalizeLanguage(nextSettings.language ?? nextSettings.profile?.language ?? current.language);
   const nextProfile = normalizeProfile({
@@ -800,7 +825,7 @@ async function saveSettings(nextSettings = {}) {
     ...nextSettings.profile,
     language: nextLanguage
   });
-  settingsCache = {
+  const nextCache = {
     ...current,
     ...nextSettings,
     language: nextLanguage,
@@ -822,7 +847,8 @@ async function saveSettings(nextSettings = {}) {
     signedIn: normalizeBoolean(nextSettings.signedIn ?? current.signedIn, false),
     autoSignIn: normalizeBoolean(nextSettings.autoSignIn ?? current.autoSignIn, true)
   };
-  await settingsStore.save(settingsCache);
+  await settingsStore.save(nextCache);
+  settingsCache = nextCache;
   Object.assign(profile, settingsCache.profile);
   if (!settingsCache.unreadWizzEnabled) {
     for (const contactId of unreadReminderByContact.keys()) clearUnreadReminder(contactId);
@@ -1340,12 +1366,12 @@ async function revealThreadInTabs(threadId) {
   if (!cleanThreadId) return await loadSettings();
   const current = await loadSettings();
   if (!current.threadTabs.hiddenIds.includes(cleanThreadId)) return current;
-  return await saveSettings({
+  return await saveSettings((latest) => ({
     threadTabs: {
-      ...current.threadTabs,
-      hiddenIds: current.threadTabs.hiddenIds.filter((id) => id !== cleanThreadId)
+      ...latest.threadTabs,
+      hiddenIds: latest.threadTabs.hiddenIds.filter((id) => id !== cleanThreadId)
     }
-  });
+  }));
 }
 
 function textFromUserInput(input) {
@@ -1378,7 +1404,7 @@ function historyAuthorForContact(contact) {
 }
 
 function timeFromHistoryItem(item) {
-  const value = item?.timestamp ?? item?.createdAt ?? item?.completedAt ?? item?.updatedAt;
+  const value = item?.completedAtMs ?? item?.startedAtMs ?? item?.timestamp ?? item?.createdAt ?? item?.completedAt ?? item?.updatedAt;
   const date = typeof value === "number" ? new Date(value > 10_000_000_000 ? value : value * 1000) : new Date(value ?? "");
   if (!Number.isFinite(date.getTime())) return "--:--";
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -1390,85 +1416,16 @@ function messagesFromThread(thread, contact) {
 
 function messagesFromTurns(turns, contact) {
   const messages = [];
-  const author = historyAuthorForContact(contact);
-  for (const turn of turns ?? []) {
-    for (const item of turn.items ?? []) {
-      const type = String(item.type ?? "").toLowerCase();
-      const timeSource = {
-        ...item,
-        createdAt: item.createdAt ?? turn.completedAt ?? turn.startedAt
-      };
-      if (["usermessage", "user_message", "user"].includes(type)) {
-        const text = textFromItem(item);
-        if (text) messages.push({ id: item.id ?? `user-${messages.length}`, from: "me", author: profile.displayName, text, time: timeFromHistoryItem(timeSource), itemType: item.type });
-      } else if (["agentmessage", "agent_message", "assistant", "assistant_message"].includes(type)) {
-        const text = textFromItem(item);
-        if (text) messages.push({ id: item.id ?? `agent-${messages.length}`, from: "them", author, text, time: timeFromHistoryItem(timeSource), itemType: item.type });
-      } else if (isCodexImageItem(item)) {
-        const image = codexImageFromItem(item);
-        if (image) {
-          messages.push({
-            id: item.id ?? `image-${messages.length}`,
-            from: "them",
-            author,
-            text: image.text,
-            time: timeFromHistoryItem(timeSource),
-            itemType: item.type,
-            attachment: image.src ? {
-              type: "image",
-              src: image.src,
-              name: image.name,
-              path: image.path,
-              prompt: image.prompt,
-              status: image.status
-            } : null,
-            imageCommand: image.kind === "imageGeneration" ? {
-              command: "image_generation_call",
-              status: image.status,
-              prompt: image.prompt,
-              path: image.path
-            } : null
-          });
-        }
-      } else if (type === "commandexecution") {
-        const output = item.aggregatedOutput ? `\n\n${item.aggregatedOutput}` : "";
-        messages.push({
-          id: item.id ?? `command-${messages.length}`,
-          from: "system",
-          author: "command",
-          text: `${item.command ?? "Commande Codex"}${output}`,
-          time: timeFromHistoryItem(timeSource),
-          itemType: "commandExecution",
-          command: item.command,
-          cwd: item.cwd,
-          status: item.status,
-          exitCode: item.exitCode,
-          durationMs: item.durationMs
-        });
-      } else if (type === "filechange") {
-        const changes = Array.isArray(item.changes) ? item.changes : [];
-        messages.push({
-          id: item.id ?? `file-${messages.length}`,
-          from: "system",
-          author: "files",
-          text: changes.length ? changes.map((change) => change.path ?? change.file ?? "fichier").join("\n") : "Modification de fichiers",
-          time: timeFromHistoryItem(timeSource),
-          itemType: "fileChange",
-          changes,
-          status: item.status
-        });
-      } else if (type === "mcptoolcall" || type === "dynamictoolcall") {
-        messages.push({
-          id: item.id ?? `tool-${messages.length}`,
-          from: "system",
-          author: "tool",
-          text: `${item.server ? `${item.server}: ` : ""}${item.tool ?? "outil"} (${item.status ?? "termine"})`,
-          time: timeFromHistoryItem(timeSource),
-          itemType: item.type,
-          status: item.status
-        });
-      }
+  for (const turn of turns ?? []) for (const item of turn.items ?? []) {
+    const time = timeFromHistoryItem({ ...item, createdAt: item.createdAt ?? turn.completedAtMs ?? turn.startedAtMs ?? turn.completedAt ?? turn.startedAt });
+    const rendered = renderCodexItem(item, { author: historyAuthorForContact(contact), userAuthor: profile.displayName, time });
+    if (!rendered) continue;
+    if (isCodexImageItem(item)) {
+      const image = codexImageFromItem(item);
+      if (image?.src) { rendered.from = "them"; rendered.attachment = { type: "image", src: image.src, name: image.name, path: image.path, prompt: image.prompt, status: image.status }; }
     }
+    if (rendered.attachments) rendered.attachments = rendered.attachments.map((attachment) => ({ ...attachment, ...(attachment.path && !attachment.src ? { src: pathToFileURL(attachment.path).href, name: path.basename(attachment.path) } : {}) }));
+    messages.push(rendered);
   }
   return messages;
 }
@@ -1488,14 +1445,9 @@ async function threadHistoryPageFromServer(threadId, contact, options = {}) {
       historyHasMore: Boolean(page.nextCursor),
       historySource: "codex-app-server"
     };
-  } catch {
-    return {
-      messages: [],
-      historyCursor: null,
-      historyBackwardsCursor: null,
-      historyHasMore: false,
-      historySource: "codex-app-server"
-    };
+  } catch (error) {
+    if (error.code === -32600 && /no rollout|not materialized|not found|unmaterialized/i.test(error.message)) return { messages: [], historyCursor: null, historyHasMore: false, historySource: "codex-app-server", historyState: "unmaterialized" };
+    throw new Error(`Historique Codex indisponible : ${error.message}`, { cause: error });
   }
 }
 
@@ -1531,6 +1483,7 @@ function chatWindowTitle(contact) {
 
 const createBaseWindow = createBaseWindowFactory({
   dirname: __dirname,
+  rendererUrl: rendererUrl({}),
   appIconPath,
   windows,
   showDockIcon,
@@ -1656,10 +1609,9 @@ function createChatWindow(contactId) {
     y: 80 + offset * 28,
     title
   });
-  win.on("focus", () => {
-    clearUnread(contactId);
-  });
-  win.on("closed", () => clearUnreadReminder(contactId));
+  win.codexMessengerContactId = contactId;
+  win.on("focus", () => { clearUnread(win.codexMessengerContactId); });
+  win.on("closed", () => { const currentId = win.codexMessengerContactId; clearUnreadReminder(currentId); void realtime.stop(currentId).catch((error) => logDebug("realtime.close.error", { contactId: currentId, error: error.message })); });
   win.loadURL(rendererUrl({ view: "chat", contactId }));
   return win;
 }
@@ -1732,6 +1684,7 @@ function retargetChatWindow(event, contactId) {
     }
   }
   windows.set(targetKey, win);
+  win.codexMessengerContactId = contactId;
   setStableWindowTitle(win, chatWindowTitle(contactFor(contactId)));
   return win;
 }
@@ -2201,6 +2154,7 @@ async function wizz(win, options = {}) {
     win.flashFrame(true);
   }
 
+  try { if (systemPreferences.getAnimationSettings?.().prefersReducedMotion) return; } catch { /* Setting unavailable on this platform. */ }
   const offsets = [[-18, 8], [20, -8], [-14, -10], [16, 9], [-8, 4], [9, -4], [0, 0]];
   for (const [dx, dy] of offsets) {
     if (win.isDestroyed()) return;
@@ -2245,7 +2199,21 @@ function normalizeMessageTextForDedupe(text) {
   return String(text ?? "").replace(/\s+/g, " ").trim().slice(0, 240);
 }
 
-async function ensureThread(contactId) {
+const threadCreationByContact = new Map();
+const threadLoadById = new Map();
+const conversationSendByContact = new Map();
+function runCoalesced(map, key, task) {
+  if (map.has(key)) return map.get(key);
+  const operation = Promise.resolve().then(task);
+  map.set(key, operation);
+  operation.finally(() => { if (map.get(key) === operation) map.delete(key); }).catch(() => {});
+  return operation;
+}
+function ensureThread(contactId) {
+  return runCoalesced(threadCreationByContact, contactId, () => createOrLoadThread(contactId));
+}
+
+async function createOrLoadThread(contactId) {
   const settings = await loadSettings();
   const contact = contactFor(contactId);
   const codexOptions = codexOptionsForContact(contactId, settings);
@@ -2270,7 +2238,11 @@ async function ensureThread(contactId) {
   return threadId;
 }
 
-async function ensureLoadedThread(contactId, threadId, contact = contactFor(contactId), codexOptions = codexOptionsForContact(contactId)) {
+function ensureLoadedThread(contactId, threadId, contact = contactFor(contactId), codexOptions = codexOptionsForContact(contactId)) {
+  return runCoalesced(threadLoadById, threadId, () => loadThreadForContact(contactId, threadId, contact, codexOptions));
+}
+
+async function loadThreadForContact(contactId, threadId, contact, codexOptions) {
   const cleanThreadId = String(threadId || "").trim();
   if (!cleanThreadId || isDemoSeedThreadId(cleanThreadId) || loadedThreads.has(cleanThreadId)) return null;
   logDebug("codex.thread.resume.before-turn", { contactId, threadId: cleanThreadId });
@@ -2311,12 +2283,47 @@ function renderedMessageFromThreadItem(item, contact, completedAt = Date.now() /
   return renderedItem ?? null;
 }
 
-function deliverStartedThreadItemToChat(threadId, contactId, item, startedAt = Date.now() / 1000) {
-  if (!threadId || !contactId || !item || !isCodexImageItem(item)) return false;
+function threadMessageContext(threadId, turnId = null) {
+  const visited = new Set();
+  let currentThreadId = threadId;
+  let contactId = null;
+  let parentThreadId = null;
+  const ancestorThreadIds = [];
+  while (currentThreadId && !visited.has(currentThreadId) && visited.size < 64) {
+    visited.add(currentThreadId);
+    contactId ||= contactByThread.get(currentThreadId) || null;
+    const thread = knownThreads.get(currentThreadId);
+    const parentId = thread?.parentThreadId ?? thread?.source?.subAgent?.thread_spawn?.parent_thread_id;
+    if (typeof parentId !== "string" || !parentId || visited.has(parentId)) break;
+    if (currentThreadId === threadId) parentThreadId = parentId;
+    ancestorThreadIds.push(parentId);
+    currentThreadId = parentId;
+  }
+  return { contactId, threadId, turnId: turnId ?? activeTurnByThread.get(threadId) ?? null, parentThreadId, ancestorThreadIds, isWorker: Boolean(parentThreadId) };
+}
+
+function isWorkerForContact(context) {
+  return context.isWorker && threadByContact.get(context.contactId) !== context.threadId
+    && threadIdFromContactId(context.contactId) !== context.threadId;
+}
+
+function publicAgentMessageMetadata(item) {
+  const rendered = renderCodexItem(item);
+  if (!rendered || !isAgentMessageItem(item)) return {};
+  const metadata = {};
+  for (const key of ["phase", "delivery", "questions", "memoryCitation"]) {
+    if (rendered[key] !== undefined) metadata[key] = rendered[key];
+  }
+  return metadata;
+}
+
+function deliverStartedThreadItemToChat(threadId, contactId, item, startedAt = Date.now() / 1000, turnId = null) {
+  if (!threadId || !contactId || !item || isUserMessageItem(item) || isAgentMessageItem(item)) return false;
   const contact = contactFor(contactId);
   const renderedItem = renderedMessageFromThreadItem(item, contact, startedAt);
   if (!renderedItem) return false;
   sendToChat(contactId, "codex:item-started", {
+    ...threadMessageContext(threadId, turnId),
     contactId,
     message: {
       ...renderedItem,
@@ -2328,16 +2335,18 @@ function deliverStartedThreadItemToChat(threadId, contactId, item, startedAt = D
   return true;
 }
 
-function deliverThreadItemToChat(threadId, contactId, item, source = "item/completed", completedAt = Date.now() / 1000) {
+function deliverThreadItemToChat(threadId, contactId, item, source = "item/completed", completedAt = Date.now() / 1000, turnId = null) {
   if (!threadId || !contactId || !item || isUserMessageItem(item)) return false;
   const itemId = item.id ?? "";
   if (itemId && threadItemWasDelivered(threadId, itemId)) return false;
 
+  const context = threadMessageContext(threadId, turnId);
+  const messageMetadata = publicAgentMessageMetadata(item);
   const text = textFromCompletedItem(item);
   if (text) {
     markThreadItemDelivered(threadId, itemId);
     registerIncomingMessage(contactId, text);
-    sendToChat(contactId, "codex:completed-item", { contactId, text });
+    sendToChat(contactId, "codex:completed-item", { ...context, contactId, text, itemId, ...messageMetadata });
     noteVisibleTurnOutput(threadId);
     logDebug("codex.item.delivered", { source, threadId, itemId, type: item.type, channel: "codex:completed-item" });
     return true;
@@ -2349,9 +2358,9 @@ function deliverThreadItemToChat(threadId, contactId, item, source = "item/compl
   markThreadItemDelivered(threadId, itemId);
   registerIncomingMessage(contactId, renderedItem.text || renderedItem.command || renderedItem.itemType || "Element Codex");
   if (isAgentMessageItem(item)) {
-    sendToChat(contactId, "codex:completed-item", { contactId, text: renderedItem.text });
+    sendToChat(contactId, "codex:completed-item", { ...context, contactId, text: renderedItem.text, itemId, ...messageMetadata });
   } else {
-    sendToChat(contactId, "codex:item-completed", { contactId, message: renderedItem });
+    sendToChat(contactId, "codex:item-completed", { ...context, contactId, message: renderedItem });
   }
   noteVisibleTurnOutput(threadId);
   logDebug("codex.item.delivered", { source, threadId, itemId, type: item.type, channel: isAgentMessageItem(item) ? "codex:completed-item" : "codex:item-completed" });
@@ -2361,10 +2370,10 @@ function deliverThreadItemToChat(threadId, contactId, item, source = "item/compl
 function deliverTurnItemsToChat(threadId, contactId, turn, source = "turn/completed") {
   if (!threadId || !contactId || !turn?.items?.length) return 0;
   let deliveredCount = 0;
-  const completedAt = turn.completedAt ?? turn.updatedAt ?? Date.now() / 1000;
+  const completedAt = turn.completedAtMs ?? turn.completedAt ?? turn.updatedAt ?? Date.now() / 1000;
   for (const item of turn.items) {
     storeThreadItem(threadId, item);
-    if (deliverThreadItemToChat(threadId, contactId, item, source, completedAt)) deliveredCount += 1;
+    if (deliverThreadItemToChat(threadId, contactId, item, source, completedAt, turn.id)) deliveredCount += 1;
   }
   return deliveredCount;
 }
@@ -2394,26 +2403,74 @@ async function recoverCompletedTurnOutput(threadId, contactId, turnId, hadVisibl
   }
 }
 
-codex.on("request", (message) => {
-  if (
-    message.method !== "execCommandApproval" &&
-    message.method !== "applyPatchApproval" &&
-    message.method !== "item/commandExecution/requestApproval" &&
-    message.method !== "item/fileChange/requestApproval"
-  ) {
-    codex.respondError(message.id, `Unsupported Codex server request: ${message.method}`);
-    return;
-  }
+function senderContactId(event) {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  return win?.codexMessengerContactId || null;
+}
 
-  const record = createApprovalRecord(message);
-  approvalRequests.set(record.approvalId, record);
-  deliverApprovalRequest(record.payload);
+async function resolveFeatureContext({ contactId, threadId }) {
+  if (!contactId) return { cwd: defaultCwd(), threadId: null };
+  const contact = contactFor(contactId);
+  if (contact?.id !== contactId) throw new Error("Contact introuvable.");
+  const mapped = threadIdFromContactId(contactId) || threadByContact.get(contactId) || null;
+  if (threadId && mapped !== threadId) {
+    const thread = knownThreads.get(threadId) || await codex.readThread(threadId);
+    if (!thread || contact.kind !== "project" || thread.cwd !== contact.cwd) throw new Error("Cette conversation n’appartient pas au contact sélectionné.");
+  }
+  const codexOptions = codexOptionsForContact(contactId, await loadSettings());
+  return { contactId, cwd: cwdForCodexContact(contact, codexOptions), threadId: threadId || mapped, codexOptions };
+}
+
+const serverRequests = createServerRequestsController({
+  codex,
+  resolveContact: (params) => {
+    const threadId = params.threadId ?? params.conversationId;
+    return threadMessageContext(threadId, params.turnId).contactId;
+  },
+  findItem: threadItem,
+  deliver: (payload) => {
+    if (!windows.has(`chat:${payload.contactId}`)) createChatWindow(payload.contactId);
+    const win = windows.get(`chat:${payload.contactId}`);
+    const send = () => sendToChat(payload.contactId, "codex:server-request", payload);
+    if (win?.webContents.isLoading()) win.webContents.once("did-finish-load", send); else send();
+  },
+  resolved: (payload) => sendToChat(payload.contactId, "codex:server-request-resolved", payload)
+});
+const featureService = createCodexFeatureService({ codex, defaultCwd, resolveContext: resolveFeatureContext });
+const realtime = new RealtimeService({ codex, resolveContact: (id) => { const contact = contactFor(id); return contact.id === id ? contact : null; }, ensureThread: (contact) => ensureThread(contact.id), deliverEvent: (id, message) => sendToChat(id, "codex:realtime", { contactId: id, message }) });
+
+const terminalService = createTerminalService({ codex, resolveContext: async (payload) => { const context = await resolveFeatureContext(payload); if (!payload.contactId) throw new Error("Choisissez une conversation pour ouvrir un terminal."); return { ...context, codexOptions: codexOptionsForContact(payload.contactId, await loadSettings()) }; } });
+
+codex.on("collaboration-mode", ({ threadId, collaborationMode }) => {
+  const context = threadMessageContext(threadId);
+  if (context.contactId) sendToChat(context.contactId, "codex:activity", { ...context, activity: { collaborationMode } });
+});
+
+codex.on("request", (message) => {
+  if (message.method === "currentTime/read") { codex.respond(message.id, { currentTimeAt: Math.floor(Date.now() / 1000) }); return; }
+  if (serverRequests.receive(message)) return;
+  codex.respondError(message.id, `Unsupported Codex host request: ${message.method}`, -32601);
 });
 
 codex.on("notification", (message) => {
+  if (serverRequests.handleNotification(message)) return;
+  if (message.method === "thread/queue/changed") {
+    sendToOpenChats("codex:queue-updated", { threadId: message.params?.threadId });
+    return;
+  }
+  if (realtime.onNotification(message)) return;
+  if (message.method === "account/updated" || message.method === "account/login/completed") { sendToOpenChats("codex:account-updated", { method: message.method }); }
+  const mapped = mapCodexActivityNotification(message);
+  const mappedContext = mapped?.threadId ? threadMessageContext(mapped.threadId, mapped.turnId) : null;
+  const mappedContact = mappedContext?.contactId;
+  if (mappedContact && !["item/started", "item/completed", "turn/started", "turn/completed"].includes(message.method)) {
+    sendToChat(mappedContact, mapped.itemUpdate ? "codex:item-update" : "codex:activity", { ...mappedContext, contactId: mappedContact, ...mapped });
+    noteTurnActivity(mapped.threadId);
+  }
   if (message.method === "thread/started") {
     const threadId = message.params?.thread?.id;
     if (threadId) {
+      knownThreads.set(threadId, message.params.thread);
       loadedThreads.add(threadId);
       logDebug("codex.thread.started", { threadId, status: message.params?.thread?.status });
     }
@@ -2423,7 +2480,7 @@ codex.on("notification", (message) => {
   if (message.method === "turn/started") {
     if (message.params?.threadId && message.params?.turn?.id) {
       activeTurnByThread.set(message.params.threadId, message.params.turn.id);
-      const contactId = contactByThread.get(message.params.threadId);
+      const contactId = threadMessageContext(message.params.threadId, message.params.turn.id).contactId;
       if (contactId) trackActiveTurn(message.params.threadId, contactId, message.params.turn.id);
       logDebug("codex.turn.started", { threadId: message.params.threadId, turnId: message.params.turn.id });
     }
@@ -2431,10 +2488,11 @@ codex.on("notification", (message) => {
   }
 
   if (message.method === "item/agentMessage/delta") {
-    const contactId = contactByThread.get(message.params.threadId);
+    const context = threadMessageContext(message.params.threadId, message.params.turnId);
+    const contactId = context.contactId;
     if (contactId) {
       noteTurnActivity(message.params.threadId);
-      sendToChat(contactId, "codex:delta", { contactId, delta: message.params.delta });
+      sendToChat(contactId, "codex:delta", { ...context, contactId, delta: message.params.delta, itemId: message.params.itemId });
     }
     return;
   }
@@ -2443,8 +2501,8 @@ codex.on("notification", (message) => {
     const threadId = message.params?.threadId;
     const item = message.params?.item;
     storeThreadItem(threadId, item);
-    const contactId = contactByThread.get(threadId);
-    if (contactId) deliverStartedThreadItemToChat(threadId, contactId, item);
+    const contactId = threadMessageContext(threadId, message.params.turnId).contactId;
+    if (contactId) deliverStartedThreadItemToChat(threadId, contactId, item, message.params.startedAtMs ?? Date.now(), message.params.turnId);
     return;
   }
 
@@ -2453,15 +2511,16 @@ codex.on("notification", (message) => {
     const item = message.params?.item;
     storeThreadItem(threadId, item);
     noteTurnActivity(threadId);
-    const contactId = contactByThread.get(threadId);
-    if (contactId) deliverThreadItemToChat(threadId, contactId, item, "item/completed");
+    const contactId = threadMessageContext(threadId, message.params.turnId).contactId;
+    if (contactId) deliverThreadItemToChat(threadId, contactId, item, "item/completed", message.params.completedAtMs ?? Date.now(), message.params.turnId);
     return;
   }
 
   if (message.method === "turn/completed") {
     const threadId = message.params?.threadId;
     const turnId = message.params?.turn?.id;
-    const contactId = contactByThread.get(threadId);
+    const context = threadMessageContext(threadId, turnId);
+    const contactId = context.contactId;
     const activeMeta = activeTurnMetaByThread.get(threadId);
     const hadVisibleOutput = Boolean(activeMeta?.visibleOutputCount);
     const deliveredCount = contactId ? deliverTurnItemsToChat(threadId, contactId, message.params?.turn, "turn/completed") : 0;
@@ -2476,56 +2535,81 @@ codex.on("notification", (message) => {
       hadVisibleOutput
     });
     if (contactId) {
-      if (!deliveredCount && !hadVisibleOutput) {
+      const status = message.params?.turn?.status;
+      if (status === "failed") sendToChat(contactId, "codex:error", { ...context, contactId, status, text: message.params?.turn?.error?.message || "Le tour Codex a échoué." });
+      if (!isWorkerForContact(context) && status !== "failed" && status !== "interrupted" && !deliveredCount && !hadVisibleOutput) {
         recoverCompletedTurnOutput(threadId, contactId, turnId, hadVisibleOutput);
       }
-      sendToChat(contactId, "codex:done", { contactId });
-      sendToMain("conversation:finished", { contactId });
+      sendToChat(contactId, "codex:done", { ...context, contactId, status });
+      if (!isWorkerForContact(context)) sendToMain("conversation:finished", { ...context, contactId, status });
     }
     return;
   }
 
   if (message.method === "error") {
-    const text = message.params?.message ?? "Erreur Codex";
-    for (const threadId of activeTurnByThread.keys()) clearActiveTurn(threadId);
-    activeTurnByThread.clear();
-    for (const contact of contactsForSettings()) sendToChat(contact.id, "codex:error", { contactId: contact.id, text });
+    const params = message.params ?? {};
+    const text = params.error?.message ?? params.message ?? "Erreur Codex";
+    const threadId = params.threadId;
+    const context = threadMessageContext(threadId, params.turnId);
+    const contactId = context.contactId;
+    if (params.willRetry) {
+      if (contactId) sendToChat(contactId, "codex:status-note", { ...context, contactId, text, kind: "reconnecting" });
+      return;
+    }
+    if (threadId) { clearActiveTurn(threadId); activeTurnByThread.delete(threadId); }
+    if (contactId) sendToChat(contactId, "codex:error", { ...context, contactId, status: "failed", text });
+    else sendToOpenChats("codex:status", { kind: "error", text });
     return;
   }
 
   if (message.method?.startsWith("codex/event/")) {
     const event = message.params?.msg;
-    const contactId = contactByThread.get(message.params?.conversationId);
+    const context = threadMessageContext(message.params?.conversationId);
+    const contactId = context.contactId;
     if (!event || !contactId) return;
     if (event.type === "agent_message_delta") {
       noteTurnActivity(message.params?.conversationId);
-      sendToChat(contactId, "codex:delta", { contactId, delta: event.delta });
+      sendToChat(contactId, "codex:delta", { ...context, contactId, delta: event.delta });
     } else if (event.type === "agent_message" && event.message) {
       noteTurnActivity(message.params?.conversationId);
       registerIncomingMessage(contactId, event.message);
-      sendToChat(contactId, "codex:completed-item", { contactId, text: event.message });
+      sendToChat(contactId, "codex:completed-item", { ...context, contactId, text: event.message });
     } else if (event.type === "task_complete") {
       if (message.params?.conversationId) activeTurnByThread.delete(message.params.conversationId);
       if (message.params?.conversationId) clearActiveTurn(message.params.conversationId);
       if (event.last_agent_message) {
         registerIncomingMessage(contactId, event.last_agent_message);
-        sendToChat(contactId, "codex:completed-item", { contactId, text: event.last_agent_message });
+        sendToChat(contactId, "codex:completed-item", { ...context, contactId, text: event.last_agent_message });
       }
-      sendToChat(contactId, "codex:done", { contactId });
-      sendToMain("conversation:finished", { contactId });
+      sendToChat(contactId, "codex:done", { ...context, contactId, status: "completed" });
+      if (!isWorkerForContact(context)) sendToMain("conversation:finished", { ...context, contactId, status: "completed" });
     } else if (event.type === "stream_error" || event.type === "error") {
       if (message.params?.conversationId) clearActiveTurn(message.params.conversationId);
-      sendToChat(contactId, "codex:error", { contactId, text: event.message ?? "Erreur Codex" });
+      sendToChat(contactId, "codex:error", { ...context, contactId, status: "failed", text: event.message ?? "Erreur Codex" });
     }
   }
 });
 
 codex.on("status", (status) => {
-  if (status.kind === "exit" || status.kind === "error") clearApprovalRequests(status.text);
+  realtime.onStatus(status);
+  if (["exit", "error", "stopped"].includes(status.kind)) serverRequests.clear(status.text);
+  if (["exit", "error", "stopped"].includes(status.kind)) {
+    clearApprovalRequests(status.text);
+    for (const threadId of activeTurnByThread.keys()) clearActiveTurn(threadId);
+    activeTurnByThread.clear();
+  }
   if (status.kind === "stderr") logCodexRuntimeDiagnostics(status.text);
   sendToMain("codex:status", status);
   sendToOpenChats("codex:status", status);
 });
+
+installIpcSenderValidation(ipcMain, { rendererUrl: rendererUrl({}) });
+registerCodexFeatureIpcHandlers({ ipcMain, service: featureService });
+registerRealtimeIpcHandlers({ ipcMain, service: realtime });
+registerTerminalIpcHandlers({ ipcMain, service: terminalService });
+ipcMain.handle("serverRequests:respond", (event, payload) => serverRequests.respond(payload, senderContactId(event)));
+ipcMain.handle("app:open-external", (_event, url) => openExternalUrl(assertString(url, "url", { maxLength: 8192 })));
+
 
 ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
   try {
@@ -2607,8 +2691,10 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
       contactId,
       contacts: contactsForSettings(settings),
       contact,
+      effectiveCollaborationMode: codex.getObservedCollaborationMode(resolvedThreadIdForContact(contact.id, contact.threadId)),
       profile,
       cwd: defaultCwd(),
+      uploadsDir: uploadsDir(),
       appVersion: app.getVersion(),
       settings,
       unread: unreadState(),
@@ -2619,7 +2705,8 @@ ipcMain.handle("app:bootstrap", async (_event, params = {}) => {
       historyCursor,
       historyHasMore,
       logPath: logFilePath(),
-      approvalRequests: params.view === "chat" ? approvalPayloadsForContact(contactId) : []
+      approvalRequests: [],
+      serverRequests: params.view === "chat" ? serverRequests.payloadsForContact(contactId) : []
     };
   } catch (error) {
     logDebug("app.bootstrap.error", {
@@ -2710,11 +2797,9 @@ ipcMain.handle("contacts:create-agent", async (_event, draft = {}) => {
     return { ok: false, error: "Le dossier de run selectionne est introuvable." };
   }
   const contact = normalizeCustomAgent(draft, current.customAgents);
-  const customAgents = [
-    ...current.customAgents.filter((agent) => agent.id !== contact.id),
-    contact
-  ];
-  const settings = await saveSettings({ customAgents });
+  const settings = await saveSettings((latest) => ({ customAgents: [
+    ...latest.customAgents.filter((agent) => agent.id !== contact.id), contact
+  ] }));
   return {
     ok: true,
     contact,
@@ -2727,10 +2812,6 @@ ipcMain.handle("contacts:rename", async (_event, payload = {}) => {
   const contactId = String(payload.contactId || "").trim();
   if (!contactId) return { ok: false, error: "Contact invalide" };
   const name = String(payload.name || "").trim().slice(0, 80);
-  const current = await loadSettings();
-  const contactAliases = normalizeContactAliases(current.contactAliases);
-  if (name) contactAliases[contactId] = name;
-  else delete contactAliases[contactId];
   const threadId = threadIdFromContactId(contactId);
   if (threadId && name && codexServerIsActive()) {
     try {
@@ -2739,7 +2820,11 @@ ipcMain.handle("contacts:rename", async (_event, payload = {}) => {
       // Local alias still keeps the UI responsive if the stored thread is unavailable.
     }
   }
-  const settings = await saveSettings({ contactAliases });
+  const settings = await saveSettings((latest) => {
+    const contactAliases = normalizeContactAliases(latest.contactAliases);
+    if (name) contactAliases[contactId] = name; else delete contactAliases[contactId];
+    return { contactAliases };
+  });
   return {
     ok: true,
     contacts: contactsForSettings(settings),
@@ -2753,10 +2838,9 @@ ipcMain.handle("contacts:set-status", async (_event, payload = {}) => {
   const status = String(payload.status || "").trim();
   if (!contactId) return { ok: false, error: "Contact invalide" };
   if (!["online", "busy", "away", "offline"].includes(status)) return { ok: false, error: "Statut invalide" };
-  const current = await loadSettings();
-  const contactStatuses = normalizeContactStatuses(current.contactStatuses);
-  contactStatuses[contactId] = status;
-  const settings = await saveSettings({ contactStatuses });
+  const settings = await saveSettings((latest) => ({ contactStatuses: {
+    ...normalizeContactStatuses(latest.contactStatuses), [contactId]: status
+  } }));
   return {
     ok: true,
     contacts: contactsForSettings(settings),
@@ -2915,6 +2999,7 @@ ipcMain.handle("conversation:load-thread", async (event, { contactId, threadId }
     threadId: cleanThreadId,
     contactId: targetContactId,
     contact: hydratedContact,
+    effectiveCollaborationMode: codex.getObservedCollaborationMode(cleanThreadId),
     messages: historyPage.messages,
     historyCursor: historyPage.historyCursor,
     historyHasMore: historyPage.historyHasMore,
@@ -2993,28 +3078,21 @@ ipcMain.handle("approval:respond", async (_event, { approvalId, decision } = {})
 ipcMain.handle("conversation:reorder-threads", async (_event, { cwd, threadIds } = {}) => {
   const cleanCwd = String(cwd || "").trim();
   if (!cleanCwd) return { ok: false, error: "Projet invalide" };
-  const settings = await loadSettings();
-  const nextThreadTabs = normalizeThreadTabs({
-    ...settings.threadTabs,
-    orderByCwd: {
-      ...settings.threadTabs.orderByCwd,
-      [cleanCwd]: Array.isArray(threadIds) ? threadIds : []
-    }
-  });
-  await saveSettings({ threadTabs: nextThreadTabs });
+  await saveSettings((latest) => ({ threadTabs: normalizeThreadTabs({
+    ...latest.threadTabs,
+    orderByCwd: { ...latest.threadTabs.orderByCwd, [cleanCwd]: Array.isArray(threadIds) ? threadIds : [] }
+  }) }));
   return { ok: true, conversations: await conversationBrowser() };
 });
 
 ipcMain.handle("conversation:delete-thread", async (_event, threadId) => {
   const cleanThreadId = String(threadId || "").trim();
   if (!cleanThreadId) return { ok: false, error: "Fil invalide" };
-  const settings = await loadSettings();
-  const hiddenIds = Array.from(new Set([...settings.threadTabs.hiddenIds, cleanThreadId]));
-  const orderByCwd = {};
-  for (const [cwd, ids] of Object.entries(settings.threadTabs.orderByCwd)) {
-    orderByCwd[cwd] = ids.filter((id) => id !== cleanThreadId);
-  }
-  await saveSettings({ threadTabs: { orderByCwd, hiddenIds } });
+  await saveSettings((latest) => {
+    const hiddenIds = Array.from(new Set([...latest.threadTabs.hiddenIds, cleanThreadId]));
+    const orderByCwd = Object.fromEntries(Object.entries(latest.threadTabs.orderByCwd).map(([cwd, ids]) => [cwd, ids.filter((id) => id !== cleanThreadId)]));
+    return { threadTabs: { orderByCwd, hiddenIds } };
+  });
   const win = windows.get(`chat:thread:${cleanThreadId}`);
   if (win && !win.isDestroyed()) win.flashFrame(false);
   return { ok: true, conversations: await conversationBrowser() };
@@ -3097,15 +3175,19 @@ ipcMain.handle("conversation:fork", async (_event, { contactId, threadId } = {})
   }
 });
 
-async function sendConversationItems(contactId, items) {
+function sendConversationItems(contactId, items) {
+  const previous = conversationSendByContact.get(contactId) ?? Promise.resolve();
+  const operation = previous.catch(() => {}).then(() => performConversationSend(contactId, items));
+  conversationSendByContact.set(contactId, operation);
+  operation.finally(() => { if (conversationSendByContact.get(contactId) === operation) conversationSendByContact.delete(contactId); }).catch(() => {});
+  return operation;
+}
+
+async function performConversationSend(contactId, items) {
   const cleanContactId = String(contactId || "").trim();
-  const cleanItems = items.filter((item) => {
-    if (item?.type === "text") return String(item.text ?? "").trim();
-    if (item?.type === "localImage") return String(item.path ?? "").trim();
-    return false;
-  });
-  if (!cleanItems.length) return { ok: false };
   try {
+    const cleanItems = normalizeConversationInputs(items);
+    if (contactFor(cleanContactId)?.id !== cleanContactId) throw new Error("Contact introuvable.");
     clearUnread(cleanContactId);
     sendToChat(cleanContactId, "codex:typing", { contactId: cleanContactId });
     const settings = await loadSettings();
@@ -3114,21 +3196,20 @@ async function sendConversationItems(contactId, items) {
     logDebug("conversation.send", {
       contactId: cleanContactId,
       threadId,
-      itemTypes: cleanItems.map((item) => item.type),
-      textPreview: cleanItems.find((item) => item.type === "text")?.text ?? ""
+      itemTypes: cleanItems.map((item) => item.type)
     });
     const activeTurnId = activeTurnByThread.get(threadId);
     if (activeTurnId) {
       noteTurnActivity(threadId);
       await codex.steerTurn(threadId, activeTurnId, cleanItems);
-      return { ok: true, threadId, steered: true, conversations: await conversationBrowser() };
+      return { ok: true, threadId, effectiveCollaborationMode: codex.getObservedCollaborationMode(threadId), steered: true, conversations: await conversationBrowser() };
     }
     const result = await codex.startTurn(threadId, cleanItems, codexOptions);
     if (result?.turn?.id) {
       activeTurnByThread.set(threadId, result.turn.id);
       trackActiveTurn(threadId, cleanContactId, result.turn.id);
     }
-    return { ok: true, threadId, conversations: await conversationBrowser() };
+    return { ok: true, threadId, effectiveCollaborationMode: codex.getObservedCollaborationMode(threadId), conversations: await conversationBrowser() };
   } catch (error) {
     logDebug("conversation.send.error", { contactId: cleanContactId, error: error.message });
     sendToChat(cleanContactId, "codex:error", { contactId: cleanContactId, text: error.message });
@@ -3144,7 +3225,7 @@ function safeFileName(name) {
   const parsed = path.parse(name || "upload");
   const base = parsed.name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 60) || "upload";
   const ext = parsed.ext.replace(/[^a-zA-Z0-9.]/g, "").slice(0, 12);
-  return `${Date.now()}-${base}${ext}`;
+  return `${randomUUID()}-${base}${ext}`;
 }
 
 function mimeFromExtension(filePath) {
@@ -3180,15 +3261,14 @@ ipcMain.handle("media:pick-file", async (event, options = {}) => {
 });
 
 ipcMain.handle("media:save-data-url", async (_event, { dataUrl, name = "capture.webm" }) => {
-  const match = String(dataUrl ?? "").match(/^data:([^;]+);base64,(.+)$/);
-  if (!match) return { ok: false, error: "Invalid media data" };
-  const [, mime, base64] = match;
-  const extFromMime = mime.includes("png") ? ".png" : mime.includes("jpeg") ? ".jpg" : mime.includes("webm") ? ".webm" : mime.includes("wav") ? ".wav" : path.extname(name) || ".bin";
-  const targetName = safeFileName(name.endsWith(extFromMime) ? name : `${name}${extFromMime}`);
-  await ensureUploadsDir();
-  const targetPath = path.join(uploadsDir(), targetName);
-  await fs.writeFile(targetPath, Buffer.from(base64, "base64"));
-  return { ok: true, path: targetPath, name: targetName, mime, isImage: mime.startsWith("image/") };
+  try {
+    const { mime, extension, bytes } = decodeMediaDataUrl(dataUrl);
+    const targetName = safeFileName(`${path.parse(String(name)).name}${extension}`);
+    await ensureUploadsDir();
+    const targetPath = path.join(uploadsDir(), targetName);
+    await fs.writeFile(targetPath, bytes, { mode: 0o600, flag: "wx" });
+    return { ok: true, path: targetPath, name: targetName, mime, isImage: mime.startsWith("image/") };
+  } catch (error) { return { ok: false, error: error.message }; }
 });
 
 ipcMain.handle("app:open-path", async (_event, targetPath = defaultCwd()) => {
@@ -3248,7 +3328,14 @@ ipcMain.handle("conversation:wizz", (_event, contactId) => {
 registerWindowIpcHandlers({ ipcMain, BrowserWindow });
 
 if (hasSingleInstanceLock) app.whenReady().then(async () => {
-  const debugLogPath = await ensureDebugLogFile();
+  installMsnAssetProtocol(protocol, { assetRoot: path.join(rootDir, "dist") });
+  let debugLogPath = null;
+  try {
+    debugLogPath = await ensureDebugLogFile();
+  } catch (error) {
+    const reason = typeof error?.code === "string" ? error.code.slice(0, 80) : "unavailable";
+    console.warn(`Codex Messenger: debug log unavailable (${reason}).`);
+  }
   logDebug("app.start", {
     version: app.getVersion(),
     packaged: app.isPackaged,
@@ -3272,5 +3359,9 @@ app.on("window-all-closed", () => {
 
 app.on("before-quit", () => {
   isQuitting = true;
+  terminalService.dispose();
+  void realtime.dispose().catch(() => {});
+  serverRequests.clear("Application fermée.");
+  clearApprovalRequests("Application fermée.");
   codex.dispose();
 });

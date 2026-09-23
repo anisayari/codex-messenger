@@ -1,0 +1,20 @@
+# Validation runtime: codex-cli 0.156.1
+# Started UTC: 2026-09-23T14:24:25.620Z
+# Finished UTC: 2026-09-23T14:24:31.705Z
+# Native Node: v24.19.0
+# Runtime SHA256: 0196e89fe5a7598f816ee54232c3d7c26d75e502ab5cfe2c9240e81d90f7255a
+# Client SHA256: 7c74d05a78a273c0ec98010c5f86c7e143e1876bd9d57ccfac4937b52def16de
+# Fixture: tests/codexAuthenticatedLive.test.mjs
+✔ authenticated actual CLI: streamed reply, persisted reload, search, occurrences, resume and fork (6015.594042ms)
+ℹ {"threadId":"01a0cea7-4f90-73a0-be6b-68b670a6e6b7","turnId":"01a0cea7-4f9f-7071-8c90-529391b3810d","reply":"CODEX-MSN-OK","deltaCount":6,"status":"completed"}
+ℹ {"threadId":"01a0cea7-4f90-73a0-be6b-68b670a6e6b7","searchHit":true,"occurrenceCount":2,"matchRangesVerified":true}
+ℹ {"threadId":"01a0cea7-4f90-73a0-be6b-68b670a6e6b7","turnId":"01a0cea7-4f9f-7071-8c90-529391b3810d","forkId":"01a0cea7-6304-7a72-80f8-9c710163e0eb","turnCount":1,"persistedReload":true,"search":true,"occurrences":true,"resume":true,"fork":true}
+ℹ {"stage":"complete","methods":{"initialize":2,"thread/start":1,"remoteControl/status/changed":2,"account/updated":2,"turn/start":1,"thread/started":2,"thread/status/changed":3,"turn/started":1,"item/started":2,"item/completed":2,"item/agentMessage/delta":6,"thread/tokenUsage/updated":2,"account/rateLimits/updated":1,"turn/completed":1,"thread/read":2,"deprecationNotice":3,"thread/turns/list":1,"thread/resume":1,"thread/search":1,"thread/goal/cleared":1,"thread/searchOccurrences":1,"thread/fork":1},"deltaCount":6}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6031.121792

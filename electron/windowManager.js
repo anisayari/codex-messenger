@@ -1,5 +1,7 @@
 import { BrowserWindow, shell } from "electron";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { isTrustedRendererUrl } from "./security.js";
 
 export function setStableWindowTitle(win, title) {
   if (!win || win.isDestroyed()) return;
@@ -15,8 +17,10 @@ export function createBaseWindowFactory({
   smokeTest = false,
   onSmokeReady = null,
   openExternalUrl,
+  rendererUrl = pathToFileURL(path.join(dirname, "..", "dist", "index.html")).href,
   logDebug = () => {}
 }) {
+  const localPlayerUrl = new URL("msn-assets/flash-player/index.html", rendererUrl).href;
   return function createBaseWindow(key, options) {
     const initialTitle = options.title ?? "Codex Messenger";
     const win = new BrowserWindow({
@@ -99,12 +103,24 @@ export function createBaseWindowFactory({
     });
     win.on("closed", () => {
       logWindowEvent("closed");
-      windows.delete(key);
+      for (const [currentKey, currentWin] of windows) if (currentWin === win) windows.delete(currentKey);
     });
     win.webContents.setWindowOpenHandler(({ url }) => {
       const result = openExternalUrl ? openExternalUrl(url) : { ok: false };
       if (!result.ok) shell.beep();
       return { action: "deny" };
+    });
+    const preventExternalNavigation = (event, url) => {
+      if (isTrustedRendererUrl(url, rendererUrl)) return;
+      event.preventDefault();
+      logDebug("security.navigation.blocked", { key, url });
+      openExternalUrl?.(url);
+    };
+    win.webContents.on("will-navigate", preventExternalNavigation);
+    win.webContents.on("will-redirect", preventExternalNavigation);
+    win.webContents.on("will-frame-navigate", (event) => {
+      const expectedDocument = event.isMainFrame ? rendererUrl : localPlayerUrl;
+      if (!isTrustedRendererUrl(event.url, expectedDocument)) event.preventDefault();
     });
     return win;
   };

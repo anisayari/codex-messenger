@@ -1,0 +1,525 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-23T14:25:28.724Z",
+  "version": "0.156.1",
+  "sourceManifestBytes": 490946,
+  "sourceManifestSha256": "6787e81889fa80a38295d07bbc7eac87b4d596d95c5ab72cffc2f807cd041da4",
+  "expectedReleaseCount": 51,
+  "matched": 51,
+  "unavailable": 0,
+  "mismatched": 0,
+  "archiveIndexLinksValid": true,
+  "methodSnapshotsValid": true,
+  "releases": [
+    {
+      "version": "0.125.0",
+      "path": "docs/codex-changelog/0.125.0.md",
+      "bytes": 6644,
+      "sha256": "cad5205949068e96817c1e9d04a79b7b19509a2d4ec9eab38dafb1a9bc7e2b4b",
+      "bodySha256": "03cb11da37e2020b78ec600108fb30b7cc02c4d6c1cd9c704723a92b2ddae57a",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.128.0",
+      "path": "docs/codex-changelog/0.128.0.md",
+      "bytes": 20965,
+      "sha256": "0122c400ca5cbbae3ca318cb16ed0739899599658a075489448c9f8f43d5da44",
+      "bodySha256": "5faad76423686242ce2798c0f5c4a027ed1a379b6c2c2901bcb10d10bc714b8f",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.129.0",
+      "path": "docs/codex-changelog/0.129.0.md",
+      "bytes": 18926,
+      "sha256": "0fb1dc1fd305e7485ec51c3fc1bb57a19090ee2e5c9f9f09ea1abffb081d88b4",
+      "bodySha256": "dca4267067a335711a388b1ed13750bfcb7a53407cae3930f459006dec5b5071",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.130.0",
+      "path": "docs/codex-changelog/0.130.0.md",
+      "bytes": 5713,
+      "sha256": "d9935ba7a67c8d472e5920bf98b901a46e8f027741c0d67938bad805811f7a95",
+      "bodySha256": "0caf22caf96e325f31b13e59cba41582d19794b8afb543db258606aae38cce5d",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.131.0",
+      "path": "docs/codex-changelog/0.131.0.md",
+      "bytes": 22346,
+      "sha256": "9e7484d85d43267d7dc46d6e7deb5a267bbc6e8677c8e4e7b75b8515dfee9d20",
+      "bodySha256": "8e83154dba6b7912598633b796955ff350281e180cf38fa09f2c7a9d157a0b5a",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.132.0",
+      "path": "docs/codex-changelog/0.132.0.md",
+      "bytes": 6250,
+      "sha256": "dad3964d22fd1bb502a29808eb360bbbc3001395f47c739285a6c8cd076d9109",
+      "bodySha256": "ec19a7168d76aeb993d7cdb76c499fe6c08855536b33b68593fa9b713d165e5c",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.133.0",
+      "path": "docs/codex-changelog/0.133.0.md",
+      "bytes": 10996,
+      "sha256": "49128233a1b111c038675a5835064c7ed1df47f94d902c1f595fbb8190b1fa65",
+      "bodySha256": "04480dd0ac998c8b9e414be9a46f4ee42d21ea717d4d2b24088d93587f85c169",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.134.0",
+      "path": "docs/codex-changelog/0.134.0.md",
+      "bytes": 6884,
+      "sha256": "a721eaa5bc09da5087d31a6700c0ba5cc04053d0c6a0de6bca592f77ff659838",
+      "bodySha256": "4c39de7b39b7f96398b203e2d2ab08c85b6aa3ee108cb182f454788318e7ace8",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.135.0",
+      "path": "docs/codex-changelog/0.135.0.md",
+      "bytes": 8597,
+      "sha256": "9ca4305c5527a6fcdce2325603207d91eed1f617cc86bab1f7a70f8e5521c394",
+      "bodySha256": "95db2bc53d0c06079aeb5a3f09414092646d1a39d5126c5fb99eb388f95027e0",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.136.0",
+      "path": "docs/codex-changelog/0.136.0.md",
+      "bytes": 11496,
+      "sha256": "3df175d655f7745d719738e883228ebdc68020ee94b2e41a4faf0ddc4596f9ef",
+      "bodySha256": "3768ad0a0b315a33e72de61d5f0e0f6a45297c1a43d89e184b002030c25db915",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.137.0",
+      "path": "docs/codex-changelog/0.137.0.md",
+      "bytes": 11268,
+      "sha256": "29ae18d631464d2258df1074877a6921a55e4c808297f5a33c4ab35a1c856162",
+      "bodySha256": "e162f01d4324a788fcab7a1ceb0fc980b650e6ee55f9cec80978cdf3a295d674",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.138.0",
+      "path": "docs/codex-changelog/0.138.0.md",
+      "bytes": 9910,
+      "sha256": "b8704508b69e3624e8934713f8adfcc890d1be119bec0cb057de6e7f986e554f",
+      "bodySha256": "17ed60b35d3413b329c1552b03682c038b77d60dd908e869670ab130c4d3b758",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.139.0",
+      "path": "docs/codex-changelog/0.139.0.md",
+      "bytes": 5487,
+      "sha256": "a8da58eb2c45745e2f0c2d0a1759aed34d99d9b7bfa124138a47643da14472ee",
+      "bodySha256": "7ace4d89b123d5d6a3ffeea9b8a8286aad7ecbd011e545c866b41272ecb127d3",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.140.0",
+      "path": "docs/codex-changelog/0.140.0.md",
+      "bytes": 15807,
+      "sha256": "b2e594e920087635f21df18b7da0da5693aec02a2f3d33ca8066f4ec7fb08c19",
+      "bodySha256": "54428235601ec4db3fa51a4a4deb920c5868cb25b5fbdc4e594734d1dee30421",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.141.0",
+      "path": "docs/codex-changelog/0.141.0.md",
+      "bytes": 7642,
+      "sha256": "a3372c785a91a2d1cd0ccc90c7b22da97b3a819d1445ab1f67d9f549296ffc67",
+      "bodySha256": "4a0c7c59991907baff991b54ff5cf061c0dc9f69d45d375da87584438dfb2f61",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.142.0",
+      "path": "docs/codex-changelog/0.142.0.md",
+      "bytes": 15273,
+      "sha256": "d535d24f032f9dd64c608027823d302570d8d10fc9dac12e1938e42a95e94db9",
+      "bodySha256": "fe64939a212da5d9bea2fa3f3b7aa55c4a173f0b298c3be597de3d521788fdd1",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.142.1",
+      "path": "docs/codex-changelog/0.142.1.md",
+      "bytes": 745,
+      "sha256": "784b19bb6ca5a6e825c3fce17f35c029628e9403fec45590ed3b5062b2962b66",
+      "bodySha256": "8491dfd77f7b2a8f2868ee4ea062d7aee37ef4a081b8333e7c6d8eef2f17cb16",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.142.2",
+      "path": "docs/codex-changelog/0.142.2.md",
+      "bytes": 3328,
+      "sha256": "3a3055b8204e26234bb8cc542678563ad0eed3acde8f2c6a04236f29c8b60f76",
+      "bodySha256": "7fda5587a0f79e004d899960fbc9b910f7028c6d34b04789765e36223887a564",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.142.3",
+      "path": "docs/codex-changelog/0.142.3.md",
+      "bytes": 623,
+      "sha256": "1286b46f8443548d5ff9c63f8c2bf4f098d5fbe54565f84811ea5150858d47e7",
+      "bodySha256": "c875a8d1a3b652f658939bef5c741d95b4ac4178d9da477a88f1aa9c69e990ba",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.142.4",
+      "path": "docs/codex-changelog/0.142.4.md",
+      "bytes": 606,
+      "sha256": "dd5a07407903b43ed9535bcb9ed49f3951e312f27fa4600520d0f6999e13677d",
+      "bodySha256": "a6f94696946151eca3e859075ff90cb7a5b327b902de095d2f6dd9aa5ccfbdb3",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.142.5",
+      "path": "docs/codex-changelog/0.142.5.md",
+      "bytes": 726,
+      "sha256": "2cbaddae37fe617a73ac58f4bf03b710fb70ceb4291fcc21993f162ac75e3682",
+      "bodySha256": "4dd58a94844993bbadf09d18f6232b231c573fb0a59cb3ab9a14f9ab0160fcc7",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.143.0",
+      "path": "docs/codex-changelog/0.143.0.md",
+      "bytes": 21411,
+      "sha256": "075a69545ae403b49bb6aa46d9c3149dcaf18bfcfadf5b95ffdfd764581161a3",
+      "bodySha256": "96d7783f3770343c134a1bf90882bb29883229f9b9d86ee9e6619c132b628644",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.144.0",
+      "path": "docs/codex-changelog/0.144.0.md",
+      "bytes": 7679,
+      "sha256": "d1384aa02850d83273fa2fdafd96ab27e113025a11d05c8b5914e6b48b2703e2",
+      "bodySha256": "d68c386b526f5f1e9788d859bcba3ceea0015dd9db987bed8402a31879bcfb1c",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.144.1",
+      "path": "docs/codex-changelog/0.144.1.md",
+      "bytes": 956,
+      "sha256": "b7355a58967e72695e9c802fc451edc2e81f11266ff81bfe4adb345d6c3ee997",
+      "bodySha256": "d911af8dcf13ee3e2bfcc8604e6fbf494aede86f6caa31b7d4928db897f3cc04",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.144.2",
+      "path": "docs/codex-changelog/0.144.2.md",
+      "bytes": 768,
+      "sha256": "6fce129642c39a11e8f7ce08c57187f9949a99cd83ac7eb84fe7061c0ed558e4",
+      "bodySha256": "6e12ded88b373b6d8ddc30dc17a7c65fc6ae58b100aaa10264f52219df6043fd",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.144.3",
+      "path": "docs/codex-changelog/0.144.3.md",
+      "bytes": 641,
+      "sha256": "9360019d2f9083dc5c535d1a1cd22cc7c3005e44a09a30e426428d972ffb7a4e",
+      "bodySha256": "b53d8579362006f3d0862620fa1f13ba85bade8115dc896a75db21233f54b20d",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.144.4",
+      "path": "docs/codex-changelog/0.144.4.md",
+      "bytes": 595,
+      "sha256": "0f33dd4b20b1144dd49f7f6d188d47703a9e3f932fe2964be83df982385ab302",
+      "bodySha256": "43d49a8d1904f9e7eee18fcc690aa2263ac904f804352658800ed113d0f349a2",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.144.5",
+      "path": "docs/codex-changelog/0.144.5.md",
+      "bytes": 777,
+      "sha256": "96b2c88a1349b8312396db29ddb8cdbef1b4012c1695b759a8112af8974b9405",
+      "bodySha256": "b63789baaa31936a63d29f02d1a1449d02ac7f26355bf780fd2db8f5c4e66404",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.144.6",
+      "path": "docs/codex-changelog/0.144.6.md",
+      "bytes": 831,
+      "sha256": "2915da989b705757ac858ecdb787c872529297340d6869c9583789664cfec828",
+      "bodySha256": "78a9cca314ce1c688b70629d72f7f9bef627f37a7e10acf6aeec14b3844a0efe",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.145.0",
+      "path": "docs/codex-changelog/0.145.0.md",
+      "bytes": 26109,
+      "sha256": "eebfde98efc40b65342b40d0145701da129dbbadc04423eb1430771f89acc92a",
+      "bodySha256": "aab566c70da2039e2a69ba567785961787b44e9775871ee84bf46754a56e71e8",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.146.0",
+      "path": "docs/codex-changelog/0.146.0.md",
+      "bytes": 18117,
+      "sha256": "47c6a13aa0c421794f40553e371e4193222186822f0951564c1d5ac069efe1c6",
+      "bodySha256": "2145004993e992c9f19ca4229290b61fb8f575a18838c9ea64771423efe014b8",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.146.1",
+      "path": "docs/codex-changelog/0.146.1.md",
+      "bytes": 756,
+      "sha256": "6e6591ba3da2ec3e73508622e5172ef996b2cadc560087907f09239995708519",
+      "bodySha256": "944613a82286ac87eb762893911c0626e979ce1ee9c3293e6d69bf68b1b2a7b8",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.147.0",
+      "path": "docs/codex-changelog/0.147.0.md",
+      "bytes": 25949,
+      "sha256": "7815ad6a9c12f2858563715c0c3d56914876a1a5130e001477972ef9809d03c0",
+      "bodySha256": "694a00e39c80cfb27d387863469fb3b3277195685cd374d5de17475d3de91ac9",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.148.0",
+      "path": "docs/codex-changelog/0.148.0.md",
+      "bytes": 28179,
+      "sha256": "3349e6d5de981025ff40a5f68a46a685071213c611b733a1bd15f5820472a86a",
+      "bodySha256": "02a053b241b90dba7012a6a29a876d4dc48fad6cf6a5cc49a0af3f12e18bb7df",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.149.0",
+      "path": "docs/codex-changelog/0.149.0.md",
+      "bytes": 18775,
+      "sha256": "50f89e983841b3dec596d98ac79c7a049e1bd10fcd7a69e271feab74e7ce1a57",
+      "bodySha256": "88d409ec767ff7c40095c9e642859ef53326b5c00f90f16d8b9c270c3412f319",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.149.1",
+      "path": "docs/codex-changelog/0.149.1.md",
+      "bytes": 537,
+      "sha256": "f8955664ff81d103fe4085abec8877d1e4330f9c1f0f2fe73afc1399076dba40",
+      "bodySha256": "dc12f0f81b5a5828eb473aecf359a97db0a8a2c386eb3d974b03084a74ab088e",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.150.0",
+      "path": "docs/codex-changelog/0.150.0.md",
+      "bytes": 16156,
+      "sha256": "c3926bae0818e5d9cb71a657fff0cd4065e09c84250bd196dbc7b938373e5036",
+      "bodySha256": "6532d1b638923d8824635fad6c237c3f731cce4d8993e868663208625dc43d02",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.150.1",
+      "path": "docs/codex-changelog/0.150.1.md",
+      "bytes": 747,
+      "sha256": "a46bec5b56d21bf57e27b0bab34c00752d0e6f775a029b34097622e21ce8189b",
+      "bodySha256": "cb06eca98c043c93eb0621e4d0adf6604abacc5d6daddaf80642549ecfad2c5c",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.151.0",
+      "path": "docs/codex-changelog/0.151.0.md",
+      "bytes": 2872,
+      "sha256": "7c5062df9a37793add86386b12336a66cd0bc536f99de44ab598bc169c38f776",
+      "bodySha256": "2cbf2f29290376dffc4d5c0f087c1ab610c8abff485a9d7c45bd8587ea0eeb76",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.152.0",
+      "path": "docs/codex-changelog/0.152.0.md",
+      "bytes": 8781,
+      "sha256": "3eab4d1a7b2e2c0c200ff30cbf140f21e2bf0c7ce9235e3a71631d8884a645b9",
+      "bodySha256": "d1a2f2b53c36b22682499571252c19a5212e740832c076bf76cba3466450c940",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.152.1",
+      "path": "docs/codex-changelog/0.152.1.md",
+      "bytes": 626,
+      "sha256": "545abdb209b275c9d9facbef9fd3a72d192aae5dfd3d8cdf60b54c71fecb5592",
+      "bodySha256": "d905e4684973cbcb9c9c58d6eefaa44f42bbc6d2eef058a36f91281869a98054",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.153.0",
+      "path": "docs/codex-changelog/0.153.0.md",
+      "bytes": 13571,
+      "sha256": "8db5c2b2346a0ef12eed74d4ba7f873e24fd13fc58e9c450222c47ba66d65f19",
+      "bodySha256": "db75be3522b08d45fb587f57ddfa56a1018602a6cda72f755154a754575baf35",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.153.1",
+      "path": "docs/codex-changelog/0.153.1.md",
+      "bytes": 754,
+      "sha256": "2df86a44b3d74df543527a02b3f1c242d19476cf18c11d96d8ee09f8cde33403",
+      "bodySha256": "464cb9c14ba9df13c72cfb7a2eb713e52c5a0d7d7ea9ac14357898025efb38d7",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.153.2",
+      "path": "docs/codex-changelog/0.153.2.md",
+      "bytes": 799,
+      "sha256": "9e14e58d2dc3611c3ba889ac23fd9015009cb0be2b5b2f133768071f4f45bda8",
+      "bodySha256": "2578123f038057d26f940380b30dc4f3366fd2768e850556607f9dfd8d4fb568",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.153.3",
+      "path": "docs/codex-changelog/0.153.3.md",
+      "bytes": 974,
+      "sha256": "f34d42eb50effd1a5a284570441514eea8954368a129499ce43603b408c40e3d",
+      "bodySha256": "43667145b787f5418e841fcf89223a27a4f42886c1ede237ccd854b833ca670c",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.153.4",
+      "path": "docs/codex-changelog/0.153.4.md",
+      "bytes": 966,
+      "sha256": "b406c6bf08cc30eaeebb5c7e3b841ee31745e45309ed7a38a6a38f474b3818c0",
+      "bodySha256": "a1194b9564911e6739cd8c5045220af094db275bc931e6ba3bc4b9d55caeba52",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.154.0",
+      "path": "docs/codex-changelog/0.154.0.md",
+      "bytes": 20312,
+      "sha256": "83716a094cf8a017301ab9f08ca6a0416424aae979a74db9b0d7c543aa9a32f3",
+      "bodySha256": "4f5d66c5c20427f8d40fa709ff8e1418fe945f162e698bffe40459156753fe1c",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.155.0",
+      "path": "docs/codex-changelog/0.155.0.md",
+      "bytes": 18916,
+      "sha256": "9de3cf4ce2ae98698a395f7c05c4c347202f12831e343e2bb2a77a64ebb490b0",
+      "bodySha256": "69603f1b9056fb8443dbb42a5860dceb142d6d7e5c003e864a482ae112016fd8",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.155.1",
+      "path": "docs/codex-changelog/0.155.1.md",
+      "bytes": 825,
+      "sha256": "8432c0a0c72c094f321f77028cf73394805b6c949835954e7ba6c9011bc3f114",
+      "bodySha256": "f7decb7da95a761c488597a109c7eba22bd02f5d8462b52ae6f48f1bd13ccfd5",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.156.0",
+      "path": "docs/codex-changelog/0.156.0.md",
+      "bytes": 44239,
+      "sha256": "01dfb91ec55dce8c9e610c43f490f4532d46e98e219da8e61daa5c2f49b530c3",
+      "bodySha256": "1669e2f2ac2dc3170c7bd128c1109be3d7b1164b64d93fb91e1926e2c36d8ffc",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    },
+    {
+      "version": "0.156.1",
+      "path": "docs/codex-changelog/0.156.1.md",
+      "bytes": 763,
+      "sha256": "81a9416c0f94923a17874643f76156acd7db3f519f1e5f68709ce3fd6af08fcc",
+      "bodySha256": "65c671f209087f35ce0e85c8f12ca960ed3105bfd7bd7b20af7b96afa09080b4",
+      "bodyMatch": true,
+      "headerValid": true,
+      "match": true
+    }
+  ]
+}

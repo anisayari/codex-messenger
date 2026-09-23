@@ -1,0 +1,9 @@
+.message-rich-block { margin: 8px 0; max-width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #9bb5d4; border-radius: 3px; background: #f8fbff; overflow: hidden; }
+.message-rich-block.mermaid { width: 480px; }
+.message-rich-block figcaption { margin-bottom: 6px; color: #1e4e90; font-weight: bold; font-size: 11px; }
+.message-rich-output { max-width: 100%; overflow: auto; }
+.message-rich-output svg { display: block; max-width: 100%; height: auto; }
+.message-rich-block summary { margin-top: 6px; color: #275d97; cursor: pointer; font-size: 10px; }
+.message-rich-block details pre { max-height: 220px; overflow: auto; white-space: pre; }
+.message-rich-error { color: #8b2424; font-size: 11px; }
+.message-rich-block .katex-display { margin: .5em 0; }

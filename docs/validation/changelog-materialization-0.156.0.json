@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-09-22T21:40:02.989Z",
+  "files": [
+    {
+      "path": "docs/codex-changelog/0.136.0.md",
+      "version": "0.136.0",
+      "bytes": 11496,
+      "sha256": "3df175d655f7745d719738e883228ebdc68020ee94b2e41a4faf0ddc4596f9ef",
+      "bodySha256": "3768ad0a0b315a33e72de61d5f0e0f6a45297c1a43d89e184b002030c25db915",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.137.0.md",
+      "version": "0.137.0",
+      "bytes": 11268,
+      "sha256": "29ae18d631464d2258df1074877a6921a55e4c808297f5a33c4ab35a1c856162",
+      "bodySha256": "e162f01d4324a788fcab7a1ceb0fc980b650e6ee55f9cec80978cdf3a295d674",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.139.0.md",
+      "version": "0.139.0",
+      "bytes": 5487,
+      "sha256": "a8da58eb2c45745e2f0c2d0a1759aed34d99d9b7bfa124138a47643da14472ee",
+      "bodySha256": "7ace4d89b123d5d6a3ffeea9b8a8286aad7ecbd011e545c866b41272ecb127d3",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.142.0.md",
+      "version": "0.142.0",
+      "bytes": 15273,
+      "sha256": "d535d24f032f9dd64c608027823d302570d8d10fc9dac12e1938e42a95e94db9",
+      "bodySha256": "fe64939a212da5d9bea2fa3f3b7aa55c4a173f0b298c3be597de3d521788fdd1",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.146.1.md",
+      "version": "0.146.1",
+      "bytes": 756,
+      "sha256": "6e6591ba3da2ec3e73508622e5172ef996b2cadc560087907f09239995708519",
+      "bodySha256": "944613a82286ac87eb762893911c0626e979ce1ee9c3293e6d69bf68b1b2a7b8",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.153.3.md",
+      "version": "0.153.3",
+      "bytes": 974,
+      "sha256": "f34d42eb50effd1a5a284570441514eea8954368a129499ce43603b408c40e3d",
+      "bodySha256": "43667145b787f5418e841fcf89223a27a4f42886c1ede237ccd854b833ca670c",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.153.4.md",
+      "version": "0.153.4",
+      "bytes": 966,
+      "sha256": "b406c6bf08cc30eaeebb5c7e3b841ee31745e45309ed7a38a6a38f474b3818c0",
+      "bodySha256": "a1194b9564911e6739cd8c5045220af094db275bc931e6ba3bc4b9d55caeba52",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.154.0.md",
+      "version": "0.154.0",
+      "bytes": 20312,
+      "sha256": "83716a094cf8a017301ab9f08ca6a0416424aae979a74db9b0d7c543aa9a32f3",
+      "bodySha256": "4f5d66c5c20427f8d40fa709ff8e1418fe945f162e698bffe40459156753fe1c",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.155.0.md",
+      "version": "0.155.0",
+      "bytes": 18916,
+      "sha256": "9de3cf4ce2ae98698a395f7c05c4c347202f12831e343e2bb2a77a64ebb490b0",
+      "bodySha256": "69603f1b9056fb8443dbb42a5860dceb142d6d7e5c003e864a482ae112016fd8",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.155.1.md",
+      "version": "0.155.1",
+      "bytes": 825,
+      "sha256": "8432c0a0c72c094f321f77028cf73394805b6c949835954e7ba6c9011bc3f114",
+      "bodySha256": "f7decb7da95a761c488597a109c7eba22bd02f5d8462b52ae6f48f1bd13ccfd5",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    },
+    {
+      "path": "docs/codex-changelog/0.156.0.md",
+      "version": "0.156.0",
+      "bytes": 44239,
+      "sha256": "01dfb91ec55dce8c9e610c43f490f4532d46e98e219da8e61daa5c2f49b530c3",
+      "bodySha256": "1669e2f2ac2dc3170c7bd128c1109be3d7b1164b64d93fb91e1926e2c36d8ffc",
+      "reason": "Desktop provider read timeout; locally materialized from matching official API body and release manifest"
+    }
+  ]
+}

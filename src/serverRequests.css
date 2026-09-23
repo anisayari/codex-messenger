@@ -1,0 +1,24 @@
+.server-request-stack { max-height: min(55vh, 520px); overflow-y: auto; flex-shrink: 0; }
+.server-request-card { color: #20324a; }
+.server-request-card form { margin: 0; }
+.server-request-card .approval-meta:empty { display: none; }
+.server-request-question { border: 1px solid #a0b8ce; border-radius: 3px; padding: 9px; margin: 8px 0; background: linear-gradient(#fff, #edf5fb); }
+.server-request-question legend { font-size: 12px; font-weight: 700; color: #245680; padding: 0 4px; }
+.server-request-question p, .server-request-message, .server-request-note { margin: 5px 0 9px; font-size: 12px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.server-request-option { display: flex; gap: 7px; align-items: flex-start; font-size: 12px; line-height: 1.4; margin: 6px 0; cursor: pointer; }
+.server-request-option input { margin: 2px 0 0; flex-shrink: 0; }
+.server-request-option span { min-width: 0; overflow-wrap: anywhere; }
+.server-request-option small, .server-request-field small { display: block; color: #546780; font-size: 11px; margin-top: 3px; }
+.server-request-question textarea, .server-request-question input[type="password"], .server-request-field input, .server-request-field select, .server-request-field textarea, select.server-request-field { width: 100%; box-sizing: border-box; background: white; color: #20324a; border: 1px solid #8daaca; padding: 6px; font: inherit; border-radius: 2px; }
+.server-request-field { display: block; margin: 9px 0; font-size: 12px; }
+.server-request-field label { display: block; }
+.server-request-field > input, .server-request-field > select { display: block; margin-top: 4px; }
+.server-request-multiselect { margin: 0; padding: 5px 9px; border: 1px solid #a0b8ce; }
+.server-request-multiselect legend { padding: 0 4px; }
+.server-request-field textarea { resize: vertical; }
+.server-request-field pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 160px; overflow: auto; font-size: 11px; }
+.server-request-permission-summary { margin: 7px 0; padding-left: 20px; font-size: 12px; }
+.server-request-url small { display: block; margin: 6px 0; font-size: 11px; color: #546780; }
+.server-request-card .approval-actions button { white-space: normal; text-align: center; overflow-wrap: anywhere; }
+.server-request-card .approval-error { white-space: pre-wrap; }
+.server-request-card :focus-visible { outline: 2px solid #397ab7; outline-offset: 2px; }

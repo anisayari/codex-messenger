@@ -1,0 +1,28 @@
+{
+  "initialVolume": 0,
+  "initialReadyCount": 1,
+  "iframeUrl": "http://127.0.0.1:57967/msn-assets/flash-player/index.html?movie=packages%2Fwinks%2Fmsgslang_WINK_1134_9%2Fknock.swf&token=15539577-09a6-44c9-8384-bc51e9c25b5f&muted=1",
+  "sourceHash": "fcdd85ca7731be68058937f2478ad87676f8468db1f564f6e067dd1e9fd92ba3",
+  "blockedLocal": true,
+  "blockedRemote": true,
+  "effectivePolicy": [
+    "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; connect-src 'self'; img-src data:; media-src blob:; object-src 'none'; frame-src 'none'",
+    "default-src 'none'; script-src http://127.0.0.1:57967/msn-assets/ruffle/0.6.0/ 'wasm-unsafe-eval'; style-src 'unsafe-inline'; connect-src http://127.0.0.1:57967/msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.swf http://127.0.0.1:57967/msn-assets/ruffle/0.6.0/72a20ef1c0b8ceb37720.wasm http://127.0.0.1:57967/msn-assets/ruffle/0.6.0/826bb0938097485a2c9d.wasm; img-src data:; media-src blob:; object-src 'none'; frame-src 'none'"
+  ],
+  "unmutedVolume": 1,
+  "readyCountAfterAudioToggle": 1,
+  "sameFrameAfterAudioToggle": true,
+  "remutedVolume": 0,
+  "framesAfterClose": 1,
+  "oldFrameDetached": true,
+  "reducedMotion": {
+    "frames": 1,
+    "images": 1,
+    "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.png"
+  },
+  "invalidSource": {
+    "frames": 1,
+    "message": "Cette animation ne fait pas partie des ressources MSN locales."
+  },
+  "framesAfterImmediateLoadCancellation": 1
+}

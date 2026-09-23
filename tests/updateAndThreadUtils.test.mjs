@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { codexImageFromItem, imageSrcFromBase64Png, imageSrcFromPathOrUrl, isCodexImageItem } from "../shared/codexImages.js";
 import { windowsUpdateInstallerLaunch, windowsUpdateInstallerScript } from "../electron/updateService.js";
 import { appCopyFor, supportedLanguages } from "../shared/languages.js";
@@ -40,12 +41,10 @@ test("front release asset selection prefers platform installer assets", () => {
 });
 
 test("Codex image items expose renderable image attachments", () => {
-  const tmpCodexImageUrl = process.platform === "win32"
-    ? "file:///C:/tmp/codex%20image.png"
-    : "file:///tmp/codex%20image.png";
-  const tmpViewedUrl = process.platform === "win32"
-    ? "file:///C:/tmp/viewed.png"
-    : "file:///tmp/viewed.png";
+  const tmpCodexImagePath = path.join(os.tmpdir(), "codex image.png");
+  const tmpViewedPath = path.join(os.tmpdir(), "viewed.png");
+  const tmpCodexImageUrl = pathToFileURL(tmpCodexImagePath).href;
+  const tmpViewedUrl = pathToFileURL(tmpViewedPath).href;
   const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
   const pngDataUrl = `data:image/png;base64,${pngBase64}`;
   const generated = codexImageFromItem({
@@ -53,12 +52,12 @@ test("Codex image items expose renderable image attachments", () => {
     type: "imageGeneration",
     status: "completed",
     revisedPrompt: "final prompt",
-    savedPath: "/tmp/codex image.png",
+    savedPath: tmpCodexImagePath,
     result: pngBase64
   });
   assert.equal(generated.kind, "imageGeneration");
   assert.equal(generated.src, pngDataUrl);
-  assert.equal(generated.path, "/tmp/codex image.png");
+  assert.equal(generated.path, tmpCodexImagePath);
   assert.equal(generated.name, "codex image.png");
   assert.match(generated.text, /Image generee: final prompt/);
   assert.equal(isCodexImageItem({ type: "imageGeneration" }), true);
@@ -66,13 +65,13 @@ test("Codex image items expose renderable image attachments", () => {
   const savedPathFallback = codexImageFromItem({
     id: "ig_path",
     type: "imageGeneration",
-    savedPath: "/tmp/codex image.png",
+    savedPath: tmpCodexImagePath,
     result: "ignored"
   });
   assert.equal(savedPathFallback.src, tmpCodexImageUrl);
   assert.equal(savedPathFallback.status, "completed");
 
-  const viewed = codexImageFromItem({ type: "imageView", path: "/tmp/viewed.png" });
+  const viewed = codexImageFromItem({ type: "imageView", path: tmpViewedPath });
   assert.equal(viewed.kind, "imageView");
   assert.equal(viewed.src, tmpViewedUrl);
   assert.equal(isCodexImageItem({ type: "imageView" }), true);

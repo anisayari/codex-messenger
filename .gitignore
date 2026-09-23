@@ -14,4 +14,7 @@ chat-*.png
 roster-*.png
 xp-chat-*.png
 msn-*.png
+!docs/assets/*.png
+!public/screenshots/*.png
+!codexmessenger.net/assets/screenshots/*.png
 login-people-logo.png

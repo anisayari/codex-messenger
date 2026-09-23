@@ -1,10 +1,12 @@
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
-import { createWriteStream } from "node:fs";
+import { createHash, randomUUID } from "node:crypto";
+import { createReadStream, createWriteStream } from "node:fs";
 import fs from "node:fs/promises";
 import https from "node:https";
 import path from "node:path";
-import { codexNpmPackageName } from "../shared/codexSetup.js";
+import { Readable, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { codexNpmPackageName, findNpmCommand } from "../shared/codexSetup.js";
 import { assetDigestSha256, releaseVersionLabel, safeAssetFileName, selectFrontReleaseAsset } from "../shared/updateAssets.js";
 import { displayVersion, updateAvailable, versionLabelForResult } from "../shared/versionUtils.js";
 
@@ -20,7 +22,40 @@ function updateCheckError(error) {
   return String(error?.message || error || "Update check failed");
 }
 
-function fetchJson(url, appVersion, timeoutMs = 6500) {
+const updateHosts = new Set([
+  "api.github.com", "github.com", "raw.githubusercontent.com", "registry.npmjs.org",
+  "release-assets.githubusercontent.com", "objects.githubusercontent.com"
+]);
+
+export function assertUpdateUrl(value) {
+  const url = new URL(value);
+  if (url.protocol !== "https:" || url.username || url.password || !updateHosts.has(url.hostname)) {
+    throw new Error("Update URL blocked: expected an official HTTPS update host");
+  }
+  return url.toString();
+}
+
+export function assertUpdateDigest(value) {
+  const digest = String(value || "").trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(digest)) {
+    throw new Error("This release has no valid SHA-256 digest. Open the release page to install it manually.");
+  }
+  return digest;
+}
+
+export async function verifyUpdateFile(filePath, expectedSha256, expectedBytes = null) {
+  const expected = assertUpdateDigest(expectedSha256);
+  const hash = createHash("sha256");
+  let bytes = 0;
+  for await (const chunk of createReadStream(filePath)) { hash.update(chunk); bytes += chunk.length; }
+  if (hash.digest("hex") !== expected) throw new Error("Downloaded update checksum mismatch");
+  if (expectedBytes != null && bytes !== expectedBytes) throw new Error("Downloaded update size mismatch");
+  return { path: filePath, bytes, sha256: expected };
+}
+
+async function fetchJson(url, appVersion, timeoutMs = 6500, redirects = 0) {
+  assertUpdateUrl(url);
+  if (redirects > 5) return Promise.reject(new Error("Too many update redirects"));
   return new Promise((resolve, reject) => {
     const request = https.get(url, {
       headers: {
@@ -31,7 +66,7 @@ function fetchJson(url, appVersion, timeoutMs = 6500) {
     }, (response) => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         response.resume();
-        fetchJson(new URL(response.headers.location, url).toString(), appVersion, timeoutMs).then(resolve, reject);
+        fetchJson(new URL(response.headers.location, url).toString(), appVersion, timeoutMs, redirects + 1).then(resolve, reject);
         return;
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -41,7 +76,11 @@ function fetchJson(url, appVersion, timeoutMs = 6500) {
       }
       let raw = "";
       response.setEncoding("utf8");
-      response.on("data", (chunk) => { raw += chunk; });
+      response.on("error", reject);
+      response.on("data", (chunk) => {
+        raw += chunk;
+        if (raw.length > 2_000_000) request.destroy(new Error("Update metadata is too large"));
+      });
       response.on("end", () => {
         try {
           resolve(JSON.parse(raw));
@@ -57,77 +96,63 @@ function fetchJson(url, appVersion, timeoutMs = 6500) {
   });
 }
 
-function downloadFile(url, targetPath, appVersion, options = {}) {
-  const expectedSha256 = String(options.expectedSha256 || "").trim().toLowerCase();
+export async function downloadUpdateFile(url, targetPath, appVersion, options = {}) {
+  const expectedSha256 = assertUpdateDigest(options.expectedSha256);
   const onProgress = typeof options.onProgress === "function" ? options.onProgress : null;
   const timeoutMs = Math.max(30_000, Number(options.timeoutMs) || 10 * 60_000);
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const fail = (error) => {
-      if (settled) return;
-      settled = true;
-      fs.unlink(targetPath).catch(() => {});
-      reject(error);
-    };
-
-    const request = https.get(url, {
-      headers: {
-        Accept: "application/octet-stream",
-        "User-Agent": `Codex-Messenger/${appVersion}`
-      },
-      timeout: timeoutMs
-    }, (response) => {
-      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        response.resume();
-        downloadFile(new URL(response.headers.location, url).toString(), targetPath, appVersion, options).then(resolve, reject);
-        return;
-      }
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        response.resume();
-        fail(new Error(`Download failed with HTTP ${response.statusCode}`));
-        return;
-      }
-
-      const hash = createHash("sha256");
-      const file = createWriteStream(targetPath);
-      let bytes = 0;
-      const total = Number(response.headers["content-length"]) || 0;
-      let lastProgressAt = 0;
-      let lastPercent = -1;
-      onProgress?.({ phase: "download", transferred: 0, total, percent: total > 0 ? 0 : null });
-      response.on("data", (chunk) => {
-        bytes += chunk.length;
-        hash.update(chunk);
-        const percent = total > 0 ? Math.min(99, Math.floor((bytes / total) * 100)) : null;
-        const now = Date.now();
-        if (onProgress && (percent !== lastPercent || now - lastProgressAt > 700)) {
-          lastProgressAt = now;
-          lastPercent = percent;
-          onProgress({ phase: "download", transferred: bytes, total, percent });
-        }
+  const fetchImpl = options.fetchImpl || globalThis.fetch;
+  const signal = AbortSignal.timeout(timeoutMs);
+  const temporaryPath = `${targetPath}.${randomUUID()}.part`;
+  let source;
+  let currentUrl = assertUpdateUrl(url);
+  try {
+    let response;
+    for (let redirects = 0; redirects <= 5; redirects += 1) {
+      response = await fetchImpl(currentUrl, {
+        headers: { Accept: "application/octet-stream", "User-Agent": `Codex-Messenger/${appVersion}` },
+        redirect: "manual", signal
       });
-      response.on("error", fail);
-      file.on("error", fail);
-      file.on("finish", () => {
-        file.close(() => {
-          if (settled) return;
-          const sha256 = hash.digest("hex");
-          if (expectedSha256 && sha256 !== expectedSha256) {
-            fail(new Error(`Downloaded update checksum mismatch: expected ${expectedSha256}, got ${sha256}`));
-            return;
-          }
-          onProgress?.({ phase: "download", transferred: bytes, total: total || bytes, percent: 100 });
-          settled = true;
-          resolve({ path: targetPath, bytes, sha256 });
-        });
-      });
-      response.pipe(file);
-    });
-    request.on("timeout", () => {
-      request.destroy(new Error("Update download timeout"));
-    });
-    request.on("error", fail);
-  });
+      if (response.status >= 300 && response.status < 400 && response.headers.get("location")) {
+        await response.body?.cancel();
+        currentUrl = assertUpdateUrl(new URL(response.headers.get("location"), currentUrl).toString());
+        if (redirects === 5) throw new Error("Too many update redirects");
+        continue;
+      }
+      break;
+    }
+    if (!response.ok || !response.body) throw new Error(`Download failed with HTTP ${response.status}`);
+    const hash = createHash("sha256");
+    let bytes = 0;
+    const total = Number(response.headers.get("content-length")) || 0;
+    let lastProgressAt = 0;
+    let lastPercent = -1;
+    onProgress?.({ phase: "download", transferred: 0, total, percent: total > 0 ? 0 : null });
+    const progress = new Transform({ transform(chunk, _encoding, callback) {
+      bytes += chunk.length;
+      hash.update(chunk);
+      const percent = total > 0 ? Math.min(99, Math.floor((bytes / total) * 100)) : null;
+      const now = Date.now();
+      if (onProgress && (percent !== lastPercent || now - lastProgressAt > 700)) {
+        lastProgressAt = now; lastPercent = percent;
+        onProgress({ phase: "download", transferred: bytes, total, percent });
+      }
+      callback(null, chunk);
+    } });
+    source = Readable.fromWeb(response.body);
+    await pipeline(source, progress, createWriteStream(temporaryPath, { flags: "wx", mode: 0o600 }), { signal });
+    const sha256 = hash.digest("hex");
+    if (sha256 !== expectedSha256) throw new Error("Downloaded update checksum mismatch");
+    if ((total && total !== bytes) || (options.expectedBytes != null && options.expectedBytes !== bytes)) {
+      throw new Error("Downloaded update size mismatch");
+    }
+    await fs.rename(temporaryPath, targetPath);
+    onProgress?.({ phase: "download", transferred: bytes, total: total || bytes, percent: 100 });
+    return { path: targetPath, bytes, sha256 };
+  } catch (error) {
+    source?.destroy();
+    await fs.unlink(temporaryPath).catch(() => {});
+    throw error;
+  }
 }
 
 function formatCommandForDisplay(command, args = []) {
@@ -166,16 +191,16 @@ function runUpdateCommand(command, args = [], { cwd, timeoutMs = 5 * 60_000 } = 
       reject(new Error(`${formatCommandForDisplay(command, args)} timed out`));
     }, timeoutMs);
     child.stdout.on("data", (chunk) => {
-      stdout += chunk.toString();
+      stdout = (stdout + chunk.toString()).slice(-64_000);
     });
     child.stderr.on("data", (chunk) => {
-      stderr += chunk.toString();
+      stderr = (stderr + chunk.toString()).slice(-64_000);
     });
     child.on("error", (error) => {
       clearTimeout(timeout);
       reject(error);
     });
-    child.on("exit", (code) => {
+    child.on("close", (code) => {
       clearTimeout(timeout);
       if (code === 0) {
         resolve({ stdout, stderr });
@@ -267,6 +292,82 @@ export function windowsUpdateInstallerLaunch({ scriptPath, appPid, installerPath
   };
 }
 
+export function macUpdateInstallerScript(expectedTeamId) {
+  if (!/^[A-Z0-9]{5,20}$/.test(expectedTeamId || "")) throw new Error("A valid signing team is required for automatic updates");
+  return `#!/bin/zsh
+set -euo pipefail
+APP_PID="$1"
+DMG_PATH="$2"
+TARGET_APP="$3"
+LOG_PATH="$4"
+EXPECTED_TEAM_ID="${expectedTeamId}"
+exec >> "$LOG_PATH" 2>&1
+while kill -0 "$APP_PID" 2>/dev/null; do /bin/sleep 0.25; done
+MOUNT_DIR="$(/usr/bin/mktemp -d /tmp/codex-messenger-update.XXXXXX)"
+TARGET_PARENT="$(/usr/bin/dirname "$TARGET_APP")"
+TMP_TARGET="$TARGET_PARENT/.Codex Messenger.app.update.$$"
+BACKUP_TARGET="$TARGET_PARENT/.Codex Messenger.app.backup.$$"
+COMMITTED=0
+BACKED_UP=0
+INSTALLED=0
+cleanup() {
+  RESULT=$?
+  trap - EXIT HUP INT TERM
+  if [[ "$COMMITTED" != "1" && "$BACKED_UP" == "1" ]]; then
+    if [[ "$INSTALLED" == "1" ]]; then /bin/rm -rf "$TARGET_APP"; fi
+    /bin/mv "$BACKUP_TARGET" "$TARGET_APP" || echo "Rollback failed; previous app remains at $BACKUP_TARGET"
+  fi
+  /bin/rm -rf "$TMP_TARGET"
+  if [[ "$COMMITTED" == "1" ]]; then /bin/rm -rf "$BACKUP_TARGET"; fi
+  /usr/bin/hdiutil detach "$MOUNT_DIR" -quiet >/dev/null 2>&1 || true
+  /bin/rmdir "$MOUNT_DIR" >/dev/null 2>&1 || true
+  if [[ "$RESULT" != "0" && -d "$TARGET_APP" ]]; then /usr/bin/open "$TARGET_APP" >/dev/null 2>&1 || true; fi
+  exit "$RESULT"
+}
+trap cleanup EXIT
+trap 'exit 1' HUP INT TERM
+[[ ! -e "$TMP_TARGET" && ! -e "$BACKUP_TARGET" ]] || { echo "An earlier update must be recovered before replacing the app"; exit 1; }
+/usr/bin/hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_DIR" -nobrowse -readonly -quiet
+APP_SOURCE="$MOUNT_DIR/Codex Messenger.app"
+[[ -d "$APP_SOURCE" ]] || { echo "Codex Messenger.app missing from update"; exit 1; }
+/usr/bin/codesign --verify --deep --strict "$APP_SOURCE"
+SOURCE_TEAM="$(/usr/bin/codesign -dv --verbose=4 "$APP_SOURCE" 2>&1 | /usr/bin/sed -n 's/^TeamIdentifier=//p')"
+[[ "$SOURCE_TEAM" == "$EXPECTED_TEAM_ID" ]] || { echo "Update signing team mismatch"; exit 1; }
+/usr/bin/codesign --verify --strict -R 'identifier "com.codex.messenger"' "$APP_SOURCE"
+/usr/sbin/spctl --assess --type execute "$APP_SOURCE"
+/usr/bin/ditto "$APP_SOURCE" "$TMP_TARGET"
+/usr/bin/codesign --verify --deep --strict "$TMP_TARGET"
+/bin/mv "$TARGET_APP" "$BACKUP_TARGET"
+BACKED_UP=1
+/bin/mv "$TMP_TARGET" "$TARGET_APP"
+INSTALLED=1
+/usr/bin/open "$TARGET_APP"
+COMMITTED=1
+`;
+}
+
+export function windowsInstallerSignatureCommand(installerPath, appExe) {
+  const quote = (value) => `'${String(value).replace(/'/g, "''")}'`;
+  return {
+    command: "powershell.exe",
+    args: ["-NoProfile", "-NonInteractive", "-Command", [
+      "$ErrorActionPreference = 'Stop'",
+      `$installed = Get-AuthenticodeSignature -LiteralPath ${quote(appExe)}`,
+      `$update = Get-AuthenticodeSignature -LiteralPath ${quote(installerPath)}`,
+      "if ($installed.Status -ne 'Valid' -or $update.Status -ne 'Valid') { throw 'A signed installed app and update are required for automatic updates. Install this update from the release page manually.' }",
+      "if ($installed.SignerCertificate.Subject -ne $update.SignerCertificate.Subject) { throw 'Update signing publisher mismatch' }"
+    ].join("; ")]
+  };
+}
+
+export function launchUpdateInstaller(command, args, options = {}, spawnImpl = spawn) {
+  return new Promise((resolve, reject) => {
+    const child = spawnImpl(command, args, { detached: true, stdio: "ignore", ...options });
+    child.once("error", reject);
+    child.once("spawn", () => { child.unref(); resolve(); });
+  });
+}
+
 export function createUpdateService({
   app,
   shell,
@@ -280,6 +381,8 @@ export function createUpdateService({
   let updateCheckCache = null;
   let updateCheckPromise = null;
   let pendingFrontUpdate = null;
+  let frontInstallPromise = null;
+  let codexInstallPromise = null;
   const appVersion = () => app.getVersion();
 
   async function latestFrontRelease() {
@@ -292,7 +395,7 @@ export function createUpdateService({
     const [bundlePath] = process.execPath.split(marker);
     return bundlePath && bundlePath.endsWith(".app")
       ? bundlePath
-      : path.join("/Applications", "Codex Messenger.app");
+      : "";
   }
 
   async function checkFrontUpdate() {
@@ -374,7 +477,7 @@ export function createUpdateService({
     if (!force && updateCheckCache && now - updateCheckCache.checkedAtMs < updateCheckCacheMs) {
       return updateCheckCache.payload;
     }
-    if (!force && updateCheckPromise) return updateCheckPromise;
+    if (updateCheckPromise) return updateCheckPromise;
 
     updateCheckPromise = Promise.all([checkFrontUpdate(), checkCodexUpdate()])
       .then(([front, codex]) => {
@@ -392,8 +495,10 @@ export function createUpdateService({
     return updateCheckPromise;
   }
 
-  async function installCodexUpdate() {
-    const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+  async function performCodexUpdate() {
+    const npm = await findNpmCommand();
+    if (!npm.ok || !npm.command) throw new Error(npm.error || "npm was not found. Install Node.js/npm first.");
+    const npmCommand = npm.command;
     const args = ["install", "-g", `${codexNpmPackageName}@latest`];
     const command = formatCommandForDisplay("npm", args);
     sendProgress({ target: "codex", phase: "checking", indeterminate: true, message: "Verification de la version Codex app-server..." });
@@ -410,20 +515,27 @@ export function createUpdateService({
         ? `Codex app-server update command finished, but detected version is still ${currentLabel}.`
         : `Codex app-server is up to date (${currentLabel}).`;
     const result = {
-      ok: true,
+      ok: !after.error && !after.updateAvailable && Boolean(after.currentVersion),
       target: "codex",
       command,
       before,
       after,
       message,
-      needsRestart: true,
+      needsRestart: !after.error && !after.updateAvailable && Boolean(after.currentVersion),
       output: compactUpdateOutput(output.stdout, output.stderr)
     };
-    sendProgress({ target: "codex", phase: "ready", percent: 100, needsRestart: true, message });
+    sendProgress({ target: "codex", phase: result.ok ? "ready" : "error", percent: 100, needsRestart: result.ok, message });
     return result;
   }
 
+  function installCodexUpdate() {
+    if (!codexInstallPromise) codexInstallPromise = performCodexUpdate().finally(() => { codexInstallPromise = null; });
+    return codexInstallPromise;
+  }
+
   async function scheduleWindowsInstaller(installerPath, latestVersion) {
+    const signatureCheck = windowsInstallerSignatureCommand(installerPath, process.execPath);
+    await runUpdateCommand(signatureCheck.command, signatureCheck.args);
     const updateDir = path.join(app.getPath("userData"), "updates");
     await fs.mkdir(updateDir, { recursive: true });
     const scriptPath = path.join(updateDir, "install-codex-messenger-update.cmd");
@@ -437,12 +549,7 @@ export function createUpdateService({
       installerPath,
       appExe
     });
-    const child = spawn(launch.command, launch.args, {
-      detached: true,
-      windowsHide: false,
-      stdio: "ignore"
-    });
-    child.unref();
+    await launchUpdateInstaller(launch.command, launch.args, { windowsHide: false });
     logDebug("update.front.installer.scheduled", {
       platform: "win32",
       installerPath,
@@ -472,48 +579,25 @@ export function createUpdateService({
     const scriptPath = path.join(updateDir, "install-codex-messenger-update.zsh");
     const logPath = path.join(updateDir, "install-codex-messenger-update.log");
     const targetApp = currentMacAppBundlePath();
-    const script = `#!/bin/zsh
-set -euo pipefail
-APP_PID="$1"
-DMG_PATH="$2"
-TARGET_APP="$3"
-LOG_PATH="$4"
-exec >> "$LOG_PATH" 2>&1
-echo "Installing Codex Messenger update at $(date)"
-while kill -0 "$APP_PID" 2>/dev/null; do
-  sleep 0.25
-done
-MOUNT_DIR="$(mktemp -d /tmp/codex-messenger-update.XXXXXX)"
-cleanup() {
-  hdiutil detach "$MOUNT_DIR" -quiet >/dev/null 2>&1 || true
-  rmdir "$MOUNT_DIR" >/dev/null 2>&1 || true
-}
-trap cleanup EXIT
-hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_DIR" -nobrowse -readonly -quiet
-APP_SOURCE="$MOUNT_DIR/Codex Messenger.app"
-if [[ ! -d "$APP_SOURCE" ]]; then
-  APP_SOURCE="$(find "$MOUNT_DIR" -maxdepth 2 -name "Codex Messenger.app" -type d -print -quit)"
-fi
-if [[ -z "$APP_SOURCE" || ! -d "$APP_SOURCE" ]]; then
-  echo "Codex Messenger.app not found in mounted update."
-  exit 1
-fi
-TARGET_PARENT="$(dirname "$TARGET_APP")"
-TMP_TARGET="$TARGET_PARENT/.Codex Messenger.app.update.$$"
-rm -rf "$TMP_TARGET"
-ditto "$APP_SOURCE" "$TMP_TARGET"
-rm -rf "$TARGET_APP"
-mv "$TMP_TARGET" "$TARGET_APP"
-xattr -dr com.apple.quarantine "$TARGET_APP" >/dev/null 2>&1 || true
-open "$TARGET_APP"
-`;
+    let signingTeam = "";
+    try {
+      if (!targetApp) throw new Error("Installed app bundle unavailable");
+      await runUpdateCommand("/usr/bin/codesign", ["--verify", "--deep", "--strict", targetApp]);
+      const identity = await runUpdateCommand("/usr/bin/codesign", ["-dv", "--verbose=4", targetApp]);
+      signingTeam = [identity.stdout, identity.stderr].join("\n").match(/^TeamIdentifier=([A-Z0-9]{5,20})$/m)?.[1] || "";
+    } catch (error) {
+      logDebug("update.front.manual.required", { error: updateCheckError(error) });
+    }
+    if (!signingTeam) {
+      const openError = await shell.openPath(dmgPath);
+      if (openError) throw new Error(openError);
+      return { quitStarted: false, needsRestart: false, manualInstall: true,
+        message: `Mise a jour ${latestVersion} verifiee et DMG ouvert. Cette app n'a pas de signature editeur verifiable; installe la mise a jour manuellement.` };
+    }
+    const script = macUpdateInstallerScript(signingTeam);
     await fs.writeFile(scriptPath, script, { encoding: "utf8", mode: 0o755 });
     await fs.chmod(scriptPath, 0o755);
-    const child = spawn("/bin/zsh", [scriptPath, String(process.pid), dmgPath, targetApp, logPath], {
-      detached: true,
-      stdio: "ignore"
-    });
-    child.unref();
+    await launchUpdateInstaller("/bin/zsh", [scriptPath, String(process.pid), dmgPath, targetApp, logPath]);
     logDebug("update.front.installer.scheduled", { platform: "darwin", dmgPath, targetApp, scriptPath, latestVersion });
     setTimeout(() => quitApplication(), 500);
     return {
@@ -539,7 +623,7 @@ open "$TARGET_APP"
       throw new Error("Aucune mise a jour Codex Messenger n'est prete a installer.");
     }
     const pending = pendingFrontUpdate;
-    await fs.access(pending.filePath);
+    await verifyUpdateFile(pending.filePath, pending.sha256, pending.bytes);
     const message = `Installation de la mise a jour ${pending.latestVersion}. Codex Messenger va se fermer puis se relancer.`;
     logDebug("update.front.apply.requested", {
       latestVersion: pending.latestVersion,
@@ -567,7 +651,8 @@ open "$TARGET_APP"
       bytes: pending.bytes,
       sha256: pending.sha256,
       quitStarted: launch.quitStarted,
-      needsRestart: !launch.quitStarted,
+      needsRestart: launch.needsRestart ?? !launch.quitStarted,
+      manualInstall: Boolean(launch.manualInstall),
       message: launch.message || message
     };
   }
@@ -583,10 +668,11 @@ open "$TARGET_APP"
     };
   }
 
-  async function installFrontUpdate() {
+  async function performFrontUpdate() {
     pendingFrontUpdate = null;
     sendProgress({ target: "front", phase: "checking", indeterminate: true, message: "Verification de la version Codex Messenger..." });
     const before = await checkFrontUpdate();
+    if (before.error && !before.latestVersion) throw new Error(before.error);
     if (!before.updateAvailable) {
       const result = {
         ok: true,
@@ -610,10 +696,11 @@ open "$TARGET_APP"
     const updateDir = path.join(app.getPath("userData"), "updates");
     await fs.mkdir(updateDir, { recursive: true });
     const targetPath = path.join(updateDir, safeAssetFileName(asset.name));
-    const expectedSha256 = assetDigestSha256(asset);
+    const expectedSha256 = assertUpdateDigest(assetDigestSha256(asset));
     sendProgress({ target: "front", phase: "download", percent: 0, assetName: asset.name, latestVersion, message: `Telechargement de ${asset.name}...` });
-    const download = await downloadFile(asset.browser_download_url, targetPath, appVersion(), {
+    const download = await downloadUpdateFile(asset.browser_download_url, targetPath, appVersion(), {
       expectedSha256,
+      expectedBytes: Number.isSafeInteger(asset.size) ? asset.size : null,
       timeoutMs: 15 * 60_000,
       onProgress: (progress) => sendProgress({
         target: "front",
@@ -685,11 +772,17 @@ open "$TARGET_APP"
       bytes: download.bytes,
       sha256: download.sha256,
       quitStarted: launch.quitStarted,
-      needsRestart: !launch.quitStarted,
+      needsRestart: launch.needsRestart ?? !launch.quitStarted,
+      manualInstall: Boolean(launch.manualInstall),
       message: launch.message
     };
-    sendProgress({ target: "front", phase: launch.quitStarted ? "restarting" : "ready", percent: 100, assetName: asset.name, latestVersion, needsRestart: !launch.quitStarted, quitStarted: launch.quitStarted, message: launch.message });
+    sendProgress({ target: "front", phase: launch.quitStarted ? "restarting" : "ready", percent: 100, assetName: asset.name, latestVersion, needsRestart: result.needsRestart, quitStarted: launch.quitStarted, message: launch.message });
     return result;
+  }
+
+  function installFrontUpdate() {
+    if (!frontInstallPromise) frontInstallPromise = performFrontUpdate().finally(() => { frontInstallPromise = null; });
+    return frontInstallPromise;
   }
 
   return {

@@ -1,0 +1,18 @@
+# Validation runtime: codex-cli 0.156.1
+# Started UTC: 2026-09-23T14:24:25.627Z
+# Finished UTC: 2026-09-23T14:24:26.052Z
+# Native Node: v24.19.0
+# Runtime SHA256: 0196e89fe5a7598f816ee54232c3d7c26d75e502ab5cfe2c9240e81d90f7255a
+# Client SHA256: 7c74d05a78a273c0ec98010c5f86c7e143e1876bd9d57ccfac4937b52def16de
+# Fixture: tests/codexLiveContract.test.mjs
+✔ actual 0.156.1 binary: discovery, metadata and unmaterialized history capability (363.063458ms)
+ℹ Unmaterialized-history response: -32600: thread 01a0cea7-4ced-79f2-9bcc-37eed2471924 is not materialized yet; thread/turns/list is unavailable before first user message
+ℹ History is unavailable for this unmaterialized thread; metadata reads work.
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 378.437875

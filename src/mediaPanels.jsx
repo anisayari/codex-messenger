@@ -22,7 +22,7 @@ const formatIcons = {
 
 export function Tool({ icon, label, onClick, active = false }) {
   return (
-    <button className={active ? `tool ${icon} active` : `tool ${icon}`} type="button" onClick={(event) => onClick?.(event)}>
+    <button className={active ? `tool ${icon} active` : `tool ${icon}`} type="button" aria-pressed={active} onClick={(event) => onClick?.(event)}>
       <span className={`tool-icon ${icon}`}><img src={toolbarIcons[icon]} alt="" draggable="false" /></span>
       <span>{label}</span>
     </button>
@@ -31,7 +31,7 @@ export function Tool({ icon, label, onClick, active = false }) {
 
 export function FormatButton({ icon, title, onClick, label, active = false }) {
   return (
-    <button className={`${label ? "format-button wide" : "format-button"}${active ? " active" : ""}`} type="button" title={title} onClick={(event) => onClick?.(event)}>
+    <button className={`${label ? "format-button wide" : "format-button"}${active ? " active" : ""}`} type="button" title={title} aria-label={title} aria-pressed={active} onClick={(event) => onClick?.(event)}>
       <img src={formatIcons[icon]} alt="" draggable="false" />
       {label ? <span>{label}</span> : null}
     </button>
@@ -47,17 +47,17 @@ function PopupPanel({ title, children }) {
   );
 }
 
-export function InvitePanel({ contact, onRun, onOpenProject, AvatarComponent, statusCopy = {} }) {
+export function InvitePanel({ contact, onOpenProject, onFork, canFork, AvatarComponent, statusCopy = {} }) {
   const statusText = statusCopy[contact.status] ?? contact.status ?? "En ligne";
   return (
-    <PopupPanel title="Invite">
+    <PopupPanel title="Conversation">
       <div className="popup-contact-row">
         {AvatarComponent ? <AvatarComponent contact={contact} /> : null}
         <div><strong>{contact.name}</strong><span>{statusText}</span></div>
       </div>
+      <p className="popup-note">Une conversation Codex contient un fil de travail. Les invitations de groupe MSN ne sont pas disponibles dans ce client.</p>
       <div className="popup-command-list">
-        <button type="button" onClick={() => onRun(`Invite ${contact.name} dans cette conversation Codex et resume son role.`)}>Inviter dans la conversation</button>
-        <button type="button" onClick={() => onRun(`Resume le role de ${contact.name}, puis propose la prochaine action concrete.`)}>Resume le contact</button>
+        <button type="button" onClick={onFork} disabled={!canFork}>Dupliquer ce fil Codex</button>
         <button type="button" onClick={onOpenProject} disabled={!contact.cwd}>Ouvrir le projet</button>
       </div>
     </PopupPanel>
@@ -66,9 +66,10 @@ export function InvitePanel({ contact, onRun, onOpenProject, AvatarComponent, st
 
 export function FilesPanel({ onSendFile, onCamera, onOpenProject, canOpenProject }) {
   return (
-    <PopupPanel title="Send Files">
+    <PopupPanel title="Pièces jointes">
+      <p className="popup-note">Images transmises à Codex; autres fichiers référencés par leur chemin local. Glissez un fichier dans le message pour le préparer.</p>
       <div className="popup-command-list">
-        <button type="button" onClick={onSendFile}>Envoyer un fichier ou une image...</button>
+        <button type="button" onClick={onSendFile}>Joindre un fichier ou une image…</button>
         <button type="button" onClick={onCamera}>Capture webcam...</button>
         <button type="button" onClick={onOpenProject} disabled={!canOpenProject}>Ouvrir le dossier projet</button>
       </div>
@@ -79,9 +80,10 @@ export function FilesPanel({ onSendFile, onCamera, onOpenProject, canOpenProject
 export function VoicePanel({ recording, mediaError, onToggle }) {
   return (
     <PopupPanel title="Voice Clip">
+      <p className="popup-note">Clip local de 15 secondes maximum. Ce bouton ne crée pas d’appel ni de transcription Codex.</p>
       <div className="popup-command-list">
         <button className={recording ? "recording" : ""} type="button" onClick={onToggle}>
-          {recording ? "Arreter et envoyer" : "Demarrer l'enregistrement"}
+          {recording ? "Arrêter et conserver le clip" : "Enregistrer un clip local"}
         </button>
       </div>
       {mediaError ? <p className="popup-error">{mediaError}</p> : null}
@@ -179,7 +181,7 @@ export function CameraPanel({ videoRef, cameraStream, mediaError, onSnapshot, on
     <div className="media-panel camera-panel">
       <video ref={videoRef} autoPlay muted playsInline />
       <div className="media-actions">
-        <button type="button" onClick={onSnapshot} disabled={!cameraStream}>Snapshot</button>
+        <button type="button" onClick={onSnapshot} disabled={!cameraStream}>Joindre la photo</button>
         <button type="button" onClick={onStop} disabled={!cameraStream}>Stop</button>
       </div>
       {mediaError ? <p>{mediaError}</p> : null}
@@ -187,11 +189,12 @@ export function CameraPanel({ videoRef, cameraStream, mediaError, onSnapshot, on
   );
 }
 
-export function ActivitiesPanel({ winks, sounds, prompts, onRun, onSendWink, onAskWink, onPreviewSound }) {
+export function ActivitiesPanel({ winks, sounds, prompts, onRun, onSendWink, onPreviewSound }) {
   return (
     <div className="activities-panel">
       <section className="activity-section">
         <h3>Clins d'oeil</h3>
+        <p className="popup-note">Les clins d’œil Flash d’origine sont conservés comme miniatures. Le marqueur est transmis dans le message.</p>
         <div className="wink-grid">
           {winks.map((wink) => (
             <button type="button" key={wink.id} onClick={() => onSendWink(wink)}>
@@ -200,9 +203,6 @@ export function ActivitiesPanel({ winks, sounds, prompts, onRun, onSendWink, onA
             </button>
           ))}
         </div>
-        <button className="activity-command" type="button" onClick={() => onAskWink(winks[Math.floor(Math.random() * winks.length)])}>
-          Demander a Codex
-        </button>
       </section>
       <section className="activity-section">
         <h3>Sons MSN</h3>
@@ -222,31 +222,28 @@ export function ActivitiesPanel({ winks, sounds, prompts, onRun, onSendWink, onA
   );
 }
 
-export function EmoticonsPanel({ emoticons, animatedEmoticons, onInsert }) {
-  return (
-    <div className="emoticons-panel">
-      <section className="activity-section">
-        <h3>Emoticones MSN 7.5</h3>
-        <div className="emoticon-grid">
-          {emoticons.map((emoticon) => (
-            <button type="button" key={emoticon.id} title={`${emoticon.label} ${emoticon.code}`} onClick={() => onInsert(emoticon)}>
-              <img src={emoticon.src} alt="" draggable="false" />
-              <span>{emoticon.code}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-      <section className="activity-section">
-        <h3>Emoticones animees</h3>
-        <div className="emoticon-grid animated">
-          {animatedEmoticons.map((emoticon) => (
-            <button type="button" key={emoticon.id} title={`${emoticon.label} ${emoticon.code}`} onClick={() => onInsert(emoticon)}>
-              <img src={emoticon.src} alt="" draggable="false" />
-              <span>{emoticon.code}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+export function EmoticonsPanel({ emoticons, onInsert }) {
+  return <div className="emoticons-panel"><section className="activity-section">
+    <h3>Émoticônes MSN originales</h3><div className="emoticon-grid">
+      {emoticons.map((emoticon) => <button type="button" key={emoticon.id} title={emoticon.label + " " + emoticon.code} aria-label={emoticon.label + " " + emoticon.code} onClick={() => onInsert(emoticon)}><img src={emoticon.src} alt="" draggable="false" /><span>{emoticon.code}</span></button>)}
     </div>
+  </section></div>;
+}
+
+export function BackgroundsPanel({ backgrounds, selectedId, onSelect }) {
+  return (
+    <PopupPanel title="Arrière-plans MSN 7.5">
+      <button className="background-reset" type="button" aria-pressed={!selectedId} onClick={() => onSelect("")}>Sans arrière-plan</button>
+      <div className="msn-background-grid">
+        {backgrounds.map((background) => (
+          <button type="button" key={background.id} aria-pressed={background.id === selectedId} onClick={() => onSelect(background.id)}>
+            <img src={background.src} alt="" loading="lazy" draggable="false" />
+            <strong>{background.label}</strong>
+            {background.kind === "dynamic" ? <small>Aperçu statique d’origine</small> : null}
+          </button>
+        ))}
+      </div>
+      <p className="popup-note">Les quatre fonds dynamiques utilisent leur image de compatibilité MSN d’origine. L’animation Flash n’est pas prise en charge.</p>
+    </PopupPanel>
   );
 }

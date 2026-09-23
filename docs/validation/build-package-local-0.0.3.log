@@ -1,0 +1,154 @@
+
+> codex-messenger@0.0.3 package:mac:dir
+> npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false node scripts/electron-builder-release-version.mjs --mac dir -c.directories.output=release/macos --arm64 --publish never
+
+
+> codex-messenger@0.0.3 build
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 2163 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                         1.93 kB │ gzip:   0.91 kB
+dist/assets/KaTeX_Size3-Regular-CTq5MqoE.woff           4.42 kB
+dist/assets/KaTeX_Size4-Regular-Dl5lxZxV.woff2          4.93 kB
+dist/assets/KaTeX_Size2-Regular-Dy4dx90m.woff2          5.21 kB
+dist/assets/KaTeX_Size1-Regular-mCD8mA8B.woff2          5.47 kB
+dist/assets/KaTeX_Size4-Regular-BF-4gkZK.woff           5.98 kB
+dist/assets/KaTeX_Size2-Regular-oD1tc_U0.woff           6.19 kB
+dist/assets/KaTeX_Size1-Regular-C195tn64.woff           6.50 kB
+dist/assets/KaTeX_Caligraphic-Regular-Di6jR-x-.woff2    6.91 kB
+dist/assets/KaTeX_Caligraphic-Bold-Dq_IR9rO.woff2       6.91 kB
+dist/assets/KaTeX_Size3-Regular-DgpXs0kz.ttf            7.59 kB
+dist/assets/KaTeX_Caligraphic-Regular-CTRA-rTL.woff     7.66 kB
+dist/assets/KaTeX_Caligraphic-Bold-BEiXGLvX.woff        7.72 kB
+dist/assets/KaTeX_Script-Regular-D3wIWfF6.woff2         9.64 kB
+dist/assets/KaTeX_SansSerif-Regular-DDBCnlJ7.woff2     10.34 kB
+dist/assets/KaTeX_Size4-Regular-DWFBv043.ttf           10.36 kB
+dist/assets/KaTeX_Script-Regular-D5yQViql.woff         10.59 kB
+dist/assets/KaTeX_Fraktur-Regular-CTYiF6lA.woff2       11.32 kB
+dist/assets/KaTeX_Fraktur-Bold-CL6g_b3V.woff2          11.35 kB
+dist/assets/KaTeX_Size2-Regular-B7gKUWhC.ttf           11.51 kB
+dist/assets/KaTeX_SansSerif-Italic-C3H0VqGB.woff2      12.03 kB
+dist/assets/KaTeX_SansSerif-Bold-D1sUS0GD.woff2        12.22 kB
+dist/assets/KaTeX_Size1-Regular-Dbsnue_I.ttf           12.23 kB
+dist/assets/KaTeX_SansSerif-Regular-CS6fqUqJ.woff      12.32 kB
+dist/assets/KaTeX_Caligraphic-Regular-wX97UBjC.ttf     12.34 kB
+dist/assets/KaTeX_Caligraphic-Bold-ATXxdsX0.ttf        12.37 kB
+dist/assets/KaTeX_Fraktur-Regular-Dxdc4cR9.woff        13.21 kB
+dist/assets/KaTeX_Fraktur-Bold-BsDP51OF.woff           13.30 kB
+dist/assets/KaTeX_Typewriter-Regular-CO6r4hn1.woff2    13.57 kB
+dist/assets/KaTeX_SansSerif-Italic-DN2j7dab.woff       14.11 kB
+dist/assets/KaTeX_SansSerif-Bold-DbIhKOiC.woff         14.41 kB
+dist/assets/KaTeX_Typewriter-Regular-C0xS9mPB.woff     16.03 kB
+dist/assets/KaTeX_Math-BoldItalic-CZnvNsCZ.woff2       16.40 kB
+dist/assets/KaTeX_Math-Italic-t53AETM-.woff2           16.44 kB
+dist/assets/KaTeX_Script-Regular-C5JkGWo-.ttf          16.65 kB
+dist/assets/KaTeX_Main-BoldItalic-DxDJ3AOS.woff2       16.78 kB
+dist/assets/KaTeX_Main-Italic-NWA7e6Wa.woff2           16.99 kB
+dist/assets/KaTeX_Math-BoldItalic-iY-2wyZ7.woff        18.67 kB
+dist/assets/KaTeX_Math-Italic-DA0__PXp.woff            18.75 kB
+dist/assets/KaTeX_Main-BoldItalic-SpSLRI95.woff        19.41 kB
+dist/assets/KaTeX_SansSerif-Regular-BNo7hRIc.ttf       19.44 kB
+dist/assets/KaTeX_Fraktur-Regular-CB_wures.ttf         19.57 kB
+dist/assets/KaTeX_Fraktur-Bold-BdnERNNW.ttf            19.58 kB
+dist/assets/KaTeX_Main-Italic-BMLOBm91.woff            19.68 kB
+dist/assets/KaTeX_SansSerif-Italic-YYjJ1zSn.ttf        22.36 kB
+dist/assets/KaTeX_SansSerif-Bold-CFMepnvq.ttf          24.50 kB
+dist/assets/KaTeX_Main-Bold-Cx986IdX.woff2             25.32 kB
+dist/assets/KaTeX_Main-Regular-B22Nviop.woff2          26.27 kB
+dist/assets/KaTeX_Typewriter-Regular-D3Ib7_Hf.ttf      27.56 kB
+dist/assets/KaTeX_AMS-Regular-BQhdFMY1.woff2           28.08 kB
+dist/assets/KaTeX_Main-Bold-Jm3AIy58.woff              29.91 kB
+dist/assets/KaTeX_Main-Regular-Dr94JaBh.woff           30.77 kB
+dist/assets/KaTeX_Math-BoldItalic-B3XSjfu4.ttf         31.20 kB
+dist/assets/KaTeX_Math-Italic-flOr_0UB.ttf             31.31 kB
+dist/assets/KaTeX_Main-BoldItalic-DzxPMmG6.ttf         32.97 kB
+dist/assets/KaTeX_AMS-Regular-DMm9YOAa.woff            33.52 kB
+dist/assets/KaTeX_Main-Italic-3WenGoN9.ttf             33.58 kB
+dist/assets/KaTeX_Main-Bold-waoOVXN0.ttf               51.34 kB
+dist/assets/KaTeX_Main-Regular-ypZvNtVU.ttf            53.58 kB
+dist/assets/KaTeX_AMS-Regular-DRggAlZN.ttf             63.63 kB
+dist/assets/main-CNqMJJpB.css                         125.87 kB │ gzip:  27.96 kB
+dist/assets/channel-B4MfngQG.js                         0.12 kB │ gzip:   0.13 kB
+dist/assets/init-Gi6I4Gst.js                            0.15 kB │ gzip:   0.13 kB
+dist/assets/chunk-2Q5K7J3B-CAcAbbZ6.js                  0.19 kB │ gzip:   0.16 kB
+dist/assets/chunk-JWPE2WC7-CzOX0HJq.js                  0.23 kB │ gzip:   0.17 kB
+dist/assets/chunk-XXDRQBXY-pgCXRkES.js                  0.23 kB │ gzip:   0.21 kB
+dist/assets/chunk-5VM5RSS4-2Um4TaIN.js                  0.37 kB │ gzip:   0.27 kB
+dist/assets/stateDiagram-v2-MP3YSRHH-DH7Glrs5.js        0.46 kB │ gzip:   0.32 kB
+dist/assets/classDiagram-ZZMXUADV-DKF8f-JC.js           0.49 kB │ gzip:   0.33 kB
+dist/assets/classDiagram-v2-VYDZK3BY-DKF8f-JC.js        0.49 kB │ gzip:   0.33 kB
+dist/assets/chunk-POPQ4Y6H-Cvp5QCfe.js                  0.51 kB │ gzip:   0.36 kB
+dist/assets/swimlanesDiagram-VR7AAH4N-76vYZtFW.js       0.58 kB │ gzip:   0.38 kB
+dist/assets/infoDiagram-27XIBGKW-DuUIreE6.js            0.61 kB │ gzip:   0.42 kB
+dist/assets/sizeCapture-INFHLROL-CCtmLU5R.js            0.96 kB │ gzip:   0.54 kB
+dist/assets/ordinal-Cboi1Yqb.js                         1.19 kB │ gzip:   0.57 kB
+dist/assets/railroadDiagram-O6MQD6OU-B9GBrV-Z.js        1.63 kB │ gzip:   0.77 kB
+dist/assets/abnfDiagram-VCTEODGH-DMVizn4B.js            1.84 kB │ gzip:   0.91 kB
+dist/assets/chunk-F27PBJKO-v__ULAJi.js                  1.88 kB │ gzip:   0.83 kB
+dist/assets/pegDiagram-XKGWAZYB-B2uqPTGW.js             1.98 kB │ gzip:   0.94 kB
+dist/assets/ebnfDiagram-PWID7BFC-CbKYR-V7.js            2.03 kB │ gzip:   0.89 kB
+dist/assets/index-C7xZ_IMx.js                           2.24 kB │ gzip:   1.15 kB
+dist/assets/arc-JS2V1lI8.js                             3.44 kB │ gzip:   1.49 kB
+dist/assets/diagram-Z3DM3KII-DAEPIwtB.js                4.24 kB │ gzip:   1.85 kB
+dist/assets/defaultLocale-DX6XiGOO.js                   4.69 kB │ gzip:   2.18 kB
+dist/assets/linear-BLsTTnvg.js                          5.66 kB │ gzip:   2.31 kB
+dist/assets/diagram-UQ7AKVKN-Daorr9ft.js                6.11 kB │ gzip:   2.64 kB
+dist/assets/pieDiagram-E7YTZNPT-DA0cRXse.js             6.32 kB │ gzip:   2.64 kB
+dist/assets/diagram-S7CK7UJ4-DNAx9SoU.js                8.24 kB │ gzip:   3.69 kB
+dist/assets/cynefinDiagram-5FMLGOSQ-C6o0SBpT.js        10.12 kB │ gzip:   3.65 kB
+dist/assets/stateDiagram-D77RDMKH-XFeMkqRZ.js          10.39 kB │ gzip:   3.64 kB
+dist/assets/dagre-GXQ25YYZ-C8PIEe5-.js                 10.70 kB │ gzip:   4.05 kB
+dist/assets/diagram-VSXAHHWV-B3UtkOZp.js               10.74 kB │ gzip:   4.15 kB
+dist/assets/chunk-SVP7TREG-CVrtFCnB.js                 15.74 kB │ gzip:   4.41 kB
+dist/assets/diagram-VX7I27RA-BNcxlj3w.js               15.98 kB │ gzip:   5.71 kB
+dist/assets/ishikawaDiagram-5VMMS53U-Hn7iO4nP.js       17.50 kB │ gzip:   6.66 kB
+dist/assets/kanban-definition-UXKFOSKX-CIcwPuSV.js     20.32 kB │ gzip:   7.22 kB
+dist/assets/mindmap-definition-YA3MSWOX-uwxYXLU4.js    23.20 kB │ gzip:   7.84 kB
+dist/assets/sankeyDiagram-P5KCCOFB-DmgOD_GX.js         23.23 kB │ gzip:   8.57 kB
+dist/assets/journeyDiagram-3NMN7TZE-CZDBv7Gt.js        23.60 kB │ gzip:   8.36 kB
+dist/assets/wardleyDiagram-VM6X3IG4-C6jHZN7E.js        25.53 kB │ gzip:   6.81 kB
+dist/assets/gitGraphDiagram-WWUBYQGX-DoSTD7md.js       29.44 kB │ gzip:   8.71 kB
+dist/assets/erDiagram-RLTQ6QDP-DRFjjwvO.js             30.82 kB │ gzip:  10.61 kB
+dist/assets/timeline-definition-24CTP7MA-CudigM5y.js   30.85 kB │ gzip:  10.16 kB
+dist/assets/requirementDiagram-BXWQKSXE-DK2Bh3RY.js    31.03 kB │ gzip:   9.74 kB
+dist/assets/quadrantDiagram-AXDQQJYC-GUAlsqJC.js       34.04 kB │ gzip:   9.99 kB
+dist/assets/layout-LNOi5fZs.js                         35.44 kB │ gzip:  12.75 kB
+dist/assets/chunk-IMKFNOWR-BgPP5Na9.js                 38.11 kB │ gzip:  12.53 kB
+dist/assets/blockDiagram-I7D4REHJ-BEzXbaR5.js          41.78 kB │ gzip:  13.60 kB
+dist/assets/vennDiagram-4TSXK5OY-DSVieQ7M.js           41.99 kB │ gzip:  15.71 kB
+dist/assets/xychartDiagram-S5SC5T6Z-BvKasspN.js        44.54 kB │ gzip:  12.62 kB
+dist/assets/chunk-TICWLB2K-BkjoW_7W.js                 49.21 kB │ gzip:  15.76 kB
+dist/assets/flowDiagram-HODETNUW-DZ4RLFMs.js           61.88 kB │ gzip:  19.89 kB
+dist/assets/c4Diagram-7LVT6UL2-B9Qu42RM.js             65.50 kB │ gzip:  18.80 kB
+dist/assets/ganttDiagram-EL5Y4UJY-le2UbD8W.js          69.72 kB │ gzip:  23.57 kB
+dist/assets/cose-bilkent-JH36ORCC-B0lKs1uq.js          81.73 kB │ gzip:  22.49 kB
+dist/assets/swimlanes-42K2YHIH-CMZRufGl.js            115.82 kB │ gzip:  42.53 kB
+dist/assets/sequenceDiagram-WJ2MYXX4-D1-B6AwQ.js      116.99 kB │ gzip:  31.15 kB
+dist/assets/architectureDiagram-5GKGNRK7-DaFNfSKC.js  151.85 kB │ gzip:  43.16 kB
+dist/assets/katex-HP8lGamR.js                         261.31 kB │ gzip:  77.57 kB
+dist/assets/katex-C79Zqph_.js                         261.69 kB │ gzip:  77.88 kB
+dist/assets/cytoscape.esm-BB4DxJjf.js                 443.04 kB │ gzip: 141.98 kB
+dist/assets/main-DzCYNHt8.js                          515.60 kB │ gzip: 158.46 kB
+dist/assets/mermaid.core-DIY_wYxS.js                  653.64 kB │ gzip: 158.03 kB
+dist/assets/cynefin-OW5HDTMX-Btzp-hFZ.js              688.15 kB │ gzip: 154.16 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.25s
+  • electron-builder  version=26.15.3 os=25.5.0
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=41.10.7 arch=arm64 buildFromSource=false workspaceRoot=/Users/anisayari/.codex/workspaces/codex-messenger-publish-20260923 projectDir=./ appDir=./
+  • installing native dependencies  arch=arm64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=arm64 electron=41.10.7 appOutDir=release/macos/mac-arm64
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=/Users/anisayari/.codex/workspaces/codex-messenger-publish-20260923/release/macos/mac-arm64
+  • searching for node modules  pm=npm searchDir=/Users/anisayari/.codex/workspaces/codex-messenger-publish-20260923
+  • duplicate dependency references  dependencies=["@types/d3-interpolate@3.0.4","d3-interpolate@3.0.1","d3-drag@3.0.0","d3-interpolate@3.0.1","d3-transition@3.0.1","d3-array@3.2.4","d3-dsv@3.0.1","d3-array@3.2.4","d3-interpolate@3.0.1","d3-array@3.2.4","d3-interpolate@3.0.1","d3-time-format@4.1.0","d3-time@3.1.0","d3-time@3.1.0","d3-array@3.2.4","d3-transition@3.0.1","d3-drag@3.0.0","d3-interpolate@3.0.1","d3-transition@3.0.1","d3@7.9.0","dompurify@3.4.15"]
+  • skipped macOS application code signing  reason=, see https://electron.build/code-signing CSC_IDENTITY_AUTO_DISCOVERY=false

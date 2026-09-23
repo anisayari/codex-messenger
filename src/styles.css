@@ -4218,3 +4218,52 @@ button { cursor: default; }
   .roster .toolbar-brand { display: none; }
   .contact-actions { grid-template-columns: 1fr; }
 }
+
+/* Native Messenger controls retain a visible keyboard focus. */
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 1px dotted #164b87 !important;
+  outline-offset: -3px !important;
+}
+.message:focus { outline: 2px dotted #315d94; outline-offset: -2px; }
+.popup-note { margin: 8px 0; color: #385171; font-size: 11px; line-height: 1.45; }
+.message-delivery { display: block; margin: 3px 0; color: #506680; }
+.message-delivery.error { color: #922e26; }
+.transcript-search-results { flex-shrink: 0; max-height: 130px; overflow: auto; padding: 5px 8px; background: #f5f9ff; border-bottom: 1px solid #aac0dc; font-size: 11px; }
+.transcript-search-results > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.transcript-search-results > button { display: block; width: 100%; padding: 4px; text-align: left; border: 0; background: transparent; color: #193e6a; }
+.transcript-search-results > button:hover { background: #e1efff; }
+.msn-background-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.msn-background-grid button { min-width: 0; padding: 4px; border: 1px solid #aac0db; background: #f6faff; color: #173c65; }
+.msn-background-grid button[aria-pressed="true"] { border-color: #255d9f; background: #d9ebff; box-shadow: inset 0 0 0 1px #3d7cc2; }
+.msn-background-grid img { display: block; width: 100%; height: 62px; object-fit: cover; margin-bottom: 4px; }
+.msn-background-grid strong, .msn-background-grid small { display: block; font-size: 10px; line-height: 1.3; }
+.background-reset { margin-bottom: 8px; }
+.composer-attachments button { max-width: 170px; }
+.composer-attachments button span { overflow: hidden; text-overflow: ellipsis; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .wink-animation-overlay { display: none; }
+}
+
+.codex-utility-backdrop { z-index: 85; }
+.codex-utility-dialog { width: min(620px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; }
+
+.local-file-link { display: inline; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.codex-item:focus, .system:focus { outline: 2px dotted #315d94; outline-offset: -2px; }
+
+.wink-flash-player { width: 100%; height: 100%; }
+
+.wink-animation-overlay .wink-animation-card,
+.wink-animation-overlay.outgoing .wink-animation-card,
+.wink-animation-card img { animation: none; }
+
+/* Keep the original local game usable in a small MSN activity window. */
+.tic-grid { grid-template-columns: repeat(3, 48px); justify-content: center; }
+.tic-grid button { width: 48px; height: 48px; }
+
+.wink-animation-card { position: relative; }
+.wink-close-button { position: absolute; top: 3px; right: 3px; z-index: 2; width: 22px; height: 22px; padding: 0; pointer-events: auto; border: 1px solid #8b9daf; border-radius: 3px; background: #eef5ff; color: #33445a; font-size: 18px; line-height: 18px; }
+.wink-close-button:focus-visible { outline: 2px solid #145dba; outline-offset: 2px; }
+
+.wink-sound-button { position: absolute; top: 3px; right: 30px; z-index: 2; height: 22px; padding: 0 5px; pointer-events: auto; border: 1px solid #8b9daf; border-radius: 3px; background: #eef5ff; color: #33445a; font: inherit; font-size: 11px; }
+.wink-sound-button:focus-visible { outline: 2px solid #145dba; outline-offset: 2px; }

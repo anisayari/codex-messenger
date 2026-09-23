@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "validatedAt": "2026-09-22T21:41:52.339Z",
+  "platform": "macOS arm64",
+  "codexVersion": "0.156.0",
+  "electronVersion": "41.10.7",
+  "appVersion": "0.0.2-9",
+  "productionBundle": [
+    {
+      "path": "index.html",
+      "bytes": 1929,
+      "sha256": "511a7d9e6b2ea6ea41455b0bb118c3908fa97c0bd67ad8099ba06405b12ecf3d"
+    },
+    {
+      "path": "assets/index-B0RYN9kJ.js",
+      "bytes": 2238,
+      "sha256": "1c8f03183e4a9e3a96d7c6c84aeda8986d39a2aa70ed1ce53688ef5ad9c288b4"
+    },
+    {
+      "path": "assets/main-D9JmipHE.js",
+      "bytes": 507886,
+      "sha256": "eaa6ddf1fd11f1d6fc1eabdd47c733f0fe676508bb621244c9020c0511b5e5af"
+    },
+    {
+      "path": "msn-assets/flash-player/index.html",
+      "bytes": 689,
+      "sha256": "e996aee411272b570d972acdc54528af7750606aefe800359397a2e638137f4f"
+    },
+    {
+      "path": "msn-assets/flash-player/player.js",
+      "bytes": 4205,
+      "sha256": "3b8f142eba953df9a4112d5ddc9350f092a06a0d436c544d34bc098e8d50379c"
+    }
+  ],
+  "backendModules": [
+    {
+      "path": "electron/codexAppServerClient.js",
+      "bytes": 16185,
+      "sha256": "7c74d05a78a273c0ec98010c5f86c7e143e1876bd9d57ccfac4937b52def16de"
+    },
+    {
+      "path": "electron/codexFeatureService.js",
+      "bytes": 27565,
+      "sha256": "0165cc90824a169fef674c72000fe82cf9d516391fdf8b765841aaba99476a3a"
+    },
+    {
+      "path": "electron/ipcHandlers.js",
+      "bytes": 2955,
+      "sha256": "486594d74ffec9f0a49e5178ec2ed0d1bff95a2de512e49ceea5bb8b07b68471"
+    },
+    {
+      "path": "electron/main.js",
+      "bytes": 128946,
+      "sha256": "cb2088838e6a558e650387f93c37d3532f56c66b395883cdf26566859470e83f"
+    },
+    {
+      "path": "electron/msnAssetProtocol.js",
+      "bytes": 4528,
+      "sha256": "69fee37c177014a25b4be511146f6d7d806aa487bed24884148125fbb053d6a2"
+    },
+    {
+      "path": "electron/notifications.js",
+      "bytes": 7481,
+      "sha256": "4043953865871b549e0aa61be4180fa34db64c630c53da52082460bffff308ed"
+    },
+    {
+      "path": "electron/preload.cjs",
+      "bytes": 7741,
+      "sha256": "9bd1e52761620b5ac3edf0cf812675c6a7a6be97cdbb341bd9b1c8e0ad217a9d"
+    },
+    {
+      "path": "electron/realtimeService.js",
+      "bytes": 14219,
+      "sha256": "a8c5eb3ee12556242353ead50df5755e2d456a2e803403f538418aa698afe514"
+    },
+    {
+      "path": "electron/security.js",
+      "bytes": 3104,
+      "sha256": "249b79806753d3a0d6cd99ac2713ef8d794e7ff7dd17d74f69c43fc244e14f5f"
+    },
+    {
+      "path": "electron/serverRequests.js",
+      "bytes": 4865,
+      "sha256": "3a51dbb3f4a8338d48fa006747220798799eda5d2209410b5e39fa23dab7f8a6"
+    },
+    {
+      "path": "electron/settingsStore.js",
+      "bytes": 2502,
+      "sha256": "930e3f0544c7385628dcb0a8c4c57666b44e9e67d78db4c6f6d87a6dbe3e33af"
+    },
+    {
+      "path": "electron/terminalService.js",
+      "bytes": 8547,
+      "sha256": "4693da60a5fdbf2a1ac114d7fb91f0e2fc1d88b85854862f0ced1c20041ff677"
+    },
+    {
+      "path": "electron/updateService.js",
+      "bytes": 31668,
+      "sha256": "e1c5ca26632bd77d96943b5f60cdce5a6c4a7a5c91a9e3abb1a05d999d13bb11"
+    },
+    {
+      "path": "electron/windowManager.js",
+      "bytes": 4490,
+      "sha256": "e1cc2a7093b59d04db6f98f1dc8b5424b377044bdb18642c60dfbd5e2180d221"
+    }
+  ],
+  "executableResolutionModules": [
+    {
+      "path": "shared/codexExecutable.js",
+      "bytes": 2485,
+      "sha256": "106ab3334f31b736ed0a12c693ab970539b94d35bbefb28086974317b8aae1d9"
+    },
+    {
+      "path": "shared/codexSetup.js",
+      "bytes": 9527,
+      "sha256": "39d3541d191beb75f12b9e20bca1e59477206179f175b6970dacb58d458aba09"
+    }
+  ],
+  "environment": {
+    "userData": "private temporary directory",
+    "codexHome": "private temporary directory",
+    "originalProfilesUnchanged": true,
+    "signedIn": false
+  },
+  "nativeProcessSmoke": {
+    "command": "Electron <verified production app> --smoke-test",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "durationMs": 1736,
+    "stdoutEmpty": true,
+    "stderrEmpty": true,
+    "runtimeErrors": [],
+    "passed": true
+  },
+  "nativeCapstone": {
+    "passed": true,
+    "preload": {
+      "apiReady": true,
+      "bootstrapReady": true,
+      "terminalReady": true,
+      "settingsReady": true,
+      "parentNodeIsolated": true,
+      "childNodeIsolated": true
+    },
+    "terminal": {
+      "realCodexCommandExec": true,
+      "sandbox": "readOnly",
+      "output": "MSN-Terminal-é\r\nok\r\nstdin:ok\r\n",
+      "utf8Correct": true,
+      "stdinRoundTrip": true,
+      "resize": {
+        "cols": 96,
+        "rows": 30,
+        "acknowledged": true
+      },
+      "exitCode": 0
+    },
+    "richRendering": {
+      "syntheticFixture": true,
+      "mermaidViewBox": "0 0 269.265625 65",
+      "pathCount": 8,
+      "mathCount": 1,
+      "renderErrors": []
+    },
+    "voicePreference": {
+      "realCodexConfigApi": true,
+      "scope": "codexUser",
+      "initial": null,
+      "selected": "juniper",
+      "writeStatus": "ok",
+      "readBack": "juniper",
+      "clearStatus": "ok",
+      "clearedReadBack": null,
+      "temporaryConfigOnly": true,
+      "actualAudioCallTested": false
+    },
+    "wink": {
+      "originalMovie": "msn75/packages/winks/msgslang_WINK_1129_9/heart.swf",
+      "readyEvent": {
+        "type": "msn-flash-ready",
+        "origin": "null",
+        "dimensions": {
+          "width": 125,
+          "height": 118
+        }
+      },
+      "volume": [
+        0,
+        1,
+        0
+      ],
+      "playback": {
+        "isPlaying": true,
+        "readyState": 2,
+        "frameRate": 16
+      },
+      "frameRemoved": true
+    },
+    "contentSecurityPolicy": {
+      "allowed": [
+        {
+          "url": "msn-asset://local/msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.swf",
+          "bytes": 17646,
+          "status": 200
+        },
+        {
+          "url": "msn-asset://local/msn-assets/ruffle/0.6.0/72a20ef1c0b8ceb37720.wasm",
+          "bytes": 14310623,
+          "status": 200
+        },
+        {
+          "url": "msn-asset://local/msn-assets/ruffle/0.6.0/826bb0938097485a2c9d.wasm",
+          "bytes": 14244515,
+          "status": 200
+        }
+      ],
+      "remoteFetchBlocked": true,
+      "otherLocalFileFetchBlocked": true,
+      "negativeProbeCount": 2,
+      "expectedConnectSrcViolationCount": 3,
+      "expectedPolicyConsoleMessageCount": 5,
+      "normalPageErrors": [],
+      "normalConsoleErrors": [],
+      "runtimeErrors": []
+    }
+  },
+  "limits": [
+    "Rich text was an explicitly synthetic message fixture delivered through the native renderer event path; it was not generated by a model.",
+    "No microphone capture or audio call was performed.",
+    "Updater signature checks and rollback regressions use temporary fixtures; no installed user application was replaced.",
+    "Expected CSP failures come only from the two deliberate negative probes."
+  ],
+  "redaction": "Absolute user paths, temporary identifiers, debugger addresses and raw diagnostic streams are omitted."
+}

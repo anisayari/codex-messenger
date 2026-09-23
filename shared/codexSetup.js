@@ -3,13 +3,13 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { resolveExecutableCandidate } from "./codexExecutable.js";
+import { resolveExecutableCandidate, resolveNpmCodexNativeExecutable } from "./codexExecutable.js";
 import { compareVersions, displayVersion, parseVersion } from "./versionUtils.js";
 
 const execFileAsync = promisify(execFile);
 
 export const codexNpmPackageName = "@openai/codex";
-export const minimumCodexVersion = "0.125.0";
+export const minimumCodexVersion = "0.156.1";
 export const nodeDownloadUrl = "https://nodejs.org/en/download";
 
 function lookupCommandForPlatform() {
@@ -94,6 +94,7 @@ export function spawnCommand(command, args, options = {}) {
   }
   return spawn(command, args, {
     ...options,
+    ...(process.platform !== "win32" && path.isAbsolute(command) && path.basename(command) === "npm" ? { env: { ...(options.env ?? process.env), PATH: `${path.dirname(command)}${path.delimiter}${(options.env ?? process.env).PATH ?? ""}` } } : {}),
     shell: shouldUseShell(command)
   });
 }
@@ -118,7 +119,7 @@ export async function findNpmCommand() {
     const command = await findOnPath(process.platform === "win32" ? "npm.cmd" : "npm");
     return command ? { ok: true, command: await resolveExecutableCandidate(command) } : { ok: false, command: "", error: "npm was not found in PATH" };
   } catch (error) {
-    const fallback = await firstExisting(commonNpmCandidates());
+    const fallback = await firstExisting([...commonNpmCandidates(), ...await nvmCommandCandidates("npm")]);
     if (fallback) return { ok: true, command: await resolveExecutableCandidate(fallback), source: "fallback" };
     return { ok: false, command: "", error: error.message || "npm was not found in PATH" };
   }
@@ -126,17 +127,20 @@ export async function findNpmCommand() {
 
 export async function findCodexCommand(explicitPath = "") {
   const explicit = String(explicitPath || "").trim();
-  if (explicit) return { command: await resolveExecutableCandidate(explicit), source: "manual" };
+  if (explicit) return { command: await resolveNpmCodexNativeExecutable(explicit), source: "manual" };
 
   const envPath = String(process.env.CODEX_MESSENGER_CODEX_PATH || "").trim();
-  if (envPath) return { command: await resolveExecutableCandidate(envPath), source: "env" };
+  if (envPath) return { command: await resolveNpmCodexNativeExecutable(envPath), source: "env" };
 
   const pathCommand = await findOnPath("codex").catch(() => "");
-  const command = pathCommand
-    || await firstExisting(commonCodexCandidates())
-    || await firstExisting(await npmAdjacentCodexCandidates());
-  if (!command) throw new Error("codex was not found in PATH");
-  return { command: await resolveExecutableCandidate(command), source: "path" };
+  const candidates = [pathCommand, ...commonCodexCandidates(), ...await npmAdjacentCodexCandidates(), ...await nvmCommandCandidates("codex")];
+  const existing = [];
+  for (const candidate of [...new Set(candidates.filter(Boolean))]) {
+    if (await fileExists(candidate)) existing.push(await resolveNpmCodexNativeExecutable(candidate));
+  }
+  const command = await chooseSupportedCodexCandidate(existing);
+  if (!command) throw new Error("codex was not found in PATH or common installation locations");
+  return { command, source: "path" };
 }
 
 export function runCommand(command, args = [], { timeoutMs = 30_000, cwd = process.cwd(), env = process.env, stdio = ["ignore", "pipe", "pipe"] } = {}) {
@@ -220,4 +224,21 @@ export async function installCodexCli({ cwd = process.cwd(), stdio = ["ignore", 
     timeoutMs: 10 * 60_000,
     stdio
   });
+}
+
+async function nvmCommandCandidates(commandName) {
+  if (process.platform === "win32") return [];
+  const versionsDir = path.join(os.homedir(), ".nvm", "versions", "node");
+  try {
+    const versions = (await fs.readdir(versionsDir, { withFileTypes: true })).filter((entry) => entry.isDirectory() && /^v\d+\.\d+\.\d+$/.test(entry.name)).map((entry) => entry.name).sort((a,b) => compareVersions(b.slice(1), a.slice(1)));
+    return versions.map((version) => path.join(versionsDir, version, "bin", commandName));
+  } catch { return []; }
+}
+
+export async function chooseSupportedCodexCandidate(candidates, { readVersion = codexVersion } = {}) {
+  const paths = [...new Set(candidates.filter((candidate) => typeof candidate === "string" && candidate.trim()).map((candidate) => candidate.trim()))];
+  for (const candidate of paths) {
+    try { if (codexVersionSupport(await readVersion(candidate)).ok) return candidate; } catch {}
+  }
+  return paths[0] ?? "";
 }

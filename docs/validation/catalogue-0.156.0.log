@@ -1,0 +1,11 @@
+✔ current local CLI feature catalog truthfully reports unavailable runtime methods without account or network (859.005583ms)
+ℹ codex-cli 0.156.0: {"account":"available","rateLimits":"unavailable","accountUsage":"unavailable","plugins":"available","models":"available","skills":"available","apps":"available","installedApps":"available","mcpServers":"available","memory":"available","providerCapabilities":"available","collaborationModes":"available","requirements":"available","permissionProfiles":"available"}
+ℹ Real command/exec PTY echo verified inside explicit external deny-network sandbox
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 912.831209

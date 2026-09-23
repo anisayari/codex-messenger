@@ -14588,3109 +14588,435 @@
   ],
   "emoticons": [
     {
-      "id": "msn-001",
-      "code": ":msn01:",
-      "label": "MSN 01",
-      "src": "./msn-assets/msn75/emoticons/emoticon-001.png",
-      "width": 1,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1071_9.png"
-    },
-    {
-      "id": "msn-002",
-      "code": ":msn02:",
-      "label": "MSN 02",
-      "src": "./msn-assets/msn75/emoticons/emoticon-002.png",
-      "width": 1,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_PIXEL_LAVENDAR.PNG_9.png"
-    },
-    {
-      "id": "msn-003",
-      "code": ":msn03:",
-      "label": "MSN 03",
-      "src": "./msn-assets/msn75/emoticons/emoticon-003.gif",
-      "width": 1,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_SPACER.GIF_9.gif"
-    },
-    {
-      "id": "msn-004",
-      "code": ":msn04:",
-      "label": "MSN 04",
-      "src": "./msn-assets/msn75/emoticons/emoticon-004.png",
-      "width": 3,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_832_9.png"
-    },
-    {
-      "id": "msn-005",
-      "code": ":msn05:",
-      "label": "MSN 05",
-      "src": "./msn-assets/msn75/emoticons/emoticon-005.png",
-      "width": 3,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_837_9.png"
-    },
-    {
-      "id": "msn-006",
-      "code": ":msn06:",
-      "label": "MSN 06",
-      "src": "./msn-assets/msn75/emoticons/emoticon-006.png",
-      "width": 5,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1046_9.png"
-    },
-    {
-      "id": "msn-007",
-      "code": ":msn07:",
-      "label": "MSN 07",
-      "src": "./msn-assets/msn75/emoticons/emoticon-007.png",
-      "width": 5,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_855_9.png"
-    },
-    {
-      "id": "msn-008",
-      "code": ":msn08:",
-      "label": "MSN 08",
-      "src": "./msn-assets/msn75/emoticons/emoticon-008.png",
-      "width": 8,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2013_9.png"
-    },
-    {
-      "id": "msn-009",
-      "code": ":msn09:",
-      "label": "MSN 09",
-      "src": "./msn-assets/msn75/emoticons/emoticon-009.png",
-      "width": 8,
-      "height": 1,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2015_9.png"
-    },
-    {
-      "id": "msn-010",
-      "code": ":msn10:",
-      "label": "MSN 10",
-      "src": "./msn-assets/msn75/emoticons/emoticon-010.png",
-      "width": 1,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_836_9.png"
-    },
-    {
-      "id": "msn-011",
-      "code": ":msn11:",
-      "label": "MSN 11",
-      "src": "./msn-assets/msn75/emoticons/emoticon-011.png",
-      "width": 3,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_831_9.png"
-    },
-    {
-      "id": "msn-012",
-      "code": ":msn12:",
-      "label": "MSN 12",
-      "src": "./msn-assets/msn75/emoticons/emoticon-012.png",
-      "width": 3,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_835_9.png"
-    },
-    {
-      "id": "msn-013",
-      "code": ":msn13:",
-      "label": "MSN 13",
-      "src": "./msn-assets/msn75/emoticons/emoticon-013.png",
-      "width": 3,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_872_9.png"
-    },
-    {
-      "id": "msn-014",
-      "code": ":msn14:",
-      "label": "MSN 14",
-      "src": "./msn-assets/msn75/emoticons/emoticon-014.png",
-      "width": 3,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_873_9.png"
-    },
-    {
-      "id": "msn-015",
-      "code": ":msn15:",
-      "label": "MSN 15",
-      "src": "./msn-assets/msn75/emoticons/emoticon-015.png",
-      "width": 3,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_874_9.png"
-    },
-    {
-      "id": "msn-016",
-      "code": ":msn16:",
-      "label": "MSN 16",
-      "src": "./msn-assets/msn75/emoticons/emoticon-016.png",
-      "width": 3,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_875_9.png"
-    },
-    {
-      "id": "msn-017",
-      "code": ":msn17:",
-      "label": "MSN 17",
-      "src": "./msn-assets/msn75/emoticons/emoticon-017.png",
-      "width": 3,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_877_9.png"
-    },
-    {
-      "id": "msn-018",
-      "code": ":msn18:",
-      "label": "MSN 18",
-      "src": "./msn-assets/msn75/emoticons/emoticon-018.png",
-      "width": 14,
-      "height": 3,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1070_9.png"
-    },
-    {
-      "id": "msn-019",
-      "code": ":msn19:",
-      "label": "MSN 19",
-      "src": "./msn-assets/msn75/emoticons/emoticon-019.png",
-      "width": 4,
-      "height": 4,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2033_9.png"
-    },
-    {
-      "id": "msn-020",
-      "code": ":msn20:",
-      "label": "MSN 20",
-      "src": "./msn-assets/msn75/emoticons/emoticon-020.png",
-      "width": 4,
-      "height": 4,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2034_9.png"
-    },
-    {
-      "id": "msn-021",
-      "code": ":msn21:",
-      "label": "MSN 21",
-      "src": "./msn-assets/msn75/emoticons/emoticon-021.png",
-      "width": 4,
-      "height": 4,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2035_9.png"
-    },
-    {
-      "id": "msn-022",
-      "code": ":msn22:",
-      "label": "MSN 22",
-      "src": "./msn-assets/msn75/emoticons/emoticon-022.png",
-      "width": 4,
-      "height": 4,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2036_9.png"
-    },
-    {
-      "id": "msn-023",
-      "code": ":msn23:",
-      "label": "MSN 23",
-      "src": "./msn-assets/msn75/emoticons/emoticon-023.png",
-      "width": 1,
-      "height": 5,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1047_9.png"
-    },
-    {
-      "id": "msn-024",
-      "code": ":msn24:",
-      "label": "MSN 24",
-      "src": "./msn-assets/msn75/emoticons/emoticon-024.png",
-      "width": 20,
-      "height": 5,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_610_9.png"
-    },
-    {
-      "id": "msn-025",
-      "code": ":msn25:",
-      "label": "MSN 25",
-      "src": "./msn-assets/msn75/emoticons/emoticon-025.png",
-      "width": 50,
-      "height": 5,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2019_9.png"
-    },
-    {
-      "id": "msn-026",
-      "code": ":msn26:",
-      "label": "MSN 26",
-      "src": "./msn-assets/msn75/emoticons/emoticon-026.png",
-      "width": 7,
-      "height": 7,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_795_9.png"
-    },
-    {
-      "id": "msn-027",
-      "code": ":msn27:",
-      "label": "MSN 27",
-      "src": "./msn-assets/msn75/emoticons/emoticon-027.png",
-      "width": 13,
-      "height": 7,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2001_9.png"
-    },
-    {
-      "id": "msn-028",
-      "code": ":msn28:",
-      "label": "MSN 28",
-      "src": "./msn-assets/msn75/emoticons/emoticon-028.png",
-      "width": 15,
-      "height": 7,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1003_9.png"
-    },
-    {
-      "id": "msn-029",
-      "code": ":msn29:",
-      "label": "MSN 29",
-      "src": "./msn-assets/msn75/emoticons/emoticon-029.png",
-      "width": 1,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2011_9.png"
-    },
-    {
-      "id": "msn-030",
-      "code": ":msn30:",
-      "label": "MSN 30",
-      "src": "./msn-assets/msn75/emoticons/emoticon-030.png",
-      "width": 1,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2017_9.png"
-    },
-    {
-      "id": "msn-031",
-      "code": ":msn31:",
-      "label": "MSN 31",
-      "src": "./msn-assets/msn75/emoticons/emoticon-031.png",
-      "width": 1,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2048_9.png"
-    },
-    {
-      "id": "msn-032",
-      "code": ":msn32:",
-      "label": "MSN 32",
-      "src": "./msn-assets/msn75/emoticons/emoticon-032.png",
-      "width": 5,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1004_9.png"
-    },
-    {
-      "id": "msn-033",
-      "code": ":msn33:",
-      "label": "MSN 33",
-      "src": "./msn-assets/msn75/emoticons/emoticon-033.png",
-      "width": 8,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2010_9.png"
-    },
-    {
-      "id": "msn-034",
-      "code": ":msn34:",
-      "label": "MSN 34",
-      "src": "./msn-assets/msn75/emoticons/emoticon-034.png",
-      "width": 8,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2012_9.png"
-    },
-    {
-      "id": "msn-035",
-      "code": ":msn35:",
-      "label": "MSN 35",
-      "src": "./msn-assets/msn75/emoticons/emoticon-035.png",
-      "width": 8,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2016_9.png"
-    },
-    {
-      "id": "msn-036",
-      "code": ":msn36:",
-      "label": "MSN 36",
-      "src": "./msn-assets/msn75/emoticons/emoticon-036.png",
-      "width": 8,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2018_9.png"
-    },
-    {
-      "id": "msn-037",
-      "code": ":msn37:",
-      "label": "MSN 37",
-      "src": "./msn-assets/msn75/emoticons/emoticon-037.png",
-      "width": 10,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2047_9.png"
-    },
-    {
-      "id": "msn-038",
-      "code": ":msn38:",
-      "label": "MSN 38",
-      "src": "./msn-assets/msn75/emoticons/emoticon-038.png",
-      "width": 11,
-      "height": 8,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2049_9.png"
-    },
-    {
-      "id": "msn-039",
-      "code": ":msn39:",
-      "label": "MSN 39",
-      "src": "./msn-assets/msn75/emoticons/emoticon-039.png",
-      "width": 4,
-      "height": 9,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1102_9.png"
-    },
-    {
-      "id": "msn-040",
-      "code": ":msn40:",
-      "label": "MSN 40",
-      "src": "./msn-assets/msn75/emoticons/emoticon-040.png",
-      "width": 5,
-      "height": 9,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1101_9.png"
-    },
-    {
-      "id": "msn-041",
-      "code": ":msn41:",
-      "label": "MSN 41",
-      "src": "./msn-assets/msn75/emoticons/emoticon-041.png",
-      "width": 9,
-      "height": 9,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1094_9.png"
-    },
-    {
-      "id": "msn-042",
-      "code": ":msn42:",
-      "label": "MSN 42",
-      "src": "./msn-assets/msn75/emoticons/emoticon-042.png",
-      "width": 59,
-      "height": 9,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_757_9.png"
-    },
-    {
-      "id": "msn-043",
-      "code": ":msn43:",
-      "label": "MSN 43",
-      "src": "./msn-assets/msn75/emoticons/emoticon-043.png",
-      "width": 9,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2090_9.png"
-    },
-    {
-      "id": "msn-044",
-      "code": ":msn44:",
-      "label": "MSN 44",
-      "src": "./msn-assets/msn75/emoticons/emoticon-044.png",
-      "width": 9,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2091_9.png"
-    },
-    {
-      "id": "msn-045",
-      "code": ":msn45:",
-      "label": "MSN 45",
-      "src": "./msn-assets/msn75/emoticons/emoticon-045.png",
-      "width": 10,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2024_9.png"
-    },
-    {
-      "id": "msn-046",
-      "code": ":msn46:",
-      "label": "MSN 46",
-      "src": "./msn-assets/msn75/emoticons/emoticon-046.png",
-      "width": 10,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2025_9.png"
-    },
-    {
-      "id": "msn-047",
-      "code": ":msn47:",
-      "label": "MSN 47",
-      "src": "./msn-assets/msn75/emoticons/emoticon-047.png",
-      "width": 10,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2026_9.png"
-    },
-    {
-      "id": "msn-048",
-      "code": ":msn48:",
-      "label": "MSN 48",
-      "src": "./msn-assets/msn75/emoticons/emoticon-048.png",
-      "width": 10,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2027_9.png"
-    },
-    {
-      "id": "msn-049",
-      "code": ":msn49:",
-      "label": "MSN 49",
-      "src": "./msn-assets/msn75/emoticons/emoticon-049.png",
-      "width": 10,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2038_9.png"
-    },
-    {
-      "id": "msn-050",
-      "code": ":msn50:",
-      "label": "MSN 50",
-      "src": "./msn-assets/msn75/emoticons/emoticon-050.png",
-      "width": 10,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2056_9.png"
-    },
-    {
-      "id": "msn-051",
-      "code": ":msn51:",
-      "label": "MSN 51",
-      "src": "./msn-assets/msn75/emoticons/emoticon-051.png",
-      "width": 10,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_853_9.png"
-    },
-    {
-      "id": "msn-052",
-      "code": ":msn52:",
-      "label": "MSN 52",
-      "src": "./msn-assets/msn75/emoticons/emoticon-052.png",
-      "width": 30,
-      "height": 10,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2059_9.png"
-    },
-    {
-      "id": "msn-053",
-      "code": ":msn53:",
-      "label": "MSN 53",
-      "src": "./msn-assets/msn75/emoticons/emoticon-053.png",
-      "width": 9,
-      "height": 11,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2088_9.png"
-    },
-    {
-      "id": "msn-054",
-      "code": ":msn54:",
-      "label": "MSN 54",
-      "src": "./msn-assets/msn75/emoticons/emoticon-054.png",
-      "width": 11,
-      "height": 11,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1081_9.png"
-    },
-    {
-      "id": "msn-055",
-      "code": ":msn55:",
-      "label": "MSN 55",
-      "src": "./msn-assets/msn75/emoticons/emoticon-055.png",
-      "width": 11,
-      "height": 11,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1082_9.png"
-    },
-    {
-      "id": "msn-056",
-      "code": ":msn56:",
-      "label": "MSN 56",
-      "src": "./msn-assets/msn75/emoticons/emoticon-056.png",
-      "width": 15,
-      "height": 11,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2044_9.png"
-    },
-    {
-      "id": "msn-057",
-      "code": ":msn57:",
-      "label": "MSN 57",
-      "src": "./msn-assets/msn75/emoticons/emoticon-057.png",
-      "width": 8,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_758_9.png"
-    },
-    {
-      "id": "msn-058",
-      "code": ":msn58:",
-      "label": "MSN 58",
-      "src": "./msn-assets/msn75/emoticons/emoticon-058.png",
-      "width": 8,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_760_9.png"
-    },
-    {
-      "id": "msn-059",
-      "code": ":msn59:",
-      "label": "MSN 59",
-      "src": "./msn-assets/msn75/emoticons/emoticon-059.png",
-      "width": 10,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_228_9.png"
-    },
-    {
-      "id": "msn-060",
-      "code": ":msn60:",
-      "label": "MSN 60",
-      "src": "./msn-assets/msn75/emoticons/emoticon-060.png",
-      "width": 12,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2009_9.png"
-    },
-    {
-      "id": "msn-061",
-      "code": ":msn61:",
-      "label": "MSN 61",
-      "src": "./msn-assets/msn75/emoticons/emoticon-061.png",
-      "width": 13,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1106_9.png"
-    },
-    {
-      "id": "msn-062",
-      "code": ":msn62:",
-      "label": "MSN 62",
-      "src": "./msn-assets/msn75/emoticons/emoticon-062.png",
-      "width": 16,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_759_9.png"
-    },
-    {
-      "id": "msn-063",
-      "code": ":msn63:",
-      "label": "MSN 63",
-      "src": "./msn-assets/msn75/emoticons/emoticon-063.png",
-      "width": 21,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1049_9.png"
-    },
-    {
-      "id": "msn-064",
-      "code": ":msn64:",
-      "label": "MSN 64",
-      "src": "./msn-assets/msn75/emoticons/emoticon-064.png",
-      "width": 21,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1050_9.png"
-    },
-    {
-      "id": "msn-065",
-      "code": ":msn65:",
-      "label": "MSN 65",
-      "src": "./msn-assets/msn75/emoticons/emoticon-065.png",
-      "width": 21,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_761_9.png"
-    },
-    {
-      "id": "msn-066",
-      "code": ":msn66:",
-      "label": "MSN 66",
-      "src": "./msn-assets/msn75/emoticons/emoticon-066.png",
-      "width": 48,
-      "height": 12,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_226_9.png"
-    },
-    {
-      "id": "msn-067",
-      "code": ":msn67:",
-      "label": "MSN 67",
-      "src": "./msn-assets/msn75/emoticons/emoticon-067.png",
-      "width": 6,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2039_9.png"
-    },
-    {
-      "id": "msn-068",
-      "code": ":msn68:",
-      "label": "MSN 68",
-      "src": "./msn-assets/msn75/emoticons/emoticon-068.png",
-      "width": 10,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_866_9.png"
-    },
-    {
-      "id": "msn-069",
-      "code": ":msn69:",
-      "label": "MSN 69",
-      "src": "./msn-assets/msn75/emoticons/emoticon-069.png",
-      "width": 11,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1044_9.png"
-    },
-    {
-      "id": "msn-070",
-      "code": ":msn70:",
-      "label": "MSN 70",
-      "src": "./msn-assets/msn75/emoticons/emoticon-070.png",
-      "width": 11,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_868_9.png"
-    },
-    {
-      "id": "msn-071",
-      "code": ":msn71:",
-      "label": "MSN 71",
-      "src": "./msn-assets/msn75/emoticons/emoticon-071.png",
-      "width": 12,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_867_9.png"
-    },
-    {
-      "id": "msn-072",
-      "code": ":msn72:",
-      "label": "MSN 72",
-      "src": "./msn-assets/msn75/emoticons/emoticon-072.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1013_9.png"
-    },
-    {
-      "id": "msn-073",
-      "code": ":msn73:",
-      "label": "MSN 73",
-      "src": "./msn-assets/msn75/emoticons/emoticon-073.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1014_9.png"
-    },
-    {
-      "id": "msn-074",
-      "code": ":msn74:",
-      "label": "MSN 74",
-      "src": "./msn-assets/msn75/emoticons/emoticon-074.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1015_9.png"
-    },
-    {
-      "id": "msn-075",
-      "code": ":msn75:",
-      "label": "MSN 75",
-      "src": "./msn-assets/msn75/emoticons/emoticon-075.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1086_9.png"
-    },
-    {
-      "id": "msn-076",
-      "code": ":msn76:",
-      "label": "MSN 76",
-      "src": "./msn-assets/msn75/emoticons/emoticon-076.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1087_9.png"
-    },
-    {
-      "id": "msn-077",
-      "code": ":msn77:",
-      "label": "MSN 77",
-      "src": "./msn-assets/msn75/emoticons/emoticon-077.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1088_9.png"
-    },
-    {
-      "id": "msn-078",
-      "code": ":msn78:",
-      "label": "MSN 78",
-      "src": "./msn-assets/msn75/emoticons/emoticon-078.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1089_9.png"
-    },
-    {
-      "id": "msn-079",
-      "code": ":msn79:",
-      "label": "MSN 79",
-      "src": "./msn-assets/msn75/emoticons/emoticon-079.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_214_9.png"
-    },
-    {
-      "id": "msn-080",
-      "code": ":msn80:",
-      "label": "MSN 80",
-      "src": "./msn-assets/msn75/emoticons/emoticon-080.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_215_9.png"
-    },
-    {
-      "id": "msn-081",
-      "code": ":msn81:",
-      "label": "MSN 81",
-      "src": "./msn-assets/msn75/emoticons/emoticon-081.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_216_9.png"
-    },
-    {
-      "id": "msn-082",
-      "code": ":msn82:",
-      "label": "MSN 82",
-      "src": "./msn-assets/msn75/emoticons/emoticon-082.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_728_9.png"
-    },
-    {
-      "id": "msn-083",
-      "code": ":msn83:",
-      "label": "MSN 83",
-      "src": "./msn-assets/msn75/emoticons/emoticon-083.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_730_9.png"
-    },
-    {
-      "id": "msn-084",
-      "code": ":msn84:",
-      "label": "MSN 84",
-      "src": "./msn-assets/msn75/emoticons/emoticon-084.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_797_9.png"
-    },
-    {
-      "id": "msn-085",
-      "code": ":msn85:",
-      "label": "MSN 85",
-      "src": "./msn-assets/msn75/emoticons/emoticon-085.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_816_9.png"
-    },
-    {
-      "id": "msn-086",
-      "code": ":msn86:",
-      "label": "MSN 86",
-      "src": "./msn-assets/msn75/emoticons/emoticon-086.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_817_9.png"
-    },
-    {
-      "id": "msn-087",
-      "code": ":msn87:",
-      "label": "MSN 87",
-      "src": "./msn-assets/msn75/emoticons/emoticon-087.png",
-      "width": 13,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_819_9.png"
-    },
-    {
-      "id": "msn-088",
-      "code": ":msn88:",
-      "label": "MSN 88",
-      "src": "./msn-assets/msn75/emoticons/emoticon-088.png",
-      "width": 16,
-      "height": 13,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1105_9.png"
-    },
-    {
-      "id": "msn-089",
-      "code": ":msn89:",
-      "label": "MSN 89",
-      "src": "./msn-assets/msn75/emoticons/emoticon-089.png",
-      "width": 14,
-      "height": 14,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_788_9.png"
-    },
-    {
-      "id": "msn-090",
-      "code": ":msn90:",
-      "label": "MSN 90",
-      "src": "./msn-assets/msn75/emoticons/emoticon-090.png",
-      "width": 15,
-      "height": 14,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1103_9.png"
-    },
-    {
-      "id": "msn-091",
-      "code": ":msn91:",
-      "label": "MSN 91",
-      "src": "./msn-assets/msn75/emoticons/emoticon-091.png",
-      "width": 17,
-      "height": 14,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1091_9.png"
-    },
-    {
-      "id": "msn-092",
-      "code": ":msn92:",
-      "label": "MSN 92",
-      "src": "./msn-assets/msn75/emoticons/emoticon-092.png",
-      "width": 15,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1001_9.png"
-    },
-    {
-      "id": "msn-093",
-      "code": ":msn93:",
-      "label": "MSN 93",
-      "src": "./msn-assets/msn75/emoticons/emoticon-093.png",
-      "width": 15,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1002_9.png"
-    },
-    {
-      "id": "msn-094",
-      "code": ":msn94:",
-      "label": "MSN 94",
-      "src": "./msn-assets/msn75/emoticons/emoticon-094.png",
-      "width": 15,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1005_9.png"
-    },
-    {
-      "id": "msn-095",
-      "code": ":msn95:",
-      "label": "MSN 95",
-      "src": "./msn-assets/msn75/emoticons/emoticon-095.png",
-      "width": 15,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_1006_9.png"
-    },
-    {
-      "id": "msn-096",
-      "code": ":msn96:",
-      "label": "MSN 96",
-      "src": "./msn-assets/msn75/emoticons/emoticon-096.png",
-      "width": 16,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1063_9.png"
-    },
-    {
-      "id": "msn-097",
-      "code": ":msn97:",
-      "label": "MSN 97",
-      "src": "./msn-assets/msn75/emoticons/emoticon-097.png",
-      "width": 16,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1064_9.png"
-    },
-    {
-      "id": "msn-098",
-      "code": ":msn98:",
-      "label": "MSN 98",
-      "src": "./msn-assets/msn75/emoticons/emoticon-098.png",
-      "width": 16,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1065_9.png"
-    },
-    {
-      "id": "msn-099",
-      "code": ":msn99:",
-      "label": "MSN 99",
-      "src": "./msn-assets/msn75/emoticons/emoticon-099.png",
-      "width": 16,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1066_9.png"
-    },
-    {
-      "id": "msn-100",
-      "code": ":msn100:",
-      "label": "MSN 100",
-      "src": "./msn-assets/msn75/emoticons/emoticon-100.png",
-      "width": 16,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1067_9.png"
-    },
-    {
-      "id": "msn-101",
-      "code": ":msn101:",
-      "label": "MSN 101",
-      "src": "./msn-assets/msn75/emoticons/emoticon-101.png",
-      "width": 16,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1104_9.png"
-    },
-    {
-      "id": "msn-102",
-      "code": ":msn102:",
-      "label": "MSN 102",
-      "src": "./msn-assets/msn75/emoticons/emoticon-102.png",
-      "width": 16,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_798_9.png"
-    },
-    {
-      "id": "msn-103",
-      "code": ":msn103:",
-      "label": "MSN 103",
-      "src": "./msn-assets/msn75/emoticons/emoticon-103.png",
-      "width": 18,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1045_9.png"
-    },
-    {
-      "id": "msn-104",
-      "code": ":msn104:",
-      "label": "MSN 104",
-      "src": "./msn-assets/msn75/emoticons/emoticon-104.png",
-      "width": 18,
-      "height": 15,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2002_9.png"
-    },
-    {
-      "id": "msn-105",
-      "code": ":msn105:",
-      "label": "MSN 105",
-      "src": "./msn-assets/msn75/emoticons/emoticon-105.png",
-      "width": 15,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_15_9.ico"
-    },
-    {
-      "id": "msn-106",
-      "code": ":msn106:",
-      "label": "MSN 106",
-      "src": "./msn-assets/msn75/emoticons/emoticon-106.png",
-      "width": 15,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_18_9.ico"
-    },
-    {
-      "id": "msn-107",
-      "code": ":msn107:",
-      "label": "MSN 107",
-      "src": "./msn-assets/msn75/emoticons/emoticon-107.png",
-      "width": 15,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_21_9.ico"
-    },
-    {
-      "id": "msn-108",
-      "code": ":msn108:",
-      "label": "MSN 108",
-      "src": "./msn-assets/msn75/emoticons/emoticon-108.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1009_9.png"
-    },
-    {
-      "id": "msn-109",
-      "code": ":msn109:",
-      "label": "MSN 109",
-      "src": "./msn-assets/msn75/emoticons/emoticon-109.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1011_9.png"
-    },
-    {
-      "id": "msn-110",
-      "code": ":msn110:",
-      "label": "MSN 110",
-      "src": "./msn-assets/msn75/emoticons/emoticon-110.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1018_9.png"
-    },
-    {
-      "id": "msn-111",
-      "code": ":msn111:",
-      "label": "MSN 111",
-      "src": "./msn-assets/msn75/emoticons/emoticon-111.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1019_9.png"
-    },
-    {
-      "id": "msn-112",
-      "code": ":msn112:",
-      "label": "MSN 112",
-      "src": "./msn-assets/msn75/emoticons/emoticon-112.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1020_9.png"
-    },
-    {
-      "id": "msn-113",
-      "code": ":msn113:",
-      "label": "MSN 113",
-      "src": "./msn-assets/msn75/emoticons/emoticon-113.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1021_9.png"
-    },
-    {
-      "id": "msn-114",
-      "code": ":msn114:",
-      "label": "MSN 114",
-      "src": "./msn-assets/msn75/emoticons/emoticon-114.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1022_9.png"
-    },
-    {
-      "id": "msn-115",
-      "code": ":msn115:",
-      "label": "MSN 115",
-      "src": "./msn-assets/msn75/emoticons/emoticon-115.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1024_9.png"
-    },
-    {
-      "id": "msn-116",
-      "code": ":msn116:",
-      "label": "MSN 116",
-      "src": "./msn-assets/msn75/emoticons/emoticon-116.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1025_9.png"
-    },
-    {
-      "id": "msn-117",
-      "code": ":msn117:",
-      "label": "MSN 117",
-      "src": "./msn-assets/msn75/emoticons/emoticon-117.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1026_9.png"
-    },
-    {
-      "id": "msn-118",
-      "code": ":msn118:",
-      "label": "MSN 118",
-      "src": "./msn-assets/msn75/emoticons/emoticon-118.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1027_9.png"
-    },
-    {
-      "id": "msn-119",
-      "code": ":msn119:",
-      "label": "MSN 119",
-      "src": "./msn-assets/msn75/emoticons/emoticon-119.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1028_9.png"
-    },
-    {
-      "id": "msn-120",
-      "code": ":msn120:",
-      "label": "MSN 120",
-      "src": "./msn-assets/msn75/emoticons/emoticon-120.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1029_9.png"
-    },
-    {
-      "id": "msn-121",
-      "code": ":msn121:",
-      "label": "MSN 121",
-      "src": "./msn-assets/msn75/emoticons/emoticon-121.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1030_9.png"
-    },
-    {
-      "id": "msn-122",
-      "code": ":msn122:",
-      "label": "MSN 122",
-      "src": "./msn-assets/msn75/emoticons/emoticon-122.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1031_9.png"
-    },
-    {
-      "id": "msn-123",
-      "code": ":msn123:",
-      "label": "MSN 123",
-      "src": "./msn-assets/msn75/emoticons/emoticon-123.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1032_9.png"
-    },
-    {
-      "id": "msn-124",
-      "code": ":msn124:",
-      "label": "MSN 124",
-      "src": "./msn-assets/msn75/emoticons/emoticon-124.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1037_9.png"
-    },
-    {
-      "id": "msn-125",
-      "code": ":msn125:",
-      "label": "MSN 125",
-      "src": "./msn-assets/msn75/emoticons/emoticon-125.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1038_9.png"
-    },
-    {
-      "id": "msn-126",
-      "code": ":msn126:",
-      "label": "MSN 126",
-      "src": "./msn-assets/msn75/emoticons/emoticon-126.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1039_9.png"
-    },
-    {
-      "id": "msn-127",
-      "code": ":msn127:",
-      "label": "MSN 127",
-      "src": "./msn-assets/msn75/emoticons/emoticon-127.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1051_9.png"
-    },
-    {
-      "id": "msn-128",
-      "code": ":msn128:",
-      "label": "MSN 128",
-      "src": "./msn-assets/msn75/emoticons/emoticon-128.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1052_9.png"
-    },
-    {
-      "id": "msn-129",
-      "code": ":msn129:",
-      "label": "MSN 129",
-      "src": "./msn-assets/msn75/emoticons/emoticon-129.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1078_9.png"
-    },
-    {
-      "id": "msn-130",
-      "code": ":msn130:",
-      "label": "MSN 130",
-      "src": "./msn-assets/msn75/emoticons/emoticon-130.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1079_9.png"
-    },
-    {
-      "id": "msn-131",
-      "code": ":msn131:",
-      "label": "MSN 131",
-      "src": "./msn-assets/msn75/emoticons/emoticon-131.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1080_9.png"
-    },
-    {
-      "id": "msn-132",
-      "code": ":msn132:",
-      "label": "MSN 132",
-      "src": "./msn-assets/msn75/emoticons/emoticon-132.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1093_9.png"
-    },
-    {
-      "id": "msn-133",
-      "code": ":msn133:",
-      "label": "MSN 133",
-      "src": "./msn-assets/msn75/emoticons/emoticon-133.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1100_9.png"
-    },
-    {
-      "id": "msn-134",
-      "code": ":msn134:",
-      "label": "MSN 134",
-      "src": "./msn-assets/msn75/emoticons/emoticon-134.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2003_9.png"
-    },
-    {
-      "id": "msn-135",
-      "code": ":msn135:",
-      "label": "MSN 135",
-      "src": "./msn-assets/msn75/emoticons/emoticon-135.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2004_9.png"
-    },
-    {
-      "id": "msn-136",
-      "code": ":msn136:",
-      "label": "MSN 136",
-      "src": "./msn-assets/msn75/emoticons/emoticon-136.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2005_9.png"
-    },
-    {
-      "id": "msn-137",
-      "code": ":msn137:",
-      "label": "MSN 137",
-      "src": "./msn-assets/msn75/emoticons/emoticon-137.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2006_9.png"
-    },
-    {
-      "id": "msn-138",
-      "code": ":msn138:",
-      "label": "MSN 138",
-      "src": "./msn-assets/msn75/emoticons/emoticon-138.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2028_9.png"
-    },
-    {
-      "id": "msn-139",
-      "code": ":msn139:",
-      "label": "MSN 139",
-      "src": "./msn-assets/msn75/emoticons/emoticon-139.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2029_9.png"
-    },
-    {
-      "id": "msn-140",
-      "code": ":msn140:",
-      "label": "MSN 140",
-      "src": "./msn-assets/msn75/emoticons/emoticon-140.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2030_9.png"
-    },
-    {
-      "id": "msn-141",
-      "code": ":msn141:",
-      "label": "MSN 141",
-      "src": "./msn-assets/msn75/emoticons/emoticon-141.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2061_9.png"
-    },
-    {
-      "id": "msn-142",
-      "code": ":msn142:",
-      "label": "MSN 142",
-      "src": "./msn-assets/msn75/emoticons/emoticon-142.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2063_9.png"
-    },
-    {
-      "id": "msn-143",
-      "code": ":msn143:",
-      "label": "MSN 143",
-      "src": "./msn-assets/msn75/emoticons/emoticon-143.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2068_9.png"
-    },
-    {
-      "id": "msn-144",
-      "code": ":msn144:",
-      "label": "MSN 144",
-      "src": "./msn-assets/msn75/emoticons/emoticon-144.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2077_9.png"
-    },
-    {
-      "id": "msn-145",
-      "code": ":msn145:",
-      "label": "MSN 145",
-      "src": "./msn-assets/msn75/emoticons/emoticon-145.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2078_9.png"
-    },
-    {
-      "id": "msn-146",
-      "code": ":msn146:",
-      "label": "MSN 146",
-      "src": "./msn-assets/msn75/emoticons/emoticon-146.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_722_9.png"
-    },
-    {
-      "id": "msn-147",
-      "code": ":msn147:",
-      "label": "MSN 147",
-      "src": "./msn-assets/msn75/emoticons/emoticon-147.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_796_9.png"
-    },
-    {
-      "id": "msn-148",
-      "code": ":msn148:",
-      "label": "MSN 148",
-      "src": "./msn-assets/msn75/emoticons/emoticon-148.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_799_9.png"
-    },
-    {
-      "id": "msn-149",
-      "code": ":msn149:",
-      "label": "MSN 149",
-      "src": "./msn-assets/msn75/emoticons/emoticon-149.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_827_9.png"
-    },
-    {
-      "id": "msn-150",
-      "code": ":msn150:",
-      "label": "MSN 150",
-      "src": "./msn-assets/msn75/emoticons/emoticon-150.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_828_9.png"
-    },
-    {
-      "id": "msn-151",
-      "code": ":msn151:",
-      "label": "MSN 151",
-      "src": "./msn-assets/msn75/emoticons/emoticon-151.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_12_9.ico"
-    },
-    {
-      "id": "msn-152",
-      "code": ":msn152:",
-      "label": "MSN 152",
-      "src": "./msn-assets/msn75/emoticons/emoticon-152.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_27_9.ico"
-    },
-    {
-      "id": "msn-153",
-      "code": ":msn153:",
-      "label": "MSN 153",
-      "src": "./msn-assets/msn75/emoticons/emoticon-153.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_28_9.ico"
-    },
-    {
-      "id": "msn-154",
-      "code": ":msn154:",
-      "label": "MSN 154",
-      "src": "./msn-assets/msn75/emoticons/emoticon-154.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_29_9.ico"
-    },
-    {
-      "id": "msn-155",
-      "code": ":msn155:",
-      "label": "MSN 155",
-      "src": "./msn-assets/msn75/emoticons/emoticon-155.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_34_9.ico"
-    },
-    {
-      "id": "msn-156",
-      "code": ":msn156:",
-      "label": "MSN 156",
-      "src": "./msn-assets/msn75/emoticons/emoticon-156.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_35_9.ico"
-    },
-    {
-      "id": "msn-157",
-      "code": ":msn157:",
-      "label": "MSN 157",
-      "src": "./msn-assets/msn75/emoticons/emoticon-157.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_36_9.ico"
-    },
-    {
-      "id": "msn-158",
-      "code": ":msn158:",
-      "label": "MSN 158",
-      "src": "./msn-assets/msn75/emoticons/emoticon-158.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_37_9.ico"
-    },
-    {
-      "id": "msn-159",
-      "code": ":msn159:",
-      "label": "MSN 159",
-      "src": "./msn-assets/msn75/emoticons/emoticon-159.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_38_9.ico"
-    },
-    {
-      "id": "msn-160",
-      "code": ":msn160:",
-      "label": "MSN 160",
-      "src": "./msn-assets/msn75/emoticons/emoticon-160.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_39_9.ico"
-    },
-    {
-      "id": "msn-161",
-      "code": ":msn161:",
-      "label": "MSN 161",
-      "src": "./msn-assets/msn75/emoticons/emoticon-161.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_40_9.ico"
-    },
-    {
-      "id": "msn-162",
-      "code": ":msn162:",
-      "label": "MSN 162",
-      "src": "./msn-assets/msn75/emoticons/emoticon-162.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_41_9.ico"
-    },
-    {
-      "id": "msn-163",
-      "code": ":msn163:",
-      "label": "MSN 163",
-      "src": "./msn-assets/msn75/emoticons/emoticon-163.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_42_9.ico"
-    },
-    {
-      "id": "msn-164",
-      "code": ":msn164:",
-      "label": "MSN 164",
-      "src": "./msn-assets/msn75/emoticons/emoticon-164.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_43_9.ico"
-    },
-    {
-      "id": "msn-165",
-      "code": ":msn165:",
-      "label": "MSN 165",
-      "src": "./msn-assets/msn75/emoticons/emoticon-165.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_44_9.ico"
-    },
-    {
-      "id": "msn-166",
-      "code": ":msn166:",
-      "label": "MSN 166",
-      "src": "./msn-assets/msn75/emoticons/emoticon-166.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_45_9.ico"
-    },
-    {
-      "id": "msn-167",
-      "code": ":msn167:",
-      "label": "MSN 167",
-      "src": "./msn-assets/msn75/emoticons/emoticon-167.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_46_9.ico"
-    },
-    {
-      "id": "msn-168",
-      "code": ":msn168:",
-      "label": "MSN 168",
-      "src": "./msn-assets/msn75/emoticons/emoticon-168.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_47_9.ico"
-    },
-    {
-      "id": "msn-169",
-      "code": ":msn169:",
-      "label": "MSN 169",
-      "src": "./msn-assets/msn75/emoticons/emoticon-169.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_48_9.ico"
-    },
-    {
-      "id": "msn-170",
-      "code": ":msn170:",
-      "label": "MSN 170",
-      "src": "./msn-assets/msn75/emoticons/emoticon-170.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_49_9.ico"
-    },
-    {
-      "id": "msn-171",
-      "code": ":msn171:",
-      "label": "MSN 171",
-      "src": "./msn-assets/msn75/emoticons/emoticon-171.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_50_9.ico"
-    },
-    {
-      "id": "msn-172",
-      "code": ":msn172:",
-      "label": "MSN 172",
-      "src": "./msn-assets/msn75/emoticons/emoticon-172.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_51_9.ico"
-    },
-    {
-      "id": "msn-173",
-      "code": ":msn173:",
-      "label": "MSN 173",
-      "src": "./msn-assets/msn75/emoticons/emoticon-173.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_52_9.ico"
-    },
-    {
-      "id": "msn-174",
-      "code": ":msn174:",
-      "label": "MSN 174",
-      "src": "./msn-assets/msn75/emoticons/emoticon-174.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_53_9.ico"
-    },
-    {
-      "id": "msn-175",
-      "code": ":msn175:",
-      "label": "MSN 175",
-      "src": "./msn-assets/msn75/emoticons/emoticon-175.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_54_9.ico"
-    },
-    {
-      "id": "msn-176",
-      "code": ":msn176:",
-      "label": "MSN 176",
-      "src": "./msn-assets/msn75/emoticons/emoticon-176.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_55_9.ico"
-    },
-    {
-      "id": "msn-177",
-      "code": ":msn177:",
-      "label": "MSN 177",
-      "src": "./msn-assets/msn75/emoticons/emoticon-177.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_56_9.ico"
-    },
-    {
-      "id": "msn-178",
-      "code": ":msn178:",
-      "label": "MSN 178",
-      "src": "./msn-assets/msn75/emoticons/emoticon-178.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_57_9.ico"
-    },
-    {
-      "id": "msn-179",
-      "code": ":msn179:",
-      "label": "MSN 179",
-      "src": "./msn-assets/msn75/emoticons/emoticon-179.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_58_9.ico"
-    },
-    {
-      "id": "msn-180",
-      "code": ":msn180:",
-      "label": "MSN 180",
-      "src": "./msn-assets/msn75/emoticons/emoticon-180.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_59_9.ico"
-    },
-    {
-      "id": "msn-181",
-      "code": ":msn181:",
-      "label": "MSN 181",
-      "src": "./msn-assets/msn75/emoticons/emoticon-181.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_60_9.ico"
-    },
-    {
-      "id": "msn-182",
-      "code": ":msn182:",
-      "label": "MSN 182",
-      "src": "./msn-assets/msn75/emoticons/emoticon-182.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_6_9.ico"
-    },
-    {
-      "id": "msn-183",
-      "code": ":msn183:",
-      "label": "MSN 183",
-      "src": "./msn-assets/msn75/emoticons/emoticon-183.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_9_9.ico"
-    },
-    {
-      "id": "msn-184",
-      "code": ":msn184:",
-      "label": "MSN 184",
-      "src": "./msn-assets/msn75/emoticons/emoticon-184.png",
-      "width": 16,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnsearch/icon/msnsearch_icon_2_9.ico"
-    },
-    {
-      "id": "msn-185",
-      "code": ":msn185:",
-      "label": "MSN 185",
-      "src": "./msn-assets/msn75/emoticons/emoticon-185.png",
-      "width": 17,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1010_9.png"
-    },
-    {
-      "id": "msn-186",
-      "code": ":msn186:",
-      "label": "MSN 186",
-      "src": "./msn-assets/msn75/emoticons/emoticon-186.png",
-      "width": 18,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1092_9.png"
-    },
-    {
-      "id": "msn-187",
-      "code": ":msn187:",
-      "label": "MSN 187",
-      "src": "./msn-assets/msn75/emoticons/emoticon-187.png",
-      "width": 24,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_911_9.png"
-    },
-    {
-      "id": "msn-188",
-      "code": ":msn188:",
-      "label": "MSN 188",
-      "src": "./msn-assets/msn75/emoticons/emoticon-188.png",
-      "width": 46,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_729_9.png"
-    },
-    {
-      "id": "msn-189",
-      "code": ":msn189:",
-      "label": "MSN 189",
-      "src": "./msn-assets/msn75/emoticons/emoticon-189.png",
-      "width": 48,
-      "height": 16,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2060_9.png"
-    },
-    {
-      "id": "msn-190",
-      "code": ":msn190:",
-      "label": "MSN 190",
-      "src": "./msn-assets/msn75/emoticons/emoticon-190.png",
-      "width": 18,
-      "height": 17,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1012_9.png"
-    },
-    {
-      "id": "msn-191",
-      "code": ":msn191:",
-      "label": "MSN 191",
-      "src": "./msn-assets/msn75/emoticons/emoticon-191.png",
-      "width": 18,
-      "height": 18,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_750_9.png"
-    },
-    {
-      "id": "msn-192",
-      "code": ":msn192:",
-      "label": "MSN 192",
-      "src": "./msn-assets/msn75/emoticons/emoticon-192.png",
-      "width": 18,
-      "height": 18,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_751_9.png"
-    },
-    {
-      "id": "msn-193",
-      "code": ":msn193:",
-      "label": "MSN 193",
-      "src": "./msn-assets/msn75/emoticons/emoticon-193.png",
-      "width": 18,
-      "height": 18,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_752_9.png"
-    },
-    {
-      "id": "msn-194",
-      "code": ":msn194:",
-      "label": "MSN 194",
-      "src": "./msn-assets/msn75/emoticons/emoticon-194.png",
-      "width": 18,
-      "height": 18,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_753_9.png"
-    },
-    {
-      "id": "msn-195",
-      "code": ":msn195:",
-      "label": "MSN 195",
-      "src": "./msn-assets/msn75/emoticons/emoticon-195.png",
-      "width": 22,
-      "height": 18,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2089_9.png"
-    },
-    {
-      "id": "msn-196",
-      "code": ":msn196:",
-      "label": "MSN 196",
-      "src": "./msn-assets/msn75/emoticons/emoticon-196.png",
-      "width": 9,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_227_9.png"
-    },
-    {
-      "id": "msn-197",
-      "code": ":msn197:",
-      "label": "MSN 197",
-      "src": "./msn-assets/msn75/emoticons/emoticon-197.png",
-      "width": 19,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_850_9.png"
-    },
-    {
-      "id": "msn-198",
-      "code": ":msn198:",
-      "label": "MSN 198",
-      "src": "./msn-assets/msn75/emoticons/emoticon-198.png",
-      "width": 19,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_851_9.png"
-    },
-    {
-      "id": "msn-199",
-      "code": ":msn199:",
-      "label": "MSN 199",
-      "src": "./msn-assets/msn75/emoticons/emoticon-199.png",
-      "width": 19,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_852_9.png"
-    },
-    {
-      "id": "msn-200",
-      "code": ":msn200:",
-      "label": "MSN 200",
-      "src": "./msn-assets/msn75/emoticons/emoticon-200.png",
-      "width": 25,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11101_9.png"
-    },
-    {
-      "id": "msn-201",
-      "code": ":msn201:",
-      "label": "MSN 201",
-      "src": "./msn-assets/msn75/emoticons/emoticon-201.png",
-      "width": 25,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_11102_9.png"
-    },
-    {
-      "id": "msn-202",
-      "code": ":msn202:",
-      "label": "MSN 202",
-      "src": "./msn-assets/msn75/emoticons/emoticon-202.png",
-      "width": 57,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_423_9.png"
-    },
-    {
-      "id": "msn-203",
-      "code": ":msn203:",
-      "label": "MSN 203",
-      "src": "./msn-assets/msn75/emoticons/emoticon-203.png",
-      "width": 57,
-      "height": 19,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_900_9.png"
-    },
-    {
-      "id": "msn-204",
-      "code": ":msn204:",
-      "label": "MSN 204",
-      "src": "./msn-assets/msn75/emoticons/emoticon-204.png",
-      "width": 20,
-      "height": 20,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1096_9.png"
-    },
-    {
-      "id": "msn-205",
-      "code": ":msn205:",
-      "label": "MSN 205",
-      "src": "./msn-assets/msn75/emoticons/emoticon-205.png",
-      "width": 20,
-      "height": 20,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2062_9.png"
-    },
-    {
-      "id": "msn-206",
-      "code": ":msn206:",
-      "label": "MSN 206",
-      "src": "./msn-assets/msn75/emoticons/emoticon-206.png",
-      "width": 20,
-      "height": 20,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_825_9.png"
-    },
-    {
-      "id": "msn-207",
-      "code": ":msn207:",
-      "label": "MSN 207",
-      "src": "./msn-assets/msn75/emoticons/emoticon-207.png",
-      "width": 20,
-      "height": 20,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_826_9.png"
-    },
-    {
-      "id": "msn-208",
-      "code": ":msn208:",
-      "label": "MSN 208",
-      "src": "./msn-assets/msn75/emoticons/emoticon-208.png",
-      "width": 1,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_802_9.png"
-    },
-    {
-      "id": "msn-209",
-      "code": ":msn209:",
-      "label": "MSN 209",
-      "src": "./msn-assets/msn75/emoticons/emoticon-209.png",
-      "width": 10,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_804_9.png"
-    },
-    {
-      "id": "msn-210",
-      "code": ":msn210:",
-      "label": "MSN 210",
-      "src": "./msn-assets/msn75/emoticons/emoticon-210.png",
-      "width": 10,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_824_9.png"
-    },
-    {
-      "id": "msn-211",
-      "code": ":msn211:",
-      "label": "MSN 211",
-      "src": "./msn-assets/msn75/emoticons/emoticon-211.png",
-      "width": 13,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1068_9.png"
-    },
-    {
-      "id": "msn-212",
-      "code": ":msn212:",
-      "label": "MSN 212",
-      "src": "./msn-assets/msn75/emoticons/emoticon-212.png",
-      "width": 13,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1069_9.png"
-    },
-    {
-      "id": "msn-213",
-      "code": ":msn213:",
-      "label": "MSN 213",
-      "src": "./msn-assets/msn75/emoticons/emoticon-213.png",
-      "width": 29,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2085_9.png"
-    },
-    {
-      "id": "msn-214",
-      "code": ":msn214:",
-      "label": "MSN 214",
-      "src": "./msn-assets/msn75/emoticons/emoticon-214.png",
-      "width": 29,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2086_9.png"
-    },
-    {
-      "id": "msn-215",
-      "code": ":msn215:",
-      "label": "MSN 215",
-      "src": "./msn-assets/msn75/emoticons/emoticon-215.png",
-      "width": 29,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2087_9.png"
-    },
-    {
-      "id": "msn-216",
-      "code": ":msn216:",
-      "label": "MSN 216",
-      "src": "./msn-assets/msn75/emoticons/emoticon-216.png",
-      "width": 50,
-      "height": 21,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1041_9.png"
-    },
-    {
-      "id": "msn-217",
-      "code": ":msn217:",
-      "label": "MSN 217",
-      "src": "./msn-assets/msn75/emoticons/emoticon-217.png",
-      "width": 21,
-      "height": 22,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1084_9.png"
-    },
-    {
-      "id": "msn-218",
-      "code": ":msn218:",
-      "label": "MSN 218",
-      "src": "./msn-assets/msn75/emoticons/emoticon-218.png",
-      "width": 1,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1040_9.png"
-    },
-    {
-      "id": "msn-219",
-      "code": ":msn219:",
-      "label": "MSN 219",
-      "src": "./msn-assets/msn75/emoticons/emoticon-219.png",
-      "width": 1,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_861_9.png"
-    },
-    {
-      "id": "msn-220",
-      "code": ":msn220:",
-      "label": "MSN 220",
-      "src": "./msn-assets/msn75/emoticons/emoticon-220.png",
-      "width": 1,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_864_9.png"
-    },
-    {
-      "id": "msn-221",
-      "code": ":msn221:",
-      "label": "MSN 221",
-      "src": "./msn-assets/msn75/emoticons/emoticon-221.png",
-      "width": 6,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1042_9.png"
-    },
-    {
-      "id": "msn-222",
-      "code": ":msn222:",
-      "label": "MSN 222",
-      "src": "./msn-assets/msn75/emoticons/emoticon-222.png",
-      "width": 6,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1043_9.png"
-    },
-    {
-      "id": "msn-223",
-      "code": ":msn223:",
-      "label": "MSN 223",
-      "src": "./msn-assets/msn75/emoticons/emoticon-223.png",
-      "width": 6,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_860_9.png"
-    },
-    {
-      "id": "msn-224",
-      "code": ":msn224:",
-      "label": "MSN 224",
-      "src": "./msn-assets/msn75/emoticons/emoticon-224.png",
-      "width": 6,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_862_9.png"
-    },
-    {
-      "id": "msn-225",
-      "code": ":msn225:",
-      "label": "MSN 225",
-      "src": "./msn-assets/msn75/emoticons/emoticon-225.png",
-      "width": 6,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_863_9.png"
-    },
-    {
-      "id": "msn-226",
-      "code": ":msn226:",
-      "label": "MSN 226",
-      "src": "./msn-assets/msn75/emoticons/emoticon-226.png",
-      "width": 6,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_865_9.png"
-    },
-    {
-      "id": "msn-227",
-      "code": ":msn227:",
-      "label": "MSN 227",
-      "src": "./msn-assets/msn75/emoticons/emoticon-227.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2055_9.png"
-    },
-    {
-      "id": "msn-228",
-      "code": ":msn228:",
-      "label": "MSN 228",
-      "src": "./msn-assets/msn75/emoticons/emoticon-228.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2069_9.png"
-    },
-    {
-      "id": "msn-229",
-      "code": ":msn229:",
-      "label": "MSN 229",
-      "src": "./msn-assets/msn75/emoticons/emoticon-229.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2070_9.png"
-    },
-    {
-      "id": "msn-230",
-      "code": ":msn230:",
-      "label": "MSN 230",
-      "src": "./msn-assets/msn75/emoticons/emoticon-230.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2071_9.png"
-    },
-    {
-      "id": "msn-231",
-      "code": ":msn231:",
-      "label": "MSN 231",
-      "src": "./msn-assets/msn75/emoticons/emoticon-231.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2072_9.png"
-    },
-    {
-      "id": "msn-232",
-      "code": ":msn232:",
-      "label": "MSN 232",
-      "src": "./msn-assets/msn75/emoticons/emoticon-232.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2073_9.png"
-    },
-    {
-      "id": "msn-233",
-      "code": ":msn233:",
-      "label": "MSN 233",
-      "src": "./msn-assets/msn75/emoticons/emoticon-233.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2074_9.png"
-    },
-    {
-      "id": "msn-234",
-      "code": ":msn234:",
-      "label": "MSN 234",
-      "src": "./msn-assets/msn75/emoticons/emoticon-234.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2092_9.png"
-    },
-    {
-      "id": "msn-235",
-      "code": ":msn235:",
-      "label": "MSN 235",
-      "src": "./msn-assets/msn75/emoticons/emoticon-235.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2093_9.png"
-    },
-    {
-      "id": "msn-236",
-      "code": ":msn236:",
-      "label": "MSN 236",
-      "src": "./msn-assets/msn75/emoticons/emoticon-236.png",
-      "width": 24,
-      "height": 23,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2094_9.png"
-    },
-    {
-      "id": "msn-237",
-      "code": ":msn237:",
-      "label": "MSN 237",
-      "src": "./msn-assets/msn75/emoticons/emoticon-237.png",
-      "width": 1,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_876_9.png"
-    },
-    {
-      "id": "msn-238",
-      "code": ":msn238:",
-      "label": "MSN 238",
-      "src": "./msn-assets/msn75/emoticons/emoticon-238.png",
-      "width": 2,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_870_9.png"
-    },
-    {
-      "id": "msn-239",
-      "code": ":msn239:",
-      "label": "MSN 239",
-      "src": "./msn-assets/msn75/emoticons/emoticon-239.png",
-      "width": 2,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_871_9.png"
-    },
-    {
-      "id": "msn-240",
-      "code": ":msn240:",
-      "label": "MSN 240",
-      "src": "./msn-assets/msn75/emoticons/emoticon-240.png",
-      "width": 16,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_829_9.png"
-    },
-    {
-      "id": "msn-241",
-      "code": ":msn241:",
-      "label": "MSN 241",
-      "src": "./msn-assets/msn75/emoticons/emoticon-241.png",
-      "width": 21,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1083_9.png"
-    },
-    {
-      "id": "msn-242",
-      "code": ":msn242:",
-      "label": "MSN 242",
-      "src": "./msn-assets/msn75/emoticons/emoticon-242.png",
-      "width": 24,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2008_9.png"
-    },
-    {
-      "id": "msn-243",
-      "code": ":msn243:",
-      "label": "MSN 243",
-      "src": "./msn-assets/msn75/emoticons/emoticon-243.png",
-      "width": 24,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2041_9.png"
-    },
-    {
-      "id": "msn-244",
-      "code": ":msn244:",
-      "label": "MSN 244",
-      "src": "./msn-assets/msn75/emoticons/emoticon-244.png",
-      "width": 24,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2042_9.png"
-    },
-    {
-      "id": "msn-245",
-      "code": ":msn245:",
-      "label": "MSN 245",
-      "src": "./msn-assets/msn75/emoticons/emoticon-245.png",
-      "width": 24,
-      "height": 24,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2043_9.png"
-    },
-    {
-      "id": "msn-246",
-      "code": ":msn246:",
-      "label": "MSN 246",
-      "src": "./msn-assets/msn75/emoticons/emoticon-246.png",
-      "width": 15,
-      "height": 25,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_714_9.png"
-    },
-    {
-      "id": "msn-247",
-      "code": ":msn247:",
-      "label": "MSN 247",
-      "src": "./msn-assets/msn75/emoticons/emoticon-247.png",
-      "width": 58,
-      "height": 25,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_914_9.png"
-    },
-    {
-      "id": "msn-248",
-      "code": ":msn248:",
-      "label": "MSN 248",
-      "src": "./msn-assets/msn75/emoticons/emoticon-248.png",
-      "width": 58,
-      "height": 25,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_915_9.png"
-    },
-    {
-      "id": "msn-249",
-      "code": ":msn249:",
-      "label": "MSN 249",
-      "src": "./msn-assets/msn75/emoticons/emoticon-249.png",
-      "width": 1,
-      "height": 26,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_807_9.png"
-    },
-    {
-      "id": "msn-250",
-      "code": ":msn250:",
-      "label": "MSN 250",
-      "src": "./msn-assets/msn75/emoticons/emoticon-250.png",
-      "width": 1,
-      "height": 26,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_834_9.png"
-    },
-    {
-      "id": "msn-251",
-      "code": ":msn251:",
-      "label": "MSN 251",
-      "src": "./msn-assets/msn75/emoticons/emoticon-251.png",
-      "width": 8,
-      "height": 26,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_833_9.png"
-    },
-    {
-      "id": "msn-252",
-      "code": ":msn252:",
-      "label": "MSN 252",
-      "src": "./msn-assets/msn75/emoticons/emoticon-252.png",
-      "width": 8,
-      "height": 26,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_838_9.png"
-    },
-    {
-      "id": "msn-253",
-      "code": ":msn253:",
-      "label": "MSN 253",
-      "src": "./msn-assets/msn75/emoticons/emoticon-253.png",
-      "width": 26,
-      "height": 26,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2082_9.png"
-    },
-    {
-      "id": "msn-254",
-      "code": ":msn254:",
-      "label": "MSN 254",
-      "src": "./msn-assets/msn75/emoticons/emoticon-254.png",
-      "width": 35,
-      "height": 26,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_801_9.png"
-    },
-    {
-      "id": "msn-255",
-      "code": ":msn255:",
-      "label": "MSN 255",
-      "src": "./msn-assets/msn75/emoticons/emoticon-255.png",
-      "width": 50,
-      "height": 26,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_830_9.png"
-    },
-    {
-      "id": "msn-256",
-      "code": ":msn256:",
-      "label": "MSN 256",
-      "src": "./msn-assets/msn75/emoticons/emoticon-256.png",
-      "width": 28,
-      "height": 27,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_812_9.png"
-    },
-    {
-      "id": "msn-257",
-      "code": ":msn257:",
-      "label": "MSN 257",
-      "src": "./msn-assets/msn75/emoticons/emoticon-257.png",
-      "width": 33,
-      "height": 28,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_815_9.png"
-    },
-    {
-      "id": "msn-258",
-      "code": ":msn258:",
-      "label": "MSN 258",
-      "src": "./msn-assets/msn75/emoticons/emoticon-258.png",
-      "width": 24,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_789_9.png"
-    },
-    {
-      "id": "msn-259",
-      "code": ":msn259:",
-      "label": "MSN 259",
-      "src": "./msn-assets/msn75/emoticons/emoticon-259.png",
-      "width": 24,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_790_9.png"
-    },
-    {
-      "id": "msn-260",
-      "code": ":msn260:",
-      "label": "MSN 260",
-      "src": "./msn-assets/msn75/emoticons/emoticon-260.png",
-      "width": 28,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_777_9.png"
-    },
-    {
-      "id": "msn-261",
-      "code": ":msn261:",
-      "label": "MSN 261",
-      "src": "./msn-assets/msn75/emoticons/emoticon-261.png",
-      "width": 29,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_814_9.png"
-    },
-    {
-      "id": "msn-262",
-      "code": ":msn262:",
-      "label": "MSN 262",
-      "src": "./msn-assets/msn75/emoticons/emoticon-262.png",
-      "width": 31,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_811_9.png"
-    },
-    {
-      "id": "msn-263",
-      "code": ":msn263:",
-      "label": "MSN 263",
-      "src": "./msn-assets/msn75/emoticons/emoticon-263.png",
-      "width": 31,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_818_9.png"
-    },
-    {
-      "id": "msn-264",
-      "code": ":msn264:",
-      "label": "MSN 264",
-      "src": "./msn-assets/msn75/emoticons/emoticon-264.png",
-      "width": 32,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_776_9.png"
-    },
-    {
-      "id": "msn-265",
-      "code": ":msn265:",
-      "label": "MSN 265",
-      "src": "./msn-assets/msn75/emoticons/emoticon-265.png",
-      "width": 32,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_808_9.png"
-    },
-    {
-      "id": "msn-266",
-      "code": ":msn266:",
-      "label": "MSN 266",
-      "src": "./msn-assets/msn75/emoticons/emoticon-266.png",
-      "width": 32,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_809_9.png"
-    },
-    {
-      "id": "msn-267",
-      "code": ":msn267:",
-      "label": "MSN 267",
-      "src": "./msn-assets/msn75/emoticons/emoticon-267.png",
-      "width": 32,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_820_9.png"
-    },
-    {
-      "id": "msn-268",
-      "code": ":msn268:",
-      "label": "MSN 268",
-      "src": "./msn-assets/msn75/emoticons/emoticon-268.png",
-      "width": 45,
-      "height": 29,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_813_9.png"
-    },
-    {
-      "id": "msn-269",
-      "code": ":msn269:",
-      "label": "MSN 269",
-      "src": "./msn-assets/msn75/emoticons/emoticon-269.png",
-      "width": 1,
-      "height": 31,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2053_9.png"
-    },
-    {
-      "id": "msn-270",
-      "code": ":msn270:",
-      "label": "MSN 270",
-      "src": "./msn-assets/msn75/emoticons/emoticon-270.png",
-      "width": 16,
-      "height": 31,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2054_9.png"
-    },
-    {
-      "id": "msn-271",
-      "code": ":msn271:",
-      "label": "MSN 271",
-      "src": "./msn-assets/msn75/emoticons/emoticon-271.png",
-      "width": 43,
-      "height": 31,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2052_9.png"
-    },
-    {
-      "id": "msn-272",
-      "code": ":msn272:",
-      "label": "MSN 272",
-      "src": "./msn-assets/msn75/emoticons/emoticon-272.png",
-      "width": 24,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_276_9.png"
-    },
-    {
-      "id": "msn-273",
-      "code": ":msn273:",
-      "label": "MSN 273",
-      "src": "./msn-assets/msn75/emoticons/emoticon-273.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/dwintl/icon/dwintl_icon_1_9.ico"
-    },
-    {
-      "id": "msn-274",
-      "code": ":msn274:",
-      "label": "MSN 274",
-      "src": "./msn-assets/msn75/emoticons/emoticon-274.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/dwintl/icon/dwintl_icon_2_9.ico"
-    },
-    {
-      "id": "msn-275",
-      "code": ":msn275:",
-      "label": "MSN 275",
-      "src": "./msn-assets/msn75/emoticons/emoticon-275.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/dwintl/icon/dwintl_icon_3_9.ico"
-    },
-    {
-      "id": "msn-276",
-      "code": ":msn276:",
-      "label": "MSN 276",
-      "src": "./msn-assets/msn75/emoticons/emoticon-276.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/dwintl/icon/dwintl_icon_4_9.ico"
-    },
-    {
-      "id": "msn-277",
-      "code": ":msn277:",
-      "label": "MSN 277",
-      "src": "./msn-assets/msn75/emoticons/emoticon-277.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_212_9.png"
-    },
-    {
-      "id": "msn-278",
-      "code": ":msn278:",
-      "label": "MSN 278",
-      "src": "./msn-assets/msn75/emoticons/emoticon-278.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_213_9.png"
-    },
-    {
-      "id": "msn-279",
-      "code": ":msn279:",
-      "label": "MSN 279",
-      "src": "./msn-assets/msn75/emoticons/emoticon-279.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_821_9.png"
-    },
-    {
-      "id": "msn-280",
-      "code": ":msn280:",
-      "label": "MSN 280",
-      "src": "./msn-assets/msn75/emoticons/emoticon-280.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_11_9.ico"
-    },
-    {
-      "id": "msn-281",
-      "code": ":msn281:",
-      "label": "MSN 281",
-      "src": "./msn-assets/msn75/emoticons/emoticon-281.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_14_9.ico"
-    },
-    {
-      "id": "msn-282",
-      "code": ":msn282:",
-      "label": "MSN 282",
-      "src": "./msn-assets/msn75/emoticons/emoticon-282.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_17_9.ico"
-    },
-    {
-      "id": "msn-283",
-      "code": ":msn283:",
-      "label": "MSN 283",
-      "src": "./msn-assets/msn75/emoticons/emoticon-283.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_20_9.ico"
-    },
-    {
-      "id": "msn-284",
-      "code": ":msn284:",
-      "label": "MSN 284",
-      "src": "./msn-assets/msn75/emoticons/emoticon-284.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_22_9.ico"
-    },
-    {
-      "id": "msn-285",
-      "code": ":msn285:",
-      "label": "MSN 285",
-      "src": "./msn-assets/msn75/emoticons/emoticon-285.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_23_9.ico"
-    },
-    {
-      "id": "msn-286",
-      "code": ":msn286:",
-      "label": "MSN 286",
-      "src": "./msn-assets/msn75/emoticons/emoticon-286.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_24_9.ico"
-    },
-    {
-      "id": "msn-287",
-      "code": ":msn287:",
-      "label": "MSN 287",
-      "src": "./msn-assets/msn75/emoticons/emoticon-287.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_25_9.ico"
-    },
-    {
-      "id": "msn-288",
-      "code": ":msn288:",
-      "label": "MSN 288",
-      "src": "./msn-assets/msn75/emoticons/emoticon-288.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_26_9.ico"
-    },
-    {
-      "id": "msn-289",
-      "code": ":msn289:",
-      "label": "MSN 289",
-      "src": "./msn-assets/msn75/emoticons/emoticon-289.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_30_9.ico"
-    },
-    {
-      "id": "msn-290",
-      "code": ":msn290:",
-      "label": "MSN 290",
-      "src": "./msn-assets/msn75/emoticons/emoticon-290.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_31_9.ico"
-    },
-    {
-      "id": "msn-291",
-      "code": ":msn291:",
-      "label": "MSN 291",
-      "src": "./msn-assets/msn75/emoticons/emoticon-291.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_5_9.ico"
-    },
-    {
-      "id": "msn-292",
-      "code": ":msn292:",
-      "label": "MSN 292",
-      "src": "./msn-assets/msn75/emoticons/emoticon-292.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_8_9.ico"
-    },
-    {
-      "id": "msn-293",
-      "code": ":msn293:",
-      "label": "MSN 293",
-      "src": "./msn-assets/msn75/emoticons/emoticon-293.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnsearch/icon/msnsearch_icon_1_9.ico"
-    },
-    {
-      "id": "msn-294",
-      "code": ":msn294:",
-      "label": "MSN 294",
-      "src": "./msn-assets/msn75/emoticons/emoticon-294.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/wmv9vcm/icon/wmv9vcm_icon_1_9.ico"
-    },
-    {
-      "id": "msn-295",
-      "code": ":msn295:",
-      "label": "MSN 295",
-      "src": "./msn-assets/msn75/emoticons/emoticon-295.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/wmv9vcm/icon/wmv9vcm_icon_2_9.ico"
-    },
-    {
-      "id": "msn-296",
-      "code": ":msn296:",
-      "label": "MSN 296",
-      "src": "./msn-assets/msn75/emoticons/emoticon-296.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/wmv9vcm/icon/wmv9vcm_icon_3_9.ico"
-    },
-    {
-      "id": "msn-297",
-      "code": ":msn297:",
-      "label": "MSN 297",
-      "src": "./msn-assets/msn75/emoticons/emoticon-297.png",
-      "width": 32,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/wmv9vcm/icon/wmv9vcm_icon_4_9.ico"
-    },
-    {
-      "id": "msn-298",
-      "code": ":msn298:",
-      "label": "MSN 298",
-      "src": "./msn-assets/msn75/emoticons/emoticon-298.png",
-      "width": 58,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_912_9.png"
-    },
-    {
-      "id": "msn-299",
-      "code": ":msn299:",
-      "label": "MSN 299",
-      "src": "./msn-assets/msn75/emoticons/emoticon-299.png",
-      "width": 58,
-      "height": 32,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_913_9.png"
-    },
-    {
-      "id": "msn-300",
-      "code": ":msn300:",
-      "label": "MSN 300",
-      "src": "./msn-assets/msn75/emoticons/emoticon-300.png",
-      "width": 20,
-      "height": 34,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/bitmap/msnmsgr_bitmap_279_9.png"
-    },
-    {
-      "id": "msn-301",
-      "code": ":msn301:",
-      "label": "MSN 301",
-      "src": "./msn-assets/msn75/emoticons/emoticon-301.png",
-      "width": 8,
-      "height": 35,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_793_9.png"
-    },
-    {
-      "id": "msn-302",
-      "code": ":msn302:",
-      "label": "MSN 302",
-      "src": "./msn-assets/msn75/emoticons/emoticon-302.png",
-      "width": 8,
-      "height": 35,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_794_9.png"
-    },
-    {
-      "id": "msn-303",
-      "code": ":msn303:",
-      "label": "MSN 303",
-      "src": "./msn-assets/msn75/emoticons/emoticon-303.png",
-      "width": 8,
-      "height": 35,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_822_9.png"
-    },
-    {
-      "id": "msn-304",
-      "code": ":msn304:",
-      "label": "MSN 304",
-      "src": "./msn-assets/msn75/emoticons/emoticon-304.png",
-      "width": 8,
-      "height": 35,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_823_9.png"
-    },
-    {
-      "id": "msn-305",
-      "code": ":msn305:",
-      "label": "MSN 305",
-      "src": "./msn-assets/msn75/emoticons/emoticon-305.png",
-      "width": 30,
-      "height": 36,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_778_9.png"
-    },
-    {
-      "id": "msn-306",
-      "code": ":msn306:",
-      "label": "MSN 306",
-      "src": "./msn-assets/msn75/emoticons/emoticon-306.gif",
-      "width": 48,
-      "height": 36,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/html/msnmsgr_html_SIGNIN_ANI.GIF_9.gif"
-    },
-    {
-      "id": "msn-307",
-      "code": ":msn307:",
-      "label": "MSN 307",
-      "src": "./msn-assets/msn75/emoticons/emoticon-307.png",
-      "width": 29,
-      "height": 39,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_774_9.png"
-    },
-    {
-      "id": "msn-308",
-      "code": ":msn308:",
-      "label": "MSN 308",
-      "src": "./msn-assets/msn75/emoticons/emoticon-308.png",
-      "width": 32,
-      "height": 39,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_775_9.png"
-    },
-    {
-      "id": "msn-309",
-      "code": ":msn309:",
-      "label": "MSN 309",
-      "src": "./msn-assets/msn75/emoticons/emoticon-309.png",
-      "width": 40,
-      "height": 40,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2079_9.png"
-    },
-    {
-      "id": "msn-310",
-      "code": ":msn310:",
-      "label": "MSN 310",
-      "src": "./msn-assets/msn75/emoticons/emoticon-310.png",
-      "width": 40,
-      "height": 40,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2080_9.png"
-    },
-    {
-      "id": "msn-311",
-      "code": ":msn311:",
-      "label": "MSN 311",
-      "src": "./msn-assets/msn75/emoticons/emoticon-311.png",
-      "width": 58,
-      "height": 41,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_288_9.png"
-    },
-    {
-      "id": "msn-312",
-      "code": ":msn312:",
-      "label": "MSN 312",
-      "src": "./msn-assets/msn75/emoticons/emoticon-312.png",
-      "width": 46,
-      "height": 44,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_854_9.png"
-    },
-    {
-      "id": "msn-313",
-      "code": ":msn313:",
-      "label": "MSN 313",
-      "src": "./msn-assets/msn75/emoticons/emoticon-313.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_218_9.png"
-    },
-    {
-      "id": "msn-314",
-      "code": ":msn314:",
-      "label": "MSN 314",
-      "src": "./msn-assets/msn75/emoticons/emoticon-314.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_701_9.png"
-    },
-    {
-      "id": "msn-315",
-      "code": ":msn315:",
-      "label": "MSN 315",
-      "src": "./msn-assets/msn75/emoticons/emoticon-315.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_703_9.png"
-    },
-    {
-      "id": "msn-316",
-      "code": ":msn316:",
-      "label": "MSN 316",
-      "src": "./msn-assets/msn75/emoticons/emoticon-316.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_705_9.png"
-    },
-    {
-      "id": "msn-317",
-      "code": ":msn317:",
-      "label": "MSN 317",
-      "src": "./msn-assets/msn75/emoticons/emoticon-317.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_707_9.png"
-    },
-    {
-      "id": "msn-318",
-      "code": ":msn318:",
-      "label": "MSN 318",
-      "src": "./msn-assets/msn75/emoticons/emoticon-318.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_709_9.png"
-    },
-    {
-      "id": "msn-319",
-      "code": ":msn319:",
-      "label": "MSN 319",
-      "src": "./msn-assets/msn75/emoticons/emoticon-319.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_719_9.png"
-    },
-    {
-      "id": "msn-320",
-      "code": ":msn320:",
-      "label": "MSN 320",
-      "src": "./msn-assets/msn75/emoticons/emoticon-320.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_720_9.png"
-    },
-    {
-      "id": "msn-321",
-      "code": ":msn321:",
-      "label": "MSN 321",
-      "src": "./msn-assets/msn75/emoticons/emoticon-321.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_721_9.png"
-    },
-    {
-      "id": "msn-322",
-      "code": ":msn322:",
-      "label": "MSN 322",
-      "src": "./msn-assets/msn75/emoticons/emoticon-322.png",
-      "width": 32,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_779_9.png"
-    },
-    {
-      "id": "msn-323",
-      "code": ":msn323:",
-      "label": "MSN 323",
-      "src": "./msn-assets/msn75/emoticons/emoticon-323.png",
-      "width": 47,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_780_9.png"
-    },
-    {
-      "id": "msn-324",
-      "code": ":msn324:",
-      "label": "MSN 324",
-      "src": "./msn-assets/msn75/emoticons/emoticon-324.png",
-      "width": 47,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_782_9.png"
-    },
-    {
-      "id": "msn-325",
-      "code": ":msn325:",
-      "label": "MSN 325",
-      "src": "./msn-assets/msn75/emoticons/emoticon-325.png",
-      "width": 47,
-      "height": 45,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_783_9.png"
-    },
-    {
-      "id": "msn-326",
-      "code": ":msn326:",
-      "label": "MSN 326",
-      "src": "./msn-assets/msn75/emoticons/emoticon-326.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_10_9.ico"
-    },
-    {
-      "id": "msn-327",
-      "code": ":msn327:",
-      "label": "MSN 327",
-      "src": "./msn-assets/msn75/emoticons/emoticon-327.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_13_9.ico"
-    },
-    {
-      "id": "msn-328",
-      "code": ":msn328:",
-      "label": "MSN 328",
-      "src": "./msn-assets/msn75/emoticons/emoticon-328.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_16_9.ico"
-    },
-    {
-      "id": "msn-329",
-      "code": ":msn329:",
-      "label": "MSN 329",
-      "src": "./msn-assets/msn75/emoticons/emoticon-329.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_19_9.ico"
-    },
-    {
-      "id": "msn-330",
-      "code": ":msn330:",
-      "label": "MSN 330",
-      "src": "./msn-assets/msn75/emoticons/emoticon-330.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_32_9.ico"
-    },
-    {
-      "id": "msn-331",
-      "code": ":msn331:",
-      "label": "MSN 331",
-      "src": "./msn-assets/msn75/emoticons/emoticon-331.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_33_9.ico"
-    },
-    {
-      "id": "msn-332",
-      "code": ":msn332:",
-      "label": "MSN 332",
-      "src": "./msn-assets/msn75/emoticons/emoticon-332.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_4_9.ico"
-    },
-    {
-      "id": "msn-333",
-      "code": ":msn333:",
-      "label": "MSN 333",
-      "src": "./msn-assets/msn75/emoticons/emoticon-333.png",
-      "width": 48,
-      "height": 48,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/icon/msnmsgr_icon_7_9.ico"
-    },
-    {
-      "id": "msn-334",
-      "code": ":msn334:",
-      "label": "MSN 334",
-      "src": "./msn-assets/msn75/emoticons/emoticon-334.png",
-      "width": 50,
-      "height": 50,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2022_9.png"
-    },
-    {
-      "id": "msn-335",
-      "code": ":msn335:",
-      "label": "MSN 335",
-      "src": "./msn-assets/msn75/emoticons/emoticon-335.png",
-      "width": 50,
-      "height": 50,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2058_9.png"
-    },
-    {
-      "id": "msn-336",
-      "code": ":msn336:",
-      "label": "MSN 336",
-      "src": "./msn-assets/msn75/emoticons/emoticon-336.png",
-      "width": 52,
-      "height": 52,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_787_9.png"
-    },
-    {
-      "id": "msn-337",
-      "code": ":msn337:",
-      "label": "MSN 337",
-      "src": "./msn-assets/msn75/emoticons/emoticon-337.png",
-      "width": 1,
-      "height": 58,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_805_9.png"
-    },
-    {
-      "id": "msn-338",
-      "code": ":msn338:",
-      "label": "MSN 338",
-      "src": "./msn-assets/msn75/emoticons/emoticon-338.png",
-      "width": 9,
-      "height": 58,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_806_9.png"
-    },
-    {
-      "id": "msn-339",
-      "code": ":msn339:",
-      "label": "MSN 339",
-      "src": "./msn-assets/msn75/emoticons/emoticon-339.png",
-      "width": 50,
-      "height": 58,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_725_9.png"
-    },
-    {
-      "id": "msn-340",
-      "code": ":msn340:",
-      "label": "MSN 340",
-      "src": "./msn-assets/msn75/emoticons/emoticon-340.png",
-      "width": 57,
-      "height": 58,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_803_9.png"
-    },
-    {
-      "id": "msn-341",
-      "code": ":msn341:",
-      "label": "MSN 341",
-      "src": "./msn-assets/msn75/emoticons/emoticon-341.png",
-      "width": 35,
-      "height": 61,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1099_9.png"
-    },
-    {
-      "id": "msn-342",
-      "code": ":msn342:",
-      "label": "MSN 342",
-      "src": "./msn-assets/msn75/emoticons/emoticon-342.png",
-      "width": 35,
-      "height": 61,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_762_9.png"
-    },
-    {
-      "id": "msn-343",
-      "code": ":msn343:",
-      "label": "MSN 343",
-      "src": "./msn-assets/msn75/emoticons/emoticon-343.png",
-      "width": 35,
-      "height": 61,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_763_9.png"
-    },
-    {
-      "id": "msn-344",
-      "code": ":msn344:",
-      "label": "MSN 344",
-      "src": "./msn-assets/msn75/emoticons/emoticon-344.png",
-      "width": 35,
-      "height": 61,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_764_9.png"
-    },
-    {
-      "id": "msn-345",
-      "code": ":msn345:",
-      "label": "MSN 345",
-      "src": "./msn-assets/msn75/emoticons/emoticon-345.png",
-      "width": 33,
-      "height": 63,
-      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_700_9.png"
+      "id": "smile",
+      "label": "Sourire",
+      "code": ":)",
+      "aliases": [
+        ":-)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/smile.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_423_9.png",
+      "frame": 0
+    },
+    {
+      "id": "star",
+      "label": "Etoile",
+      "code": "(*)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/star.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_423_9.png",
+      "frame": 1
+    },
+    {
+      "id": "rose",
+      "label": "Rose",
+      "code": "(F)",
+      "aliases": [
+        "(f)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/rose.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_423_9.png",
+      "frame": 2
+    },
+    {
+      "id": "wink",
+      "label": "Clin d'oeil",
+      "code": ";)",
+      "aliases": [
+        ";-)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/wink.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_900_9.png",
+      "frame": 0
+    },
+    {
+      "id": "kiss",
+      "label": "Bisou",
+      "code": ":*",
+      "aliases": [
+        ":-*",
+        "(K)",
+        "(k)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/kiss.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_900_9.png",
+      "frame": 1
+    },
+    {
+      "id": "big-smile",
+      "label": "Grand sourire",
+      "code": ":D",
+      "aliases": [
+        ":-D"
+      ],
+      "src": "./msn-assets/msn75/emoticons/big-smile.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_900_9.png",
+      "frame": 2
+    },
+    {
+      "id": "blank-face",
+      "label": "Neutre",
+      "code": ":|",
+      "aliases": [
+        ":-|"
+      ],
+      "src": "./msn-assets/msn75/emoticons/blank-face.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_904_9.png",
+      "frame": 0
+    },
+    {
+      "id": "curious",
+      "label": "Question",
+      "code": ":?",
+      "aliases": [
+        ":-?"
+      ],
+      "src": "./msn-assets/msn75/emoticons/curious.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_904_9.png",
+      "frame": 1
+    },
+    {
+      "id": "surprised",
+      "label": "Surpris",
+      "code": ":O",
+      "aliases": [
+        ":-O",
+        ":o",
+        ":-o"
+      ],
+      "src": "./msn-assets/msn75/emoticons/surprised.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_904_9.png",
+      "frame": 2
+    },
+    {
+      "id": "sad",
+      "label": "Triste",
+      "code": ":(",
+      "aliases": [
+        ":-("
+      ],
+      "src": "./msn-assets/msn75/emoticons/sad.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_904_9.png",
+      "frame": 3
+    },
+    {
+      "id": "cool",
+      "label": "Cool",
+      "code": "(H)",
+      "aliases": [
+        "(h)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/cool.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_904_9.png",
+      "frame": 4
+    },
+    {
+      "id": "thinking",
+      "label": "Confus",
+      "code": ":S",
+      "aliases": [
+        ":-S",
+        ":s",
+        ":-s"
+      ],
+      "src": "./msn-assets/msn75/emoticons/thinking.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_904_9.png",
+      "frame": 5
+    },
+    {
+      "id": "pencil-black",
+      "label": "Crayon noir",
+      "code": "(pen)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-black.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_906_9.png",
+      "frame": 0
+    },
+    {
+      "id": "pencil-red",
+      "label": "Crayon rouge",
+      "code": "(redpen)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-red.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_906_9.png",
+      "frame": 1
+    },
+    {
+      "id": "pencil-blue",
+      "label": "Crayon bleu",
+      "code": "(bluepen)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-blue.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_906_9.png",
+      "frame": 2
+    },
+    {
+      "id": "pencil-tools",
+      "label": "Outils",
+      "code": "(tools)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-tools.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_906_9.png",
+      "frame": 3
+    },
+    {
+      "id": "pencil-cut",
+      "label": "Couper",
+      "code": "(cut)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/pencil-cut.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_906_9.png",
+      "frame": 4
+    },
+    {
+      "id": "moon-party",
+      "label": "Lune",
+      "code": "(mo)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-party.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_907_9.png",
+      "frame": 0
+    },
+    {
+      "id": "moon-happy",
+      "label": "Lune heureuse",
+      "code": "(moon)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-happy.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_907_9.png",
+      "frame": 1
+    },
+    {
+      "id": "moon-sleepy",
+      "label": "Endormi",
+      "code": "|-)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-sleepy.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_907_9.png",
+      "frame": 2
+    },
+    {
+      "id": "moon-wink",
+      "label": "Nuit",
+      "code": "(night)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/moon-wink.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_907_9.png",
+      "frame": 3
+    },
+    {
+      "id": "cloud",
+      "label": "Nuage",
+      "code": "(cloud)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/cloud.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_908_9.png",
+      "frame": 0
+    },
+    {
+      "id": "rain",
+      "label": "Pluie",
+      "code": "(rain)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/rain.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_908_9.png",
+      "frame": 1
+    },
+    {
+      "id": "storm",
+      "label": "Orage",
+      "code": "(st)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/storm.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_908_9.png",
+      "frame": 2
+    },
+    {
+      "id": "sun",
+      "label": "Soleil",
+      "code": "(#)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/sun.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_908_9.png",
+      "frame": 3
+    },
+    {
+      "id": "umbrella",
+      "label": "Parapluie",
+      "code": "(um)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/umbrella.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_908_9.png",
+      "frame": 4
+    },
+    {
+      "id": "wind",
+      "label": "Vent",
+      "code": "(wind)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/wind.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_908_9.png",
+      "frame": 5
+    },
+    {
+      "id": "shy",
+      "label": "Gene",
+      "code": ":$",
+      "aliases": [
+        ":-$"
+      ],
+      "src": "./msn-assets/msn75/emoticons/shy.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_909_9.png",
+      "frame": 0
+    },
+    {
+      "id": "angry-soft",
+      "label": "Fache",
+      "code": ":@",
+      "aliases": [
+        ":-@"
+      ],
+      "src": "./msn-assets/msn75/emoticons/angry-soft.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_909_9.png",
+      "frame": 1
+    },
+    {
+      "id": "angel",
+      "label": "Ange",
+      "code": "(A)",
+      "aliases": [
+        "(a)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/angel.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_909_9.png",
+      "frame": 2
+    },
+    {
+      "id": "wonder",
+      "label": "Dubitatif",
+      "code": ":^)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/wonder.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_909_9.png",
+      "frame": 3
+    },
+    {
+      "id": "plain",
+      "label": "Simple",
+      "code": ":I",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/plain.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_910_9.png",
+      "frame": 0
+    },
+    {
+      "id": "sleep",
+      "label": "Sommeil",
+      "code": "(S)",
+      "aliases": [
+        "(s)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/sleep.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_910_9.png",
+      "frame": 1
+    },
+    {
+      "id": "stare",
+      "label": "Regard",
+      "code": "8|",
+      "aliases": [
+        "8-|"
+      ],
+      "src": "./msn-assets/msn75/emoticons/stare.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_910_9.png",
+      "frame": 2
+    },
+    {
+      "id": "laugh-side",
+      "label": "Rire",
+      "code": ":))",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/laugh-side.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_910_9.png",
+      "frame": 3
+    },
+    {
+      "id": "smirk",
+      "label": "Langue",
+      "code": ":P",
+      "aliases": [
+        ":-P",
+        ":p",
+        ":-p"
+      ],
+      "src": "./msn-assets/msn75/emoticons/smirk.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_910_9.png",
+      "frame": 4
+    },
+    {
+      "id": "framed-smile",
+      "label": "Smile MSN",
+      "code": ":msn:",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/framed-smile.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_911_9.png",
+      "frame": 0
+    },
+    {
+      "id": "simple-smile",
+      "label": "Petit sourire",
+      "code": ":smile:",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/simple-smile.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1011_9.png",
+      "frame": 0
+    },
+    {
+      "id": "gift",
+      "label": "Cadeau",
+      "code": "(G)",
+      "aliases": [
+        "(g)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/gift.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1012_9.png",
+      "frame": 0
+    },
+    {
+      "id": "butterfly",
+      "label": "Papillon MSN",
+      "code": "(M)",
+      "aliases": [
+        "(m)"
+      ],
+      "src": "./msn-assets/msn75/emoticons/butterfly.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1092_9.png",
+      "frame": 0
+    },
+    {
+      "id": "soft-wink",
+      "label": "Clin d'oeil doux",
+      "code": ";D",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/soft-wink.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_1093_9.png",
+      "frame": 0
+    },
+    {
+      "id": "laughing",
+      "label": "Rire MSN",
+      "code": "(lol)",
+      "aliases": [],
+      "src": "./msn-assets/msn75/emoticons/laughing.png",
+      "source": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_2004_9.png",
+      "frame": 0
     }
-  ]
+  ],
+  "emoticonCatalog": "public/msn-assets/msn75/emoticons/manifest.json",
+  "emoticonCount": 42,
+  "legacyEmoticonExports": true,
+  "classicEmoticonCatalog": "public/msn-assets/msn75/emoticons-classic/manifest.json",
+  "classicEmoticonCount": 79,
+  "verifiedShortcutCatalog": "public/msn-assets/msn75/emoticons-classic/shortcuts.json",
+  "verifiedShortcutCount": 69
 }

@@ -1,0 +1,143 @@
+name: Build desktop release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Exact stable release tag matching package.json; empty derives it
+        required: false
+        default: ""
+        type: string
+      commit:
+        description: Full source SHA; empty uses the dispatched workflow commit
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: ${{ matrix.platform }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2025
+            platform: windows
+            arch: x64
+            output: release/windows
+          - runner: macos-15
+            platform: macos
+            arch: arm64
+            output: release/macos
+          - runner: macos-15-intel
+            platform: macos
+            arch: x64
+            output: release/macos
+    defaults:
+      run:
+        shell: bash
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+    steps:
+      - name: Checkout the immutable workflow commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate release version and source
+        id: metadata
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+        run: node scripts/release-metadata.mjs
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security audit
+        run: npm run audit:security
+
+      - name: Unit and API contract tests
+        run: npm run test
+
+      - name: Release preflight
+        run: npm run test:release
+
+      - name: Build renderer
+        run: npm run build
+
+      - name: Smoke the source application on its native host
+        env:
+          CODEX_MESSENGER_USER_DATA_DIR: ${{ runner.temp }}/codex-messenger-source-smoke
+          CODEX_HOME: ${{ runner.temp }}/codex-messenger-source-codex
+        run: node node_modules/electron/cli.js . --smoke-test
+
+      - name: Package Windows x64 without publishing
+        if: matrix.platform == 'windows'
+        run: npm run package:win -- --publish never
+
+      - name: Package unsigned macOS for the exact architecture without publishing
+        if: matrix.platform == 'macos'
+        run: npm run package:mac:unsigned -- --${{ matrix.arch }} --publish never
+
+      - name: Smoke the actual packaged application
+        run: >-
+          node scripts/packaged-smoke.mjs
+          --platform ${{ matrix.platform }}
+          --arch ${{ matrix.arch }}
+          --output "${{ matrix.output }}"
+          --version "${{ steps.metadata.outputs.version }}"
+          --report release-proof/packaged-smoke.json
+
+      - name: Verify installers and generate SHA256SUMS
+        run: >-
+          node scripts/release-artifacts.mjs
+          --platform ${{ matrix.platform }}
+          --arch ${{ matrix.arch }}
+          --output "${{ matrix.output }}"
+          --version "${{ steps.metadata.outputs.version }}"
+          --commit "${{ steps.metadata.outputs.commit }}"
+          --upload-dir release-upload
+          --proof release-proof/packaged-smoke.json
+
+      - name: Upload verified installers, checksums and packaged smoke proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-messenger-${{ steps.metadata.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: release-upload/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Record the publication handoff
+        env:
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+          RELEASE_SOURCE: ${{ steps.metadata.outputs.commit }}
+          RELEASE_PLATFORM: ${{ matrix.platform }}
+          RELEASE_ARCH: ${{ matrix.arch }}
+        run: |
+          {
+            echo "### Verified desktop artifact"
+            echo ""
+            echo "- Version: $RELEASE_VERSION"
+            echo "- Source: $RELEASE_SOURCE"
+            echo "- Platform: $RELEASE_PLATFORM $RELEASE_ARCH"
+            echo "- Packaged application launched and checked on its native host."
+            echo "- No signing credentials supplied; macOS Developer ID signing/notarization and Windows Authenticode signing are not performed."
+            echo "- Nothing was published. Publish only after all three matrix jobs succeed."
+          } >> "$GITHUB_STEP_SUMMARY"

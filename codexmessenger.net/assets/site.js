@@ -11,67 +11,87 @@
   const actionElements = langLinks;
 
   const copy = {
-    en: {
-      selected: "English mode selected",
-      download: "Opening GitHub release...",
-      downloadMenu: "Choose your download...",
-      downloadTitle: "Download Codex Messenger",
-      downloadSubtitle: "Open the GitHub release page and choose the installer for your computer.",
-      downloadMac: "Open macOS release",
-      downloadMacNote: "Choose the Apple Silicon DMG on GitHub",
-      downloadWindows: "Open Windows release",
-      downloadWindowsNote: "Choose the Windows installer on GitHub",
-      source: "Opening source code...",
-      taglineOne: "All Codex functionality...",
-      taglineTwo: "but with your childhood memories !",
-      aiLine: "you have lost your old friends, but now you can talk with your AI friends !",
-      featureOne: "Classic look & feel from the 2000s",
-      featureTwo: "Private messaging like MSN",
-      featureThree: "Emoticons, winks and more!",
-      featureFour: "Lightweight and blazing fast",
-      featureFive: "Secure, modern and Open Source",
-      downloadNote: "Get Codex Messenger Now !",
-      sourceTitle: "Open Source Project",
-      sourceOne: "Codex Messenger is 100% Open Source.",
-      sourceTwo: "Check out the code, contribute and",
-      sourceThree: "help make it even better!",
-      sourceLinkOne: "View Source",
-      sourceLinkTwo: "on GitHub",
-      sourceMobile: "Codex Messenger is 100% Open Source. View Source on GitHub.",
-      socialTitle: "Developed with fun by Anis Ayari and Codex",
-      footerTagline: "Bringing back the vibes. Powered by "
-    },
-    fr: {
-      selected: "Mode francais selectionne",
-      download: "Ouverture de la release GitHub...",
-      downloadMenu: "Choisis ton telechargement...",
-      downloadTitle: "Telecharger Codex Messenger",
-      downloadSubtitle: "Ouvre la page GitHub Releases et choisis l'installeur pour ton ordinateur.",
-      downloadMac: "Ouvrir la release macOS",
-      downloadMacNote: "Choisis le DMG Apple Silicon sur GitHub",
-      downloadWindows: "Ouvrir la release Windows",
-      downloadWindowsNote: "Choisis l'installeur Windows sur GitHub",
-      source: "Ouverture du code source...",
-      taglineOne: "Toute la puissance de Codex...",
-      taglineTwo: "avec tes souvenirs d'enfance !",
-      aiLine: "tu as perdu tes anciens amis, mais maintenant tu peux parler avec tes amis IA !",
-      featureOne: "Look classique des annees 2000",
-      featureTwo: "Messagerie privee comme MSN",
-      featureThree: "Emoticones, winks et plus encore !",
-      featureFour: "Leger et ultra rapide",
-      featureFive: "Securise, moderne et Open Source",
-      downloadNote: "Telecharge Codex Messenger !",
-      sourceTitle: "Projet Open Source",
-      sourceOne: "Codex Messenger est 100% Open Source.",
-      sourceTwo: "Regarde le code, contribue et",
-      sourceThree: "aide a l'ameliorer !",
-      sourceLinkOne: "Voir le code",
-      sourceLinkTwo: "sur GitHub",
-      sourceMobile: "Codex Messenger est 100% Open Source. Voir le code sur GitHub.",
-      socialTitle: "Developpe avec fun par Anis Ayari et Codex",
-      footerTagline: "Retour aux vibes MSN. Propulse par "
-    }
-  };
+  "en": {
+    "selected": "English selected",
+    "download": "Opening GitHub release…",
+    "downloadMenu": "Choose your download…",
+    "downloadTitle": "Download Codex Messenger",
+    "downloadSubtitle": "Open the official GitHub release and choose the installer for your computer.",
+    "downloadMac": "macOS · Apple Silicon",
+    "downloadMacNote": "Choose the arm64 DMG on GitHub",
+    "downloadIntel": "macOS · Intel",
+    "downloadIntelNote": "Choose the x64 DMG on GitHub",
+    "downloadWindows": "Windows · x64",
+    "downloadWindowsNote": "Choose the x64 installer on GitHub",
+    "downloadClose": "Close download chooser",
+    "downloadButton": "DOWNLOAD",
+    "downloadVersionPrefix": "download version",
+    "source": "Opening source code…",
+    "taglineOne": "Modern Codex. Classic MSN.",
+    "taglineTwo": "Your coding, with childhood memories.",
+    "aiLine": "Codex 0.156.1 required. Voice: account/server access and mic permission.",
+    "featureOne": "Models, skills, MCP and approvals",
+    "featureTwo": "Files, history, search and terminal",
+    "featureThree": "69 classic emoticons & 15 real winks",
+    "featureFour": "Voice controls, diagrams & equations",
+    "featureFive": "Local tic-tac-toe. Open-source code.",
+    "downloadNote": "Get Codex Messenger now!",
+    "sourceTitle": "Open-source client",
+    "sourceOne": "The app code is open source.",
+    "sourceTwo": "Read the changelog and validation",
+    "sourceThree": "and help make it even better.",
+    "sourceLinkOne": "View source",
+    "sourceLinkTwo": "on GitHub",
+    "sourceMobile": "Explore the app code, changelog and validation on GitHub.",
+    "socialTitle": "Developed with fun by Anis Ayari and Codex",
+    "footerTagline": "Bringing back the vibes. Powered by ",
+    "previewCaption": "Sample conversation · isolated demo contacts",
+    "previewConversation": "Production renderer with a sample conversation",
+    "previewRoster": "Isolated demo contact list, not connected MSN users",
+    "pageDescription": "A retro MSN-inspired desktop client for Codex, with models, skills, MCP, approvals, history, terminals, original emoticons and winks.",
+    "svgDescription": "Codex Messenger, a retro desktop client for Codex, with verified features, a GitHub release chooser and source code links."
+  },
+  "fr": {
+    "selected": "Français sélectionné",
+    "download": "Ouverture de la release GitHub…",
+    "downloadMenu": "Choisissez votre téléchargement…",
+    "downloadTitle": "Télécharger Codex Messenger",
+    "downloadSubtitle": "Ouvrez la release GitHub officielle et choisissez l’installeur pour votre ordinateur.",
+    "downloadMac": "macOS · Apple Silicon",
+    "downloadMacNote": "Choisissez le DMG arm64 sur GitHub",
+    "downloadIntel": "macOS · Intel",
+    "downloadIntelNote": "Choisissez le DMG x64 sur GitHub",
+    "downloadWindows": "Windows · x64",
+    "downloadWindowsNote": "Choisissez l’installeur x64 sur GitHub",
+    "downloadClose": "Fermer le choix de téléchargement",
+    "downloadButton": "TÉLÉCHARGER",
+    "downloadVersionPrefix": "télécharger la version",
+    "source": "Ouverture du code source…",
+    "taglineOne": "Codex moderne. MSN classique.",
+    "taglineTwo": "Votre code et vos souvenirs d’enfance.",
+    "aiLine": "Codex 0.156.1 requis. Voix selon compte, serveur et autorisation du micro.",
+    "featureOne": "Modèles, skills, MCP et approvals",
+    "featureTwo": "Fichiers, historique et terminal",
+    "featureThree": "69 émoticônes et 15 clins d’œil MSN",
+    "featureFour": "Voix, diagrammes et équations",
+    "featureFive": "Morpion local. Code open source.",
+    "downloadNote": "Téléchargez Codex Messenger !",
+    "sourceTitle": "Client open source",
+    "sourceOne": "Le code de l’app est open source.",
+    "sourceTwo": "Consultez le changelog et les tests",
+    "sourceThree": "et contribuez au projet.",
+    "sourceLinkOne": "Voir le code",
+    "sourceLinkTwo": "sur GitHub",
+    "sourceMobile": "Consultez le code, le changelog et les tests sur GitHub.",
+    "socialTitle": "Développé avec fun par Anis Ayari et Codex",
+    "footerTagline": "Retour aux vibes MSN. Propulsé par ",
+    "previewCaption": "Conversation exemple · contacts de démonstration",
+    "previewConversation": "Renderer de production avec une conversation exemple",
+    "previewRoster": "Liste de contacts de démonstration isolée, sans utilisateurs MSN connectés",
+    "pageDescription": "Un client rétro inspiré de MSN pour Codex : modèles, skills, MCP, approvals, historique, terminaux, émoticônes et clins d’œil originaux.",
+    "svgDescription": "Codex Messenger, un client rétro pour Codex, avec des fonctions vérifiées, les téléchargements GitHub et le code source."
+  }
+};
 
   let feedbackTimer = 0;
 
@@ -129,6 +149,21 @@
     setText("mobileSourceTitle", text.sourceTitle);
     setText("mobileSourceText", text.sourceMobile);
     setText("mobileFooterTagline", text.footerTagline + "Codex.");
+
+    setText("downloadIntelLabel", text.downloadIntel);
+    setText("downloadIntelNote", text.downloadIntelNote);
+    setText("page-desc", text.svgDescription);
+    document.querySelectorAll("[data-download-label]").forEach(element => { element.textContent = text.downloadButton; });
+    document.querySelectorAll("[data-release-label]").forEach(element => { element.textContent = text.downloadVersionPrefix + " v0.0.3"; });
+    document.querySelectorAll("[data-preview-caption]").forEach(element => { element.textContent = text.previewCaption; });
+    document.querySelectorAll("[data-preview-conversation]").forEach(element => { element.alt = text.previewConversation; });
+    document.querySelectorAll("[data-preview-roster]").forEach(element => { element.alt = text.previewRoster; });
+    downloadModalClose?.setAttribute("aria-label", text.downloadClose);
+    document.querySelector('meta[name="description"]')?.setAttribute("content", text.pageDescription);
+    document.querySelector('meta[property="og:description"]')?.setAttribute("content", text.pageDescription);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute("content", text.pageDescription);
+    document.querySelector('meta[property="og:locale"]')?.setAttribute("content", lang === "fr" ? "fr_FR" : "en_US");
+    document.querySelector('meta[property="og:locale:alternate"]')?.setAttribute("content", lang === "fr" ? "en_US" : "fr_FR");
 
     setFeedbackMessage("download", lang);
     setFeedbackMessage("source", lang);
@@ -219,6 +254,7 @@
     lastDownloadTrigger = element;
     downloadModal.hidden = false;
     document.body.classList.add("download-modal-open");
+    document.querySelectorAll("main.site, main.mobile-site").forEach(element => { element.inert = true; });
     showFeedback(element.dataset.feedback || "Choose your download...", event, element);
     window.setTimeout(() => downloadModalClose?.focus(), 0);
   };
@@ -230,30 +266,29 @@
 
     downloadModal.hidden = true;
     document.body.classList.remove("download-modal-open");
+    document.querySelectorAll("main.site, main.mobile-site").forEach(element => { element.inert = false; });
     lastDownloadTrigger?.focus?.();
     lastDownloadTrigger = null;
   };
 
-  const setLanguage = (lang, persist = true) => {
+  const setLanguage = (lang, updateUrl = true) => {
     const normalized = lang === "fr" ? "fr" : "en";
     const text = copy[normalized];
 
     langLinks.forEach((item) => {
       const isActive = item.dataset.lang === normalized;
       item.classList.toggle("is-active", isActive);
-      item.setAttribute("aria-pressed", String(isActive));
+      item.setAttribute("aria-current", isActive ? "true" : "false");
       item.dataset.feedback = isActive ? text.selected : copy[item.dataset.lang === "fr" ? "fr" : "en"].selected;
     });
 
     document.documentElement.lang = normalized;
     applyCopy(normalized);
 
-    if (persist) {
-      try {
-        window.localStorage.setItem("codexMessengerLang", normalized);
-      } catch {
-        // localStorage can be blocked; language switching should still work.
-      }
+    if (updateUrl) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", normalized);
+      if (url.href !== window.location.href) window.history.pushState(null, "", url);
     }
   };
 
@@ -262,15 +297,6 @@
     const requested = params.get("lang");
     if (requested === "fr" || requested === "en") {
       return requested;
-    }
-
-    try {
-      const saved = window.localStorage.getItem("codexMessengerLang");
-      if (saved === "fr" || saved === "en") {
-        return saved;
-      }
-    } catch {
-      return "en";
     }
 
     return "en";
@@ -314,10 +340,21 @@
     }
   });
   document.addEventListener("keydown", (event) => {
+    if (!downloadModal || downloadModal.hidden) return;
     if (event.key === "Escape") {
+      event.preventDefault();
       closeDownloadModal();
+      return;
+    }
+    if (event.key === "Tab") {
+      const focusable = Array.from(downloadModal.querySelectorAll('button:not([disabled]), a[href]')).filter(element => element.getClientRects().length);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && (document.activeElement === first || !downloadModal.contains(document.activeElement))) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || !downloadModal.contains(document.activeElement))) { event.preventDefault(); first?.focus(); }
     }
   });
 
+  window.addEventListener("popstate", () => setLanguage(initialLanguage(), false));
   setLanguage(initialLanguage(), false);
 })();

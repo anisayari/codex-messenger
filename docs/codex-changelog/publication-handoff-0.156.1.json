@@ -1,0 +1,371 @@
+{
+  "verifiedAt": "2026-09-23T14:27:58.043Z",
+  "archiveCount": 51,
+  "latest": "0.156.1",
+  "sourceAndResidentByteEqual": true,
+  "files": [
+    {
+      "path": "docs/codex-changelog/0.156.1.md",
+      "bytes": 763,
+      "sha256": "81a9416c0f94923a17874643f76156acd7db3f519f1e5f68709ce3fd6af08fcc",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/codex-changelog/releases.json",
+      "bytes": 490946,
+      "sha256": "6787e81889fa80a38295d07bbc7eac87b4d596d95c5ab72cffc2f807cd041da4",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/codex-changelog/README.md",
+      "bytes": 9344,
+      "sha256": "d8bbcee7ef4514b9137aafdd06eb6fd26d581db0d1d8444748f56c09ad84a0e7",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/codex-changelog/protocol-methods-0.156.1.json",
+      "bytes": 20588,
+      "sha256": "3e88940cd9a0775fefbe605d0b8c8dcc547a89bc5a9bc082e8cd1802b5f906af",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/codex-changelog/protocol-compatibility-0.156.0--0.156.1.json",
+      "bytes": 46418,
+      "sha256": "59ec68af45fb17aa6d3fc54df1974ddc633e01be2156ba6682ea9e8c22efb0a9",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/codex-changelog/cli-integrity-0.156.0--0.156.1.json",
+      "bytes": 3431,
+      "sha256": "a6bbc1bfdce2dba79f0b5cba8e80a1ff9ce978fdccb06348a5577b3fdfff458e",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/CODEX-0.156.1-DELTA.md",
+      "bytes": 4993,
+      "sha256": "9fb90dba89283970f2e8d9037f7230d2501939331cd9bf199e229e6d5aea2d82",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/codex-changelog/archive-verification-0.156.1.json",
+      "bytes": 18495,
+      "sha256": "86a70ce475f28e5d702169bccf86ff573703352a2fb8d613e32cad31e2c7a4cc",
+      "sourceAndResidentByteEqual": true
+    },
+    {
+      "path": "docs/codex-changelog/public-release-snapshot-2026-09-23.json",
+      "bytes": 5455,
+      "sha256": "3115685c36d10ff13aae0949e3f7c93bc160cf683a148edd76dc6bc7c12828e8",
+      "sourceAndResidentByteEqual": true
+    }
+  ],
+  "all51BodiesSourceAndResidentDigestEqual": true,
+  "bodyFiles": [
+    {
+      "path": "docs/codex-changelog/0.125.0.md",
+      "bytes": 6644,
+      "sha256": "cad5205949068e96817c1e9d04a79b7b19509a2d4ec9eab38dafb1a9bc7e2b4b",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.128.0.md",
+      "bytes": 20965,
+      "sha256": "0122c400ca5cbbae3ca318cb16ed0739899599658a075489448c9f8f43d5da44",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.129.0.md",
+      "bytes": 18926,
+      "sha256": "0fb1dc1fd305e7485ec51c3fc1bb57a19090ee2e5c9f9f09ea1abffb081d88b4",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.130.0.md",
+      "bytes": 5713,
+      "sha256": "d9935ba7a67c8d472e5920bf98b901a46e8f027741c0d67938bad805811f7a95",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.131.0.md",
+      "bytes": 22346,
+      "sha256": "9e7484d85d43267d7dc46d6e7deb5a267bbc6e8677c8e4e7b75b8515dfee9d20",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.132.0.md",
+      "bytes": 6250,
+      "sha256": "dad3964d22fd1bb502a29808eb360bbbc3001395f47c739285a6c8cd076d9109",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.133.0.md",
+      "bytes": 10996,
+      "sha256": "49128233a1b111c038675a5835064c7ed1df47f94d902c1f595fbb8190b1fa65",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.134.0.md",
+      "bytes": 6884,
+      "sha256": "a721eaa5bc09da5087d31a6700c0ba5cc04053d0c6a0de6bca592f77ff659838",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.135.0.md",
+      "bytes": 8597,
+      "sha256": "9ca4305c5527a6fcdce2325603207d91eed1f617cc86bab1f7a70f8e5521c394",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.136.0.md",
+      "bytes": 11496,
+      "sha256": "3df175d655f7745d719738e883228ebdc68020ee94b2e41a4faf0ddc4596f9ef",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.137.0.md",
+      "bytes": 11268,
+      "sha256": "29ae18d631464d2258df1074877a6921a55e4c808297f5a33c4ab35a1c856162",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.138.0.md",
+      "bytes": 9910,
+      "sha256": "b8704508b69e3624e8934713f8adfcc890d1be119bec0cb057de6e7f986e554f",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.139.0.md",
+      "bytes": 5487,
+      "sha256": "a8da58eb2c45745e2f0c2d0a1759aed34d99d9b7bfa124138a47643da14472ee",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.140.0.md",
+      "bytes": 15807,
+      "sha256": "b2e594e920087635f21df18b7da0da5693aec02a2f3d33ca8066f4ec7fb08c19",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.141.0.md",
+      "bytes": 7642,
+      "sha256": "a3372c785a91a2d1cd0ccc90c7b22da97b3a819d1445ab1f67d9f549296ffc67",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.142.0.md",
+      "bytes": 15273,
+      "sha256": "d535d24f032f9dd64c608027823d302570d8d10fc9dac12e1938e42a95e94db9",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.142.1.md",
+      "bytes": 745,
+      "sha256": "784b19bb6ca5a6e825c3fce17f35c029628e9403fec45590ed3b5062b2962b66",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.142.2.md",
+      "bytes": 3328,
+      "sha256": "3a3055b8204e26234bb8cc542678563ad0eed3acde8f2c6a04236f29c8b60f76",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.142.3.md",
+      "bytes": 623,
+      "sha256": "1286b46f8443548d5ff9c63f8c2bf4f098d5fbe54565f84811ea5150858d47e7",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.142.4.md",
+      "bytes": 606,
+      "sha256": "dd5a07407903b43ed9535bcb9ed49f3951e312f27fa4600520d0f6999e13677d",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.142.5.md",
+      "bytes": 726,
+      "sha256": "2cbaddae37fe617a73ac58f4bf03b710fb70ceb4291fcc21993f162ac75e3682",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.143.0.md",
+      "bytes": 21411,
+      "sha256": "075a69545ae403b49bb6aa46d9c3149dcaf18bfcfadf5b95ffdfd764581161a3",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.144.0.md",
+      "bytes": 7679,
+      "sha256": "d1384aa02850d83273fa2fdafd96ab27e113025a11d05c8b5914e6b48b2703e2",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.144.1.md",
+      "bytes": 956,
+      "sha256": "b7355a58967e72695e9c802fc451edc2e81f11266ff81bfe4adb345d6c3ee997",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.144.2.md",
+      "bytes": 768,
+      "sha256": "6fce129642c39a11e8f7ce08c57187f9949a99cd83ac7eb84fe7061c0ed558e4",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.144.3.md",
+      "bytes": 641,
+      "sha256": "9360019d2f9083dc5c535d1a1cd22cc7c3005e44a09a30e426428d972ffb7a4e",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.144.4.md",
+      "bytes": 595,
+      "sha256": "0f33dd4b20b1144dd49f7f6d188d47703a9e3f932fe2964be83df982385ab302",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.144.5.md",
+      "bytes": 777,
+      "sha256": "96b2c88a1349b8312396db29ddb8cdbef1b4012c1695b759a8112af8974b9405",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.144.6.md",
+      "bytes": 831,
+      "sha256": "2915da989b705757ac858ecdb787c872529297340d6869c9583789664cfec828",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.145.0.md",
+      "bytes": 26109,
+      "sha256": "eebfde98efc40b65342b40d0145701da129dbbadc04423eb1430771f89acc92a",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.146.0.md",
+      "bytes": 18117,
+      "sha256": "47c6a13aa0c421794f40553e371e4193222186822f0951564c1d5ac069efe1c6",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.146.1.md",
+      "bytes": 756,
+      "sha256": "6e6591ba3da2ec3e73508622e5172ef996b2cadc560087907f09239995708519",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.147.0.md",
+      "bytes": 25949,
+      "sha256": "7815ad6a9c12f2858563715c0c3d56914876a1a5130e001477972ef9809d03c0",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.148.0.md",
+      "bytes": 28179,
+      "sha256": "3349e6d5de981025ff40a5f68a46a685071213c611b733a1bd15f5820472a86a",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.149.0.md",
+      "bytes": 18775,
+      "sha256": "50f89e983841b3dec596d98ac79c7a049e1bd10fcd7a69e271feab74e7ce1a57",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.149.1.md",
+      "bytes": 537,
+      "sha256": "f8955664ff81d103fe4085abec8877d1e4330f9c1f0f2fe73afc1399076dba40",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.150.0.md",
+      "bytes": 16156,
+      "sha256": "c3926bae0818e5d9cb71a657fff0cd4065e09c84250bd196dbc7b938373e5036",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.150.1.md",
+      "bytes": 747,
+      "sha256": "a46bec5b56d21bf57e27b0bab34c00752d0e6f775a029b34097622e21ce8189b",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.151.0.md",
+      "bytes": 2872,
+      "sha256": "7c5062df9a37793add86386b12336a66cd0bc536f99de44ab598bc169c38f776",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.152.0.md",
+      "bytes": 8781,
+      "sha256": "3eab4d1a7b2e2c0c200ff30cbf140f21e2bf0c7ce9235e3a71631d8884a645b9",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.152.1.md",
+      "bytes": 626,
+      "sha256": "545abdb209b275c9d9facbef9fd3a72d192aae5dfd3d8cdf60b54c71fecb5592",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.153.0.md",
+      "bytes": 13571,
+      "sha256": "8db5c2b2346a0ef12eed74d4ba7f873e24fd13fc58e9c450222c47ba66d65f19",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.153.1.md",
+      "bytes": 754,
+      "sha256": "2df86a44b3d74df543527a02b3f1c242d19476cf18c11d96d8ee09f8cde33403",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.153.2.md",
+      "bytes": 799,
+      "sha256": "9e14e58d2dc3611c3ba889ac23fd9015009cb0be2b5b2f133768071f4f45bda8",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.153.3.md",
+      "bytes": 974,
+      "sha256": "f34d42eb50effd1a5a284570441514eea8954368a129499ce43603b408c40e3d",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.153.4.md",
+      "bytes": 966,
+      "sha256": "b406c6bf08cc30eaeebb5c7e3b841ee31745e45309ed7a38a6a38f474b3818c0",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.154.0.md",
+      "bytes": 20312,
+      "sha256": "83716a094cf8a017301ab9f08ca6a0416424aae979a74db9b0d7c543aa9a32f3",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.155.0.md",
+      "bytes": 18916,
+      "sha256": "9de3cf4ce2ae98698a395f7c05c4c347202f12831e343e2bb2a77a64ebb490b0",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.155.1.md",
+      "bytes": 825,
+      "sha256": "8432c0a0c72c094f321f77028cf73394805b6c949835954e7ba6c9011bc3f114",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.156.0.md",
+      "bytes": 44239,
+      "sha256": "01dfb91ec55dce8c9e610c43f490f4532d46e98e219da8e61daa5c2f49b530c3",
+      "equalSourceVerifiedDigest": true
+    },
+    {
+      "path": "docs/codex-changelog/0.156.1.md",
+      "bytes": 763,
+      "sha256": "81a9416c0f94923a17874643f76156acd7db3f519f1e5f68709ce3fd6af08fcc",
+      "equalSourceVerifiedDigest": true
+    }
+  ]
+}

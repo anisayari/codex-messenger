@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-09-23T14:23:16.517Z",
+  "nodeExecutable": "/Users/anisayari/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+  "nodeVersion": "v24.19.0",
+  "runtimeVersion": "0.156.1",
+  "runtimeExecutable": "/tmp/codex-messenger-protocol-01561-NM13Df/cli-0.156.1/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+  "resident": "/Users/anisayari/.codex/workspaces/codex-messenger-publish-20260923",
+  "source": "/Users/anisayari/Desktop/01_Projects/codex-messenger",
+  "logsDirectory": "/Users/anisayari/.codex/workspaces/codex-messenger-publish-20260923/docs/validation",
+  "fixtureAndImplementationRecords": [
+    {
+      "file": "tests/codexAuthenticatedLive.test.mjs",
+      "bytes": 10256,
+      "sha256": "8e3a81b7d8f7ab8e6b389f5e65054ecee131972f18ffa4b350d4a042075b6951",
+      "change": "Only strict runtime guard (and metadata title) 0.156.0 -> 0.156.1",
+      "destinations": [
+        "/Users/anisayari/.codex/workspaces/codex-messenger-publish-20260923",
+        "/Users/anisayari/Desktop/01_Projects/codex-messenger"
+      ]
+    },
+    {
+      "file": "tests/codexLiveContract.test.mjs",
+      "bytes": 3692,
+      "sha256": "6623c7a779e9f2d1a388c24366a15d12ad76fec893ad0079064d12835a654e7c",
+      "change": "Only strict runtime guard (and metadata title) 0.156.0 -> 0.156.1",
+      "destinations": [
+        "/Users/anisayari/.codex/workspaces/codex-messenger-publish-20260923",
+        "/Users/anisayari/Desktop/01_Projects/codex-messenger"
+      ]
+    },
+    {
+      "file": "electron/codexAppServerClient.js",
+      "bytes": 16185,
+      "sha256": "7c74d05a78a273c0ec98010c5f86c7e143e1876bd9d57ccfac4937b52def16de",
+      "changed": false
+    },
+    {
+      "file": "electron/codexFeatureService.js",
+      "bytes": 27565,
+      "sha256": "0165cc90824a169fef674c72000fe82cf9d516391fdf8b765841aaba99476a3a",
+      "changed": false
+    },
+    {
+      "file": "electron/terminalService.js",
+      "bytes": 8547,
+      "sha256": "4693da60a5fdbf2a1ac114d7fb91f0e2fc1d88b85854862f0ced1c20041ff677",
+      "changed": false
+    },
+    {
+      "file": "tests/codexFeatureLive.test.mjs",
+      "bytes": 4645,
+      "sha256": "273555e5cc07bb1ecfcbcaf3a25352d3782bd6d7f64f3bb5b22969e2f5c0272a",
+      "changed": false
+    }
+  ],
+  "notes": "Authorized change limited to fixture runtime guard/title. No project model/reasoning pin. Auth fixture copies only existing file-backed authentication into private temporary directories and cleans them with t.after."
+}

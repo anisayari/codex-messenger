@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Codex Messenger - MSN-style desktop client for Codex</title>
-  <meta name="description" content="Codex Messenger brings Codex into a retro MSN Messenger-inspired desktop client, with private AI conversations, classic emoticons, winks and a lightweight open source app.">
+  <meta name="description" content="A retro MSN-inspired desktop client for Codex, with models, skills, MCP, approvals, history, terminals, original emoticons and winks.">
   <meta name="application-name" content="Codex Messenger">
   <meta name="author" content="Anis Ayari">
   <meta name="robots" content="index,follow,max-image-preview:large">
@@ -22,18 +22,18 @@
   <meta property="og:locale:alternate" content="fr_FR">
   <meta property="og:url" content="https://codexmessenger.net/">
   <meta property="og:title" content="Codex Messenger">
-  <meta property="og:description" content="All Codex functionality with your childhood memories: an MSN Messenger-inspired desktop client for talking with AI friends.">
+  <meta property="og:description" content="A retro MSN-inspired desktop client for Codex, with models, skills, MCP, approvals, history, terminals, original emoticons and winks.">
   <meta property="og:image" content="https://codexmessenger.net/assets/og-image.jpg">
   <meta property="og:image:secure_url" content="https://codexmessenger.net/assets/og-image.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Codex Messenger retro MSN-inspired landing page with AI friends and download button.">
+  <meta property="og:image:alt" content="Codex Messenger with its classic Messenger interface, source code and GitHub downloads.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Codex Messenger">
-  <meta name="twitter:description" content="A retro MSN Messenger-inspired desktop client for Codex, private AI conversations and open source nostalgia.">
+  <meta name="twitter:description" content="A retro MSN-inspired desktop client for Codex, with models, skills, MCP, approvals, history, terminals, original emoticons and winks.">
   <meta name="twitter:image" content="https://codexmessenger.net/assets/og-image.jpg">
-  <meta name="twitter:image:alt" content="Codex Messenger retro MSN-inspired landing page with AI friends and download button.">
+  <meta name="twitter:image:alt" content="Codex Messenger with its classic Messenger interface, source code and GitHub downloads.">
   <link rel="preload" href="./assets/codex-messenger-people.webp" as="image" type="image/webp">
   <style>
     html,
@@ -63,13 +63,16 @@
 
     .desktop-screenshots {
       position: absolute;
-      top: 62.2%;
+      top: 58.8%;
       right: 24px;
       z-index: 3;
       display: flex;
       align-items: flex-end;
-      gap: 8px;
-      padding: 7px;
+      gap: 4px 3%;
+      flex-wrap: wrap;
+      width: 16%;
+      max-width: 260px;
+      padding: .45%;
       border: 2px solid #79a4d8;
       border-radius: 7px;
       background:
@@ -81,8 +84,9 @@
 
     .desktop-screenshots img {
       display: block;
-      width: 196px;
-      height: 78px;
+      width: 75%;
+      height: auto;
+      aspect-ratio: 196 / 78;
       object-fit: cover;
       object-position: top left;
       border: 1px solid #aac3e2;
@@ -91,8 +95,13 @@
       box-shadow: 0 2px 3px rgba(12, 38, 83, .18);
     }
 
+    .preview-caption { margin: 0; font-size: clamp(7px, .7vw, 10px); color: #234a75; line-height: 1.25; }
+    .desktop-screenshots .preview-caption { flex-basis: 100%; text-align: center; }
+    .mobile-screenshots .preview-caption { grid-column: 1 / -1; font-size: 11px; }
+
     .desktop-screenshots .roster-shot {
-      width: 48px;
+      width: 18%;
+      aspect-ratio: 48 / 78;
       object-position: top center;
     }
 
@@ -105,6 +114,8 @@
     .mobile-site {
       display: none;
     }
+
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
     text {
       letter-spacing: 0;
@@ -139,6 +150,8 @@
     .download-label {
       transition: transform .16s ease;
     }
+    html[lang="fr"] .download-label { font-size: 40px; }
+    html[lang="fr"] .mobile-download { font-size: clamp(24px, 7.4vw, 34px); }
 
     .pressable {
       transform-box: fill-box;
@@ -255,6 +268,8 @@
       width: min(460px, calc(100vw - 34px));
       max-height: calc(100dvh - 40px);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
       color: #142857;
       border: 2px solid #0a35d7;
       border-radius: 7px;
@@ -272,6 +287,7 @@
       align-items: center;
       justify-content: space-between;
       min-height: 30px;
+      flex-shrink: 0;
       padding: 4px 5px 4px 10px;
       color: #fff;
       background:
@@ -298,6 +314,8 @@
 
     .download-modal-body {
       padding: 18px 20px 20px;
+      min-height: 0;
+      overflow: auto;
     }
 
     .download-modal-body h2 {
@@ -813,13 +831,14 @@
       }
     }
   </style>
-  <script src="./assets/site.js?v=download-modal-20260424-2" defer></script>
+  <script src="./assets/site.js?v=site-0.0.3-20260923" defer></script>
 </head>
 <body>
   <main class="site" aria-label="Codex Messenger landing page">
-    <svg width="1672" height="941" viewBox="0 0 1672 941" role="img" aria-labelledby="page-title page-desc" xmlns="http://www.w3.org/2000/svg">
+    <h1 class="visually-hidden">Codex Messenger</h1>
+    <svg width="1672" height="941" viewBox="0 0 1672 941" role="group" aria-labelledby="page-title" aria-describedby="page-desc" xmlns="http://www.w3.org/2000/svg">
       <title id="page-title">Codex Messenger</title>
-      <desc id="page-desc">A glossy retro MSN-inspired landing page for Codex Messenger, with a download button, GitHub source link, and AI friends tagline.</desc>
+      <desc id="page-desc">Codex Messenger, a retro desktop client for Codex, with verified features, a GitHub release chooser and source code links.</desc>
 
       <defs>
         <linearGradient id="topBlue" x1="0" x2="0" y1="0" y2="1">
@@ -1015,7 +1034,7 @@
       <image href="./assets/codex-messenger-people.webp" x="12" y="1" width="76" height="76" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
       <text x="94" y="50" fill="#fff" font-family="Trebuchet MS, Arial" font-size="31" font-weight="900" font-style="italic" stroke="#00127d" stroke-width="1" filter="url(#whiteTextRelief)">codex messenger</text>
 
-      <a class="lang-link pressable is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-label="English language">
+      <a class="lang-link pressable is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-label="English language" aria-current="true">
         <rect class="focus-ring" x="1306" y="16" width="151" height="43" rx="4"/>
         <rect class="lang-frame" x="1306" y="16" width="151" height="43" rx="4" fill="url(#langBlue)" stroke="#69a0ff" stroke-width="2"/>
         <rect x="1310" y="20" width="143" height="11" rx="2" fill="#fff" opacity=".22"/>
@@ -1029,7 +1048,7 @@
         <text x="1368" y="46" fill="#fff" font-size="22" font-style="italic" stroke="#00127d" stroke-width=".8" filter="url(#whiteTextRelief)">English</text>
       </a>
 
-      <a class="lang-link pressable" href="?lang=fr" data-action="language" data-lang="fr" data-feedback="Mode francais selectionne" aria-label="French language">
+      <a class="lang-link pressable" href="?lang=fr" data-action="language" data-lang="fr" data-feedback="Mode francais selectionne" aria-label="French language" aria-current="false">
         <rect class="focus-ring" x="1477" y="16" width="164" height="43" rx="4"/>
         <rect class="lang-frame" x="1477" y="16" width="164" height="43" rx="4" fill="url(#redButton)" stroke="#ff8f84" stroke-width="2"/>
         <rect x="1481" y="20" width="156" height="11" rx="2" fill="#fff" opacity=".24"/>
@@ -1053,30 +1072,30 @@
         <text x="87" y="338" font-size="28" font-weight="900">
           <tspan fill="#0734d1">Codex</tspan><tspan fill="#111"> + </tspan><tspan fill="#098b12">MSN Messenger</tspan><tspan fill="#111"> = </tspan><tspan fill="#7d24bf">Codex Messenger !</tspan>
         </text>
-        <text id="desktopTaglineOne" x="87" y="386" fill="#e31cc8" font-size="30" font-weight="900" filter="url(#pinkTextRelief)">All Codex functionality...</text>
-        <text id="desktopTaglineTwo" x="87" y="421" fill="#e31cc8" font-size="30" font-weight="900" filter="url(#pinkTextRelief)">but with your childhood memories !</text>
-        <text id="desktopAiLine" x="87" y="456" fill="#0d2ad1" font-size="20" font-weight="900">you have lost your old friends, but now you can talk with your AI friends !</text>
+        <text id="desktopTaglineOne" x="87" y="386" fill="#e31cc8" font-size="30" font-weight="900" filter="url(#pinkTextRelief)">Modern Codex. Classic MSN.</text>
+        <text id="desktopTaglineTwo" x="87" y="421" fill="#e31cc8" font-size="30" font-weight="900" filter="url(#pinkTextRelief)">Your coding, with childhood memories.</text>
+        <text id="desktopAiLine" x="87" y="456" fill="#0d2ad1" font-size="20" font-weight="900">Codex 0.156.1 required. Voice: account/server access and mic permission.</text>
       </g>
 
       <image href="./assets/codex-messenger-people.webp" x="935" y="82" width="711" height="574" preserveAspectRatio="none" filter="url(#softBlueShadow)"/>
 
       <g font-size="22" font-style="italic" fill="#111" filter="url(#copyTextRelief)">
         <use href="#starIcon" x="90" y="477" filter="url(#iconShadow)"/>
-        <text id="desktopFeatureOne" x="136" y="504">Classic look &amp; feel from the 2000s</text>
+        <text id="desktopFeatureOne" x="136" y="504">Models, skills, MCP and approvals</text>
         <g transform="translate(88 518) scale(.56)" filter="url(#iconShadow)">
           <use href="#smallBuddies"/>
         </g>
-        <text id="desktopFeatureTwo" x="136" y="544">Private messaging like MSN</text>
+        <text id="desktopFeatureTwo" x="136" y="544">Files, history, search and terminal</text>
         <use href="#smileIcon" x="84" y="556" filter="url(#iconShadow)"/>
-        <text id="desktopFeatureThree" x="136" y="584">Emoticons, winks and more!</text>
+        <text id="desktopFeatureThree" x="136" y="584">69 classic emoticons &amp; 15 real winks</text>
         <g transform="translate(86 596) scale(.78)" filter="url(#iconShadow)">
           <use href="#boltIcon"/>
         </g>
-        <text id="desktopFeatureFour" x="136" y="624">Lightweight and blazing fast</text>
+        <text id="desktopFeatureFour" x="136" y="624">Voice controls, diagrams &amp; equations</text>
         <g transform="translate(84 635) scale(.75)" filter="url(#iconShadow)">
           <use href="#lockIcon"/>
         </g>
-        <text id="desktopFeatureFive" x="136" y="662">Secure, modern and Open Source</text>
+        <text id="desktopFeatureFive" x="136" y="662">Local tic-tac-toe. Open-source code.</text>
       </g>
 
       <a class="download-link pressable" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal" aria-label="Choose Codex Messenger download">
@@ -1094,12 +1113,12 @@
           <g transform="translate(384 18) scale(.8)">
             <use href="#downloadArrow"/>
           </g>
-          <text class="download-label" x="229" y="58" text-anchor="middle" font-family="Arial Black, Arial" font-size="52" font-style="italic" fill="#1e26de" stroke="#b9a5ff" stroke-width="1.1" filter="url(#downloadTextRelief)">DOWNLOAD</text>
+          <text class="download-label" data-download-label x="229" y="58" text-anchor="middle" font-family="Arial Black, Arial" font-size="52" font-style="italic" fill="#1e26de" stroke="#b9a5ff" stroke-width="1.1" filter="url(#downloadTextRelief)">DOWNLOAD</text>
         </g>
       </a>
-      <text id="desktopDownloadNote" x="772" y="606" text-anchor="middle" fill="#0861ff" font-size="24" font-style="italic" filter="url(#copyTextRelief)">Get Codex Messenger Now !</text>
-      <a class="download-version-link pressable" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal" aria-label="Choose Codex Messenger version v0.0.2.9 download">
-        <text x="772" y="635" text-anchor="middle" fill="#071fd0" font-size="20" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">download version v0.0.2.9</text>
+      <text id="desktopDownloadNote" x="772" y="606" text-anchor="middle" fill="#0861ff" font-size="24" font-style="italic" filter="url(#copyTextRelief)">Get Codex Messenger now!</text>
+      <a class="download-version-link pressable" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal" aria-label="Choose Codex Messenger version v0.0.3 download">
+        <text x="772" y="635" data-release-label text-anchor="middle" fill="#071fd0" font-size="20" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">download version v0.0.3</text>
       </a>
 
       <g transform="translate(81 679)" filter="url(#panelShadow)">
@@ -1109,15 +1128,15 @@
         <line x1="593" y1="0" x2="593" y2="148" stroke="#c7d6c1"/>
         <image href="./assets/icons/open-source.svg" x="61" y="23" width="68" height="68" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
         <text x="42" y="124" font-family="Arial" font-size="24" fill="#111" filter="url(#copyTextRelief)"><tspan font-size="30">open</tspan> source</text>
-        <text id="desktopSourceTitle" x="251" y="48" fill="#0a8614" font-size="29" font-weight="900" font-style="italic" filter="url(#greenTextRelief)">Open Source Project</text>
-        <text id="desktopSourceOne" x="251" y="80" font-size="19" font-style="italic" filter="url(#copyTextRelief)">Codex Messenger is 100% Open Source.</text>
-        <text id="desktopSourceTwo" x="251" y="106" font-size="19" font-style="italic" filter="url(#copyTextRelief)">Check out the code, contribute and</text>
-        <text id="desktopSourceThree" x="251" y="132" font-size="19" font-style="italic" filter="url(#copyTextRelief)">help make it even better!</text>
+        <text id="desktopSourceTitle" x="251" y="48" fill="#0a8614" font-size="29" font-weight="900" font-style="italic" filter="url(#greenTextRelief)">Open-source client</text>
+        <text id="desktopSourceOne" x="251" y="80" font-size="19" font-style="italic" filter="url(#copyTextRelief)">The app code is open source.</text>
+        <text id="desktopSourceTwo" x="251" y="106" font-size="19" font-style="italic" filter="url(#copyTextRelief)">Read the changelog and validation</text>
+        <text id="desktopSourceThree" x="251" y="132" font-size="19" font-style="italic" filter="url(#copyTextRelief)">and help make it even better.</text>
         <a class="source-link pressable" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" data-action="source" data-feedback="Opening source code..." aria-label="View source code on GitHub">
           <rect class="focus-ring" x="593" y="0" width="149" height="148"/>
           <rect class="source-panel" x="593" y="0" width="149" height="148" fill="#f4faee"/>
           <image href="./assets/icons/github.svg" x="610" y="47" width="39" height="39" preserveAspectRatio="xMidYMid meet" filter="url(#iconShadow)"/>
-          <text id="desktopSourceLinkOne" x="655" y="70" fill="#071fd0" font-size="15" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">View Source</text>
+          <text id="desktopSourceLinkOne" x="655" y="70" fill="#071fd0" font-size="15" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">View source</text>
           <text id="desktopSourceLinkTwo" x="655" y="94" fill="#071fd0" font-size="15" font-style="italic" text-decoration="underline" filter="url(#copyTextRelief)">on GitHub</text>
         </a>
       </g>
@@ -1175,7 +1194,7 @@
 
       <rect x="4" y="872" width="1664" height="65" fill="url(#footerBlue)" stroke="#0529b4" stroke-width="3"/>
       <rect x="8" y="876" width="1656" height="12" fill="#fff" opacity=".16"/>
-      <text x="341" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">&#169; 2000-2026 Codex Messenger Project. All rights reserved.</text>
+      <text x="341" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">&#169; 2026 Codex Messenger Project.</text>
       <line x1="894" y1="892" x2="894" y2="918" stroke="#fff" stroke-width="2" opacity=".9"/>
       <text id="desktopFooterTagline" x="930" y="912" fill="#fff" font-size="18" font-style="italic" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">Bringing back the vibes. Powered by </text>
       <text x="1247" y="912" fill="#fff" font-size="18" font-style="italic" text-decoration="underline" stroke="#001268" stroke-width=".8" filter="url(#whiteTextRelief)">Codex</text>
@@ -1188,8 +1207,9 @@
       </g>
     </svg>
     <div class="desktop-screenshots" aria-label="Codex Messenger interface previews">
-      <img src="./assets/screenshots/conversation-demo.png" alt="Codex Messenger conversation window">
-      <img class="roster-shot" src="./assets/screenshots/roster-demo.png" alt="Codex Messenger contact list">
+      <img src="./assets/screenshots/conversation-demo.png" alt="Production renderer with a sample conversation" data-preview-conversation>
+      <img class="roster-shot" src="./assets/screenshots/roster-demo.png" alt="Isolated demo contact list, not connected MSN users" data-preview-roster>
+      <p class="preview-caption" data-preview-caption>Sample conversation · isolated demo contacts</p>
     </div>
   </main>
 
@@ -1201,23 +1221,28 @@
       </header>
       <div class="download-modal-body">
         <h2 id="downloadModalTitle">Download Codex Messenger</h2>
-        <p id="downloadModalSubtitle">Open the GitHub release page and choose the installer for your computer.</p>
+        <p id="downloadModalSubtitle">Open the official GitHub release and choose the installer for your computer.</p>
         <div id="download-options" class="download-options">
-          <a class="download-option" href="https://github.com/anisayari/codex-messenger/releases/latest" target="_blank" rel="noopener noreferrer" data-download-link aria-label="Open Codex Messenger GitHub release for macOS version v0.0.2.9">
+          <a class="download-option" href="https://github.com/anisayari/codex-messenger/releases/latest" target="_blank" rel="noopener noreferrer" data-download-link aria-label="Open Codex Messenger GitHub release for macOS Apple Silicon version v0.0.3">
             <span class="download-option-icon" aria-hidden="true">Mac</span>
             <span class="download-option-copy">
-              <strong id="downloadMacLabel">Open macOS release</strong>
-              <span id="downloadMacNote">Choose the Apple Silicon DMG on GitHub</span>
+              <strong id="downloadMacLabel">macOS · Apple Silicon</strong>
+              <span id="downloadMacNote">Choose the arm64 DMG on GitHub</span>
             </span>
-            <span class="download-version">v0.0.2.9</span>
+            <span class="download-version">v0.0.3</span>
           </a>
-          <a class="download-option" href="https://github.com/anisayari/codex-messenger/releases/latest" target="_blank" rel="noopener noreferrer" data-download-link aria-label="Open Codex Messenger GitHub release for Windows version v0.0.2.9">
+          <a class="download-option" href="https://github.com/anisayari/codex-messenger/releases/latest" target="_blank" rel="noopener noreferrer" data-download-link aria-label="Open Codex Messenger GitHub release for macOS Intel version v0.0.3">
+            <span class="download-option-icon" aria-hidden="true">Mac</span>
+            <span class="download-option-copy"><strong id="downloadIntelLabel">macOS · Intel</strong><span id="downloadIntelNote">Choose the x64 DMG on GitHub</span></span>
+            <span class="download-version">v0.0.3</span>
+          </a>
+          <a class="download-option" href="https://github.com/anisayari/codex-messenger/releases/latest" target="_blank" rel="noopener noreferrer" data-download-link aria-label="Open Codex Messenger GitHub release for Windows x64 version v0.0.3">
             <span class="download-option-icon" aria-hidden="true">Win</span>
             <span class="download-option-copy">
-              <strong id="downloadWindowsLabel">Open Windows release</strong>
-              <span id="downloadWindowsNote">Choose the Windows installer on GitHub</span>
+              <strong id="downloadWindowsLabel">Windows · x64</strong>
+              <span id="downloadWindowsNote">Choose the x64 installer on GitHub</span>
             </span>
-            <span class="download-version">v0.0.2.9</span>
+            <span class="download-version">v0.0.3</span>
           </a>
         </div>
       </div>
@@ -1228,8 +1253,8 @@
     <header class="mobile-top">
       <div class="mobile-brand"><img class="mobile-brand-logo" src="./assets/codex-messenger-people.webp" alt="" aria-hidden="true"><span>codex messenger</span></div>
       <nav class="mobile-lang" aria-label="Language">
-        <a class="mobile-lang-link pressable-ui is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-pressed="true">EN</a>
-        <a class="mobile-lang-link pressable-ui" href="?lang=fr" data-action="language" data-lang="fr" data-feedback="Mode francais selectionne" aria-pressed="false">FR</a>
+        <a class="mobile-lang-link pressable-ui is-active" href="?lang=en" data-action="language" data-lang="en" data-feedback="English mode selected" aria-current="true">EN</a>
+        <a class="mobile-lang-link pressable-ui" href="?lang=fr" data-action="language" data-lang="fr" data-feedback="Mode francais selectionne" aria-current="false">FR</a>
       </nav>
     </header>
 
@@ -1237,13 +1262,13 @@
       <h1 class="mobile-logo"><span>codex</span><span>messenger</span></h1>
       <div class="mobile-rule" aria-hidden="true"></div>
       <p class="mobile-equation"><b>Codex</b> + <b>MSN Messenger</b> = <b>Codex Messenger !</b></p>
-      <p class="mobile-copy"><span id="mobileTaglineOne">All Codex functionality...</span><br><span id="mobileTaglineTwo">but with your childhood memories !</span></p>
-      <p id="mobileAiLine" class="mobile-ai">you have lost your old friends, but now you can talk with your AI friends !</p>
+      <p class="mobile-copy"><span id="mobileTaglineOne">Modern Codex. Classic MSN.</span><br><span id="mobileTaglineTwo">Your coding, with childhood memories.</span></p>
+      <p id="mobileAiLine" class="mobile-ai">Codex 0.156.1 required. Voice: account/server access and mic permission.</p>
     </section>
 
-    <a class="mobile-download pressable-ui" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">DOWNLOAD</a>
-    <p id="mobileDownloadNote" class="mobile-download-note">Get Codex Messenger Now !</p>
-    <a class="mobile-version-link pressable-ui" href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">download version v0.0.2.9</a>
+    <a class="mobile-download pressable-ui" data-download-label href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">DOWNLOAD</a>
+    <p id="mobileDownloadNote" class="mobile-download-note">Get Codex Messenger now!</p>
+    <a class="mobile-version-link pressable-ui" data-release-label href="#download-options" data-download-modal data-feedback="Choose your download..." aria-haspopup="dialog" aria-controls="downloadModal">download version v0.0.3</a>
 
     <ul class="mobile-features">
       <li id="mobileFeatureOne">Classic look &amp; feel from the 2000s</li>
@@ -1254,15 +1279,16 @@
     </ul>
 
     <section class="mobile-screenshots" aria-label="Interface previews">
-      <img src="./assets/screenshots/conversation-demo.png" alt="Codex Messenger conversation window">
-      <img class="roster-shot" src="./assets/screenshots/roster-demo.png" alt="Codex Messenger contact list">
+      <img src="./assets/screenshots/conversation-demo.png" alt="Production renderer with a sample conversation" data-preview-conversation>
+      <img class="roster-shot" src="./assets/screenshots/roster-demo.png" alt="Isolated demo contact list, not connected MSN users" data-preview-roster>
+      <p class="preview-caption" data-preview-caption>Sample conversation · isolated demo contacts</p>
     </section>
 
     <a class="mobile-source pressable-ui" href="https://github.com/anisayari/codex-messenger" target="_blank" rel="noopener noreferrer" data-action="source" data-feedback="Opening source code...">
       <img class="mobile-source-icon" src="./assets/icons/open-source.svg" alt="" aria-hidden="true">
       <span>
-        <strong id="mobileSourceTitle">Open Source Project</strong>
-        <span id="mobileSourceText">Codex Messenger is 100% Open Source. View Source on GitHub.</span>
+        <strong id="mobileSourceTitle">Open-source client</strong>
+        <span id="mobileSourceText">Explore the app code, changelog and validation on GitHub.</span>
       </span>
     </a>
 
@@ -1275,7 +1301,7 @@
     </nav>
 
     <footer class="mobile-footer">
-      &copy; 2000-2026 Codex Messenger Project. All rights reserved.<br>
+      &copy; 2026 Codex Messenger Project.<br>
       <span id="mobileFooterTagline">Bringing back the vibes. Powered by Codex.</span>
     </footer>
     <div id="mobileFeedback" class="mobile-feedback" aria-live="polite"></div>

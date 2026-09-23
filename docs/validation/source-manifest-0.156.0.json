@@ -1,0 +1,2598 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-09-22T21:42:06.279Z",
+  "codexVersion": "0.156.0",
+  "sourceMode": "Individual source files copied to a resident filesystem with matching SHA256; original Desktop provider reads stalled, so the final suite used the verified resident snapshot.",
+  "runner": {
+    "nodeVersion": "v24.19.0",
+    "command": "node --test --test-isolation=none --test-concurrency=1 tests/*.test.mjs",
+    "testFileCount": 28
+  },
+  "defaultSuite": {
+    "tests": 240,
+    "passed": 237,
+    "skipped": 3,
+    "failed": 0,
+    "cancelled": 0,
+    "durationMs": 3388.785792,
+    "evidence": "node-tests-0.156.0.log"
+  },
+  "optInTests": [
+    {
+      "file": "tests/codexAuthenticatedLive.test.mjs",
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0,
+      "durationMs": 6436.289125,
+      "evidence": "authenticated-live-final-client-0.156.0.log",
+      "validated": [
+        "Codex 0.156.0 handshake",
+        "One benign default-model turn, read-only sandbox, approval never",
+        "Public streamed output exactly CODEX-MSN-OK",
+        "Real process stop/restart",
+        "Persisted one-turn full history",
+        "Own isolated thread search and two search occurrences with exact UTF16 ranges",
+        "Resume and fork",
+        "Private temporary profile cleanup"
+      ]
+    },
+    {
+      "file": "tests/codexLiveContract.test.mjs",
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0,
+      "durationMs": 868.59925,
+      "evidence": "metadata-live-0.156.0.log",
+      "validated": [
+        "Public catalogs and metadata",
+        "Explicit not-materialized-yet refusal before first user turn",
+        "Private temporary profile cleanup"
+      ]
+    },
+    {
+      "file": "tests/codexFeatureLive.test.mjs",
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0,
+      "durationMs": 912.831209,
+      "evidence": "feature-live-0.156.0.log",
+      "validated": [
+        "Public feature catalogs",
+        "Usage/quotas correctly unavailable in a logged-out private profile",
+        "Actual command/exec PTY echo in a deny-network external sandbox",
+        "Private temporary profile cleanup"
+      ]
+    }
+  ],
+  "releaseCheck": {
+    "passed": true,
+    "version": "0.0.2-9",
+    "tag": "v0.0.2.9",
+    "evidence": "release-check-0.156.0.log"
+  },
+  "engines": {
+    "packageAndLockIdentical": true,
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "postSuiteStyleSynchronization": {
+    "path": "src/codexFeaturesPanel.css",
+    "sha256": "a25154c92b4f1d0ecc5d6d2df35d3a80ca45c1ae5d27e8881648e9f044bb8c08",
+    "scope": "Style-only layout correction; JavaScript/test sources unchanged; final production build validates the renderer separately"
+  },
+  "files": [
+    {
+      "path": ".github/dependabot.yml",
+      "bytes": 340,
+      "sha256": "4be88988a02a599b9f456f5e5b0fad7480a624db8c3592a30cb5d419c347223c",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 988,
+      "sha256": "4cb9f8c9a659bbbf0f3074b1b1a9ac1e2d7c272807324bf4a34b13752ae829a1",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": ".github/workflows/codeql.yml",
+      "bytes": 580,
+      "sha256": "af2c68f41148df369819a9ad6b1d5b410e56b2780bdd9398d5fb869bd926a7c6",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": ".github/workflows/dependency-review.yml",
+      "bytes": 413,
+      "sha256": "9c61263bf1baa88e215c5a5c8d724642a070f0d5a07df9dfe1d6723b720e3553",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": ".github/workflows/deploy-codexmessenger-net.yml",
+      "bytes": 6649,
+      "sha256": "1e3d52d43d49958e4a91b1c7dee1b15b7caa4f80bbfe2639cf822cf46c64e056",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "README.md",
+      "bytes": 21270,
+      "sha256": "2e6eb9a620396f592a7c105f16deacd96b3b497d59efbc37b6eabe47a30e406c",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 1623,
+      "sha256": "d5a0387a23a83700e92b96d2755b068ca05bbb6adae20cf04b5166932530e039",
+      "verification": "Original source read and individually copied with equal source and destination SHA256"
+    },
+    {
+      "path": "build/installer.nsh",
+      "bytes": 385,
+      "sha256": "840c3423f50b62c4bc7e91bc1a4dac215e1a8d491c92c7b4d21ba7aadf84e012",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "codexmessenger.net/index.html",
+      "bytes": 57212,
+      "sha256": "535da3568059a0480ba2f56e779ef5a8baf1a22fac755d28d18999937b840202",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "docs/CODEX-MIGRATION.md",
+      "bytes": 41148,
+      "sha256": "e5da65229924ce1241265c71b9d5628703ea7acf9b8cb98536409a4a3c3afb5c",
+      "verification": "feature catalog156 final31nativePASS exact source manifest"
+    },
+    {
+      "path": "electron/codexAppServerClient.js",
+      "bytes": 16185,
+      "sha256": "7c74d05a78a273c0ec98010c5f86c7e143e1876bd9d57ccfac4937b52def16de",
+      "verification": "backend final stop/resume generation-race fix manifest17nativePASS"
+    },
+    {
+      "path": "electron/codexFeatureService.js",
+      "bytes": 27565,
+      "sha256": "0165cc90824a169fef674c72000fe82cf9d516391fdf8b765841aaba99476a3a",
+      "verification": "feature catalog156 final31nativePASS exact source manifest"
+    },
+    {
+      "path": "electron/ipcHandlers.js",
+      "bytes": 2955,
+      "sha256": "486594d74ffec9f0a49e5178ec2ed0d1bff95a2de512e49ceea5bb8b07b68471",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/main.js",
+      "bytes": 128946,
+      "sha256": "cb2088838e6a558e650387f93c37d3532f56c66b395883cdf26566859470e83f",
+      "verification": "backend final156 mode observation16nativePASS manifest"
+    },
+    {
+      "path": "electron/msnAssetProtocol.js",
+      "bytes": 4528,
+      "sha256": "69fee37c177014a25b4be511146f6d7d806aa487bed24884148125fbb053d6a2",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/notifications.js",
+      "bytes": 7481,
+      "sha256": "4043953865871b549e0aa61be4180fa34db64c630c53da52082460bffff308ed",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/preload.cjs",
+      "bytes": 7741,
+      "sha256": "9bd1e52761620b5ac3edf0cf812675c6a7a6be97cdbb341bd9b1c8e0ad217a9d",
+      "verification": "backend final156 mode observation16nativePASS manifest"
+    },
+    {
+      "path": "electron/realtimeService.js",
+      "bytes": 14219,
+      "sha256": "a8c5eb3ee12556242353ead50df5755e2d456a2e803403f538418aa698afe514",
+      "verification": "realtime156 final22nativePASS schema-backed preference and audio handoff"
+    },
+    {
+      "path": "electron/security.js",
+      "bytes": 3104,
+      "sha256": "249b79806753d3a0d6cd99ac2713ef8d794e7ff7dd17d74f69c43fc244e14f5f",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/serverRequests.js",
+      "bytes": 4865,
+      "sha256": "3a51dbb3f4a8338d48fa006747220798799eda5d2209410b5e39fa23dab7f8a6",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/settingsStore.js",
+      "bytes": 2502,
+      "sha256": "930e3f0544c7385628dcb0a8c4c57666b44e9e67d78db4c6f6d87a6dbe3e33af",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/terminalService.js",
+      "bytes": 8547,
+      "sha256": "4693da60a5fdbf2a1ac114d7fb91f0e2fc1d88b85854862f0ced1c20041ff677",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/updateService.js",
+      "bytes": 31668,
+      "sha256": "e1c5ca26632bd77d96943b5f60cdce5a6c4a7a5c91a9e3abb1a05d999d13bb11",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "electron/windowManager.js",
+      "bytes": 4490,
+      "sha256": "e1cc2a7093b59d04db6f98f1dc8b5424b377044bdb18642c60dfbd5e2180d221",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 231365,
+      "sha256": "8021470ee7a0df9871d610421b36a4b9ebae3619daf25cb9e6d02772f68fab5e",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "package.json",
+      "bytes": 4549,
+      "sha256": "999dfbc3b77d654a6f78f8c3d4a866f1f5e29945cdc7a0f52c09e70b1ed0a754",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "public/audio/msn_nouveau_message.mp3",
+      "bytes": 11906,
+      "sha256": "016b67313ae7074521ebad2a7fa91e42fe4f1f0e3218b466898f48d8761088b9",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/audio/msn_wizz.mp3",
+      "bytes": 15668,
+      "sha256": "63696095b3c182027de7ede946af577ad80cfbc3eafca18171e257eb6d966716",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-icon.png",
+      "bytes": 74779,
+      "sha256": "d30b2c1e866349487cb4ef26255b7e6fae98ceddd6b16b04ca40727a9824cd93",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-launcher.png",
+      "bytes": 835860,
+      "sha256": "52c8c4fae905074fb3cf6d1959ac2406ab1a6c9cee3252e9f02b1048b29809a7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-menubarTemplate.png",
+      "bytes": 196,
+      "sha256": "59764de6c53fa31f6dd45452e761dc33280b0dbc25e4b8aa13b84d590baec90a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-menubarTemplate.svg",
+      "bytes": 526,
+      "sha256": "8e64ffe07c47adb477d967d42b47e5266a1c42b44dc3e460308fbe72ba6bcbdd",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-menubarTemplate@2x.png",
+      "bytes": 292,
+      "sha256": "087ab30e79020860f966db9ee77c47a22ed0e7fbe1141ba179bd05606717bc30",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-people-256.png",
+      "bytes": 84248,
+      "sha256": "fe5cad7e4404d36192149fb4351993b3c9f949c2ea0cad9d2edb7079d1e9a4f9",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-people-chroma.png",
+      "bytes": 914964,
+      "sha256": "32562b829c336e9c4672f107a6b6bc12b943a26a2a8e9c19941f70c9871a16a3",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-people.ico",
+      "bytes": 124195,
+      "sha256": "b9dfceed9043310fc8485320627e8023faf067eba6870f60dfcec693bd30c571",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-people.png",
+      "bytes": 1017033,
+      "sha256": "cfd24978bfce9f39baa79682239cc075a93b78c14e0b636fd61752cb03cf8de4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger-readme.png",
+      "bytes": 489488,
+      "sha256": "8431f7c4f2722e9ccdfdc3b4b8441540fda0acf3c6628a76b9265985afdf9c54",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger.icns",
+      "bytes": 1455059,
+      "sha256": "f68f86d210a00781c2b5e084c419414390f0e0350cf6430d255d4e59439b2adc",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/codex-messenger.ico",
+      "bytes": 124195,
+      "sha256": "b9dfceed9043310fc8485320627e8023faf067eba6870f60dfcec693bd30c571",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/format/font.png",
+      "bytes": 590,
+      "sha256": "0d7dc243172961a03bcc4f69d91aca7a09ddd5b0b09acb0d4584b5f21f0e1464",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/format/gift.png",
+      "bytes": 648,
+      "sha256": "848a49c54d93c26375bc1e5300f1691cdc18dcd5017c4ff2b202d8733cb4363d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/format/image.png",
+      "bytes": 3275,
+      "sha256": "1434e90f3deb73fabd8e04601217de9647d9bf2c8c9ad8fedb1a57a5ad8c8d3c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/format/laugh.png",
+      "bytes": 782,
+      "sha256": "074e0288704850f724fd5e5cd7bbc947269e49fa30b47edf43b8d4555108cea4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/format/smile.png",
+      "bytes": 1202,
+      "sha256": "a7fbcf67651f1737ca7a5bbc10fadd5e2f75ef2d8d1f96c52c8042d9a8eee84f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/format/voice.png",
+      "bytes": 3092,
+      "sha256": "7ff34f9b1eac8f0d987e5ff0186b54068e2a8dc8dddc8b45d3a1825fa74c2e10",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/format/wink.png",
+      "bytes": 1004,
+      "sha256": "4d268156b07ad93fa50df820573af3bc42c326cdd402a3b42f7292e19245185a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/toolbar/activities.png",
+      "bytes": 1863,
+      "sha256": "319cfe1a520751bd01beddd08ed7ca4ddd7cf26e4933fd1b028ad069b20816d1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/toolbar/files.png",
+      "bytes": 3299,
+      "sha256": "819758bb70098dd4acc7867d8a5994bd871580b666ef99fa510a737daffdf3b7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/toolbar/games.png",
+      "bytes": 2461,
+      "sha256": "37da20ba45b4f6a82804ae708db3b6a8670ce03a8624aec33d0ef9f17c25e8d4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/toolbar/invite.png",
+      "bytes": 2795,
+      "sha256": "a0096a0738566f9eff94c370f5a76a14207e29c204a8497f41a72bea572a9bcd",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/toolbar/video.png",
+      "bytes": 1984,
+      "sha256": "45c0f9b29d5b047c0d35415914962964a92d1c2f1ef23b5136a3dbd9ecc7c475",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/toolbar/voice.png",
+      "bytes": 5016,
+      "sha256": "bfdc4fd137078d9e63d39a11c065dc964c38c7dc655fe973fb073256144bbd5a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/icons/toolbar/wizz.png",
+      "bytes": 2629,
+      "sha256": "8758ba8fd949b7ae79532f603cf0f6e0087f7fef040e748b48d1ad27822427fb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/flash-player/index.html",
+      "bytes": 689,
+      "sha256": "e996aee411272b570d972acdc54528af7750606aefe800359397a2e638137f4f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/flash-player/player.js",
+      "bytes": 4205,
+      "sha256": "3b8f142eba953df9a4112d5ddc9350f092a06a0d436c544d34bc098e8d50379c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/bell.png",
+      "bytes": 2629,
+      "sha256": "8758ba8fd949b7ae79532f603cf0f6e0087f7fef040e748b48d1ad27822427fb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/bubble.png",
+      "bytes": 2665,
+      "sha256": "79aa42210f4d27a3584cf8d96e9ac35692a7f666a25cebf2f535ece5618e1dd2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/butterfly.png",
+      "bytes": 992,
+      "sha256": "8c83a5946c11500727f4c2b0d0fdd9a0beff7e5806d30e5a75ea08c500868eb0",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/game-card.png",
+      "bytes": 1160,
+      "sha256": "0a3d13ff29a76d8242d2ba32ab798a0642d5664db6e24ceb7f114ad5f9615afd",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/gift.png",
+      "bytes": 648,
+      "sha256": "848a49c54d93c26375bc1e5300f1691cdc18dcd5017c4ff2b202d8733cb4363d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/group.png",
+      "bytes": 925,
+      "sha256": "320f8df5f651c81b6ab16a296e8e1f10ae3b39c011414503de2ba83d9ee5acca",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/person.png",
+      "bytes": 754,
+      "sha256": "47681a7820ff369339be76168282b02ecbe6e6f7afc855f469b782a5dd8aefd4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/piece-o.png",
+      "bytes": 965,
+      "sha256": "9f8c9cac20c978e9be80bd6e7836c40a20cb0845c66157668b1fa41cd3b7cd1f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/piece-x.png",
+      "bytes": 578,
+      "sha256": "26082c506d5a5c8c0f7703e8271ad45bf2610f64e6e08391d1e91feb17cdee8d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/play.png",
+      "bytes": 2924,
+      "sha256": "e30622b2125a1faf09222aed9061ff187736cfe184539103c12f1e5529eb079f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/games/smile.png",
+      "bytes": 1202,
+      "sha256": "a7fbcf67651f1737ca7a5bbc10fadd5e2f75ef2d8d1f96c52c8042d9a8eee84f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/beach-chairs.png",
+      "bytes": 18195,
+      "sha256": "c78fb7efba909263082a436ee49f7551392b06162d113415f0a8b106c1bd2415",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/chess-pieces.png",
+      "bytes": 18122,
+      "sha256": "142409a31e575686d5bc1177535ba137f26974b5fbebd7939540c4830cfd1c2f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/dirt-bike.png",
+      "bytes": 19816,
+      "sha256": "b86d6eb45a31b33a862b18dff699277f307f512fc9709ba32b372d52303374e2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/friendly-dog.png",
+      "bytes": 15874,
+      "sha256": "4aaca845d5e783604c9ae64284096cd976b0f9bcd902c6b5dbd26cbe3c64dc29",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/orange-daisy.png",
+      "bytes": 16316,
+      "sha256": "a12064dc9fe02eaf25405330377bd2c4c2a618e916cec9c62901a3a55256d5ec",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/palm-trees.png",
+      "bytes": 19846,
+      "sha256": "6df343bea3e238c71af1583b46c92bd599eb3d083d48ea46b70a56534afa7bf3",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/rocket-launch.png",
+      "bytes": 19712,
+      "sha256": "572b372fca09b825e87e109be090b4dddcc8c8172525fd6be7c7ba8dd051281a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/rubber-ducky.png",
+      "bytes": 8989,
+      "sha256": "fac6b61197d2f9d3e2fa2222eca44cbc96540be43a1ba6fa56e205c58e22504a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/running-horses.png",
+      "bytes": 17970,
+      "sha256": "ad3ea0bb4cb9130de9a41fdfa82aa6ac6ad4689b380c0b82ee2ef1f1362ee022",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/skateboarder.png",
+      "bytes": 14850,
+      "sha256": "80f3deb97b06c46b60917d9f280c9e876e1e4070d8a45b150db18768e7b33c73",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/display-pictures/soccer-ball.png",
+      "bytes": 24049,
+      "sha256": "2679ea33410af64eb9c6202bf879c1ca2662fd16f921e087a625f094d6c31876",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-000.png",
+      "bytes": 787,
+      "sha256": "018cbc60c8a6a0874b7bbbc2e7ff6b7f382f9678bbd74e35cc87bd9c542eb39b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-001.png",
+      "bytes": 804,
+      "sha256": "b7444d0d1945c6a3ecd58b0c9b9b1ecfa6257b069a84fb8fb61e2a758b1f15d0",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-002.png",
+      "bytes": 865,
+      "sha256": "88e2e95c1b185c5802a5517cbb45b44f21c1900d49b402ea03a8692aed1ad772",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-003.png",
+      "bytes": 868,
+      "sha256": "9d8636b6565fd180d75a357e1ff12e46e407630c21a6944728b7d69d422ecba4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-004.png",
+      "bytes": 863,
+      "sha256": "8d583986e19ec0c716357eb815cac23f1bfeebef63e335abc387a214a985b27b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-005.png",
+      "bytes": 834,
+      "sha256": "143acb78dc8d3ae35f7c15cb7cdde939c512f36190a5cd6311ffb08d28828f0e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-006.png",
+      "bytes": 806,
+      "sha256": "cb0da9e22b62d626d2cda2fac90211e56c6c29bca14fdf968de620113ea7843b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-007.png",
+      "bytes": 871,
+      "sha256": "224012dff9c98b4233e5f8fb82ffa1f99998417e2fbd2b5f7cfea5e576b3dd71",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-008.png",
+      "bytes": 845,
+      "sha256": "e9a7a93c4309bdcf1bf1e385268348a42006a433bdb664fae7f9badb3b6b5509",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-009.png",
+      "bytes": 851,
+      "sha256": "994ca206e8b1c64c1726976adc59cfca3000ff493b4a4f70c7118e328ac36389",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-010.png",
+      "bytes": 1012,
+      "sha256": "48fa3cc9049945deb41e75aa48a48307d4caeb92e231bedf88142c2d57ff343c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-011.png",
+      "bytes": 788,
+      "sha256": "aeff4ca99a96d06ba91041ee5669eb6205a6233adf9e640b2e1a00ad28fd4ea1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-012.png",
+      "bytes": 854,
+      "sha256": "e902a1676b323c442dc0f5862e78a110f1280f45bd5318ac4db68e759ae80912",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-013.png",
+      "bytes": 913,
+      "sha256": "6666e0aba1f4f3a54d5d51aacf474f607cacf3c9c5b788e68b0a581c5e94422e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-014.png",
+      "bytes": 647,
+      "sha256": "1e1704152de214bdfe3e4ca88e244d8f4aca2ac9e5e48200c020d955ea7c48e5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-015.png",
+      "bytes": 756,
+      "sha256": "ce0fb2fbce0b9ec32931a1247e758013ce2afe62a95dc7d3a808dd8e4a4ace65",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-016.png",
+      "bytes": 798,
+      "sha256": "31f01112cf95c204e626338297cb3b8a8012112996a63ff91319375c47392b35",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-017.png",
+      "bytes": 726,
+      "sha256": "baf3c579ba9006afa42423d8849903fca009994a1c5782a418f8c9b8c135eff8",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-018.png",
+      "bytes": 830,
+      "sha256": "4a2b840c9ae91f26011ac5b309c94a887b37c661c027759880d661ed12354461",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-019.png",
+      "bytes": 634,
+      "sha256": "62605a8efd02d19b18af0f735fea35962057bb52875b26cd965e6cf4526c5391",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-020.png",
+      "bytes": 835,
+      "sha256": "b102618e60f36ffa372d26c8e4aad0928ee5fed7288ce1126340bb68015c7a11",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-021.png",
+      "bytes": 873,
+      "sha256": "405914183dff43ab4db686e76d79291823b2958d304135bfaa7c9aa881110248",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-022.png",
+      "bytes": 612,
+      "sha256": "c84ce9773d361f9b68d7a991fab0d456bad4f66d6b6e149fe486d02a3dd35347",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-023.png",
+      "bytes": 758,
+      "sha256": "95864cb3fdf1d44f503461633bdfa42eb7bad3d9cd84540a98f61097831dcddb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-024.png",
+      "bytes": 493,
+      "sha256": "5b07774320735b9bd112ac85fdf57387746449fc278fe4db90a3049e58a20e69",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-025.png",
+      "bytes": 498,
+      "sha256": "cfc2dc0eec2b8b00dfbb106ca931754fa50b8a0a6f94355b51b474eddcbc294d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-026.png",
+      "bytes": 1047,
+      "sha256": "b00e3888fb9c9f35745a81d412e03a9ac88ce607d901145773a29887ac759d4e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-027.png",
+      "bytes": 697,
+      "sha256": "913ec20b217d1aa38eec4753c1bd8b4a5d1e14a7c9fd78517231ddde0a021532",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-028.png",
+      "bytes": 759,
+      "sha256": "7a6acd2ce7ebcc326bde55dc81a8ee6833ca215f06e2a5eadf833438a96bd342",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-029.png",
+      "bytes": 902,
+      "sha256": "49cf9e76f6579ce4a74a99ed8a89d4607370886a9dc63033088383c66d72ed87",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-030.png",
+      "bytes": 813,
+      "sha256": "3385692768d3a24e496244062dc2d9bfaead2099ecd153ab97349ccc89dfd386",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-031.png",
+      "bytes": 895,
+      "sha256": "b58086b961093804be095213ffe85cbb83d471f95c65682e53f8be14471eb8e2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-032.png",
+      "bytes": 749,
+      "sha256": "33b6dd9dc367e6f831a1385609667dcab213b652d7a7b3ff2505372230adf276",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-033.png",
+      "bytes": 678,
+      "sha256": "01980791fa9ada45d6e7bcd2e02fe965d27ca2988e21fbbb1579258e613d43d8",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-034.png",
+      "bytes": 670,
+      "sha256": "fbb5a4c7e4bb69299a683e969d668955ae03c73f1d78021260a3dfb0b810a4fc",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-035.png",
+      "bytes": 759,
+      "sha256": "fd41fa1d64bb1d26b97122254ff61aa334acc8566e5427bcf2afc90772957a0b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-036.png",
+      "bytes": 762,
+      "sha256": "91b4d357e4479e0c405783fecc59d081e0e8c328045dcfe816893884be252f7e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-037.png",
+      "bytes": 658,
+      "sha256": "16a580021d9722cbafa7b3152ef619c3781c11a1b3fc3380ad8ad41aa11a800c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-038.png",
+      "bytes": 525,
+      "sha256": "27f7d09600e722971850bbf617d257159eea1b9f48181652ff2181987dcbcf1e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-039.png",
+      "bytes": 571,
+      "sha256": "f1a0083130bb157c2d1ed616e564269c8cf7ca6df233da33344f79c883652171",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-040.png",
+      "bytes": 713,
+      "sha256": "b4700b64aa6d0d6dec6796827c4a93157cfec4988cd610f339cd5695c04451e5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-041.png",
+      "bytes": 697,
+      "sha256": "5910a791d5090a449888412a7425b59063867b0bb8f7c48797654fe24d743935",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-042.png",
+      "bytes": 510,
+      "sha256": "8aa3b80ded3c3c192dbd899f51acb762cccdfd7d7817ae5152014d5b8f8154bf",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-043.png",
+      "bytes": 709,
+      "sha256": "16bee35bad87ad386437d4613b224fd5c7d3fe45770ceb823d6d276e2ceefcd4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-044.png",
+      "bytes": 774,
+      "sha256": "e7f49805e69a581c376462392c970659d4d4ee409cb1bc7d0dd4cbb50bd9ff6c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-045.png",
+      "bytes": 688,
+      "sha256": "76e13eee560aa1141c6bb37a65d39be1cc17910d0f039edf19a18dd8f47b2e2c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-046.png",
+      "bytes": 648,
+      "sha256": "999a43b4dc9cabbf4fe442b7e556a08f471b63cae6a16edd5a7d74015f82bfd8",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-047.png",
+      "bytes": 1043,
+      "sha256": "32aee5d5e0d8a46d7362338c1fdc5e01fbc1784883f84bfc96cda80d15d92d4d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-048.png",
+      "bytes": 1096,
+      "sha256": "bd4947a21b6fa470474a964984728e2afbeb593add64d9b15d38b897f28855d0",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-049.png",
+      "bytes": 1100,
+      "sha256": "39bd2fed40f80522993c89adf794874daa0866801481095ffe3ff88540e127ca",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-050.png",
+      "bytes": 1073,
+      "sha256": "d47083f3719f3f54c92b6b4193546984f1713523203e53b93dc5fab1a2e7a70e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-051.png",
+      "bytes": 1014,
+      "sha256": "500a25a4a908dd5a95a6cebb04968c4a84417d8ee74fc668057c4b1cc981d684",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-052.png",
+      "bytes": 1117,
+      "sha256": "798bd7ddb607e45c8bc5012dc345b4105458dc25a7848f70802e02cabd1c72c5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-053.png",
+      "bytes": 715,
+      "sha256": "aaa0a2adf941fd1fc8190d0af831211f261e9709180d0d12797f85eed115b398",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-054.png",
+      "bytes": 817,
+      "sha256": "91452ecdbcc7e77bf44b896eec2210261a761f22adfaf0fa3298328c228f23c2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-055.png",
+      "bytes": 983,
+      "sha256": "85e77bc06b4f130d054db546d57470cc5fca8c81a8670fab0f744602ca016f70",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-056.png",
+      "bytes": 1060,
+      "sha256": "3c7ae1d45d8b4f3fec95ab62f2432cec7f7c4966b86ff3945ebafb71c584a466",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-057.png",
+      "bytes": 854,
+      "sha256": "4278663d72487456d07044af1a4650f2e491e214b0c83a9bcf10ce55094f7f68",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-058.png",
+      "bytes": 1010,
+      "sha256": "4614a479e4d3409ba23a19fe694abdf4962d2c93398a95a669adbfab88da3d05",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-059.png",
+      "bytes": 765,
+      "sha256": "ef2ace3965e0d4847e1b1e97c97ada5f351cfb3cbb6aef020ec74e9323850f19",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-060.png",
+      "bytes": 744,
+      "sha256": "a58a3763995f3100cc789af38b15c172b5a6664d0260673f4e384c59149ddc88",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-061.png",
+      "bytes": 760,
+      "sha256": "48b11e9061214e9faf6c4ae292ac5415c17bc8cd25d5558d092c93a34771c239",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-062.png",
+      "bytes": 694,
+      "sha256": "d2f0ce117caa7c05947027f3cd7d61c15b99e5796ccff6ad4ee29a19cb3b06f3",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-063.png",
+      "bytes": 1145,
+      "sha256": "4000b4a9b8e1c3fa7e3b1f3341557719a351616223beabd7b5a0a354bf307a1e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-064.png",
+      "bytes": 841,
+      "sha256": "3a2a1b4e4f0d09d406cfe9fc1601456852b4cf048760d25b9b2185f0e3491662",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-065.png",
+      "bytes": 1144,
+      "sha256": "8551f3578b59109f31a54b6cc1dedc1dfd3949c3329a7eddd1026f7e5d982369",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-066.png",
+      "bytes": 733,
+      "sha256": "b8ef2a324bf640f2d994b50b9487fd1592c2ab9d9ee2bff93bcb85f139054d36",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-067.png",
+      "bytes": 833,
+      "sha256": "cb21c9200a4bdaf774cf7122adfc6b4b8bd17b4e76866614edac38329c891e9c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-068.png",
+      "bytes": 977,
+      "sha256": "04803f0ec6912aa27825df1fb709df22900525b28aa951731e79a13f054b9532",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-069.png",
+      "bytes": 1131,
+      "sha256": "acbadaf222c88401d5bf93f6cf9864e5b8caf9a5e64512569f84f7fe7970c8af",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-070.png",
+      "bytes": 562,
+      "sha256": "b4af5e4fceb3234c58e3faa9e2760dde96e6a933aa3594ca5f5225afb86942b1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-071.png",
+      "bytes": 758,
+      "sha256": "4c2b7e459dae3c56f302c90dc0f04fcd888b70411c17b4fc47539ea17304ff5c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-072.png",
+      "bytes": 1007,
+      "sha256": "0a59e9ad7a2c16820a4dbd8818708f05bcfd7a48e2bbdd952406b3ef7bfd335d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-073.png",
+      "bytes": 567,
+      "sha256": "0c2746650240ad88ede2b0ac49ace9d29c69fbffb33344cd8aa09709ac1f9121",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-074.png",
+      "bytes": 957,
+      "sha256": "5d07d7e94e434ea31892cdcbfeb4c0cd76a35426addecbaa891a7858748f241a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-075.png",
+      "bytes": 998,
+      "sha256": "7e000bab8eb42cc10078c2ab5adc64556cd7b75386a066c3f76ec4a7794dfea3",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-076.png",
+      "bytes": 974,
+      "sha256": "dbed83ae5c579dd50cc8e8ac0d2207d399291a904c66d22daf02be74ce984ba1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-077.png",
+      "bytes": 737,
+      "sha256": "d459e08c5582b0521a6e243579b9e7a182c7ae35a4a54f2908ddbd63b59e815a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/emoticon-078.png",
+      "bytes": 937,
+      "sha256": "e26ce6307de3a8405c70ef9c43de531aa816d1f74776434662c821fac204993b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/manifest.json",
+      "bytes": 49535,
+      "sha256": "e9962936d80e7838ce429b8aed86193f2596a6fcf301b0aed7a99440492366d0",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons-classic/shortcuts.json",
+      "bytes": 30235,
+      "sha256": "09c30adab03adfe335f0de7532efc8f54f250e6a4dc5d0d3a592272af3c12946",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/angel.png",
+      "bytes": 943,
+      "sha256": "6455cca6e8e34f00627ffffd933d06c9ab26cde30bf91520896b6e2d528ef86d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/angry-soft.png",
+      "bytes": 957,
+      "sha256": "e0eaeb251e24797be859b2e80a91f051f150660d20738147a3a24118da346140",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/big-smile.png",
+      "bytes": 952,
+      "sha256": "0b5a729e256c41ef39f18ccb10bc52f3a6ec51c60eefd4c936252a38309a86bb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/blank-face.png",
+      "bytes": 983,
+      "sha256": "ec3678df22526637ba2e845797a0a9819bf886e05dea3cb2e83cce40e8db11c3",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/butterfly.png",
+      "bytes": 947,
+      "sha256": "ed6b7ef8b959af3a7c8bc005d909e8f45ee5ad05d1a782ec0f1e696fa76ef03a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/cloud.png",
+      "bytes": 460,
+      "sha256": "17f0ec27b34594583548d34a4a1a47f360b8f84df96f6f614516e2475df4ce3a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/cool.png",
+      "bytes": 976,
+      "sha256": "9e86a69c5f9140cf473034b0c32410e3d0bd9c57e535c9c8c1d0d053ac805b81",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/curious.png",
+      "bytes": 977,
+      "sha256": "ff3a39fc017d97db7d3c2072f9858d5e70b763d729aeaaf92407e87cb26216f5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/framed-smile.png",
+      "bytes": 821,
+      "sha256": "b212fa19c3d23ee6c0c18da0b99b8add57eb4a07dcd9e965cdf2672b8c3ffee0",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/gift.png",
+      "bytes": 615,
+      "sha256": "39cbc72afb9e603cdd25996bca1321eafe4aa1eca418f29b49555fec3b87999f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/kiss.png",
+      "bytes": 914,
+      "sha256": "6d97574811d7a80b9b468e4e64961d1c671df6e9f7300129183136dc11c5bae9",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/laugh-side.png",
+      "bytes": 666,
+      "sha256": "bd2d95e61c7d14dd949f62e050f2f0e78e0fef21db666b4b847ab84d5ec507c7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/laughing.png",
+      "bytes": 725,
+      "sha256": "16180eb8fa0a2a5062ba16ac9f04e2e7552d3c11d1db09f4194251010649b622",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/manifest.json",
+      "bytes": 10192,
+      "sha256": "8c7dda0fa1f5f5b3e5feb436fa91456646ad26c839344e318d715ce902889363",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/moon-happy.png",
+      "bytes": 923,
+      "sha256": "7b99044c4b1fae9f85be2f435bf8e3f2e9414cb849d21046d207f9def6c64eeb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/moon-party.png",
+      "bytes": 917,
+      "sha256": "bdd8ce99d3cb78220a6b1d5cdce7b0048b2bead1c58b4db978d8ecf4c4de42e9",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/moon-sleepy.png",
+      "bytes": 886,
+      "sha256": "c13dbddc2e1675a1cd440f1b1e299c9233b4a9fe9bd2d35114808a35debbf487",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/moon-wink.png",
+      "bytes": 914,
+      "sha256": "4f80378bbb1710ce7455503ca3d11cc43088cc42f7fafcc3ebd7ea0948a57916",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/pencil-black.png",
+      "bytes": 693,
+      "sha256": "fd97a2aa25e06315a12a6d8933d6688b278275886a1aeda048d3515f5d390854",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/pencil-blue.png",
+      "bytes": 882,
+      "sha256": "62879e4f62ede69ac1bf355cba3b3ce82c831ac8fbf366e4eb028eb234143cac",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/pencil-cut.png",
+      "bytes": 882,
+      "sha256": "62879e4f62ede69ac1bf355cba3b3ce82c831ac8fbf366e4eb028eb234143cac",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/pencil-red.png",
+      "bytes": 694,
+      "sha256": "1f418178f0b3f701ddd6ad1c646d6d1f7cd81df40032325a4d74be863557b83e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/pencil-tools.png",
+      "bytes": 916,
+      "sha256": "40c40933ce8b5668b9a435b6d9512ea033f1b5da9b460ca605c4e5ec8675273b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/plain.png",
+      "bytes": 673,
+      "sha256": "b37abbe9704dae64b2e5bb06b8de285fb011fb73239be8c236ca6d46deca09ef",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/rain.png",
+      "bytes": 515,
+      "sha256": "b7b701f2e4a4dfbf9b10d6256b953be4ac2eafdad7200161b364cb8aa8aae6a1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/rose.png",
+      "bytes": 568,
+      "sha256": "546ab693340138e4504cde6b5d4332e91280fd19d4555cc709785a36f2c36f05",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/sad.png",
+      "bytes": 971,
+      "sha256": "2a58c5da6a7604383913605388e3d6369ac4165cf04ef391c7e633b8b7bf3124",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/shy.png",
+      "bytes": 943,
+      "sha256": "6455cca6e8e34f00627ffffd933d06c9ab26cde30bf91520896b6e2d528ef86d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/simple-smile.png",
+      "bytes": 926,
+      "sha256": "e86b34c70d5925d91551909f433d1b4e39d3af5389a436c3bee8a2547bdfecc0",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/sleep.png",
+      "bytes": 666,
+      "sha256": "bd2d95e61c7d14dd949f62e050f2f0e78e0fef21db666b4b847ab84d5ec507c7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/smile.png",
+      "bytes": 1072,
+      "sha256": "bb5660f9ac66f98230f88c71ccbd70b15041ffb88b6a19f92ffc9b73178c9ed6",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/smirk.png",
+      "bytes": 673,
+      "sha256": "b37abbe9704dae64b2e5bb06b8de285fb011fb73239be8c236ca6d46deca09ef",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/soft-wink.png",
+      "bytes": 933,
+      "sha256": "0505880fdf807a168b1c50e19d9850d7e12d5941e957c28f76355482814c7bc5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/star.png",
+      "bytes": 765,
+      "sha256": "771d73745afe243879473e8db1592aa045c120d2f5a7e1573eba6e7ae6cb8314",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/stare.png",
+      "bytes": 672,
+      "sha256": "86001eb8afa74ad1b3ab581ed62e1b73804a1586b28eee49dfa69d49523695aa",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/storm.png",
+      "bytes": 555,
+      "sha256": "417f19f4380a3508eb9f624e18a5b8656561bf593a8b093002f064e0b7f592cb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/sun.png",
+      "bytes": 567,
+      "sha256": "0c2746650240ad88ede2b0ac49ace9d29c69fbffb33344cd8aa09709ac1f9121",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/surprised.png",
+      "bytes": 969,
+      "sha256": "c038738fd65550906db7a324a5ebe138ac84c44a9db26f64ed32abcae35e1ee6",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/thinking.png",
+      "bytes": 979,
+      "sha256": "09bf8d0b5cee289a3015f77a3eb0cd747447e39457baa4d6f779d8da47ee6598",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/umbrella.png",
+      "bytes": 555,
+      "sha256": "417f19f4380a3508eb9f624e18a5b8656561bf593a8b093002f064e0b7f592cb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/wind.png",
+      "bytes": 515,
+      "sha256": "b7b701f2e4a4dfbf9b10d6256b953be4ac2eafdad7200161b364cb8aa8aae6a1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/wink.png",
+      "bytes": 948,
+      "sha256": "331bcdaa666110d1a229e47025417d6c872f8bf57caabcbc4a4728d6e6ccbf58",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/emoticons/wonder.png",
+      "bytes": 978,
+      "sha256": "6d1a3c38c29c0a0e8a2c4a13c4284f31bab1810b03df4e706595354747124ba2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/manifest.json",
+      "bytes": 484266,
+      "sha256": "24e24411c53b77e3a0462639c9bad228bc7c5c585ee95d5d998e4d231c035004",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/extracted-manifest.json",
+      "bytes": 8383,
+      "sha256": "1908dd87743455db2e39dd429520758d1d1b08a8cb196b19b4937d630debddef",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/content.xml",
+      "bytes": 3476,
+      "sha256": "e740b4f0be0442b5e6975076a734984ff8b66cfa3e3401d87457d01c125be8cc",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/KoiPond.swf",
+      "bytes": 76279,
+      "sha256": "dc48962a2d2ca7492753fe91731bcc144cf357f06d7d6671220b587038f13751",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/background.jpg",
+      "bytes": 67730,
+      "sha256": "6b1abf3ba4be29f2441769eedb51a5690c10bb7e55cdb7a62589bb63a182260d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/content.xml",
+      "bytes": 1428,
+      "sha256": "b4a9b6983ec756002c6cdfb56f8ca3ca4bcbfe5237abede49f526cdbe1a30c6e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/downlevel.jpg",
+      "bytes": 76138,
+      "sha256": "a9b2ac60a1545d1421cc081026c8ba61f95bc004fef4a3c1b5b4f713da3eca9a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/inner.mct",
+      "bytes": 215635,
+      "sha256": "d81588f71bb9905c3d60201c53b30233ef99c1e7e24c789d11bc4f64a6f3730c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/content.xml",
+      "bytes": 3476,
+      "sha256": "448af0208c1a254bf9e019055d1b18d3adb8a3fdb8ffbfd08b8adfe933340e4b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/Clocks.swf",
+      "bytes": 82311,
+      "sha256": "d4c0dad6581e7668e2e358b2668e42e9fbb534476fcc8113bed1c2ba3bd2e0b3",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/background.jpg",
+      "bytes": 139163,
+      "sha256": "d859364cdddb73ae35e4232274db5f0f50400d8dbce7aa7465286a749e1588a4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/content.xml",
+      "bytes": 1424,
+      "sha256": "7da7b0e1573eff06fa8ee6d0e972215ec1985857a560e91441abaf524cab75a7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/downlevel.jpg",
+      "bytes": 58507,
+      "sha256": "fd4983a49345c9df3b1cbabdebe3349ee64beeb2ce6f2d19811a983f7a061844",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/inner.mct",
+      "bytes": 275855,
+      "sha256": "56893d0e7b56d1fa2cd8b26d0e2dcaa484f108efd5f618dfc17c69fef3deacb0",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/content.xml",
+      "bytes": 3476,
+      "sha256": "1929054c2e4528ca2b69ee60c3e4de65d13879cd0d123c322eb9bfedb18e119f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/background.jpg",
+      "bytes": 95866,
+      "sha256": "458f9914c839dce8a8b194081e592b436e741a9225d3a8fa1a9bfc667ab75a7d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/content.xml",
+      "bytes": 1440,
+      "sha256": "f54ebb4dd6a61cf4b03304777c6abbfce3e3cc9adba9a81eb1201c4c69d2246d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/downlevel.jpg",
+      "bytes": 58033,
+      "sha256": "5ef45c8d845a8ccf9128ab3e2bce580e38266ad39f7565028f4a5912263103e3",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/mad_scientist.swf",
+      "bytes": 37508,
+      "sha256": "a4b589ef6db3a80460d0e5c4dddd846cef27be6b5aaccee499461316c0bb7b17",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/inner.mct",
+      "bytes": 162094,
+      "sha256": "f80fd465457571e68eede798c37a26d1fa2ba4b54e30b171f909e5986e859069",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/content.xml",
+      "bytes": 3476,
+      "sha256": "bfa3fd9b9e8137284f1bc41d633e4110b6d16b7b742eea9977908fa711b1db60",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/Background.jpg",
+      "bytes": 35912,
+      "sha256": "f8c3415d49f5f9877c7a76073ef9ee71e0933e46f8f2972daa0d3d59ceb90f14",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/Pixies.swf",
+      "bytes": 61498,
+      "sha256": "1c32077e883b1d5ef25e6e4e29d9be16d2acf063a6e22ccace9ec31d78057af1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/content.xml",
+      "bytes": 1425,
+      "sha256": "f584ae1d811acfcca8ec6d546f77a1a936d6d13b779078e20ff9eae0698885cf",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/downlevel.jpg",
+      "bytes": 26383,
+      "sha256": "0f1f1fc94a026e10bd49a1cf0f36f4cd05e9d9c3fa84bf89b584a402eb4b4495",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/inner.mct",
+      "bytes": 120930,
+      "sha256": "c46e7b522c8cf1640fd3cb0b2f3e0ccee942844e7c8cf143fe2a231412e8b31c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/manifest.json",
+      "bytes": 19327,
+      "sha256": "028d761a5c887dd44edca36c742f7198a77e5ded7a31e74d84535f6d190cd64b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-au.mtc",
+      "bytes": 15070,
+      "sha256": "06271e3da6a5b80c5359ca5c9af82147f1322f9d0fd9181658f27f6f5da685c6",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-ca.mtc",
+      "bytes": 15042,
+      "sha256": "17ce43b3e5657b66a4c3f12a58d1274c3dac57a37a9dd69399e74d0ccb249041",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-gb.mtc",
+      "bytes": 14159,
+      "sha256": "205d45fc6a7201c135f8aa8de16252beef197521b00b45c7ab4cc0b1858df1e7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-nz.mtc",
+      "bytes": 13233,
+      "sha256": "404cacf0eba51c5b93d98ecbff1ee794017671f2fefcd4be84897c98ef5af0c2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-us.mtd",
+      "bytes": 14996,
+      "sha256": "1006f9c477de909750188efc6d0754be10044c162e8c1f088ccb02a765633639",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-xa.mtc",
+      "bytes": 13369,
+      "sha256": "68d38f5519aa3e84afc79d774ede4c0d46e915b61689ae46827f3128777e4137",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-xu.mtc",
+      "bytes": 13692,
+      "sha256": "a8a30d4f175edbf6a756ea9d4ee6be1de51b5f9af019201f7afd117c61e2dca2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/en-za.mtc",
+      "bytes": 13120,
+      "sha256": "45d41901e3d8ece3a0baac5de28832f6a70de665c013a09064ebfb2928327777",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/hi.mtc",
+      "bytes": 13246,
+      "sha256": "513ad48bb95aa8a925ddcfafc4b158b6be1db500109634a10953c05704d3b4a5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/ms.mtc",
+      "bytes": 13128,
+      "sha256": "31930e21991eabbce0ad675cdf7ed494d56b92e37965958eeb84b64d24174dbe",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/msntb.cfg",
+      "bytes": 14996,
+      "sha256": "1006f9c477de909750188efc6d0754be10044c162e8c1f088ccb02a765633639",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/msntb.dll",
+      "bytes": 203464,
+      "sha256": "102eb98646870c272d11a85d67c663126e3deca987a849d032308801889a244d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/mtbres.dll",
+      "bytes": 117448,
+      "sha256": "7a48b2a358d41d91525a7429aa53ec8c02e1edc034863852b578a7fd65e28010",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/mtbs.exe",
+      "bytes": 109256,
+      "sha256": "3f7a0e54ee82e6c3a174b479f644ff322628e250bd0505d0474314f68c88541f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/rcdata/msnsearch_rcdata_CABINET_9/zh-sg.mtc",
+      "bytes": 13274,
+      "sha256": "cdc17dad89bd77d350a293aba2da3903ee52c867f4d787dc3d03987385083e88",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/content.xml",
+      "bytes": 401,
+      "sha256": "d3a541442e4c2cf37c0a3af0c294760f6c03945ede165fe23be1c400cbfee1c4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/water_balloon.png",
+      "bytes": 2791,
+      "sha256": "c464b4963dbda8823ed3f64abe7babaeb5b3fdc0aaa77145d6abca54792c9e74",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/water_balloon.swf",
+      "bytes": 49731,
+      "sha256": "b29dffb4b547f8836e8aa01a92d69d4690551c8157bf702fee93a0f29c1449cc",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/bouncy_ball.png",
+      "bytes": 2794,
+      "sha256": "be5d44e70ab2c8f7f99cf5e073189705534b3d44da3a64e17fedd7ff652d5a29",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/bouncy_ball.swf",
+      "bytes": 12912,
+      "sha256": "7e8d56d102f0a67ce686fc3d107cd64e43d1c49ca62a2856db5a2d0f3e6c1bb7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/content.xml",
+      "bytes": 433,
+      "sha256": "e4aa27e38194a4d2d33dd62364eee729de667ba64ff50a1c9d86b65af5de14cf",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/content.xml",
+      "bytes": 393,
+      "sha256": "e9722bd6419769397ef726f38f8ed706f6fc363ae616bf2759434bfdbb10ccac",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.jpg",
+      "bytes": 3826,
+      "sha256": "32061a04fe7dca8d6b92153ad5995e9e54f10fd17b3e068dcbfe4aebef4bfada",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.swf",
+      "bytes": 19597,
+      "sha256": "5d622ebabdc951c4365e7f991d89fcedafa4319d95b18f18566738819c56fbfa",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/content.xml",
+      "bytes": 423,
+      "sha256": "e831df185019c21c15232d01f81b3691d2c9c95414e65efa5b78ec275e2af01c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/crying.png",
+      "bytes": 6002,
+      "sha256": "204cf1408e03183c061838ef6320dff6265ad8c84063358508291868c24f2f64",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/crying.swf",
+      "bytes": 14103,
+      "sha256": "bf378113608147e580b86fd03593e0aaf172a9b8fc994b52dc7bf229e29bc980",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/content.xml",
+      "bytes": 417,
+      "sha256": "e2961be318de16e64f2d0227db9592e2d9389c020b42f7c0fcba38e9fc881790",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/ufo.png",
+      "bytes": 4653,
+      "sha256": "d56241bb8025dfa6de0f129371e7154f38363e99468da76752fa4d748b85396b",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/ufo.swf",
+      "bytes": 87796,
+      "sha256": "1ba336fede3728acc0dd6e4a32113cca264f3aa65d7f9dbb2e9c3cee90433a3a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/content.xml",
+      "bytes": 383,
+      "sha256": "6d226b5e25fc6ac71cdc3b5ae5244d90bce4995b801d09e5eac2eae970e448ef",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/frog.png",
+      "bytes": 3106,
+      "sha256": "462dce69c126af603e2a9ec84e78f4b7405f12fb750a6609587699d7a37fe639",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/frog.swf",
+      "bytes": 46707,
+      "sha256": "dfa59609f394773ffdca9803dca3fe9aeb94efe221448c2a15d39e4bde996795",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/content.xml",
+      "bytes": 423,
+      "sha256": "a05617a2ab183b171f497380d677fcb5620b62c2e8f4a7be0b60653109bc5068",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/dancer.png",
+      "bytes": 3860,
+      "sha256": "01621364013ee5f2ec99ae4ccbe62604ad58bae8ee61c0a8074d238b2f551803",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/dancer.swf",
+      "bytes": 68281,
+      "sha256": "6ac7b533ff39b6e6b45b2221b176f62a87a5b714b56e1d5933eb31a6c6770b00",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/bow.jpg",
+      "bytes": 1382,
+      "sha256": "d068d56741d7012b30b6d472b025a36614270920bf0775840cd2e978110df3c8",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/bow.swf",
+      "bytes": 21672,
+      "sha256": "2c0705e3680f3d84b54419acc7cb2b2bb4cc01fb212daa5d0660226e663d1661",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/content.xml",
+      "bytes": 381,
+      "sha256": "41dabe6d524cb3534998a57709f0eac237be03e9eea2fe9d5cfe6eb4fdbea3fe",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/content.xml",
+      "bytes": 421,
+      "sha256": "b18f857983fb84a49f68cadcae8d6cb19aa3e001bbc09e4c45c6f786143edfab",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.png",
+      "bytes": 3040,
+      "sha256": "03cb2b20758c9ce74150835f1ad72d08a92c9eea000e08aeba1248a3a1a25f34",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.swf",
+      "bytes": 17646,
+      "sha256": "352ffcf39e683ed530ace33908f52ba2b39e685eeb0cdb91792a68b170758034",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/content.xml",
+      "bytes": 431,
+      "sha256": "dd1fdc989fa73195a9986fb4e24e9fdbd95a3ee237cda131fecdeb14b1cf99e2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/silly_face.png",
+      "bytes": 2750,
+      "sha256": "5c65b746b0f5047b8eff08fc403575636000bdac9d304d4d809a2aada7020707",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/silly_face.swf",
+      "bytes": 20223,
+      "sha256": "be7c40ca166db58c963c02a9129edc1ca267ab71297371fbb4b12d787ba09ca2",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/content.xml",
+      "bytes": 397,
+      "sha256": "8126e1eae3da62a1d41f19bd067d811ecf9c020d1cafe318c6be4c1a9352f4fb",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/dancing_pig.png",
+      "bytes": 3253,
+      "sha256": "0304ffcff3c24b3262d84035f6e80c7bc6d7d206cdd00c8b4a5d11d4093a3455",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/dancing_pig.swf",
+      "bytes": 72576,
+      "sha256": "a5ba22e112697f57f5b292cf764d8edeac8510280660dc10849cec361b1b2f5d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/content.xml",
+      "bytes": 419,
+      "sha256": "cd70122ca675c63ff45357722be79c1de2e190291a8921f52575f52e68ef0855",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/kiss.png",
+      "bytes": 1718,
+      "sha256": "00c57f8646a21697026164d1642e3340cd56112c77961db27b4641a3df5d0221",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/kiss.swf",
+      "bytes": 8075,
+      "sha256": "e457b81567c9eb8ea0008a708ae03c7bfa16d1d2524f270ccb7027d22766ac53",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/content.xml",
+      "bytes": 435,
+      "sha256": "4dd1fca19bdfff605dec7f7b3aa3e5fa7959f813ff88f1b62944c020229283b4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/guitar_smash.png",
+      "bytes": 3772,
+      "sha256": "09b13821b0888c784c0810fd1fd81c136c822b558bb3417156fecc5e3876d6ed",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/guitar_smash.swf",
+      "bytes": 31311,
+      "sha256": "662e8b1cf651826562fe410f7acfc980950b8f6e9fc5108e2f58193ba5bc6f8e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/content.xml",
+      "bytes": 385,
+      "sha256": "dacc7921942b20e0627e526a58193416650fdfafae3e040ccc60d19d2934232e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.png",
+      "bytes": 3834,
+      "sha256": "6ee3c735ae71b97bea5c22645786dea415a208972d31e7d5a97ea98837ef16c6",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.swf",
+      "bytes": 64107,
+      "sha256": "33755a73a467b618973bf64bdcedea8e927e80256f76a7c5e1eb32f32210e9b7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/content.xml",
+      "bytes": 401,
+      "sha256": "b434dae060704014628132fce7facb68337979a49df2bbe83819d566596f9a16",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/laughing_girl.png",
+      "bytes": 3015,
+      "sha256": "1bc85a73fadee630a25424cdf5167eb6e1a6598ab77492edce992b9501369976",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/laughing_girl.swf",
+      "bytes": 34821,
+      "sha256": "ba83513204ef183eef195262c34f156020f97234b2bf339dd12ae1a124b4f99a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2876_9.bin",
+      "bytes": 416,
+      "sha256": "f7b80aaf5d2266894e328e41625ac91c2d3f319ba5ea85a5c533e5e5cc852a78",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2877_9.bin",
+      "bytes": 316,
+      "sha256": "6c38c6a4c07454a78ee5feca23a1f12a723699c7a1c8e35da760d42cd509878a",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2878_9.bin",
+      "bytes": 332,
+      "sha256": "af44cc9557cc85253b1200c8df2f2272ff9be6a82aa586d6daefc1470b223e6a",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2879_9.bin",
+      "bytes": 352,
+      "sha256": "013f5df31c2b6ec85b688c4ea866ea995823522d00dc55d258010d8be2524cb6",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msgslang/string/msgslang_string_2880_9.bin",
+      "bytes": 412,
+      "sha256": "38c636b85bc7b29a3fe87c1d2f7bd66632ea5373f43d70c0250053814a77a3a5",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/JPG/msnmsgr_JPG_340_9.jpg",
+      "bytes": 61437,
+      "sha256": "16392bbee2c8954a916796a71cf3c921c822318f18f41bcfe3e0169637c14384",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/JPG/msnmsgr_JPG_341_9.jpg",
+      "bytes": 74231,
+      "sha256": "9ddf0b6f8730cd38e272a2cea86f0bcb2dd1e89a125327b8395c6deca49e8a55",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/JPG/msnmsgr_JPG_342_9.jpg",
+      "bytes": 63439,
+      "sha256": "7b30eb6c2f3cc81ca600d8d750f71c47e88c91e328ce996660625190522ab001",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/JPG/msnmsgr_JPG_343_9.jpg",
+      "bytes": 95297,
+      "sha256": "ab866623649ece017563f207b6e35cdc18dd4d3c7871b350a1183085197fbcd6",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/JPG/msnmsgr_JPG_344_9.jpg",
+      "bytes": 72589,
+      "sha256": "5a31b859c75bc0d5cf1fcd427c51593aad88f2755589a828062ef073033f56a1",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/msn75/resources/msnmsgr/PNG/msnmsgr_PNG_727_9.png",
+      "bytes": 54436,
+      "sha256": "066a0f046032e3b9a1c889e31d4d1950683e1cd9fedce51894f6dbce6491852f",
+      "verification": "assets final eleven Microsoft source resource manifest"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/72a20ef1c0b8ceb37720.wasm",
+      "bytes": 14310623,
+      "sha256": "adabc1696a2f1f95715ede6be0ac00a73364895c8e599039e60fef3b2f52efa4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/826bb0938097485a2c9d.wasm",
+      "bytes": 14244515,
+      "sha256": "e4ba64aa1dc9f7f2368602dd0fc2c51046f3e35baba8116d6cf3ae930a63aa02",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/LICENSE_APACHE",
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/LICENSE_MIT",
+      "bytes": 1097,
+      "sha256": "4de9338a7879c68e911742a7d691f0797ff1ef8d8a6fb978b0c711e258fe959c",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/core.ruffle.c80159b526e567babaf5.js",
+      "bytes": 108322,
+      "sha256": "624b0b23bc4460d73e789e608fd1274546a5a411f71f7e873414aca94bc5bc4f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/core.ruffle.f000070ea72f8ae4fe3a.js",
+      "bytes": 114739,
+      "sha256": "08ce4ff032b61d2014ba52bdc6f5d8f6adb0aacdc1e6e3fd5e68281c958bd90d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/manifest.json",
+      "bytes": 1614,
+      "sha256": "78d3df7f58ba1b6bdd79a0e094656aece48ef638418862d501b7611ea712301f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/package.json",
+      "bytes": 418,
+      "sha256": "acd3bbc02b675d971d5b0218572cdb57727079f8b4bd1a7e5eb9ec433e53aa49",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/ruffle/0.6.0/ruffle.js",
+      "bytes": 465076,
+      "sha256": "a686a305345b06542dddedada71869104916a61e393f174687571528ac4225f5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/newalert.wav",
+      "bytes": 14864,
+      "sha256": "58f4b7d80c9b9c1ba29ec463690ef4d33bcbbc730b8eed24c079ae6ed83a845e",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/newemail.wav",
+      "bytes": 36482,
+      "sha256": "56103eef3da6d0870ce78a92609e2c37af42eb558afc7ed5968abb1285bea63d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/nudge.wav",
+      "bytes": 172252,
+      "sha256": "47d6ed07eba503e0f0bd5ed3e2635d046576ceedcda72f3cf8672a87b93c0ec4",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/online.wav",
+      "bytes": 30820,
+      "sha256": "29154a6c903806f64add4fba458e832bea7a3fa99a8a448b9e5adec6b64e1134",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/phone.wav",
+      "bytes": 622400,
+      "sha256": "dd943090820eb3634306923b93d742284c81b0471014ca76d7840cbe798efc9d",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/ring.wav",
+      "bytes": 19502,
+      "sha256": "e532b7484e2b8a50c2b29ce67f2466b26ece793705bf4cc1ec4ae6fe80b91ac8",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/type.wav",
+      "bytes": 14576,
+      "sha256": "d24453f373120494869999f55b3ab667d0f39f88c78b8e167ea4c76e9f1c6426",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/sounds/vimdone.wav",
+      "bytes": 94692,
+      "sha256": "cbff0a08594c0cd2179ab5f7d38cda08168cdc8c93c17a3099da9ad7b6539dc8",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/winks/butterfly-small.gif",
+      "bytes": 27260,
+      "sha256": "398ab683cc746bae3bc71264d2006f16657f644d2b40209c593b004e7af09e10",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/winks/butterfly.gif",
+      "bytes": 57219,
+      "sha256": "22b0af40616552e567a02617673fea27777578b78d0a061fa9cf458392ffa3d7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/winks/flash.gif",
+      "bytes": 2772,
+      "sha256": "b4c3247724c82649231149f5b9a9a5398bed9279b8293995530cd62b86551934",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/winks/msn-flow.gif",
+      "bytes": 5104,
+      "sha256": "845a9194065bb55c17ed175c61fe4b1917ddc59e2e5f3d04fac57187484f826f",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/winks/nudge-burst.gif",
+      "bytes": 5183,
+      "sha256": "fafea834354181507c6fd8d48d2ab4c585122d9aceed747411036301015ba951",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/msn-assets/winks/surprise.gif",
+      "bytes": 39590,
+      "sha256": "df14ff305934159fd925ef83bde56a5d1d21decc9da2988739a3f40c0a5d84b5",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/realtimePcmProcessor.js",
+      "bytes": 846,
+      "sha256": "35893c30114e15abfc111730019ab7f7f56917582a314e79a6797b981b36bc75",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/screenshots/conversation-demo.png",
+      "bytes": 242536,
+      "sha256": "ca370ab3fef810a26f4a10a3f941395143357dd20079c66ae06a63ea7a4977d1",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "public/screenshots/roster-demo.png",
+      "bytes": 242906,
+      "sha256": "a82d1b935dbaf3aedbcd58d39cc2f14350505ec02ca2a090984069330b371af7",
+      "verification": "assets final handoff QA/public exact source identity; manifest digest additionally checked where available"
+    },
+    {
+      "path": "scripts/bootstrap-codex-env.mjs",
+      "bytes": 3542,
+      "sha256": "809f370fa007eb8a482a0f0a68834aa87a9cf7ef62055af7389130c28eb3bfd2",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "scripts/check-codex.mjs",
+      "bytes": 1182,
+      "sha256": "0fce3c7e337b1c36744840f9f742d4b65ddf992ea29fd1b3f3eeff40bea6bcb2",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "scripts/dev-electron.mjs",
+      "bytes": 3081,
+      "sha256": "4383521447df3e279bfa720d272942ae7a9c128b44d05c770f1f0c8d0b552009",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "scripts/electron-builder-release-version.mjs",
+      "bytes": 921,
+      "sha256": "b183f6acf89c08cc32a8cfc5dd245b0074515f90905f2335b6575b45d7c3720c",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "scripts/package-mac-release.mjs",
+      "bytes": 3964,
+      "sha256": "26d1a12b03d3a193229fd9b9fc9b5604c400b95708a97268119a1279f0dd2bfa",
+      "verification": "verified immutable original blob; root/backend declared this publication/helper path unchanged from base"
+    },
+    {
+      "path": "scripts/release-check.mjs",
+      "bytes": 6634,
+      "sha256": "2a140cf00a56623d42589b4d635124bbbe094d89733426af533026ccbd7f9e79",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "shared/codexExecutable.js",
+      "bytes": 2485,
+      "sha256": "106ab3334f31b736ed0a12c693ab970539b94d35bbefb28086974317b8aae1d9",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "shared/codexFeatures.js",
+      "bytes": 4644,
+      "sha256": "64176063aa1817c83b5cb7582ea192ec967056185f83710f65f3344ec127a790",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/codexImages.js",
+      "bytes": 3724,
+      "sha256": "82b0347fcd2f0741487b8061099ec61bfcb2b41b8bb1cf3afc2dbbda1038f4f0",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/codexOptions.js",
+      "bytes": 3945,
+      "sha256": "8ec13e660552d2645ce516b6c6766438e06787b4e12b6f3f7d2aa1bc9ccf5650",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/codexSetup.js",
+      "bytes": 9527,
+      "sha256": "39d3541d191beb75f12b9e20bca1e59477206179f175b6970dacb58d458aba09",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "shared/codexTimeline.js",
+      "bytes": 15262,
+      "sha256": "54f076f13f57d6155f36c8527beca51a341231274dc2560ef0b1e1826087eed6",
+      "verification": "01560 fileId and MCP UI descriptor update, exact bytes atomically written original and resident mirrors"
+    },
+    {
+      "path": "shared/conversationInputs.js",
+      "bytes": 1383,
+      "sha256": "8decb1e53898fc029012ecbf12282748403de7e4e83030c1802d1e25ef221c8f",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/languages.js",
+      "bytes": 36733,
+      "sha256": "0266557211a2e4e381e21877185f9279d031bd97100866d6159692b7154bca20",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/mediaData.js",
+      "bytes": 1121,
+      "sha256": "19f741a9fdb32b030f84fe2f5df0b925cb4f09bf24ace15378aa799b2bfd7119",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/serverRequestUtils.js",
+      "bytes": 23809,
+      "sha256": "c776fd5d673d2f0e461aacee5b5460bc26f06c7161ce044c96aea697fb772bd9",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/threadSelection.js",
+      "bytes": 576,
+      "sha256": "5f4293c8030716e70c66d9cc486bf4b270ee4a2a374275cece1271ff5d250859",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/updateAssets.js",
+      "bytes": 1481,
+      "sha256": "460bcc799353915ce73f3c4c80652ed2e73ec154e6ee285b3a9046dc38c004db",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "shared/versionUtils.js",
+      "bytes": 1085,
+      "sha256": "d88d1ecfd321752ddb44932be8eccde75e79077c0f0d0607f98b1ff61d1de5e0",
+      "verification": "backend SHA256 manifest attested from original source"
+    },
+    {
+      "path": "src/chatParts.jsx",
+      "bytes": 9695,
+      "sha256": "4431db097c2aa7b1212dcdd6dc5f85b0b7ad89559dfec1840ab0076b4d9ee8e9",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/chatTextStyle.js",
+      "bytes": 1463,
+      "sha256": "bcddef8adb7874280bc19c62ad84388232939c95e5d12a9b8bcdfe8962917138",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/codexConfigurationDialog.jsx",
+      "bytes": 3419,
+      "sha256": "d91aac5045306f02836d70c84719cc2951f0ebc70865838e8ea4274c50fdd66c",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/codexFeaturesPanel.css",
+      "bytes": 4958,
+      "sha256": "a25154c92b4f1d0ecc5d6d2df35d3a80ca45c1ae5d27e8881648e9f044bb8c08",
+      "verification": "Final style-only geometry correction; JS suite unchanged; production build validated separately"
+    },
+    {
+      "path": "src/codexFeaturesPanel.jsx",
+      "bytes": 46983,
+      "sha256": "caf8931bbb244a211315b12f5b89d6bb19f25f31bef484d25f6a9f8508d212cc",
+      "verification": "feature catalog156 final31nativePASS exact source manifest"
+    },
+    {
+      "path": "src/composer.jsx",
+      "bytes": 3461,
+      "sha256": "4e4ea4ae542ada85e3922fe408c15ccf2a407b56e8ee775a6d3b11c885e08d6f",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/composerUtils.js",
+      "bytes": 1450,
+      "sha256": "6d2b2fff8e38bd206b35b961a7293dc643743f69a3dd5a26c796f0e2d967274c",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/gamesPanel.jsx",
+      "bytes": 2009,
+      "sha256": "973bcd83ad085f03f6d97301e8d7de047458702d02fa51fb94126111ed5d575b",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/i18n.js",
+      "bytes": 1493,
+      "sha256": "1199f97bc35e562e2f2cf6c47c8d19305bcdcdc57561214ff4c300fe12b06c7a",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/main.jsx",
+      "bytes": 145394,
+      "sha256": "d387bb2dd45ba2fca842fa07bb42ce65e511703b8ff9c0dc0cf31ac707465379",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "src/mediaPanels.jsx",
+      "bytes": 9766,
+      "sha256": "709b528295c47752786dd648c459ff5ab9ae36a8b9df4e55ab8c084927f9fb21",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/messageBlocks.js",
+      "bytes": 2780,
+      "sha256": "7ddf6bafaef31046aca633045b6cc249c9468e7379496e7a5803a23cc2711367",
+      "verification": "UI final156 rich/geometry manifest21nativePASS exact original"
+    },
+    {
+      "path": "src/messageFormatting.jsx",
+      "bytes": 9209,
+      "sha256": "e6e4af9867e4e8f9484c81c8a6eca5c4395c502ccc1f67a57c6a2473c2d9a9c4",
+      "verification": "UI final156 rich/geometry manifest21nativePASS exact original"
+    },
+    {
+      "path": "src/messageLinks.js",
+      "bytes": 831,
+      "sha256": "01090fc1bbd6e83e4154137c0dc67fae7e196f4dd1540a408066654c0e135a8a",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/msnBackgrounds.js",
+      "bytes": 2492,
+      "sha256": "6999f328ab868936ec4b3f3cce54932d9da996fa6f15772e5c6d93550c36ae4b",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/msnDisplayPictures.js",
+      "bytes": 1105,
+      "sha256": "f828e188e01fe65b77f3b311344b960a8af272419a08090796f49f22ee6de525",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/msnEmoticons.js",
+      "bytes": 24436,
+      "sha256": "4e40ab6020c57a7289df1276f3ecdc0abce2228b135ce62daedd76edf113c49e",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/msnFlashPlayer.jsx",
+      "bytes": 4090,
+      "sha256": "bd9997e3e3498d71838d48100411c9f77824f8ea0a9f7144ac70ef048987df9b",
+      "verification": "assets final isolated player source/QA exact handoff"
+    },
+    {
+      "path": "src/msnFlashPolicy.js",
+      "bytes": 840,
+      "sha256": "1579a46dc78a81efd9824b2e7f37f8f82d9f8e6daa77ba0ab0913fefb390297b",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/realtime.css",
+      "bytes": 2142,
+      "sha256": "328f8e0e3b0a00dddba3b00b912db058f30b5a758316f0f4b6dcba32561d40cd",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/realtimeAudio.js",
+      "bytes": 10056,
+      "sha256": "2dc78eea0d61f2a2e6f45f070c98a4e935920c4ac10840f70e7f2280134a86c5",
+      "verification": "realtime156 final22nativePASS schema-backed preference and audio handoff"
+    },
+    {
+      "path": "src/realtimePanel.jsx",
+      "bytes": 12421,
+      "sha256": "0e9a6b88f5d42356f300239ee92b2b3ae2797f85895a22972775be7f9842a784",
+      "verification": "realtime156 final22nativePASS schema-backed preference and audio handoff"
+    },
+    {
+      "path": "src/realtimeShortcut.js",
+      "bytes": 199,
+      "sha256": "24363fb8a10ee0613824c38358d858b4b0aa746b398f61857987f37cccdbbd2c",
+      "verification": "realtime156 final22nativePASS schema-backed preference and audio handoff"
+    },
+    {
+      "path": "src/realtimeTranscript.js",
+      "bytes": 2168,
+      "sha256": "73182df3d96bcb537baaee423a7669ce6c3f9d5b860f2b8877c41d85496bcc01",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/richMessageBlock.css",
+      "bytes": 767,
+      "sha256": "59090f2b75a8948d56e976bb9c3117d6af804a2c14a243f9bbf274e4e27d2811",
+      "verification": "UI final156 rich/geometry manifest21nativePASS exact original"
+    },
+    {
+      "path": "src/richMessageBlock.jsx",
+      "bytes": 4799,
+      "sha256": "950d51f4367cfec781b3cfaea72b380cd3215d2ebabff480a10e138d793d7719",
+      "verification": "UI final156 rich/geometry manifest21nativePASS exact original"
+    },
+    {
+      "path": "src/richMessagePolicy.js",
+      "bytes": 1293,
+      "sha256": "e86e80086d11f67dd41996f76e2675307af28cd63830cbd7f3c930a6734e0e24",
+      "verification": "UI final156 rich/geometry manifest21nativePASS exact original"
+    },
+    {
+      "path": "src/rosterUtils.js",
+      "bytes": 4152,
+      "sha256": "ca7b6d5f28221145d87ddc069447c8eeeb6004378e1e59bc64832d37aeeeeebc",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/rosterView.jsx",
+      "bytes": 20952,
+      "sha256": "ab09e697b0756ea672b4ca8aa90e3a57ede4015f885ca9d9a783d3302e3984fe",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/serverRequests.css",
+      "bytes": 2431,
+      "sha256": "d9d21ae00908d5756a32f769fe290dcf290d3321f5d9d883c25bc31c1743ba76",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/serverRequestsPanel.jsx",
+      "bytes": 15874,
+      "sha256": "66b99470425ebac149c32b3d18274168e614dee2024d0198cc56082358ec33ee",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/soundEffects.js",
+      "bytes": 1235,
+      "sha256": "44eed58e29493f2c33f6b26ccb249750cf7a0761b6cd9825d396159fa4052171",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/styles.css",
+      "bytes": 106409,
+      "sha256": "3d910c4df7d562009baccdaf8172bdf4fc77fd0aeee2eaafca5c2790b8185253",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/terminalPanel.css",
+      "bytes": 1408,
+      "sha256": "81c929c31c34ee5fabd7fdad9f02053d2311252fe28b625ad2bc39b34ec0508b",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/terminalPanel.jsx",
+      "bytes": 6669,
+      "sha256": "843c82f0a55d7b003d5d634ef65dd7d1fbf296d52db243f57a0daf3e97fd0a2d",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/threadTabs.jsx",
+      "bytes": 6101,
+      "sha256": "98541dd7d52b272bb2de18bb088e0dce1d1e8c38a45ebf5f7886371946c4c2de",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/updateDialog.jsx",
+      "bytes": 7323,
+      "sha256": "45b5491cb81bf9c7509a3e97747dbc62fdfe8d2d28151c5985b0109d83f1d1aa",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/useCodexEvents.js",
+      "bytes": 25607,
+      "sha256": "95ff621f4066a15264c2ba10aa02ec4dd966b8b50717e86144d7aeb1b3b46ecc",
+      "verification": "modern requests final70nativePASS source-manifest original exact"
+    },
+    {
+      "path": "src/useModalFocus.js",
+      "bytes": 3569,
+      "sha256": "db39ee0a7baf246b1fea3f411a803302399a02d68036bfb475bd2d93c2398506",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/usePromptDialog.jsx",
+      "bytes": 2429,
+      "sha256": "d64e427754e7c6f5fa2d956e19396ad50f3fa4a60ab8dcd4d29e4bb0dda3bb8b",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/useUnreadState.js",
+      "bytes": 454,
+      "sha256": "d98e63e948bace921c4093ad34e44dec8a18f434917ad489ddb97c935b73a837",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/useUpdates.js",
+      "bytes": 4586,
+      "sha256": "295276cef95b66855fbefad34b5ee1bce5624c33c64b8b53ff14c33bce5d0bb2",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/versionLabel.js",
+      "bytes": 166,
+      "sha256": "249e306d12221e4eb36cac002e1faf541f58c9d4298317bf1bb2e478e1d0868b",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/windowChrome.jsx",
+      "bytes": 5868,
+      "sha256": "fac7ed18db66d027add28d03aa6a0d183a354e0aee10ce0fcfdacdd7d702f88f",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "src/winks.js",
+      "bytes": 3720,
+      "sha256": "812d235b9c96ef1d6584f9ba4283061f3885106e752312c9f028a73ba390677b",
+      "verification": "root handoff: all QA src bytes verified against final original source"
+    },
+    {
+      "path": "tests/backendReliability.test.mjs",
+      "bytes": 12248,
+      "sha256": "a48d155258cc7e6edd0fdeb304210c7efb76d7510b8c37df627eac10dd46c9cc",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/backendStartupRegression.test.mjs",
+      "bytes": 5657,
+      "sha256": "91c74634bfd49eef73bb6dbd93b995cdef989ed372a7a2c9a546a87d9adb41ff",
+      "verification": "backend final156 mode observation16nativePASS manifest"
+    },
+    {
+      "path": "tests/codexAppServerContract.test.mjs",
+      "bytes": 13428,
+      "sha256": "3cd3a1779876cab014cfe9aa76760635d79a5610021d81645e2de79ffd295b93",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/codexAuthenticatedLive.test.mjs",
+      "bytes": 10256,
+      "sha256": "567933b19fc2262b186f67ff658674c3076d34b1b9c71402e085894ea177231f",
+      "verification": "01560 target update from exact original capture, same bytes atomically written original and snapshot"
+    },
+    {
+      "path": "tests/codexClient.test.mjs",
+      "bytes": 5193,
+      "sha256": "3437645c733c41d4da495ecded9664ea4f53d03bcb5944601d9a2ee57e29887a",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/codexEvents.test.mjs",
+      "bytes": 36016,
+      "sha256": "5ef199e2429525c39b039a5ecea3f4646016a26273c26ef52d637547e1b5f53b",
+      "verification": "modern requests final70nativePASS source-manifest original exact"
+    },
+    {
+      "path": "tests/codexFeatureLive.test.mjs",
+      "bytes": 4645,
+      "sha256": "273555e5cc07bb1ecfcbcaf3a25352d3782bd6d7f64f3bb5b22969e2f5c0272a",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/codexFeatures.test.mjs",
+      "bytes": 36032,
+      "sha256": "c927fbe1e7bb661a28fe54d498ac5f12468983a2d65a27daafdca04db7defc13",
+      "verification": "feature catalog156 final31nativePASS exact source manifest"
+    },
+    {
+      "path": "tests/codexLiveContract.test.mjs",
+      "bytes": 3692,
+      "sha256": "8168cb08903c9ee844b81164e5a026033ed0dee148a532112706d49bc4808116",
+      "verification": "01560 target update from exact original capture, same bytes atomically written original and snapshot"
+    },
+    {
+      "path": "tests/codexOptions.test.mjs",
+      "bytes": 2602,
+      "sha256": "f2724b04fda2bcc5a35e5aed5e37ca991f7631816ebd972bddf2c86fb190b5b8",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/codexSetup.test.mjs",
+      "bytes": 13406,
+      "sha256": "600dc508284e66771b202063b0379b7ebff571859e1408df34e01d14845ca151",
+      "verification": "Root final source/resident byte equality handoff; expected final digest checked"
+    },
+    {
+      "path": "tests/codexTimeline.test.mjs",
+      "bytes": 15871,
+      "sha256": "5e58fc3b6a169c75159dbd0547458579dd0d592dc4d39e4460db6822cad962fd",
+      "verification": "01560 genuine generated schema fixture + descriptor regressions, original/snapshot identical"
+    },
+    {
+      "path": "tests/collaborationModeObservation.test.mjs",
+      "bytes": 5758,
+      "sha256": "420ff184781e5dd9379b90a335ef8cfdbc834209b2392b8695b1832fd70e78d4",
+      "verification": "backend final stop/resume generation-race fix manifest17nativePASS"
+    },
+    {
+      "path": "tests/composerRegression.test.mjs",
+      "bytes": 2902,
+      "sha256": "493e5796eb6b01fe3a17274fa6f0171f583cc731ccd134238756d070e23a5fe3",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/conversationInputs.test.mjs",
+      "bytes": 1393,
+      "sha256": "eb7a694b9373acd2d5535bd429a43f11f5a236237739b829ccebafd6c4be2abe",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/fixtures/codexTimelineSchema-0.156.0.json",
+      "bytes": 172967,
+      "sha256": "5ebe2f6fb4e199f4bcc927b5b2a1518820b17b398fc1b5a7c9312a952d5d76bd",
+      "verification": "Exact generated 0.156.0 experimental schema definitions; source and resident fixture written atomically and hashed"
+    },
+    {
+      "path": "tests/messageBlocks.test.mjs",
+      "bytes": 2555,
+      "sha256": "27ae52d8aa666abc7bf47ab14fdda08ac77537806cd2528f94c5f848dd21b1f7",
+      "verification": "UI final156 rich/geometry manifest21nativePASS exact original"
+    },
+    {
+      "path": "tests/messageLinks.test.mjs",
+      "bytes": 1113,
+      "sha256": "eff8f0a03a6a05c8b626b7cec0ac63a4d39b72028bb361c047e17cc35bcc4d05",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/msnAssetProtocol.test.mjs",
+      "bytes": 3564,
+      "sha256": "516572d4ffc3d27d6630053a1957adb68583071ab5908168e70f142661f13b9e",
+      "verification": "backend final156 mode observation16nativePASS manifest"
+    },
+    {
+      "path": "tests/msnAssets.test.mjs",
+      "bytes": 10041,
+      "sha256": "fc58a752776cb5df565ab005b693b82a8a0d3e7a75358b780c2295acf2701892",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/msnFlashPolicy.test.mjs",
+      "bytes": 1096,
+      "sha256": "97beda7d2ddd701602bfcc2d821d8f7181a802826e6d3f296769fff45b663bff",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/realtime.test.mjs",
+      "bytes": 22231,
+      "sha256": "4818b575c893fb9d1e72a38f033ed9b7d2ce5b6c2c54e7b620c95b5af2a60faa",
+      "verification": "realtime156 final22nativePASS schema-backed preference and audio handoff"
+    },
+    {
+      "path": "tests/releaseMetadata.test.mjs",
+      "bytes": 3016,
+      "sha256": "203fe1ee47d025018d77fe7306af072aa262338732e16e7c937a1fe6980c86a1",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/security.test.mjs",
+      "bytes": 1659,
+      "sha256": "8e7890eae5edb56be66697c0577a860d0409dc1eac5be6b7b1699169dc308776",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/serverRequests.test.mjs",
+      "bytes": 27694,
+      "sha256": "5b3925d4f2bb38042f45cf2b5286e191a85b83020e268a804651e0c85dd79359",
+      "verification": "modern requests final70nativePASS source-manifest original exact"
+    },
+    {
+      "path": "tests/terminalService.test.mjs",
+      "bytes": 6826,
+      "sha256": "4ea9f217c68b6b82c6f59645aa1220274f9e85f6a7679a6737294c979dd856d7",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/threadEventMetadata.test.mjs",
+      "bytes": 8543,
+      "sha256": "2ec35bcea36ba9025065e47221fbf13cbec8d83160d58e7666043eaf0d3d860a",
+      "verification": "backend final156 mode observation16nativePASS manifest"
+    },
+    {
+      "path": "tests/updateAndThreadUtils.test.mjs",
+      "bytes": 8452,
+      "sha256": "371e6d433da74bdf84807116fff9cc9e43a294f4231f0949b2d150180b534cfb",
+      "verification": "direct synchronous original source capture before156delta"
+    },
+    {
+      "path": "tests/windowFrameNavigation.test.mjs",
+      "bytes": 3616,
+      "sha256": "2d231a83d07f845a444d50b638de15e089b062ced1c11d69697bf48cd94459e7",
+      "verification": "backend final156 mode observation16nativePASS manifest"
+    }
+  ]
+}

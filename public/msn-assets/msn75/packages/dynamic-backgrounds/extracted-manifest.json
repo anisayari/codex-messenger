@@ -1,0 +1,151 @@
+{
+  "source": "MSN Messenger 7.5.0322 inner.mct CAB resources already present in this repository",
+  "extractionTool": "macOS bsdtar (CAB decoding only; no binaries executed)",
+  "count": 16,
+  "items": [
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1600_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/inner.mct",
+      "archiveEntry": "background.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/background.jpg",
+      "size": 67730,
+      "sha256": "6b1abf3ba4be29f2441769eedb51a5690c10bb7e55cdb7a62589bb63a182260d"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1600_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/inner.mct",
+      "archiveEntry": "content.xml",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/content.xml",
+      "size": 1428,
+      "sha256": "b4a9b6983ec756002c6cdfb56f8ca3ca4bcbfe5237abede49f526cdbe1a30c6e"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1600_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/inner.mct",
+      "archiveEntry": "downlevel.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/downlevel.jpg",
+      "size": 76138,
+      "sha256": "a9b2ac60a1545d1421cc081026c8ba61f95bc004fef4a3c1b5b4f713da3eca9a"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1600_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/inner.mct",
+      "archiveEntry": "KoiPond.swf",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/KoiPond.swf",
+      "size": 76279,
+      "sha256": "dc48962a2d2ca7492753fe91731bcc144cf357f06d7d6671220b587038f13751"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1601_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/inner.mct",
+      "archiveEntry": "background.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/background.jpg",
+      "size": 139163,
+      "sha256": "d859364cdddb73ae35e4232274db5f0f50400d8dbce7aa7465286a749e1588a4"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1601_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/inner.mct",
+      "archiveEntry": "Clocks.swf",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/Clocks.swf",
+      "size": 82311,
+      "sha256": "d4c0dad6581e7668e2e358b2668e42e9fbb534476fcc8113bed1c2ba3bd2e0b3"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1601_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/inner.mct",
+      "archiveEntry": "content.xml",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/content.xml",
+      "size": 1424,
+      "sha256": "7da7b0e1573eff06fa8ee6d0e972215ec1985857a560e91441abaf524cab75a7"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1601_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/inner.mct",
+      "archiveEntry": "downlevel.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/downlevel.jpg",
+      "size": 58507,
+      "sha256": "fd4983a49345c9df3b1cbabdebe3349ee64beeb2ce6f2d19811a983f7a061844"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1602_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/inner.mct",
+      "archiveEntry": "background.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/background.jpg",
+      "size": 95866,
+      "sha256": "458f9914c839dce8a8b194081e592b436e741a9225d3a8fa1a9bfc667ab75a7d"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1602_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/inner.mct",
+      "archiveEntry": "content.xml",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/content.xml",
+      "size": 1440,
+      "sha256": "f54ebb4dd6a61cf4b03304777c6abbfce3e3cc9adba9a81eb1201c4c69d2246d"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1602_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/inner.mct",
+      "archiveEntry": "downlevel.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/downlevel.jpg",
+      "size": 58033,
+      "sha256": "5ef45c8d845a8ccf9128ab3e2bce580e38266ad39f7565028f4a5912263103e3"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1602_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/inner.mct",
+      "archiveEntry": "mad_scientist.swf",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/mad_scientist.swf",
+      "size": 37508,
+      "sha256": "a4b589ef6db3a80460d0e5c4dddd846cef27be6b5aaccee499461316c0bb7b17"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1603_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/inner.mct",
+      "archiveEntry": "Background.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/Background.jpg",
+      "size": 35912,
+      "sha256": "f8c3415d49f5f9877c7a76073ef9ee71e0933e46f8f2972daa0d3d59ceb90f14"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1603_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/inner.mct",
+      "archiveEntry": "content.xml",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/content.xml",
+      "size": 1425,
+      "sha256": "f584ae1d811acfcca8ec6d546f77a1a936d6d13b779078e20ff9eae0698885cf"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1603_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/inner.mct",
+      "archiveEntry": "downlevel.jpg",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/downlevel.jpg",
+      "size": 26383,
+      "sha256": "0f1f1fc94a026e10bd49a1cf0f36f4cd05e9d9c3fa84bf89b584a402eb4b4495"
+    },
+    {
+      "category": "dynamic-backgrounds-extracted",
+      "package": "msgslang_DYNAMICBACKGROUND_1603_9",
+      "sourceArchive": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/inner.mct",
+      "archiveEntry": "Pixies.swf",
+      "file": "public/msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/Pixies.swf",
+      "size": 61498,
+      "sha256": "1c32077e883b1d5ef25e6e4e29d9be16d2acf063a6e22ccace9ec31d78057af1"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+✔ authenticated actual CLI: streamed reply, persisted reload, search, occurrences, resume and fork (6422.826541ms)
+ℹ {"threadId":"01a0cb03-94a7-7253-a5a7-f9f2187a6e39","turnId":"01a0cb03-9613-7210-9b1c-4f423e3751b8","reply":"CODEX-MSN-OK","deltaCount":6,"status":"completed"}
+ℹ {"threadId":"01a0cb03-94a7-7253-a5a7-f9f2187a6e39","searchHit":true,"occurrenceCount":2,"matchRangesVerified":true}
+ℹ {"threadId":"01a0cb03-94a7-7253-a5a7-f9f2187a6e39","turnId":"01a0cb03-9613-7210-9b1c-4f423e3751b8","forkId":"01a0cb03-a8c8-7f70-8273-f9681634cee9","turnCount":1,"persistedReload":true,"search":true,"occurrences":true,"resume":true,"fork":true}
+ℹ {"stage":"complete","methods":{"initialize":2,"thread/start":1,"remoteControl/status/changed":2,"account/updated":1,"turn/start":1,"thread/started":2,"thread/status/changed":3,"turn/started":1,"item/started":2,"item/completed":2,"item/agentMessage/delta":6,"thread/tokenUsage/updated":2,"account/rateLimits/updated":1,"turn/completed":1,"thread/read":2,"deprecationNotice":3,"thread/turns/list":1,"thread/resume":1,"thread/search":1,"thread/goal/cleared":1,"thread/searchOccurrences":1,"thread/fork":1},"deltaCount":6}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6436.289125

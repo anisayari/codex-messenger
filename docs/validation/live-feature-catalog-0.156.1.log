@@ -1,0 +1,18 @@
+# Validation runtime: codex-cli 0.156.1
+# Started UTC: 2026-09-23T14:24:25.627Z
+# Finished UTC: 2026-09-23T14:24:25.888Z
+# Native Node: v24.19.0
+# Runtime SHA256: 0196e89fe5a7598f816ee54232c3d7c26d75e502ab5cfe2c9240e81d90f7255a
+# Client SHA256: 7c74d05a78a273c0ec98010c5f86c7e143e1876bd9d57ccfac4937b52def16de
+# Fixture: tests/codexFeatureLive.test.mjs
+✔ current local CLI feature catalog truthfully reports unavailable runtime methods without account or network (182.122292ms)
+ℹ codex-cli 0.156.1: {"account":"available","rateLimits":"unavailable","accountUsage":"unavailable","plugins":"available","models":"available","skills":"available","apps":"available","installedApps":"available","mcpServers":"available","memory":"available","providerCapabilities":"available","collaborationModes":"available","requirements":"available","permissionProfiles":"available"}
+ℹ Real command/exec PTY echo verified inside explicit external deny-network sandbox
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 209.952875

@@ -20,6 +20,7 @@ import {
   statusOptionsFor
 } from "./i18n.js";
 import msnDisplayPictures from "./msnDisplayPictures.js";
+import msnBackgrounds, { getMsnBackground } from "./msnBackgrounds.js";
 import msnEmoticons from "./msnEmoticons.js";
 import { animatedInlineEmoticons, renderFormattedMessageText } from "./messageFormatting.jsx";
 import {
@@ -36,12 +37,20 @@ import {
 import { playNewMessage, playSoundKey, playWink, playWizz, soundCatalog } from "./soundEffects.js";
 import { extractWinkFromText, winkCatalog } from "./winks.js";
 import UpdateDialog from "./updateDialog.jsx";
-import CodexConfigurationDialog from "./codexConfigurationDialog.jsx";
+import CodexFeaturesPanel from "./codexFeaturesPanel.jsx";
+import { ServerRequestsPanel } from "./serverRequestsPanel.jsx";
+import { RealtimePanel } from "./realtimePanel.jsx";
+import { isRealtimeCallShortcut } from "./realtimeShortcut.js";
+import { TerminalPanel } from "./terminalPanel.jsx";
 import Composer from "./composer.jsx";
-import { ApprovalRequestsPanel, Message } from "./chatParts.jsx";
+import { isCompositionEvent, literalSlashCommand, maximumDraftAttachments, messageInputForDraft, shouldSubmitOnEnter } from "./composerUtils.js";
+import { Message } from "./chatParts.jsx";
 import GamesPanel from "./gamesPanel.jsx";
+import MsnFlashPlayer from "./msnFlashPlayer.jsx";
+import { useModalFocus } from "./useModalFocus.js";
 import {
   ActivitiesPanel,
+  BackgroundsPanel,
   CameraPanel,
   EmoticonsPanel,
   FilesPanel,
@@ -509,13 +518,22 @@ function DisplayFrame({ contact, position, menuItems = [], statusCopy = statusLa
   );
 }
 
-function WinkAnimationOverlay({ animation }) {
+function UtilityDialog({ label, onClose, children }) {
+  const dialogRef = useRef(null);
+  useModalFocus(dialogRef, onClose);
+  return <div className="modal-backdrop codex-utility-backdrop"><section ref={dialogRef} className="codex-utility-dialog" role="dialog" aria-modal="true" aria-label={label}>{children}</section></div>;
+}
+
+function WinkAnimationOverlay({ animation, onReady, onClose }) {
+  const [muted, setMuted] = useState(false);
   if (!animation?.wink) return null;
   const { wink, direction, key } = animation;
   return (
-    <div className={`wink-animation-overlay ${direction}`} key={key} aria-hidden="true">
+    <div className={`wink-animation-overlay ${direction}`} key={key} role="region" aria-label={wink.label}>
       <div className="wink-animation-card">
-        <img src={wink.src} alt="" draggable="false" />
+        <button className="wink-close-button" type="button" onClick={onClose} aria-label="Fermer le clin d’oeil">×</button>
+        <button className="wink-sound-button" type="button" onClick={() => setMuted((current) => !current)} aria-label={muted ? "Activer le son du clin d’œil" : "Couper le son du clin d’œil"} aria-pressed={muted}>{muted ? "Son ×" : "Son"}</button>
+        <MsnFlashPlayer src={wink.swf} poster={wink.src} alt={wink.label} onReady={onReady} muted={muted} className="wink-flash-player" />
       </div>
     </div>
   );
@@ -1230,11 +1248,11 @@ function MainWindow() {
       setRefreshTick((tick) => tick + 1);
       return;
     }
-    if (status?.kind === "error") {
+    if (["error", "exit", "stopped"].includes(status?.kind)) {
       setCodexStatus((current) => ({
         ...current,
         ready: false,
-        error: status.text
+        error: status.text || "Codex local déconnecté"
       }));
     }
   }), []);
@@ -1485,6 +1503,8 @@ function ChatWindow({ bootstrap }) {
   const [historySearchOpen, setHistorySearchOpen] = useState(false);
   const [historySearchQuery, setHistorySearchQuery] = useState("");
   const [draftAttachments, setDraftAttachments] = useState([]);
+  const [sending, setSending] = useState(false);
+  const [searchResults, setSearchResults] = useState(null);
   const [typing, setTyping] = useState(false);
   const [turnActive, setTurnActive] = useState(false);
   const [conversations, setConversations] = useState(bootstrap.conversations);
@@ -1497,13 +1517,34 @@ function ChatWindow({ bootstrap }) {
   const [openFlyout, setOpenFlyout] = useState("");
   const [configurationOpen, setConfigurationOpen] = useState(false);
   const [flyoutPosition, setFlyoutPosition] = useState({ left: 8, top: 88, arrowX: 24, placement: "below" });
-  const [activeGame, setActiveGame] = useState("morpion");
   const [cameraStream, setCameraStream] = useState(null);
   const [recording, setRecording] = useState(false);
   const [mediaError, setMediaError] = useState("");
   const [activeThreadId, setActiveThreadId] = useState(contact.threadId ?? "");
+  const [observedCollaboration, setObservedCollaboration] = useState(() => ({ contactId: initialContact.id, threadId: initialContact.threadId ?? bootstrap.threadId ?? "", mode: bootstrap.effectiveCollaborationMode ?? null }));
+  const effectiveCollaborationMode = observedCollaboration.contactId === contact.id && observedCollaboration.threadId === activeThreadId ? observedCollaboration.mode : null;
+  useEffect(() => api.on?.("codex:activity", (payload) => {
+    if (payload?.threadId !== activeThreadId || (payload.contactId && payload.contactId !== contact.id) || !Object.hasOwn(payload.activity ?? {}, "collaborationMode")) return;
+    const mode = payload.activity.collaborationMode;
+    setObservedCollaboration({ contactId: contact.id, threadId: activeThreadId, mode: mode && ["default", "plan"].includes(mode.mode) ? mode : null });
+  }), [contact.id, activeThreadId]);
+
   const [activeWinkAnimation, setActiveWinkAnimation] = useState(null);
-  const [approvalRequests, setApprovalRequests] = useState(bootstrap.approvalRequests ?? []);
+  const [approvalRequests, setApprovalRequests] = useState([]);
+  const [serverRequests, setServerRequests] = useState(bootstrap.serverRequests ?? []);
+  const [structuredInputs, setStructuredInputs] = useState([]);
+  const [realtimeOpen, setRealtimeOpen] = useState(false);
+  useEffect(() => {
+    const onCallShortcut = (event) => {
+      if (!realtimeOpen && isRealtimeCallShortcut(event)) {
+        event.preventDefault();
+        setRealtimeOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onCallShortcut);
+    return () => window.removeEventListener("keydown", onCallShortcut);
+  }, [realtimeOpen]);
+  const [terminalOpen, setTerminalOpen] = useState(false);
   const [askPrompt, promptDialog] = usePromptDialog();
   const {
     updateDialogOpen,
@@ -1531,6 +1572,7 @@ function ChatWindow({ bootstrap }) {
   const stickToBottomRef = useRef(true);
   const previousMessagesScrollRef = useRef(null);
   const loadingPreviousMessagesRef = useRef(false);
+  const historyGenerationRef = useRef(0);
   const deltaQueueRef = useRef([]);
   const deltaFlushTimerRef = useRef(null);
   const deltaFirstQueuedAtRef = useRef(0);
@@ -1538,10 +1580,18 @@ function ChatWindow({ bootstrap }) {
   const videoRef = useRef(null);
   const textareaRef = useRef(null);
   const recorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+  const voiceTimerRef = useRef(null);
+  const sendingRef = useRef(false);
+  const activeContextRef = useRef(null);
+  activeContextRef.current = { contactId: contact.id, threadId: activeThreadId };
   const flyoutRef = useRef(null);
   const chatWindowRef = useRef(null);
   const winkAnimationTimerRef = useRef(null);
+  const winkAnimationKeyRef = useRef(null);
+
+  useEffect(() => {
+    stopWinkAnimation();
+  }, [contact.id, activeThreadId]);
   const selfContact = {
     id: "self",
     name: profile.displayName,
@@ -1562,6 +1612,7 @@ function ChatWindow({ bootstrap }) {
     return [...(currentProject.threads ?? []), ...(currentProject.hiddenThreads ?? [])].find((thread) => thread.id === activeThreadId) ?? null;
   }, [activeThreadId, currentProject]);
   const sessionContactId = activeThreadId ? `thread:${activeThreadId}` : contact.id;
+  const conversationBackground = getMsnBackground(chatSettings?.conversationBackgrounds?.[sessionContactId]);
   const displayContact = {
     ...contact,
     id: sessionContactId,
@@ -1624,6 +1675,9 @@ function ChatWindow({ bootstrap }) {
   }, [initialContact.id, initialContact.threadId]);
 
   useEffect(() => {
+    historyGenerationRef.current += 1;
+    loadingPreviousMessagesRef.current = false;
+    setLoadingPreviousMessages(false);
     setActiveThreadId(contact.threadId ?? "");
     setTranscriptRenderLimit(transcriptInitialRenderLimit);
     deltaQueueRef.current = [];
@@ -1636,6 +1690,11 @@ function ChatWindow({ bootstrap }) {
     setTyping(false);
     setTurnActive(false);
     setConfigurationOpen(false);
+    setRealtimeOpen(false);
+    setTerminalOpen(false);
+    setStructuredInputs([]);
+    setSearchResults(null);
+    setDraftAttachments([]);
   }, [contact.id, contact.threadId]);
 
   useEffect(() => {
@@ -1647,7 +1706,11 @@ function ChatWindow({ bootstrap }) {
     }
     setHistorySearchOpen(false);
     setHistorySearchQuery("");
-    setDraft(window.localStorage.getItem(draftStorageKey) || "");
+    try {
+      setDraft(window.localStorage.getItem(draftStorageKey) || "");
+    } catch {
+      setDraft("");
+    }
   }, [draftStorageKey, promptHistoryKey]);
 
   useEffect(() => {
@@ -1740,8 +1803,18 @@ function ChatWindow({ bootstrap }) {
 
   useEffect(() => () => {
     cameraStream?.getTracks().forEach((track) => track.stop());
-    recorderRef.current?.stream?.getTracks?.().forEach((track) => track.stop());
   }, [cameraStream]);
+
+  useEffect(() => () => {
+    if (voiceTimerRef.current) window.clearTimeout(voiceTimerRef.current);
+    const recorder = recorderRef.current;
+    if (recorder) {
+      recorder.onstop = null;
+      recorder.ondataavailable = null;
+      if (recorder.state !== "inactive") recorder.stop();
+      recorder.stream.getTracks().forEach((track) => track.stop());
+    }
+  }, []);
 
   useEffect(() => () => {
     if (winkAnimationTimerRef.current) window.clearTimeout(winkAnimationTimerRef.current);
@@ -1768,7 +1841,13 @@ function ChatWindow({ bootstrap }) {
       window.clearTimeout(deltaFlushTimerRef.current);
       deltaFlushTimerRef.current = null;
     }
-    const delta = deltaQueueRef.current.join("");
+    const batches = [];
+    for (const entry of deltaQueueRef.current) {
+      const last = batches[batches.length - 1];
+      if (last && last.itemId === entry.itemId && last.metadata.threadId === entry.metadata.threadId && last.metadata.turnId === entry.metadata.turnId) last.delta += entry.delta;
+      else batches.push({ ...entry });
+    }
+    const delta = batches.map((entry) => entry.delta).join("");
     deltaQueueRef.current = [];
     deltaFirstQueuedAtRef.current = 0;
     if (!delta) return;
@@ -1784,11 +1863,11 @@ function ChatWindow({ bootstrap }) {
         playedStreamingSoundRef.current = true;
         playNewMessageIfEnabled();
       }
-      return appendAgentDelta(current, conversationAgentName, delta);
+      return batches.reduce((messages, entry) => appendAgentDelta(messages, conversationAgentName, entry.delta, entry.itemId, entry.metadata), current);
     });
   }
 
-  function queueAgentDelta(delta) {
+  function queueAgentDelta(delta, itemId, metadata = {}) {
     const cleanDelta = String(delta ?? "");
     if (!cleanDelta) return;
     const notice = codexConnectionNotice(cleanDelta);
@@ -1800,8 +1879,8 @@ function ChatWindow({ bootstrap }) {
       return;
     }
     if (!deltaQueueRef.current.length) deltaFirstQueuedAtRef.current = Date.now();
-    deltaQueueRef.current.push(cleanDelta);
-    const queuedChars = deltaQueueRef.current.reduce((total, item) => total + item.length, 0);
+    deltaQueueRef.current.push({ delta: cleanDelta, itemId, metadata: Object.fromEntries(Object.entries(metadata).filter(([key, value]) => ["threadId", "turnId", "parentThreadId", "isWorker", "ancestorThreadIds"].includes(key) && value !== undefined)) });
+    const queuedChars = deltaQueueRef.current.reduce((total, item) => total + item.delta.length, 0);
     const queuedAge = Date.now() - deltaFirstQueuedAtRef.current;
     const shouldCatchUp = deltaQueueRef.current.length >= 8 || queuedChars >= 2200 || queuedAge >= 120;
     if (shouldCatchUp) {
@@ -1815,6 +1894,7 @@ function ChatWindow({ bootstrap }) {
 
   useCodexEvents({
     api,
+    threadId: activeThreadId,
     contact,
     conversationAgentName,
     deltaFlushTimerRef,
@@ -1839,7 +1919,9 @@ function ChatWindow({ bootstrap }) {
     setThreadsLoadError,
     setConversations,
     setCodexModels,
-    setApprovalRequests
+    setApprovalRequests,
+    setServerRequests,
+    serverRequests
   });
 
   useEffect(() => {
@@ -1894,6 +1976,10 @@ function ChatWindow({ bootstrap }) {
 
   async function loadPreviousMessages() {
     if (!activeThreadId || !historyHasMore || loadingPreviousMessagesRef.current) return;
+    const historyGeneration = historyGenerationRef.current;
+    const historyContext = { ...activeContextRef.current };
+    const isCurrentHistory = () => historyGenerationRef.current === historyGeneration &&
+      activeContextRef.current.contactId === historyContext.contactId && activeContextRef.current.threadId === historyContext.threadId;
     const element = scrollRef.current;
     previousMessagesScrollRef.current = element
       ? { scrollHeight: element.scrollHeight, scrollTop: element.scrollTop }
@@ -1907,6 +1993,7 @@ function ChatWindow({ bootstrap }) {
         cursor: historyCursor,
         limit: 10
       });
+      if (!isCurrentHistory()) return;
       if (result?.messages?.length) {
         stickToBottomRef.current = false;
         setTranscriptRenderLimit((current) => current + result.messages.length);
@@ -1917,25 +2004,73 @@ function ChatWindow({ bootstrap }) {
       setHistoryCursor(result?.historyCursor ?? historyCursor);
       setHistoryHasMore(Boolean(result?.historyHasMore));
     } catch (error) {
+      if (!isCurrentHistory()) return;
       previousMessagesScrollRef.current = null;
       setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
       setHistoryHasMore(false);
     } finally {
-      loadingPreviousMessagesRef.current = false;
-      setLoadingPreviousMessages(false);
+      if (isCurrentHistory()) {
+        loadingPreviousMessagesRef.current = false;
+        setLoadingPreviousMessages(false);
+      }
+    }
+  }
+
+  async function reloadCurrentHistory(threadId) {
+    const historyContext = { ...activeContextRef.current };
+    if (!threadId || historyContext.threadId !== threadId) return;
+    const generation = ++historyGenerationRef.current;
+    const isCurrent = () => historyGenerationRef.current === generation &&
+      activeContextRef.current.contactId === historyContext.contactId &&
+      activeContextRef.current.threadId === threadId;
+    loadingPreviousMessagesRef.current = false;
+    setLoadingPreviousMessages(false);
+    previousMessagesScrollRef.current = null;
+    deltaQueueRef.current = [];
+    if (deltaFlushTimerRef.current) window.clearTimeout(deltaFlushTimerRef.current);
+    deltaFlushTimerRef.current = null;
+    setTyping(false);
+    setTurnActive(false);
+    setTerminalOpen(false);
+    stopWinkAnimation();
+    setHistoryCursor(0);
+    setHistoryHasMore(false);
+    setMessages([]);
+    try {
+      const result = await api.loadPreviousMessages({ contactId: historyContext.contactId, threadId, cursor: null, limit: 10 });
+      if (!isCurrent()) return;
+      if (result?.ok === false || !Array.isArray(result?.messages)) throw new Error(result?.error || "L’historique actualisé n’a pas été renvoyé.");
+      stickToBottomRef.current = true;
+      setTranscriptRenderLimit(transcriptInitialRenderLimit);
+      setMessages(result.messages);
+      setHistoryCursor(result.historyCursor ?? result.messages.length);
+      setHistoryHasMore(Boolean(result.historyHasMore));
+    } catch (error) {
+      if (!isCurrent()) return;
+      reportRendererError("conversation.history.refresh.error", error, historyContext);
+      setMessages([makeMessage("system", "system", `Impossible de relire l’historique après la modification : ${errorMessage(error)}`)]);
+      throw error;
     }
   }
 
   async function sendItems(items, displayText, options = {}) {
     const cleanText = String(displayText ?? "").trim();
-    if (!items.length || !cleanText) return;
+    if (!items.length || !cleanText || sendingRef.current) return null;
+    sendingRef.current = true;
+    setSending(true);
+    const context = { ...activeContextRef.current };
+    const outgoing = makeMessage("me", profile.displayName, cleanText, { ...options, delivery: "sending" });
     stickToBottomRef.current = true;
-    setMessages((current) => appendOutgoingMessage(current, profile.displayName, cleanText, options));
+    setMessages((current) => [...current, outgoing]);
     setTyping(true);
     setTurnActive(true);
     api.markRead(contact.id);
     try {
       const result = await api.sendItems(contact.id, items);
+      if (result?.ok === false) throw new Error(result.error || "Envoi impossible.");
+      if (context.contactId !== activeContextRef.current.contactId || context.threadId !== activeContextRef.current.threadId) return result;
+      setObservedCollaboration({ contactId: contact.id, threadId: result?.threadId ?? activeThreadId, mode: result?.effectiveCollaborationMode ?? null });
+      setMessages((current) => current.map((message) => message.id === outgoing.id ? { ...message, delivery: "sent" } : message));
       if (result?.threadId) {
         setActiveThreadId(result.threadId);
         if (!activeThreadId) {
@@ -1944,10 +2079,17 @@ function ChatWindow({ bootstrap }) {
         }
       }
       if (result?.conversations) setConversations(result.conversations);
+      return result || { ok: true };
     } catch (error) {
-      setTyping(false);
-      setTurnActive(false);
-      setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
+      if (context.contactId === activeContextRef.current.contactId && context.threadId === activeContextRef.current.threadId) {
+        setTyping(false);
+        setTurnActive(false);
+        setMessages((current) => [...current.map((message) => message.id === outgoing.id ? { ...message, delivery: "failed" } : message), makeMessage("system", "system", error.message)]);
+      }
+      return null;
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
     }
   }
 
@@ -1976,26 +2118,32 @@ function ChatWindow({ bootstrap }) {
     setMessages((current) => [...current, makeMessage("system", "system", "Aucun fichier image ouvrable pour ce message.")]);
   }
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
-    const clean = draft.trim();
-    if (!clean) return;
-    const slash = slashCommandCatalog.find((command) => command.label === clean.split(/\s+/)[0].toLowerCase());
-    if (slash) {
-      runSlashCommand(slash.id);
-      setDraft("");
+    if (sendingRef.current || isCompositionEvent(event)) return;
+    const input = messageInputForDraft(draft, draftAttachments);
+    const sentStructuredInputs = structuredInputs.filter((item) => draft.includes((item.type === "skill" ? "$" : "@") + item.name));
+    input.items.push(...sentStructuredInputs);
+    if (!input.items.length) return;
+    const originalDraft = draft;
+    const context = { ...activeContextRef.current };
+    const slash = literalSlashCommand(draft, slashCommandCatalog);
+    if (slash && !input.attachments.length && !sentStructuredInputs.length) {
+      try {
+        await runSlashCommand(slash.id);
+        setDraft((current) => current === originalDraft ? "" : current);
+      } catch (error) {
+        setMessages((current) => [...current, makeMessage("system", "system", error.message)]);
+      }
       return;
     }
-    rememberPrompt(clean);
-    const attachments = draftAttachments;
-    const itemAttachments = attachments.map((attachment) => ({ type: "localImage", path: attachment.path }));
-    sendItems(
-      [{ type: "text", text: clean }, ...itemAttachments],
-      clean,
-      attachments[0] ? { attachment: { type: "image", src: attachments[0].src, name: attachments[0].name } } : {}
-    );
-    setDraft("");
-    setDraftAttachments([]);
+    const result = await sendItems(input.items, input.displayText, { attachments: input.attachments, images: input.images });
+    if (!result || context.contactId !== activeContextRef.current.contactId) return;
+    rememberPrompt(originalDraft);
+    setDraft((current) => current === originalDraft ? "" : current);
+    setStructuredInputs((current) => current.filter((item) => !sentStructuredInputs.includes(item)));
+    const sentPaths = new Set(input.attachments.map((attachment) => attachment.path));
+    setDraftAttachments((current) => current.filter((attachment) => !sentPaths.has(attachment.path)));
   }
 
   function rememberPrompt(text) {
@@ -2054,8 +2202,8 @@ function ChatWindow({ bootstrap }) {
       const result = await api.compactThread({ contactId: contact.id, threadId: activeThreadId });
       if (result?.ok) {
         setActiveThreadId(result.threadId ?? activeThreadId);
-        setTyping(true);
-        setTurnActive(true);
+        // Actual turn notifications own busy state, including a fast completion.
+        setMessages((current) => [...current, makeMessage("system", "system", "Demande de compactage acceptée.")]);
       } else {
         setMessages((current) => [...current, makeMessage("system", "system", result?.error || "Compact impossible.")]);
       }
@@ -2077,6 +2225,7 @@ function ChatWindow({ bootstrap }) {
   }
 
   function handleComposerKeyDown(event) {
+    if (isCompositionEvent(event)) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r") {
       event.preventDefault();
       setHistorySearchOpen(true);
@@ -2098,30 +2247,53 @@ function ChatWindow({ bootstrap }) {
       setDraft(slashMatches[0].label);
       return;
     }
-    if (event.key === "Enter" && !event.shiftKey) submit(event);
+    if (shouldSubmitOnEnter(event)) submit(event);
   }
 
   async function handleComposerPaste(event) {
     const files = Array.from(event.clipboardData?.files ?? []).filter((file) => file.type.startsWith("image/"));
     if (!files.length) return;
     event.preventDefault();
-    const savedAttachments = [];
-    for (const file of files.slice(0, 4)) {
-      const dataUrl = await blobToDataUrl(file);
-      const saved = await api.saveDataUrl({ dataUrl, name: file.name || "clipboard-image.png" });
-      if (saved?.ok) {
-        savedAttachments.push({
-          path: saved.path,
-          name: saved.name || file.name || "clipboard-image.png",
-          src: localFileUrl(saved.path)
-        });
+    await prepareDroppedFiles(files);
+  }
+
+  function addDraftAttachments(attachments) {
+    setDraftAttachments((current) => {
+      const paths = new Set(current.map((attachment) => attachment.path));
+      return [...current, ...attachments.filter((attachment) => !paths.has(attachment.path))].slice(0, maximumDraftAttachments);
+    });
+    setOpenFlyout("");
+    window.requestAnimationFrame(() => textareaRef.current?.focus());
+  }
+
+  async function prepareDroppedFiles(files) {
+    const context = { ...activeContextRef.current };
+    const capacity = maximumDraftAttachments - draftAttachments.length;
+    if (files.length > capacity) setMediaError(`Maximum ${maximumDraftAttachments} pièces jointes par message.`);
+    const attachments = [];
+    for (const file of files.slice(0, Math.max(0, capacity))) {
+      try {
+        if (file.size > 20 * 1024 * 1024) throw new Error(`${file.name}: fichier trop volumineux (20 Mo maximum).`);
+        let filePath = api.getFilePath?.(file) || "";
+        if (!filePath) {
+          const saved = await api.saveDataUrl({ dataUrl: await blobToDataUrl(file), name: file.name || "clipboard-image.png" });
+          if (!saved?.ok) throw new Error(saved?.error || "Pièce jointe impossible à préparer.");
+          filePath = saved.path;
+        }
+        const isImage = file.type.startsWith("image/");
+        attachments.push({ type: isImage ? "image" : "file", path: filePath, name: file.name || "image.png", src: isImage ? localFileUrl(filePath) : "" });
+      } catch (error) {
+        setMediaError(error.message);
       }
     }
-    if (!savedAttachments.length) return;
-    const start = draftAttachments.length + 1;
-    const labels = savedAttachments.map((_, index) => `[Image #${start + index}]`).join(" ");
-    setDraftAttachments((current) => [...current, ...savedAttachments].slice(0, 8));
-    setDraft((value) => `${value}${value && !value.endsWith(" ") ? " " : ""}${labels} `);
+    if (context.contactId === activeContextRef.current.contactId && context.threadId === activeContextRef.current.threadId && attachments.length) addDraftAttachments(attachments);
+  }
+
+  async function handleComposerDrop(event) {
+    const files = Array.from(event.dataTransfer?.files ?? []);
+    if (!files.length) return;
+    event.preventDefault();
+    await prepareDroppedFiles(files);
   }
 
   function replaceDraft(start, end, replacement, cursorStart = start + replacement.length, cursorEnd = cursorStart) {
@@ -2202,11 +2374,12 @@ function ChatWindow({ bootstrap }) {
       };
     }
     if (name === "text") return { width: 284, height: 318 };
+    if (name === "background") return { width: Math.min(420, availableWidth), height: Math.min(500, availableHeight) };
     if (name === "activities") return { width: Math.min(438, availableWidth), height: Math.min(520, Math.max(390, availableHeight)) };
     if (name === "games") return { width: Math.min(430, availableWidth), height: Math.min(510, Math.max(386, availableHeight)) };
     if (name === "camera") return { width: 250, height: 240 };
-    if (name === "files") return { width: 254, height: 136 };
-    if (name === "voice") return { width: 246, height: 112 };
+    if (name === "files") return { width: 284, height: 216 };
+    if (name === "voice") return { width: 280, height: 176 };
     return { width: 246, height: 146 };
   }
 
@@ -2267,11 +2440,30 @@ function ChatWindow({ bootstrap }) {
     const query = await askPrompt({ title: copy.menu.searchTranscript, initialValue: "", cancelLabel: copy.common.cancel });
     const clean = String(query ?? "").trim();
     if (!clean) return;
-    const match = [...messages].reverse().find((message) => message.text?.toLowerCase().includes(clean.toLowerCase()));
-    const result = match
-      ? `Recherche "${clean}": trouve dans un message de ${match.author}.`
-      : `Recherche "${clean}": aucun resultat.`;
-    setMessages((current) => [...current, makeMessage("system", "system", result)]);
+    const matches = messages.filter((message) => message.text?.toLowerCase().includes(clean.toLowerCase()));
+    setSearchResults({ query: clean, matches });
+  }
+
+  function revealMessage(messageId) {
+    const index = messages.findIndex((message) => message.id === messageId);
+    if (index < 0) return;
+    stickToBottomRef.current = false;
+    setTranscriptRenderLimit((current) => Math.max(current, messages.length - index));
+    window.requestAnimationFrame(() => {
+      const message = document.getElementById(`message-${messageId}`);
+      message?.scrollIntoView({ block: "center", behavior: "auto" });
+      message?.focus({ preventScroll: true });
+    });
+  }
+
+  async function saveConversationBackground(backgroundId) {
+    const next = { ...(chatSettings.conversationBackgrounds || {}), [sessionContactId]: getMsnBackground(backgroundId)?.id || "" };
+    try {
+      const result = await api.setSettings({ conversationBackgrounds: next });
+      if (result?.settings) setChatSettings(result.settings);
+    } catch (error) {
+      setMediaError(error.message);
+    }
   }
 
   async function saveConversationTextStyle(nextStyle) {
@@ -2314,14 +2506,19 @@ function ChatWindow({ bootstrap }) {
   }
 
   async function handleSendFile() {
-    const file = await api.pickFile({ title: "Send Files" });
-    if (file?.canceled) return;
-    const text = file.isImage
-      ? `Image envoyee a Codex:\n${file.path}`
-      : `Fichier envoye a Codex:\n${file.path}`;
-    const items = [{ type: "text", text }];
-    if (file.isImage) items.push({ type: "localImage", path: file.path });
-    sendItems(items, text, file.isImage ? { attachment: { type: "image", src: localFileUrl(file.path), name: file.name } } : { attachment: { type: "file", name: file.name } });
+    if (draftAttachments.length >= maximumDraftAttachments) {
+      setMediaError(`Maximum ${maximumDraftAttachments} pièces jointes par message.`);
+      return;
+    }
+    try {
+      const context = { ...activeContextRef.current };
+      const file = await api.pickFile({ title: "Joindre un fichier" });
+      if (!file || file.canceled || context.contactId !== activeContextRef.current.contactId || context.threadId !== activeContextRef.current.threadId) return;
+      if (!file.path) throw new Error(file.error || "Fichier impossible à préparer.");
+      addDraftAttachments([{ type: file.isImage ? "image" : "file", path: file.path, name: file.name, src: file.isImage ? localFileUrl(file.path) : "" }]);
+    } catch (error) {
+      setMediaError(error.message);
+    }
   }
 
   async function startCamera(event) {
@@ -2342,7 +2539,8 @@ function ChatWindow({ bootstrap }) {
   }
 
   async function sendCameraSnapshot() {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !cameraStream || videoRef.current.readyState < 2) return;
+    const context = { ...activeContextRef.current };
     const canvas = document.createElement("canvas");
     canvas.width = videoRef.current.videoWidth || 640;
     canvas.height = videoRef.current.videoHeight || 480;
@@ -2353,8 +2551,10 @@ function ChatWindow({ bootstrap }) {
       setMediaError(saved.error ?? "Capture impossible");
       return;
     }
-    const text = `Capture webcam envoyee a Codex:\n${saved.path}`;
-    sendItems([{ type: "text", text }, { type: "localImage", path: saved.path }], text, { attachment: { type: "image", src: localFileUrl(saved.path), name: saved.name } });
+    if (context.contactId === activeContextRef.current.contactId && context.threadId === activeContextRef.current.threadId) {
+      addDraftAttachments([{ type: "image", path: saved.path, src: localFileUrl(saved.path), name: saved.name }]);
+      stopCamera();
+    }
   }
 
   async function toggleVoiceClip() {
@@ -2363,30 +2563,48 @@ function ChatWindow({ bootstrap }) {
       recorderRef.current.stop();
       return;
     }
+    let stream;
+    const context = { ...activeContextRef.current };
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+      const chunks = [];
       recorder.ondataavailable = (event) => {
-        if (event.data.size) audioChunksRef.current.push(event.data);
+        if (event.data.size) chunks.push(event.data);
       };
       recorder.onstop = async () => {
+        if (voiceTimerRef.current) window.clearTimeout(voiceTimerRef.current);
+        voiceTimerRef.current = null;
+        if (recorderRef.current === recorder) recorderRef.current = null;
         setRecording(false);
         stream.getTracks().forEach((track) => track.stop());
-        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
-        const dataUrl = await blobToDataUrl(blob);
-        const saved = await api.saveDataUrl({ dataUrl, name: "voice-clip.webm" });
-        if (!saved.ok) {
-          setMediaError(saved.error ?? "Enregistrement impossible");
-          return;
+        try {
+          const mime = recorder.mimeType || "audio/webm";
+          const blob = new Blob(chunks, { type: mime.split(";")[0] });
+          if (!blob.size) throw new Error("Le clip vocal est vide.");
+          const dataUrl = await blobToDataUrl(blob);
+          const saved = await api.saveDataUrl({ dataUrl, name: mime.includes("ogg") ? "voice-clip.ogg" : "voice-clip.webm" });
+          if (!saved?.ok) throw new Error(saved?.error || "Enregistrement impossible");
+          if (context.contactId === activeContextRef.current.contactId && context.threadId === activeContextRef.current.threadId) {
+            const attachment = { type: "audio", src: localFileUrl(saved.path), path: saved.path, name: saved.name };
+            setMessages((current) => [...current, makeMessage("me", profile.displayName, "Clip vocal conservé sur cet ordinateur. Il n’a pas été envoyé à Codex.", { attachment, localOnly: true })]);
+          }
+        } catch (error) {
+          setMediaError(error.message);
         }
-        const text = `Message vocal enregistre pour Codex:\n${saved.path}\n\nTranscris ou analyse ce message vocal si le runtime le permet, sinon utilise ce chemin comme piece jointe.`;
-        sendItems([{ type: "text", text }], text, { attachment: { type: "audio", src: localFileUrl(saved.path), name: saved.name } });
+      };
+      recorder.onerror = (event) => {
+        setMediaError(event.error?.message || "Enregistrement interrompu.");
+        if (recorder.state !== "inactive") recorder.stop();
       };
       recorderRef.current = recorder;
       recorder.start();
       setRecording(true);
+      voiceTimerRef.current = window.setTimeout(() => {
+        if (recorder.state === "recording") recorder.stop();
+      }, 15_000);
     } catch (error) {
+      stream?.getTracks().forEach((track) => track.stop());
       setMediaError(error.message);
     }
   }
@@ -2425,20 +2643,43 @@ function ChatWindow({ bootstrap }) {
       });
   }
 
+  function stopWinkAnimation() {
+    if (winkAnimationTimerRef.current) window.clearTimeout(winkAnimationTimerRef.current);
+    winkAnimationTimerRef.current = null;
+    winkAnimationKeyRef.current = null;
+    setActiveWinkAnimation(null);
+  }
+
   function triggerWinkAnimation(wink, direction = "incoming") {
     if (!wink) return;
-    if (winkAnimationTimerRef.current) window.clearTimeout(winkAnimationTimerRef.current);
+    stopWinkAnimation();
     const nextAnimation = {
       key: `${wink.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       wink,
       direction
     };
-    setActiveWinkAnimation(null);
-    window.requestAnimationFrame(() => setActiveWinkAnimation(nextAnimation));
+    winkAnimationKeyRef.current = nextAnimation.key;
+    window.requestAnimationFrame(() => {
+      if (winkAnimationKeyRef.current === nextAnimation.key) setActiveWinkAnimation(nextAnimation);
+    });
     winkAnimationTimerRef.current = window.setTimeout(() => {
-      setActiveWinkAnimation((current) => current?.key === nextAnimation.key ? null : current);
-      winkAnimationTimerRef.current = null;
-    }, 4200);
+      if (winkAnimationKeyRef.current === nextAnimation.key) stopWinkAnimation();
+    }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 4200 : 15_000);
+  }
+
+  function scheduleWinkTimelineEnd(metadata) {
+    const animationKey = activeWinkAnimation?.key;
+    const frames = Number(metadata?.numFrames);
+    const fps = Number(metadata?.frameRate);
+    // A one-frame root can contain an animated nested MovieClip (Crying).
+    // Retain the bounded fallback instead of treating it as a 1-frame film.
+    if (!animationKey || winkAnimationKeyRef.current !== animationKey ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+        !Number.isFinite(frames) || !Number.isFinite(fps) || frames <= 1 || fps <= 0) return;
+    if (winkAnimationTimerRef.current) window.clearTimeout(winkAnimationTimerRef.current);
+    winkAnimationTimerRef.current = window.setTimeout(() => {
+      if (winkAnimationKeyRef.current === animationKey) stopWinkAnimation();
+    }, Math.min(60_000, Math.max(1200, frames / fps * 1000 + 300)));
   }
 
   function sendWink(wink) {
@@ -2451,12 +2692,6 @@ function ChatWindow({ bootstrap }) {
       text,
       { wink }
     );
-  }
-
-  function askCodexWink(wink) {
-    setOpenFlyout("");
-    const prompt = `Envoie-moi un clin d'oeil ${wink.label}. Utilise exactement le marqueur [wink:${wink.id}] dans ta reponse.`;
-    sendQuickPrompt(prompt);
   }
 
   async function saveTranscript() {
@@ -2495,6 +2730,7 @@ function ChatWindow({ bootstrap }) {
         setMessages((current) => [...current, makeMessage("system", "system", `Impossible de charger ce fil: ${message}`)]);
         return;
       }
+      setObservedCollaboration({ contactId: result?.contactId ?? result?.contact?.id ?? contact.id, threadId: result?.threadId ?? result?.contact?.threadId ?? threadId, mode: result?.effectiveCollaborationMode ?? null });
       if (result?.contact) {
         setActiveContact(result.contact);
         setActiveThreadId(result.threadId ?? result.contact.threadId ?? threadId);
@@ -2663,13 +2899,12 @@ function ChatWindow({ bootstrap }) {
 
   async function saveContactCodexOptions(patch) {
     const nextOptions = normalizeCodexOptions({ ...codexOptions, ...patch });
-    const nextOptionsByContact = {
-      ...(chatSettings?.codexOptionsByContact ?? {}),
-      [contact.id]: nextOptions
-    };
-    setChatSettings((current) => ({ ...(current ?? {}), codexOptionsByContact: nextOptionsByContact }));
-    const result = await api.setSettings({ codexOptionsByContact: nextOptionsByContact });
+    const context = { ...activeContextRef.current };
+    const result = await api.setSettings({ codexOptionsByContact: { [contact.id]: nextOptions } });
+    if (result?.ok === false) throw new Error(result.error || "Options Codex non enregistrées.");
+    if (context.contactId !== activeContextRef.current.contactId) return;
     if (result?.settings) setChatSettings(result.settings);
+    else setChatSettings((current) => ({ ...current, codexOptionsByContact: { ...current?.codexOptionsByContact, [contact.id]: nextOptions } }));
   }
 
   async function respondToApproval(request, decision) {
@@ -2751,6 +2986,7 @@ function ChatWindow({ bootstrap }) {
       label: copy.menu.format,
       entries: [
         { label: copy.menu.textAppearance, action: () => openPanel("text") },
+        { label: "Arrière-plan MSN…", action: () => openPanel("background") },
         { label: "Font: Tahoma", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Tahoma" }) },
         { label: "Font: Verdana", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Verdana" }) },
         { label: "Font: Comic Sans MS", action: () => saveConversationTextStyle({ ...textStyle, fontFamily: "Comic Sans MS" }) },
@@ -2782,20 +3018,22 @@ function ChatWindow({ bootstrap }) {
         { separator: true },
         { label: copy.menu.activities, action: () => toggleFlyout("activities") },
         { label: copy.menu.games, action: () => toggleFlyout("games") },
-        { label: "Play Morpion", action: () => { setActiveGame("morpion"); openPanel("games"); } },
-        { label: "Play Memory", action: () => { setActiveGame("memory"); openPanel("games"); } },
-        { label: "Play Wizz Reflex", action: () => { setActiveGame("wizz"); openPanel("games"); } }
+        { label: "Tic Tac Toe / Morpion local", action: () => openPanel("games") }
       ]
     },
     {
       label: copy.menu.tools,
       entries: [
+        { label: "Appel vocal Codex…", action: () => setRealtimeOpen(true) },
+        { label: "Terminal Codex…", action: () => setTerminalOpen(true) },
+        { label: "Compte, modèles et connexions Codex…", action: () => setConfigurationOpen(true) },
+        { separator: true },
         { label: copy.menu.startCamera, action: startCamera },
         { label: recording ? copy.menu.stopVoiceClip : copy.menu.voiceClip, action: toggleVoiceClip },
         { label: copy.menu.sendImageFile, action: handleSendFile },
         { separator: true },
         { label: copy.menu.openAppFolder, action: () => api.app.openPath(bootstrap.cwd) },
-        { label: copy.menu.openUploadsFolder, action: () => api.app.openPath(`${bootstrap.cwd}\\uploads`) },
+        { label: copy.menu.openUploadsFolder, action: () => api.app.openPath(bootstrap.uploadsDir ?? `${bootstrap.cwd}/uploads`) },
         { label: copy.menu.reloadWindow, shortcut: "Ctrl+R", action: () => api.app.reload() }
       ]
     },
@@ -2844,24 +3082,47 @@ function ChatWindow({ bootstrap }) {
         />
       ) : null}
       {configurationOpen ? (
-        <CodexConfigurationDialog
-          copy={copy}
-          summary={codexOptionsSummary}
-          codexOptions={codexOptions}
-          modelOptions={modelMenuOptions}
-          reasoningOptions={reasoningDialogOptions}
-          cwdOptions={codexCwdOptions}
-          sandboxOptions={codexSandboxOptions}
-          approvalOptions={codexApprovalOptions}
-          onChange={saveContactCodexOptions}
+        <CodexFeaturesPanel
+          api={api}
+          contact={{ ...contact, codexOptions }}
+          threadId={activeThreadId || undefined}
+          effectiveCollaborationMode={effectiveCollaborationMode}
+          onOptionsChange={saveContactCodexOptions}
+          onInsertSkill={(item) => {
+            setStructuredInputs((current) => [...current.filter((entry) => entry.path !== item.path), item]);
+            setDraft((current) => current + (current ? " " : "") + (item.type === "skill" ? "$" : "@") + item.name + " ");
+            setConfigurationOpen(false);
+            window.requestAnimationFrame(() => textareaRef.current?.focus());
+          }}
+          onThreadChanged={async ({ action, threadId, historyChanged }) => {
+            if (action === "archive") {
+              historyGenerationRef.current += 1;
+              setActiveThreadId("");
+              setMessages([]);
+              setHistoryCursor(0);
+              setHistoryHasMore(false);
+              stopWinkAnimation();
+            } else if (historyChanged) {
+              await reloadCurrentHistory(threadId);
+            } else if (action === "search-open" && threadId) {
+              await openThreadTab(threadId);
+            } else if (action === "compact") {
+              setMessages((current) => [...current, makeMessage("system", "system", "Demande de compactage acceptée.")]);
+            } else if (threadId) {
+              setActiveThreadId(threadId);
+            }
+            setConversations(await api.listConversations());
+          }}
           onClose={() => setConfigurationOpen(false)}
         />
       ) : null}
+      {realtimeOpen ? <UtilityDialog label="Appel vocal Codex" onClose={() => setRealtimeOpen(false)}><RealtimePanel api={api} contactId={contact.id} contactName={displayContact.name} onClose={() => setRealtimeOpen(false)} /></UtilityDialog> : null}
+      {terminalOpen ? <UtilityDialog label="Terminal Codex" onClose={() => setTerminalOpen(false)}><TerminalPanel api={api} contactId={contact.id} threadId={activeThreadId || undefined} cwd={contact.cwd ?? bootstrap.cwd} onClose={() => setTerminalOpen(false)} /></UtilityDialog> : null}
       <div className="toolbar-shell">
         <div className="toolbar">
-          <Tool icon="invite" label={copy.toolbar.invite} active={openFlyout === "invite"} onClick={(event) => toggleFlyout("invite", event)} />
+          <Tool icon="invite" label={copy.chat.conversation} active={openFlyout === "invite"} onClick={(event) => toggleFlyout("invite", event)} />
           <Tool icon="files" label={copy.toolbar.files} active={openFlyout === "files"} onClick={(event) => toggleFlyout("files", event)} />
-          <Tool icon="video" label={copy.toolbar.video} active={openFlyout === "camera"} onClick={startCamera} />
+          <Tool icon="video" label="Photo" active={openFlyout === "camera"} onClick={startCamera} />
           <Tool icon="voice" label={recording ? copy.toolbar.stop : copy.toolbar.voice} active={openFlyout === "voice" || recording} onClick={(event) => toggleFlyout("voice", event)} />
           <Tool icon="activities" label={copy.toolbar.activities} active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
           <Tool icon="games" label={copy.toolbar.games} active={openFlyout === "games"} onClick={(event) => toggleFlyout("games", event)} />
@@ -2886,7 +3147,8 @@ function ChatWindow({ bootstrap }) {
               AvatarComponent={Avatar}
               statusCopy={statusLabels}
               onOpenProject={() => contact.cwd ? api.app.openPath(contact.cwd) : null}
-              onRun={sendQuickPrompt}
+              onFork={() => runSlashCommand("fork")}
+              canFork={Boolean(activeThreadId) && !turnBusy}
             />
           ) : null}
           {openFlyout === "files" ? (
@@ -2911,6 +3173,9 @@ function ChatWindow({ bootstrap }) {
               onReset={resetConversationTextStyle}
             />
           ) : null}
+          {openFlyout === "background" ? (
+            <BackgroundsPanel backgrounds={msnBackgrounds} selectedId={conversationBackground?.id || ""} onSelect={saveConversationBackground} />
+          ) : null}
           {openFlyout === "camera" ? (
             <CameraPanel
               videoRef={videoRef}
@@ -2927,7 +3192,6 @@ function ChatWindow({ bootstrap }) {
               prompts={activityPrompts}
               onRun={sendQuickPrompt}
               onSendWink={sendWink}
-              onAskWink={askCodexWink}
               onPreviewSound={playSoundKey}
             />
           ) : null}
@@ -2942,17 +3206,12 @@ function ChatWindow({ bootstrap }) {
             />
           ) : null}
           {openFlyout === "games" ? (
-            <GamesPanel
-              activeGame={activeGame}
-              onSelectGame={setActiveGame}
-              onRun={sendQuickPrompt}
-              waiting={turnBusy}
-            />
+            <GamesPanel />
           ) : null}
         </div>
       ) : null}
       <section className="chat-body">
-        <WinkAnimationOverlay animation={activeWinkAnimation} />
+        <WinkAnimationOverlay animation={activeWinkAnimation} onReady={scheduleWinkTimelineEnd} onClose={stopWinkAnimation} />
         <div className="chat-main">
           <ThreadTabs
             project={currentProject}
@@ -2966,6 +3225,12 @@ function ChatWindow({ bootstrap }) {
             onDeleteThread={deleteThreadTab}
             onReorderThreads={reorderThreadTabs}
           />
+          {searchResults ? (
+            <section className="transcript-search-results" aria-label="Résultats de recherche">
+              <div><strong>{searchResults.matches.length} résultat(s) pour « {searchResults.query} »</strong><button type="button" onClick={() => setSearchResults(null)} aria-label="Fermer la recherche">×</button></div>
+              {searchResults.matches.slice(0, 30).map((message) => <button type="button" key={message.id} onClick={() => revealMessage(message.id)}><strong>{message.author}</strong> {message.text.slice(0, 180)}</button>)}
+            </section>
+          ) : null}
           <div
             className="transcript"
             ref={scrollRef}
@@ -2974,7 +3239,10 @@ function ChatWindow({ bootstrap }) {
               "--message-font-size": `${textStyle.fontSize}px`,
               "--message-color": textStyle.color,
               "--message-bubble": textStyle.bubble,
-              "--message-me-bubble": textStyle.meBubble
+              "--message-me-bubble": textStyle.meBubble,
+              backgroundImage: conversationBackground ? `url("${conversationBackground.src}")` : undefined,
+              backgroundSize: conversationBackground ? "cover" : undefined,
+              backgroundPosition: "center"
             }}
           >
             {hiddenRenderedMessages > 0 ? (
@@ -3009,9 +3277,10 @@ function ChatWindow({ bootstrap }) {
               </div>
             ) : null}
           </div>
-          <ApprovalRequestsPanel requests={pendingApprovals} onRespond={respondToApproval} />
+          <ServerRequestsPanel requests={serverRequests.filter((request) => request.contactId === contact.id)} onRespond={(request, response) => api.respondServerRequest({ requestId: request.id ?? request.serverRequestId, response })} onOpenUrl={(url) => api.openExternal(url)} />
           <div className="format-strip">
             <FormatButton icon="font" title="Rendu texte" active={openFlyout === "text"} onClick={(event) => toggleFlyout("text", event)} />
+            <FormatButton icon="image" title="Arrière-plan MSN" label="Fond" active={openFlyout === "background"} onClick={(event) => toggleFlyout("background", event)} />
             <FormatButton icon="smile" title="Emoticones MSN" active={openFlyout === "emoticons"} onClick={(event) => toggleFlyout("emoticons", event)} />
             <FormatButton icon="voice" title="Voice Clip" label={recording ? "Stop" : "Voice Clip"} active={openFlyout === "voice" || recording} onClick={(event) => toggleFlyout("voice", event)} />
             <FormatButton icon="wink" title="Clin d'oeil" active={openFlyout === "activities"} onClick={(event) => toggleFlyout("activities", event)} />
@@ -3029,6 +3298,8 @@ function ChatWindow({ bootstrap }) {
             textareaRef={textareaRef}
             onKeyDown={handleComposerKeyDown}
             onPaste={handleComposerPaste}
+            onDropFiles={handleComposerDrop}
+            sending={sending}
             typing={turnBusy}
             onStop={interruptCurrentTurn}
             onSearch={handleSearch}
@@ -3063,25 +3334,29 @@ function ChatWindow({ bootstrap }) {
           />
         </aside>
       </section>
-      <footer className="chat-ad" aria-hidden="true">Codex App Server active</footer>
+      <footer className="chat-ad">{conversationBackground?.kind === "dynamic" ? `${conversationBackground.label} · aperçu statique MSN` : "Codex Messenger · session locale"}</footer>
     </main>
   );
 }
 
-function appendAgentDelta(messages, author, delta) {
+function appendAgentDelta(messages, author, delta, itemId, metadata = {}) {
   const cleanDelta = String(delta ?? "");
   if (!cleanDelta) return messages;
-  const last = messages[messages.length - 1];
-  if (last?.streaming) {
-    return [...messages.slice(0, -1), { ...last, text: mergeStreamText(last.text, cleanDelta) }];
-  }
-  return [...messages, makeMessage("them", author, cleanDelta, { streaming: true })];
+  const index = itemId ? messages.findIndex((item) => item.id === itemId) : messages.length - 1;
+  const existing = messages[index];
+  if (existing && (itemId || existing.streaming)) return messages.map((item, i) => i === index ? { ...item, ...metadata, text: mergeStreamText(item.text, cleanDelta), streaming: true } : item);
+  return [...messages, makeMessage("them", author, cleanDelta, { ...metadata, streaming: true, ...(itemId ? { id: itemId } : {}) })];
 }
 
-function finishAgentMessage(messages, author, text) {
+function finishAgentMessage(messages, author, text, itemId) {
   const parsed = extractWinkFromText(text);
   const cleanText = parsed.text.trim();
   if (!cleanText) return messages;
+  if (itemId) {
+    const index = messages.findIndex((item) => item.id === itemId);
+    if (index >= 0) return messages.map((item, i) => i === index ? { ...item, text: cleanText, streaming: false, pending: false, wink: parsed.wink ?? item.wink } : item);
+    return [...messages, makeMessage("them", author, cleanText, { id: itemId, ...(parsed.wink ? { wink: parsed.wink } : {}) })];
+  }
   const last = messages[messages.length - 1];
   if (last?.streaming) {
     return [...messages.slice(0, -1), { ...last, text: cleanText, streaming: false, wink: parsed.wink ?? last.wink }];
@@ -3097,18 +3372,8 @@ function finishAgentMessage(messages, author, text) {
 }
 
 function mergeStreamText(current, incoming) {
-  const left = String(current ?? "");
-  const right = String(incoming ?? "");
-  if (!left || right.startsWith(left)) return right;
-  if (!right || left.endsWith(right)) return left;
-
-  const maxOverlap = Math.min(left.length, right.length);
-  for (let size = maxOverlap; size > 0; size -= 1) {
-    if (left.slice(-size) === right.slice(0, size)) {
-      return left + right.slice(size);
-    }
-  }
-  return left + right;
+  // app-server delta notifications are append-only, including repeated chunks.
+  return String(current ?? "") + String(incoming ?? "");
 }
 
 function normalizeMessageText(text) {
@@ -3144,7 +3409,9 @@ function App() {
   return bootstrap.view === "chat" ? <ChatWindow bootstrap={bootstrap} /> : <MainWindow />;
 }
 
-createRoot(document.getElementById("root")).render(
+const rendererRoot = import.meta.hot?.data.rendererRoot ?? createRoot(document.getElementById("root"));
+if (import.meta.hot) import.meta.hot.data.rendererRoot = rendererRoot;
+rendererRoot.render(
   <RendererErrorBoundary>
     <App />
   </RendererErrorBoundary>

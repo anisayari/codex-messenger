@@ -7,12 +7,20 @@ This directory is a standalone sub-project inside the main `Codex-messenger` rep
 ## Files
 
 - `index.html`: static retro landing page.
-- `assets/site.js`: small local interaction layer for XP-style button feedback.
-- `assets/`: PNG images used by the landing page.
+- `assets/site.js`: bilingual copy, explicit URL language selection, keyboard-safe download chooser and XP-style button feedback.
+- `assets/`: original retro branding and interface previews. The conversation screenshot is a verified production renderer with sample messages; the roster is an isolated demo.
 - `downloads/.gitkeep`: keeps the download directory in Git.
 - `nginx.codexmessenger.net.conf`: nginx vhost used on the VPS.
 
 The Windows and macOS installers are not committed to Git and are not mirrored on the VPS. The download buttons open the official GitHub release page, and old `/downloads/...` URLs are redirected there by nginx.
+
+## Language and release copy
+
+An arrival without a valid explicit language query is always English, including browsers with a French locale or an old saved French preference. French is available at `?lang=fr`; the selector updates the URL and browser Back/Forward restores the language. No stored preference overrides the landing default.
+
+The source currently describes Messenger `v0.0.3`, requiring Codex `0.156.1`. The platform choices lead to the official GitHub release page for Apple Silicon, Intel macOS and Windows x64 installers. The final publication and assets are verified by the release workflow; this directory contains no installers. Keep visible version labels aligned with the release being published.
+
+Feature copy is based on `docs/VALIDATION.md` and the migration matrix, with voice access and microphone permissions stated explicitly. It makes no promise that every provider feature, closed MSN service or private desktop service is available.
 
 ## GitHub Actions deployment
 
@@ -26,8 +34,8 @@ Triggers:
 
 Release behavior:
 
-- reads the latest published GitHub release
-- patches the release-page URL in the static HTML
+- resolves the event release tag for a release event, or the latest published release for pushes/manual runs
+- patches official release-page URLs in the static HTML; visible version labels are kept in sync in source
 - deploys only the static showcase site, not the Electron app
 
 Required repository secrets:
@@ -62,7 +70,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-## Current production setup
+## Expected deployment configuration
 
 - Web root: `/var/www/codexmessenger.net`
 - Domain: `codexmessenger.net`

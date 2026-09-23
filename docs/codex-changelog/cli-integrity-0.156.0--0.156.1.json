@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "retrievedAt": "2026-09-23T14:18:50.422Z",
+  "taskDir": "<isolated-audit-directory>",
+  "registry": "https://registry.npmjs.org",
+  "records": [
+    {
+      "version": "0.156.0",
+      "alias": "codex",
+      "metadataUrl": "https://registry.npmjs.org/@openai%2Fcodex/0.156.0",
+      "tarballUrl": "https://registry.npmjs.org/@openai/codex/-/codex-0.156.0.tgz",
+      "bytes": 4902,
+      "sha512": "sha512-47dfpl2e8F47baSQTE+QaWzF/kKoOeR9YQ2fIBdRGzZZP2/QZ6D0uwLY2ZamS8ypov4UFtg92jZh8m+w65bsGg==",
+      "sha1": "e7c29bfd4e94973af2ea116c98a1f8f7b387e53b",
+      "verified": true,
+      "destination": "<isolated-audit-directory>/cli-0.156.0/node_modules/@openai/codex",
+      "tarballRetained": false
+    },
+    {
+      "version": "0.156.0-darwin-arm64",
+      "alias": "codex-darwin-arm64",
+      "metadataUrl": "https://registry.npmjs.org/@openai%2Fcodex/0.156.0-darwin-arm64",
+      "tarballUrl": "https://registry.npmjs.org/@openai/codex/-/codex-0.156.0-darwin-arm64.tgz",
+      "bytes": 131567699,
+      "sha512": "sha512-43/9bryLjRA+g7z1AGeFS8AQiChmG52nIhzMkxjNAXcxEBMVsA88YGBosk0ndThjgTGB42vK82BQV3DR6OBsGQ==",
+      "sha1": "bb31c066d254f11b9720780edfc87cc525b23f48",
+      "verified": true,
+      "destination": "<isolated-audit-directory>/cli-0.156.0/node_modules/@openai/codex-darwin-arm64",
+      "tarballRetained": false
+    },
+    {
+      "version": "0.156.1",
+      "alias": "codex",
+      "metadataUrl": "https://registry.npmjs.org/@openai%2Fcodex/0.156.1",
+      "tarballUrl": "https://registry.npmjs.org/@openai/codex/-/codex-0.156.1.tgz",
+      "bytes": 4904,
+      "sha512": "sha512-nI1iVl/n2SO2lSvlwEsJx63zdSI4C4Me2gR7AG0OWMJiGSakz2tY2hx43E39Zq5aEoeB5bZjJXzp5Sqhog6vyA==",
+      "sha1": "21a6a1f6226562c56ccece8f7ebea5bda1fe3768",
+      "verified": true,
+      "destination": "<isolated-audit-directory>/cli-0.156.1/node_modules/@openai/codex",
+      "tarballRetained": false
+    },
+    {
+      "version": "0.156.1-darwin-arm64",
+      "alias": "codex-darwin-arm64",
+      "metadataUrl": "https://registry.npmjs.org/@openai%2Fcodex/0.156.1-darwin-arm64",
+      "tarballUrl": "https://registry.npmjs.org/@openai/codex/-/codex-0.156.1-darwin-arm64.tgz",
+      "bytes": 131652985,
+      "sha512": "sha512-Jg6wbdV+wmMZczhwE74GSxOYEZlViKXn6KyCw/yfrz3PAKFD14xljuPopmdhWC1+8IKU2WdN5fdmXNPt2q4HPA==",
+      "sha1": "6490e0ad8328750b1169ca1e8f8a79d210f29d3a",
+      "verified": true,
+      "destination": "<isolated-audit-directory>/cli-0.156.1/node_modules/@openai/codex-darwin-arm64",
+      "tarballRetained": false
+    }
+  ],
+  "binaries": [
+    {
+      "version": "0.156.0",
+      "binaryPath": "<isolated-audit-directory>/cli-0.156.0/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+      "bytes": 237989072,
+      "sha256": "6b42db4d33fd53516162bd76a0e2d07e0567287c44e036d4e4c06cb555a432f9",
+      "versionOutput": "codex-cli 0.156.0"
+    },
+    {
+      "version": "0.156.1",
+      "binaryPath": "<isolated-audit-directory>/cli-0.156.1/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+      "bytes": 238138912,
+      "sha256": "0196e89fe5a7598f816ee54232c3d7c26d75e502ab5cfe2c9240e81d90f7255a",
+      "versionOutput": "codex-cli 0.156.1"
+    }
+  ],
+  "notes": "No install scripts, no global installation, no account or configuration reads, no inference.",
+  "tarballsRemovedAfterVerificationAt": "2026-09-23T14:19:15.469Z"
+}

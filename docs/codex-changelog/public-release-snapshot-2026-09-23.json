@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-23T14:17:09Z",
+  "sourceMode": "Read-only anonymous official npm registry and GitHub REST API",
+  "codex": {
+    "version": "0.156.1",
+    "stable": true,
+    "npmPublishedAt": "2026-09-23T02:45:25.210Z",
+    "githubPublishedAt": "2026-09-23T02:41:36Z",
+    "npmSources": [
+      {
+        "url": "https://registry.npmjs.org/@openai%2fcodex/latest",
+        "status": 200,
+        "fetchedAt": "2026-09-23T14:17:09.325Z",
+        "serverDate": "Wed, 23 Sep 2026 14:17:09 GMT"
+      },
+      {
+        "url": "https://registry.npmjs.org/-/package/@openai/codex/dist-tags",
+        "status": 200,
+        "fetchedAt": "2026-09-23T14:17:09.038Z",
+        "serverDate": "Wed, 23 Sep 2026 14:17:09 GMT"
+      }
+    ],
+    "githubSource": {
+      "url": "https://api.github.com/repos/openai/codex/releases/tags/rust-v0.156.1",
+      "status": 200,
+      "fetchedAt": "2026-09-23T14:20:38.146Z",
+      "serverDate": "Wed, 23 Sep 2026 14:20:38 GMT"
+    },
+    "releaseUrl": "https://github.com/openai/codex/releases/tag/rust-v0.156.1"
+  },
+  "messenger": {
+    "source": {
+      "url": "https://api.github.com/repos/anisayari/codex-messenger/releases/latest",
+      "status": 200,
+      "fetchedAt": "2026-09-23T14:17:09.053Z",
+      "serverDate": "Wed, 23 Sep 2026 14:17:09 GMT"
+    },
+    "tag": "v0.0.2.9",
+    "name": "Codex Messenger v0.0.2.9",
+    "publishedAt": "2026-04-25T13:46:40Z",
+    "draft": false,
+    "prerelease": false,
+    "releaseUrl": "https://github.com/anisayari/codex-messenger/releases/tag/v0.0.2.9",
+    "assetCount": 7,
+    "assetDigestMode": "SHA256 values reported by GitHub API; release binaries not downloaded or recalculated in this read-only audit",
+    "assets": [
+      {
+        "id": 405337244,
+        "name": "Codex-Messenger-0.0.2.9-arm64.dmg",
+        "size": 141286385,
+        "state": "uploaded",
+        "digest": "sha256:626c14de2ac869e0fdc29565d93d6b147ef465ac281668c285237abf7250e22b",
+        "contentType": "application/x-apple-diskimage",
+        "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.2.9/Codex-Messenger-0.0.2.9-arm64.dmg",
+        "createdAt": "2026-04-25T13:46:29Z",
+        "updatedAt": "2026-04-25T13:46:39Z"
+      },
+      {
+        "id": 405337242,
+        "name": "Codex-Messenger-0.0.2.9-arm64.dmg.blockmap",
+        "size": 142618,
+        "state": "uploaded",
+        "digest": "sha256:40487c509787a2387cac59f122d17fc76aec5dc1848583791b67d659d3f12b11",
+        "contentType": "application/octet-stream",
+        "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.2.9/Codex-Messenger-0.0.2.9-arm64.dmg.blockmap",
+        "createdAt": "2026-04-25T13:46:29Z",
+        "updatedAt": "2026-04-25T13:46:30Z"
+      },
+      {
+        "id": 405337241,
+        "name": "Codex-Messenger-0.0.2.9-arm64.zip",
+        "size": 135859036,
+        "state": "uploaded",
+        "digest": "sha256:b6f1e0c8483c938562bdef9fce790968de3daf2b9d8a697df0d803b4ad38c2b8",
+        "contentType": "application/zip",
+        "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.2.9/Codex-Messenger-0.0.2.9-arm64.zip",
+        "createdAt": "2026-04-25T13:46:29Z",
+        "updatedAt": "2026-04-25T13:46:39Z"
+      },
+      {
+        "id": 405337243,
+        "name": "Codex-Messenger-0.0.2.9-arm64.zip.blockmap",
+        "size": 139805,
+        "state": "uploaded",
+        "digest": "sha256:80a93acdd5f8062ea487c7bee549bcd7690613eae6042982632230451d45f386",
+        "contentType": "application/octet-stream",
+        "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.2.9/Codex-Messenger-0.0.2.9-arm64.zip.blockmap",
+        "createdAt": "2026-04-25T13:46:29Z",
+        "updatedAt": "2026-04-25T13:46:30Z"
+      },
+      {
+        "id": 405337245,
+        "name": "Codex.Messenger.0.0.2.9.exe",
+        "size": 121982472,
+        "state": "uploaded",
+        "digest": "sha256:189d2fcc7835a0d9c1a725b663eeed88ea18fd1b8e9afd92a05586e91184dc8c",
+        "contentType": "application/x-msdownload",
+        "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.2.9/Codex.Messenger.0.0.2.9.exe",
+        "createdAt": "2026-04-25T13:46:30Z",
+        "updatedAt": "2026-04-25T13:46:37Z"
+      },
+      {
+        "id": 405337240,
+        "name": "Codex.Messenger.Setup.0.0.2.9.exe",
+        "size": 122313532,
+        "state": "uploaded",
+        "digest": "sha256:6e60cad7431981d7dec4d34a301ca977a171f737de32f6273d95508906f3b4ba",
+        "contentType": "application/x-msdownload",
+        "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.2.9/Codex.Messenger.Setup.0.0.2.9.exe",
+        "createdAt": "2026-04-25T13:46:29Z",
+        "updatedAt": "2026-04-25T13:46:38Z"
+      },
+      {
+        "id": 405337246,
+        "name": "Codex.Messenger.Setup.0.0.2.9.exe.blockmap",
+        "size": 127124,
+        "state": "uploaded",
+        "digest": "sha256:86c4ee02e8826437a0159e4b4bdce03409a4f6d8340f502cbb46c770f08f83ab",
+        "contentType": "application/octet-stream",
+        "url": "https://github.com/anisayari/codex-messenger/releases/download/v0.0.2.9/Codex.Messenger.Setup.0.0.2.9.exe.blockmap",
+        "createdAt": "2026-04-25T13:46:30Z",
+        "updatedAt": "2026-04-25T13:46:30Z"
+      }
+    ],
+    "containsLinuxAsset": false
+  },
+  "note": "Messenger release state captured before the newly authorized publication."
+}

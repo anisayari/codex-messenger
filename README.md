@@ -10,11 +10,11 @@
 [![Latest release](https://img.shields.io/github/v/release/anisayari/codex-messenger?display_name=tag)](https://github.com/anisayari/codex-messenger/releases)
 [![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-blue)](#quick-install)
 
-Codex Messenger is a Windows and macOS desktop Electron app inspired by MSN Messenger 7. It wraps a local Codex session in a Messenger-style interface: every Codex agent, project, or recent thread appears as a contact or conversation window with XP-era visuals, MSN sounds, Wizz/Nudge, file and image sending, camera capture, voice clips, profile pictures, status messages, and small games while Codex is working.
+Codex Messenger is a Windows and macOS desktop Electron app inspired by MSN Messenger 7. It wraps a local Codex session in a Messenger-style interface: every Codex agent, project, or recent thread appears as a contact or conversation window with XP-era visuals, MSN sounds, Wizz/Nudge, file and image sending, camera capture, voice clips, profile pictures, status messages, and an authentic local Tic Tac Toe activity.
 
 Developed by Anis AYARI and Codex.
 
-French is the default language in the app, with English, Spanish, and Japanese available from the login screen.
+French is the default language in the app, with English, Spanish, and Japanese available from the login screen. The website opens in English; use its language selector to open the French version.
 
 Important: Codex Messenger is only a local front-end client for `codex app-server`. It is not Codex itself, does not own your Codex conversations, and should not be treated as a backup or storage layer for Codex data. Use it at your own risk.
 
@@ -29,8 +29,8 @@ Important: Codex Messenger is only a local front-end client for `codex app-serve
 
 Official downloads are available from [codexmessenger.net](https://codexmessenger.net/). Click `DOWNLOAD` and choose the platform in the popup:
 
-- macOS `v0.0.2.9`: open the GitHub release page and choose the `.dmg`.
-- Windows `v0.0.2.9`: open the GitHub release page and choose the Windows installer `.exe`.
+- macOS `v0.0.3`: open the GitHub release page and choose the `.dmg`.
+- Windows `v0.0.3`: open the GitHub release page and choose the Windows installer `.exe`.
 
 The website download popup points to the official GitHub release page instead of proxying installer files through the static site.
 
@@ -62,7 +62,7 @@ Download the portable Windows `.exe` from the releases page and run it directly.
 
 Requirements:
 
-- Node.js 20 or newer.
+- Node.js 20.19 or newer on the 20.x line, or Node.js 22.12 or newer (the Vite 7 requirement).
 - npm.
 - Codex CLI installed locally.
 
@@ -158,7 +158,7 @@ Codex Messenger checks for updates on startup:
 
 When an update is available, an `Update` button appears at the top of the main window. You can also open `File -> About Codex Messenger...` or `File -> Check for updates` to see the current version and run a manual check.
 
-The Codex Messenger front update button downloads the latest GitHub release asset for the current platform, verifies its SHA-256 digest when GitHub exposes one, then starts the installer. On Windows it runs the NSIS installer after the app exits. On macOS it installs from the downloaded DMG, replaces the current app bundle, and relaunches the app; unsigned/ad-hoc builds can still require the normal macOS security confirmation on first launch. The Codex app-server update button runs `npm install -g @openai/codex@latest`.
+The Codex Messenger front update button downloads the latest GitHub release asset for the current platform, requires and verifies its SHA-256 digest from GitHub release metadata, then starts the installer. On Windows it runs the NSIS installer after the app exits. On macOS, automatic replacement requires a validated app signed by the same team, Gatekeeper acceptance and a rollback backup. Unsigned builds open the verified DMG for manual installation. The Codex app-server update button runs `npm install -g @openai/codex@latest`.
 
 ## Uninstall
 
@@ -192,28 +192,48 @@ The uninstaller is intended to remove only the Codex Messenger front client, sho
 - Generated avatars for agents, projects, and recent conversations.
 - Conversation windows focused on the selected contact.
 - Project threads displayed as MSN-style tabs above the transcript, with drag reorder and delete controls.
-- Streaming Codex responses without duplicate final messages.
+- Streaming responses identified by item, plus commands, diffs, web search, plans, tool results, reasoning summaries and subagent activity.
+- Server-side conversation search, paginated occurrences, context compaction and confirmed removal of the last exchange with a real history refresh.
+- Interactive questions, modern command/file/permission approvals and MCP typed forms/URL confirmations.
+- Server-advertised models, efforts, service tiers, permission profiles and Plan/Default collaboration modes.
+- Account/quotas, skills, apps/MCP connections, OAuth, goals and archive/restore in the retro Codex properties dialog.
+- Real command/exec terminal with streaming, input, resize and stop under the conversation’s permissions.
+- Rate-limit reset credits require explicit confirmation; retries reconcile the same attempt identifier.
 - MSN sounds for new messages and Wizz/Nudge.
 - Local MSN 7 sound pack: new message, new email, Wizz/Nudge, online presence, ring, phone, typing, and task complete.
 - MSN Messenger 7.5.0322 assets extracted from the archived Microsoft installer: PNG, GIF, JPG, bitmaps, icons, UI resources, and integrity manifests.
-- MSN emoticon pack extracted from the original 19 px strips, available from the smile button and rendered inline in messages.
+- 79 original MSN emoticon icons extracted pixel for pixel; 69 shortcuts attested by Microsoft are available in the picker. Ten icons without an attested shortcut and the 42 earlier raw exports are preserved.
 - Extracted MSN CAB packages: 15 official winks, 4 dynamic backgrounds, and preserved MSN Search resources under `public/msn-assets/msn75/packages`.
 - Winks can be sent from the Activities panel; Codex can also trigger them with `[wink:...]` markers.
 - Wizz when Codex finishes or when an unread message stays unattended for too long.
 - Send files and images to Codex.
 - Local camera snapshot before sending.
-- Voice clip recording.
+- Bounded local voice clip recording, with microphone cleanup and explicit errors.
+- Real Codex V3 voice calls using the app-server websocket, PCM16 audio, transcripts, mute and hang-up; availability depends on the account/server.
 - Profile picture, status, and personal message.
-- Local mini-games: Tic-Tac-Toe, Memory, and Wizz Reflex.
-- Mini-games styled with extracted MSN assets.
+- Local two-player Tic Tac Toe activity; no simulated game opponent presented as Codex.
+- Fifteen original Flash winks rendered by local Ruffle 0.6.0, with their embedded audio, a close control and static previews for reduced motion. Original fixed backgrounds and four decoded dynamic-background posters; MSN-specific background callbacks are not emulated.
 - Windows packaging with NSIS installer and portable executable.
+
+## Modernisation audit
+
+Release **v0.0.3** targets Codex CLI **0.156.1**. The public app-server API includes the 0.156.0 features and the 0.156.1 model catalogue hotfix. The CLI remains a separate local installation; update it from the login screen when needed.
+
+- [Plan and confirmed defects](docs/PLAN-MODERNISATION.md)
+- [All 51 stable changelogs, sources and integrity](docs/codex-changelog/README.md)
+- [API migration and feature coverage](docs/CODEX-MIGRATION.md)
+- [Backend audit](docs/BACKEND-AUDIT.md) and [MSN UI audit](docs/UI-MSN-AUDIT.md)
+- [Authentic asset inventory](docs/ASSET-INVENTORY.md)
+- [Validation evidence](docs/VALIDATION.md)
+
+Configured Codex MCP/apps/plugins remain enabled by default. For an explicitly isolated test only, set `CODEX_MESSENGER_DISABLE_CODEX_CONNECTORS=1`. No model or reasoning effort is pinned in project configuration.
 
 ## Codex Detection
 
 Codex Messenger needs:
 
 - Node.js/npm when Codex CLI must be installed automatically.
-- Codex CLI 0.125.0 or newer, installed as `@openai/codex`.
+- Codex CLI 0.156.1 or newer, installed as `@openai/codex`.
 - A completed OpenAI login through `codex login`.
 
 From source, run:
@@ -228,13 +248,14 @@ For a read-only readiness check:
 npm run setup:codex:check
 ```
 
-The app login screen also checks these prerequisites. If npm is missing, it opens the Node.js download page. If Codex CLI is missing or older than 0.125.0, it can run `npm install -g @openai/codex`. If OpenAI login is missing, it opens a terminal for `codex login`.
+The app login screen also checks these prerequisites. If npm is missing, it opens the Node.js download page. If Codex CLI is missing or older than 0.156.1, it can run `npm install -g @openai/codex`. If OpenAI login is missing, it opens a terminal for `codex login`.
 
 Codex Messenger looks for Codex in this order:
 
 1. The path entered on the login screen.
 2. The `CODEX_MESSENGER_CODEX_PATH` environment variable.
-3. The system `PATH` using `where codex` on Windows or `which codex` on macOS/Linux.
+3. A supported Codex on the system `PATH`, using `where codex` on Windows or `which codex` on macOS/Linux.
+4. Common installation locations and installed NVM versions when the inherited app PATH points to an older bundled CLI. The official npm package’s native executable is used when Node is absent from that PATH.
 
 On Windows, if npm returns an extensionless shim such as `C:\Users\you\AppData\Roaming\npm\codex`, the app automatically checks `codex.cmd`, `codex.exe`, and `codex.bat`.
 
@@ -316,8 +337,8 @@ npm run package:win
 
 Generated Windows files are written to `release/windows/`:
 
-- `Codex Messenger Setup 0.0.2.9.exe`: Windows installer.
-- `Codex Messenger 0.0.2.9.exe`: portable build.
+- `Codex Messenger Setup 0.0.3.exe`: Windows installer.
+- `Codex Messenger 0.0.3.exe`: portable build.
 - `win-unpacked/`: unpacked folder for local testing.
 
 The build is not signed. For broad public distribution, add Windows code signing.
@@ -331,8 +352,8 @@ npm run package:mac
 
 Generated macOS files are written to `release/macos/`:
 
-- `Codex-Messenger-0.0.2.9-arm64.dmg` or `Codex-Messenger-0.0.2.9-x64.dmg`.
-- `Codex-Messenger-0.0.2.9-arm64.zip` or `Codex-Messenger-0.0.2.9-x64.zip`.
+- `Codex-Messenger-0.0.3-arm64.dmg` or `Codex-Messenger-0.0.3-x64.dmg`.
+- `Codex-Messenger-0.0.3-arm64.zip` or `Codex-Messenger-0.0.3-x64.zip`.
 - `mac-arm64/` or `mac/`: unpacked app folder for local testing.
 
 The unsigned macOS build includes camera and microphone usage descriptions for the snapshot and voice clip features, but it is not notarized or Developer ID signed.
@@ -366,8 +387,8 @@ The static showcase site lives in `codexmessenger.net/`.
 
 Its `DOWNLOAD` button opens a platform chooser popup with:
 
-- macOS `v0.0.2.9`: GitHub Releases.
-- Windows `v0.0.2.9`: GitHub Releases.
+- macOS `v0.0.3`: GitHub Releases.
+- Windows `v0.0.3`: GitHub Releases.
 
 The deploy workflow is `.github/workflows/deploy-codexmessenger-net.yml`. It reads the latest GitHub release, patches the GitHub release URL in `codexmessenger.net/index.html`, and uploads the static files to the VPS. The VPS no longer stores installer copies under `/downloads/`.
 
@@ -454,3 +475,7 @@ This project is not affiliated with Microsoft, MSN, Windows Live Messenger, or O
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+### Profil isolé pour les tests desktop
+
+La variable `CODEX_MESSENGER_USER_DATA_DIR` accepte un dossier absolu réservé aux tests. Electron y écrit ses paramètres, cache, captures et journaux sans modifier le profil habituel. Pour un smoke test, utilisez par exemple `CODEX_MESSENGER_USER_DATA_DIR="$(mktemp -d /tmp/codex-messenger-smoke.XXXXXX)" npm run electron:smoke`. Supprimez ce dossier temporaire après le test. Cette variable ne remplace pas le compte Codex : les tests de protocole isolés utilisent leur propre processus enfant sans compte.

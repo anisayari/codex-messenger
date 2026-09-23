@@ -1,0 +1,31 @@
+✔ preserves configured integrations unless isolation explicitly requested (0.777958ms)
+✔ UTF8 split across chunks preserves accents and emoji (0.513084ms)
+✔ RPC response arriving synchronously during write is resolved (0.407583ms)
+✔ failed command resolution can be retried (0.857167ms)
+✔ stale process exit cannot clear a replacement connection (0.492375ms)
+✔ write errors reject immediately and retain RPC error metadata (0.336416ms)
+✔ modern modes, named permissions, tiers and dynamic efforts survive saved settings (0.219833ms)
+✔ history requests full items and permissions are exclusive with sandbox (2.262125ms)
+✔ detects explicit Codex CLI path and reads version/login status (209.797666ms)
+✔ reports Codex login status success and failure (327.402167ms)
+✔ checks the minimum supported Codex CLI version (0.4825ms)
+✔ automatic discovery skips an old PATH Codex for the first supported fallback (0.1715ms)
+✔ automatic discovery preserves a supported PATH command before later candidates (0.102833ms)
+✔ an unreadable candidate version does not hide a compatible fallback (0.119917ms)
+✔ a candidate without a parseable version is not treated as supported (0.101459ms)
+✔ discovery keeps the first command when no candidate has a verified supported version (0.1065ms)
+✔ a manual Codex path is preserved even when its version is unsupported (155.768791ms)
+✔ an explicit environment Codex override is preserved without automatic replacement (158.764125ms)
+✔ resolves the official npm package executable for this platform (5.303167ms)
+✔ resolves the installed official optional platform package executable (6.885709ms)
+✔ the resolved npm executable runs when Node is absent from PATH (329.328291ms)
+✔ keeps the original command for a non-Codex npm package or missing vendor executable (5.81425ms)
+✔ does not select another platform's npm vendor executable (4.6945ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1264.254292

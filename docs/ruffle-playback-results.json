@@ -1,0 +1,519 @@
+{
+  "fixture": "http://127.0.0.1:57136",
+  "results": [
+    {
+      "index": 0,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1121_9/water_balloon.swf",
+      "metadata": {
+        "width": 640,
+        "height": 480,
+        "frameRate": 12,
+        "numFrames": 92,
+        "swfVersion": 5,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 49731
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-0.png",
+      "errors": [],
+      "sourceBytes": 49731,
+      "sourceSha256": "b29dffb4b547f8836e8aa01a92d69d4690551c8157bf702fee93a0f29c1449cc",
+      "originalSoundTagCounts": {
+        "18": 1,
+        "19": 55
+      }
+    },
+    {
+      "index": 1,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1122_9/bouncy_ball.swf",
+      "metadata": {
+        "width": 640,
+        "height": 480,
+        "frameRate": 12,
+        "numFrames": 87,
+        "swfVersion": 6,
+        "backgroundColor": "#000099",
+        "isActionScript3": false,
+        "uncompressedLength": 14879
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-1.png",
+      "errors": [],
+      "sourceBytes": 12912,
+      "sourceSha256": "7e8d56d102f0a67ce686fc3d107cd64e43d1c49ca62a2856db5a2d0f3e6c1bb7",
+      "originalSoundTagCounts": {
+        "14": 3,
+        "15": 4,
+        "45": 2
+      }
+    },
+    {
+      "index": 2,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1123_9/lightbulb.swf",
+      "metadata": {
+        "width": 211,
+        "height": 218,
+        "frameRate": 12,
+        "numFrames": 92,
+        "swfVersion": 7,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 24753
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-2.png",
+      "errors": [],
+      "sourceBytes": 19597,
+      "sourceSha256": "5d622ebabdc951c4365e7f991d89fcedafa4319d95b18f18566738819c56fbfa",
+      "originalSoundTagCounts": {
+        "14": 3,
+        "15": 4,
+        "45": 1
+      }
+    },
+    {
+      "index": 3,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1124_9/crying.swf",
+      "metadata": {
+        "width": 200,
+        "height": 200,
+        "frameRate": 12,
+        "numFrames": 1,
+        "swfVersion": 6,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 21098
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-3.png",
+      "errors": [],
+      "sourceBytes": 14103,
+      "sourceSha256": "bf378113608147e580b86fd03593e0aaf172a9b8fc994b52dc7bf229e29bc980",
+      "originalSoundTagCounts": {
+        "14": 3,
+        "15": 3,
+        "45": 2
+      }
+    },
+    {
+      "index": 4,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1125_9/ufo.swf",
+      "metadata": {
+        "width": 638,
+        "height": 478,
+        "frameRate": 18,
+        "numFrames": 165,
+        "swfVersion": 4,
+        "backgroundColor": "#000000",
+        "isActionScript3": false,
+        "uncompressedLength": 87796
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-4.png",
+      "errors": [],
+      "sourceBytes": 87796,
+      "sourceSha256": "1ba336fede3728acc0dd6e4a32113cca264f3aa65d7f9dbb2e9c3cee90433a3a",
+      "originalSoundTagCounts": {
+        "14": 3,
+        "15": 3,
+        "18": 1,
+        "19": 165
+      }
+    },
+    {
+      "index": 5,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1126_9/frog.swf",
+      "metadata": {
+        "width": 640,
+        "height": 480,
+        "frameRate": 12,
+        "numFrames": 117,
+        "swfVersion": 6,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 46707
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-5.png",
+      "errors": [],
+      "commands": [],
+      "sourceBytes": 46707,
+      "sourceSha256": "dfa59609f394773ffdca9803dca3fe9aeb94efe221448c2a15d39e4bde996795",
+      "originalSoundTagCounts": {
+        "18": 1,
+        "19": 90
+      }
+    },
+    {
+      "index": 6,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1127_9/dancer.swf",
+      "metadata": {
+        "width": 160,
+        "height": 300,
+        "frameRate": 12,
+        "numFrames": 196,
+        "swfVersion": 4,
+        "backgroundColor": "#660066",
+        "isActionScript3": false,
+        "uncompressedLength": 68281
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-6.png",
+      "errors": [],
+      "commands": [],
+      "sourceBytes": 68281,
+      "sourceSha256": "6ac7b533ff39b6e6b45b2221b176f62a87a5b714b56e1d5933eb31a6c6770b00",
+      "originalSoundTagCounts": {
+        "18": 1,
+        "19": 190
+      }
+    },
+    {
+      "index": 7,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1128_9/bow.swf",
+      "metadata": {
+        "width": 640,
+        "height": 480,
+        "frameRate": 12,
+        "numFrames": 136,
+        "swfVersion": 7,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 26934
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-7.png",
+      "errors": [],
+      "commands": [],
+      "sourceBytes": 21672,
+      "sourceSha256": "2c0705e3680f3d84b54419acc7cb2b2bb4cc01fb212daa5d0660226e663d1661",
+      "originalSoundTagCounts": {
+        "14": 2,
+        "15": 4,
+        "45": 1
+      }
+    },
+    {
+      "index": 8,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1129_9/heart.swf",
+      "metadata": {
+        "width": 125,
+        "height": 118,
+        "frameRate": 16,
+        "numFrames": 99,
+        "swfVersion": 6,
+        "backgroundColor": "#003399",
+        "isActionScript3": false,
+        "uncompressedLength": 29925
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-heart-stage-3.png",
+      "errors": [],
+      "input": "Playwright user click",
+      "source": "public-final full-byte copy",
+      "frameSamples": [
+        {
+          "path": "/tmp/codex-messenger-ruffle-heart-stage-0.png",
+          "sha256": "c8b682e00fab6b82c9555493812c8677b27a3b6c04df1b2b53db39eac1e913ed",
+          "api": {
+            "isPlaying": true,
+            "readyState": 2
+          }
+        },
+        {
+          "path": "/tmp/codex-messenger-ruffle-heart-stage-1.png",
+          "sha256": "c8b682e00fab6b82c9555493812c8677b27a3b6c04df1b2b53db39eac1e913ed",
+          "api": {
+            "isPlaying": true,
+            "readyState": 2
+          }
+        },
+        {
+          "path": "/tmp/codex-messenger-ruffle-heart-stage-2.png",
+          "sha256": "700bee81cb8145f3fb3b9cb26537595f336910924fa20b64d6dba6fe80cade1c",
+          "api": {
+            "isPlaying": true,
+            "readyState": 2
+          }
+        },
+        {
+          "path": "/tmp/codex-messenger-ruffle-heart-stage-3.png",
+          "sha256": "dbb9f8dedf4bbfda6ecdae7da2ef21bb597ac92637e9773a5f4aa0d0051c2165",
+          "api": {
+            "isPlaying": true,
+            "readyState": 2
+          }
+        }
+      ],
+      "note": "The initial short sample was blank; later source playback shows the original pink heart.",
+      "sourceBytes": 17646,
+      "sourceSha256": "352ffcf39e683ed530ace33908f52ba2b39e685eeb0cdb91792a68b170758034",
+      "originalSoundTagCounts": {
+        "18": 1,
+        "19": 92
+      }
+    },
+    {
+      "index": 9,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1130_9/silly_face.swf",
+      "metadata": {
+        "width": 225,
+        "height": 400,
+        "frameRate": 18,
+        "numFrames": 139,
+        "swfVersion": 6,
+        "backgroundColor": "#009900",
+        "isActionScript3": false,
+        "uncompressedLength": 35709
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-9.png",
+      "errors": [],
+      "commands": [],
+      "sourceBytes": 20223,
+      "sourceSha256": "be7c40ca166db58c963c02a9129edc1ca267ab71297371fbb4b12d787ba09ca2",
+      "originalSoundTagCounts": {
+        "18": 1,
+        "19": 42
+      }
+    },
+    {
+      "index": 10,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1131_9/dancing_pig.swf",
+      "metadata": {
+        "width": 640,
+        "height": 480,
+        "frameRate": 12,
+        "numFrames": 135,
+        "swfVersion": 5,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 72576
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-10.png",
+      "errors": [],
+      "commands": [],
+      "sourceBytes": 72576,
+      "sourceSha256": "a5ba22e112697f57f5b292cf764d8edeac8510280660dc10849cec361b1b2f5d",
+      "originalSoundTagCounts": {
+        "18": 1,
+        "19": 129
+      }
+    },
+    {
+      "index": 11,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1132_9/kiss.swf",
+      "metadata": {
+        "width": 160,
+        "height": 120,
+        "frameRate": 12,
+        "numFrames": 81,
+        "swfVersion": 6,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 8574
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-11.png",
+      "errors": [],
+      "commands": [],
+      "sourceBytes": 8075,
+      "sourceSha256": "e457b81567c9eb8ea0008a708ae03c7bfa16d1d2524f270ccb7027d22766ac53",
+      "originalSoundTagCounts": {
+        "14": 1,
+        "15": 1,
+        "45": 1
+      }
+    },
+    {
+      "index": 12,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1133_9/guitar_smash.swf",
+      "metadata": {
+        "width": 150,
+        "height": 125,
+        "frameRate": 12,
+        "numFrames": 81,
+        "swfVersion": 6,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 37594
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-12.png",
+      "errors": [],
+      "commands": [],
+      "sourceBytes": 31311,
+      "sourceSha256": "662e8b1cf651826562fe410f7acfc980950b8f6e9fc5108e2f58193ba5bc6f8e",
+      "originalSoundTagCounts": {
+        "14": 1,
+        "15": 3,
+        "45": 1
+      }
+    },
+    {
+      "index": 13,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1134_9/knock.swf",
+      "metadata": {
+        "width": 325,
+        "height": 260,
+        "frameRate": 24,
+        "numFrames": 58,
+        "swfVersion": 6,
+        "backgroundColor": "#9999FF",
+        "isActionScript3": false,
+        "uncompressedLength": 125431
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-13-recheck.png",
+      "errors": [],
+      "input": "Playwright user click",
+      "source": "public-final full-byte copy",
+      "sourceBytes": 64107,
+      "sourceSha256": "33755a73a467b618973bf64bdcedea8e927e80256f76a7c5e1eb32f32210e9b7",
+      "originalSoundTagCounts": {
+        "14": 1,
+        "15": 3,
+        "45": 1
+      }
+    },
+    {
+      "index": 14,
+      "src": "./msn-assets/msn75/packages/winks/msgslang_WINK_1135_9/laughing_girl.swf",
+      "metadata": {
+        "width": 400,
+        "height": 300,
+        "frameRate": 12,
+        "numFrames": 109,
+        "swfVersion": 6,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 59885
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-14.png",
+      "errors": [],
+      "playback": {
+        "readyState": 2,
+        "isPlaying": true,
+        "suspended": false
+      },
+      "sourceBytes": 34821,
+      "sourceSha256": "ba83513204ef183eef195262c34f156020f97234b2bf339dd12ae1a124b4f99a",
+      "originalSoundTagCounts": {
+        "18": 1,
+        "19": 82
+      }
+    },
+    {
+      "index": 15,
+      "src": "./msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1600_9/extracted/KoiPond.swf",
+      "metadata": {
+        "width": 320,
+        "height": 315,
+        "frameRate": 18,
+        "numFrames": 1,
+        "swfVersion": 6,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 91646
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-15-recheck.png",
+      "errors": [],
+      "input": "Playwright user click",
+      "source": "public-final full-byte copy",
+      "sourceBytes": 76279,
+      "sourceSha256": "dc48962a2d2ca7492753fe91731bcc144cf357f06d7d6671220b587038f13751",
+      "originalSoundTagCounts": {
+        "14": 1,
+        "45": 8
+      }
+    },
+    {
+      "index": 16,
+      "src": "./msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1601_9/extracted/Clocks.swf",
+      "metadata": {
+        "width": 320,
+        "height": 315,
+        "frameRate": 18,
+        "numFrames": 1,
+        "swfVersion": 6,
+        "backgroundColor": "#000066",
+        "isActionScript3": false,
+        "uncompressedLength": 82311
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-16-recheck.png",
+      "errors": [],
+      "input": "Playwright user click",
+      "source": "public-final full-byte copy",
+      "sourceBytes": 82311,
+      "sourceSha256": "d4c0dad6581e7668e2e358b2668e42e9fbb534476fcc8113bed1c2ba3bd2e0b3",
+      "originalSoundTagCounts": {}
+    },
+    {
+      "index": 17,
+      "src": "./msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1602_9/extracted/mad_scientist.swf",
+      "metadata": {
+        "width": 320,
+        "height": 315,
+        "frameRate": 18,
+        "numFrames": 1,
+        "swfVersion": 6,
+        "backgroundColor": "#FFFFFF",
+        "isActionScript3": false,
+        "uncompressedLength": 60131
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-17-recheck.png",
+      "errors": [],
+      "input": "Playwright user click",
+      "source": "public-final full-byte copy",
+      "sourceBytes": 37508,
+      "sourceSha256": "a4b589ef6db3a80460d0e5c4dddd846cef27be6b5aaccee499461316c0bb7b17",
+      "originalSoundTagCounts": {}
+    },
+    {
+      "index": 18,
+      "src": "./msn-assets/msn75/packages/dynamic-backgrounds/msgslang_DYNAMICBACKGROUND_1603_9/extracted/Pixies.swf",
+      "metadata": {
+        "width": 320,
+        "height": 315,
+        "frameRate": 18,
+        "numFrames": 1,
+        "swfVersion": 6,
+        "backgroundColor": "#333333",
+        "isActionScript3": false,
+        "uncompressedLength": 72862
+      },
+      "framesDiffer": true,
+      "screenshot": "/tmp/codex-messenger-ruffle-18-recheck.png",
+      "errors": [],
+      "input": "Playwright user click",
+      "source": "public-final full-byte copy",
+      "sourceBytes": 61498,
+      "sourceSha256": "1c32077e883b1d5ef25e6e4e29d9be16d2acf063a6e22ccace9ec31d78057af1",
+      "originalSoundTagCounts": {}
+    }
+  ],
+  "requests": [
+    "/",
+    "/runtime/ruffle.js",
+    "/fixture.js",
+    "/favicon.ico",
+    "/",
+    "/runtime/ruffle.js",
+    "/fixture.js",
+    "/runtime/core.ruffle.c80159b526e567babaf5.js",
+    "/runtime/826bb0938097485a2c9d.wasm",
+    "/movie/13.swf",
+    "/favicon.ico",
+    "/movie/8.swf",
+    "/movie/15.swf",
+    "/movie/16.swf",
+    "/movie/17.swf",
+    "/movie/18.swf"
+  ]
+}

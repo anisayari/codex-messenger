@@ -1,0 +1,1532 @@
+
+> codex-messenger@0.0.3 test
+> node scripts/run-tests.mjs --test-reporter=tap
+
+TAP version 13
+# Subtest: settings commit atomically, preserve cache after write failure, and recover the queue
+ok 1 - settings commit atomically, preserve cache after write failure, and recover the queue
+  ---
+  duration_ms: 36.803375
+  type: 'test'
+  ...
+# Subtest: settings isolate nested defaults, saved snapshots and readers, while preserving write order
+ok 2 - settings isolate nested defaults, saved snapshots and readers, while preserving write order
+  ---
+  duration_ms: 22.778458
+  type: 'test'
+  ...
+# Subtest: malformed settings are retained for recovery and never treated as valid stored settings
+ok 3 - malformed settings are retained for recovery and never treated as valid stored settings
+  ---
+  duration_ms: 6.788834
+  type: 'test'
+  ...
+# Subtest: renderer trust requires exact document, origin, credentials absence and the main frame
+ok 4 - renderer trust requires exact document, origin, credentials absence and the main frame
+  ---
+  duration_ms: 0.387583
+  type: 'test'
+  ...
+# Subtest: the IPC registration guard protects callbacks without changing results
+ok 5 - the IPC registration guard protects callbacks without changing results
+  ---
+  duration_ms: 0.18
+  type: 'test'
+  ...
+# Subtest: updater accepts only official HTTPS hosts and complete digests
+ok 6 - updater accepts only official HTTPS hosts and complete digests
+  ---
+  duration_ms: 0.23625
+  type: 'test'
+  ...
+# Subtest: download commits only verified complete bytes and rechecks a later modified file
+ok 7 - download commits only verified complete bytes and rechecks a later modified file
+  ---
+  duration_ms: 36.147959
+  type: 'test'
+  ...
+# Subtest: failed downloads keep the previous final file and remove all partial files
+ok 8 - failed downloads keep the previous final file and remove all partial files
+  ---
+  duration_ms: 6.903666
+  type: 'test'
+  ...
+# Subtest: downloads reject redirect escapes, loops and absent release digests before committing
+ok 9 - downloads reject redirect escapes, loops and absent release digests before committing
+  ---
+  duration_ms: 2.667375
+  type: 'test'
+  ...
+# Subtest: installer launch rejects a spawn failure and waits for successful process startup
+ok 10 - installer launch rejects a spawn failure and waits for successful process startup
+  ---
+  duration_ms: 0.320833
+  type: 'test'
+  ...
+# Subtest: Windows signature verification checks both publisher identities and quotes literal paths
+ok 11 - Windows signature verification checks both publisher identities and quotes literal paths
+  ---
+  duration_ms: 0.319166
+  type: 'test'
+  ...
+# Subtest: macOS updater rolls back after relaunch failure, preserving the prior app
+ok 12 - macOS updater rolls back after relaunch failure, preserving the prior app
+  ---
+  duration_ms: 3094.569667
+  type: 'test'
+  ...
+# Subtest: explicit client stop rejects pending RPCs and announces fully cleared state
+ok 13 - explicit client stop rejects pending RPCs and announces fully cleared state
+  ---
+  duration_ms: 2.200083
+  type: 'test'
+  ...
+# Subtest: production stop handler expires requests and turns before reused server wire IDs
+ok 14 - production stop handler expires requests and turns before reused server wire IDs
+  ---
+  duration_ms: 5.787792
+  type: 'test'
+  ...
+# Subtest: production startup still creates the window when the debug log cannot be written
+ok 15 - production startup still creates the window when the debug log cannot be written
+  ---
+  duration_ms: 0.673584
+  type: 'test'
+  ...
+# Subtest: Codex app-server contract covers auth, thread read/write, resume, steer, review, fork, and formatting
+ok 16 - Codex app-server contract covers auth, thread read/write, resume, steer, review, fork, and formatting
+  ---
+  duration_ms: 73.864917
+  type: 'test'
+  ...
+# Subtest: contract fake server requires experimentalApi for experimental thread history fields
+ok 17 - contract fake server requires experimentalApi for experimental thread history fields
+  ---
+  duration_ms: 55.619
+  type: 'test'
+  ...
+# Subtest: authenticated actual CLI: streamed reply, persisted reload, search, occurrences, resume and fork
+ok 18 - authenticated actual CLI: streamed reply, persisted reload, search, occurrences, resume and fork # SKIP Set CODEX_MESSENGER_AUTHENTICATED_LIVE_TEST=1 for existing CLI authentication only
+  ---
+  duration_ms: 0.438417
+  type: 'test'
+  ...
+# Subtest: preserves configured integrations unless isolation explicitly requested
+ok 19 - preserves configured integrations unless isolation explicitly requested
+  ---
+  duration_ms: 0.974125
+  type: 'test'
+  ...
+# Subtest: UTF8 split across chunks preserves accents and emoji
+ok 20 - UTF8 split across chunks preserves accents and emoji
+  ---
+  duration_ms: 1.392792
+  type: 'test'
+  ...
+# Subtest: RPC response arriving synchronously during write is resolved
+ok 21 - RPC response arriving synchronously during write is resolved
+  ---
+  duration_ms: 0.471042
+  type: 'test'
+  ...
+# Subtest: failed command resolution can be retried
+ok 22 - failed command resolution can be retried
+  ---
+  duration_ms: 3.254209
+  type: 'test'
+  ...
+# Subtest: stale process exit cannot clear a replacement connection
+ok 23 - stale process exit cannot clear a replacement connection
+  ---
+  duration_ms: 3.63475
+  type: 'test'
+  ...
+# Subtest: write errors reject immediately and retain RPC error metadata
+ok 24 - write errors reject immediately and retain RPC error metadata
+  ---
+  duration_ms: 0.286875
+  type: 'test'
+  ...
+# Subtest: modern modes, named permissions, tiers and dynamic efforts survive saved settings
+ok 25 - modern modes, named permissions, tiers and dynamic efforts survive saved settings
+  ---
+  duration_ms: 0.220625
+  type: 'test'
+  ...
+# Subtest: history requests full items and permissions are exclusive with sandbox
+ok 26 - history requests full items and permissions are exclusive with sandbox
+  ---
+  duration_ms: 0.285916
+  type: 'test'
+  ...
+# Subtest: command deltas append to the same item while retaining the command and cwd
+ok 27 - command deltas append to the same item while retaining the command and cwd
+  ---
+  duration_ms: 4.348375
+  type: 'test'
+  ...
+# Subtest: interleaved items preserve separate streamed output
+ok 28 - interleaved items preserve separate streamed output
+  ---
+  duration_ms: 1.085917
+  type: 'test'
+  ...
+# Subtest: subagent completion interleaved with a parent response preserves the parent stream
+ok 29 - subagent completion interleaved with a parent response preserves the parent stream
+  ---
+  duration_ms: 0.191584
+  type: 'test'
+  ...
+# Subtest: public reasoning summaries assemble by index without exposing raw reasoning
+ok 30 - public reasoning summaries assemble by index without exposing raw reasoning
+  ---
+  duration_ms: 1.424542
+  type: 'test'
+  ...
+# Subtest: patch updates replace the previous file snapshot with the actual new diff
+ok 31 - patch updates replace the previous file snapshot with the actual new diff
+  ---
+  duration_ms: 0.449208
+  type: 'test'
+  ...
+# Subtest: MCP progress updates preserve tool attribution
+ok 32 - MCP progress updates preserve tool attribution
+  ---
+  duration_ms: 0.262375
+  type: 'test'
+  ...
+# Subtest: MCP progress preserves the result once and replaces the previous progress
+ok 33 - MCP progress preserves the result once and replaces the previous progress
+  ---
+  duration_ms: 0.126125
+  type: 'test'
+  ...
+# Subtest: later MCP progress keeps the completed authoritative result body
+ok 34 - later MCP progress keeps the completed authoritative result body
+  ---
+  duration_ms: 0.255375
+  type: 'test'
+  ...
+# Subtest: completed snapshots explicitly end pending items and replace streamed output
+ok 35 - completed snapshots explicitly end pending items and replace streamed output
+  ---
+  duration_ms: 0.1985
+  type: 'test'
+  ...
+# Subtest: deltas received before a snapshot create one visible item
+ok 36 - deltas received before a snapshot create one visible item
+  ---
+  duration_ms: 0.146334
+  type: 'test'
+  ...
+# Subtest: plan activities keep one stable identity per turn and preserve server steps
+ok 37 - plan activities keep one stable identity per turn and preserve server steps
+  ---
+  duration_ms: 0.319208
+  type: 'test'
+  ...
+# Subtest: plans from separate threads sharing a contact and turn ID retain separate identities
+ok 38 - plans from separate threads sharing a contact and turn ID retain separate identities
+  ---
+  duration_ms: 0.109084
+  type: 'test'
+  ...
+# Subtest: token usage distinguishes real zero counts from unavailable counts
+ok 39 - token usage distinguishes real zero counts from unavailable counts
+  ---
+  duration_ms: 0.630792
+  type: 'test'
+  ...
+# Subtest: turn diff activity displays the actual diff and has a stable per-turn ID
+ok 40 - turn diff activity displays the actual diff and has a stable per-turn ID
+  ---
+  duration_ms: 0.694541
+  type: 'test'
+  ...
+# Subtest: unknown activities and raw reasoning activity do not create transcript text
+ok 41 - unknown activities and raw reasoning activity do not create transcript text
+  ---
+  duration_ms: 0.173
+  type: 'test'
+  ...
+# Subtest: bounded output decoder preserves UTF-8 bytes independently across stdout and stderr
+ok 42 - bounded output decoder preserves UTF-8 bytes independently across stdout and stderr
+  ---
+  duration_ms: 0.691833
+  type: 'test'
+  ...
+# Subtest: process handles decode separately from other processes
+ok 43 - process handles decode separately from other processes
+  ---
+  duration_ms: 0.121875
+  type: 'test'
+  ...
+# Subtest: decoder limits displayed chunks and clear resets its state
+ok 44 - decoder limits displayed chunks and clear resets its state
+  ---
+  duration_ms: 0.160167
+  type: 'test'
+  ...
+# Subtest: decoder reports when the current chunk was clipped
+ok 45 - decoder reports when the current chunk was clipped
+  ---
+  duration_ms: 0.078834
+  type: 'test'
+  ...
+# Subtest: decoder never retains more than the configured stream count
+ok 46 - decoder never retains more than the configured stream count
+  ---
+  duration_ms: 0.180875
+  type: 'test'
+  ...
+# Subtest: invalid base64 cannot create output or consume a stream slot
+ok 47 - invalid base64 cannot create output or consume a stream slot
+  ---
+  duration_ms: 0.047292
+  type: 'test'
+  ...
+# Subtest: command and combined process output remain within the 256k display cap
+ok 48 - command and combined process output remain within the 256k display cap
+  ---
+  duration_ms: 0.450125
+  type: 'test'
+  ...
+# Subtest: output caps preserve valid Unicode at the clipping boundary
+ok 49 - output caps preserve valid Unicode at the clipping boundary
+  ---
+  duration_ms: 0.097292
+  type: 'test'
+  ...
+# Subtest: file output deltas append once and keep the latest authoritative patch
+ok 50 - file output deltas append once and keep the latest authoritative patch
+  ---
+  duration_ms: 0.167708
+  type: 'test'
+  ...
+# Subtest: terminal interaction status does not store or echo a secret stdin value
+ok 51 - terminal interaction status does not store or echo a secret stdin value
+  ---
+  duration_ms: 0.062792
+  type: 'test'
+  ...
+# Subtest: invalid output cannot evict a stream waiting for its remaining Unicode bytes
+ok 52 - invalid output cannot evict a stream waiting for its remaining Unicode bytes
+  ---
+  duration_ms: 0.106333
+  type: 'test'
+  ...
+# Subtest: custom stopped status flushes partial text and clears only the stopped contact
+ok 53 - custom stopped status flushes partial text and clears only the stopped contact
+  ---
+  duration_ms: 1.225666
+  type: 'test'
+  ...
+# Subtest: exit status cleans up a busy conversation without a recognized notice text
+ok 54 - exit status cleans up a busy conversation without a recognized notice text
+  ---
+  duration_ms: 0.160834
+  type: 'test'
+  ...
+# Subtest: error status cleans up a busy conversation without a recognized notice text
+ok 55 - error status cleans up a busy conversation without a recognized notice text
+  ---
+  duration_ms: 0.106375
+  type: 'test'
+  ...
+# Subtest: completed status preserves pending asynchronous questions and queued deltas
+ok 56 - completed status preserves pending asynchronous questions and queued deltas
+  ---
+  duration_ms: 0.1245
+  type: 'test'
+  ...
+# Subtest: ready status preserves pending asynchronous questions and queued deltas
+ok 57 - ready status preserves pending asynchronous questions and queued deltas
+  ---
+  duration_ms: 0.080541
+  type: 'test'
+  ...
+# Subtest: conversation routing accepts its worker envelopes and rejects another thread
+ok 58 - conversation routing accepts its worker envelopes and rejects another thread
+  ---
+  duration_ms: 0.108792
+  type: 'test'
+  ...
+# Subtest: public agent metadata attaches to its item without storing private fields
+ok 59 - public agent metadata attaches to its item without storing private fields
+  ---
+  duration_ms: 0.171125
+  type: 'test'
+  ...
+# Subtest: legacy metadata targets the latest agent answer and unknown item IDs do not fall back
+ok 60 - legacy metadata targets the latest agent answer and unknown item IDs do not fall back
+  ---
+  duration_ms: 0.065334
+  type: 'test'
+  ...
+# Subtest: completed turn finalizes partial answer and plan without rewriting their source
+ok 61 - completed turn finalizes partial answer and plan without rewriting their source
+  ---
+  duration_ms: 0.136625
+  type: 'test'
+  ...
+# Subtest: interrupted turn finalizes partial answer and plan without rewriting their source
+ok 62 - interrupted turn finalizes partial answer and plan without rewriting their source
+  ---
+  duration_ms: 0.043583
+  type: 'test'
+  ...
+# Subtest: failed turn finalizes partial answer and plan without rewriting their source
+ok 63 - failed turn finalizes partial answer and plan without rewriting their source
+  ---
+  duration_ms: 0.035416
+  type: 'test'
+  ...
+# Subtest: worker turn finalization cannot stop the parent stream with an identical turn ID
+ok 64 - worker turn finalization cannot stop the parent stream with an identical turn ID
+  ---
+  duration_ms: 0.077208
+  type: 'test'
+  ...
+# Subtest: worker lifecycle stops the worker conversation when opened and keeps its parent active
+ok 65 - worker lifecycle stops the worker conversation when opened and keeps its parent active
+  ---
+  duration_ms: 0.065042
+  type: 'test'
+  ...
+# Subtest: current local CLI feature catalog truthfully reports unavailable runtime methods without account or network
+ok 66 - current local CLI feature catalog truthfully reports unavailable runtime methods without account or network # SKIP Set CODEX_MESSENGER_LIVE_PROTOCOL_TEST=1 to check the installed CLI
+  ---
+  duration_ms: 0.45375
+  type: 'test'
+  ...
+# Subtest: the catalog uses real capabilities and preserves independent sections on an unsupported endpoint
+ok 67 - the catalog uses real capabilities and preserves independent sections on an unsupported endpoint
+  ---
+  duration_ms: 8.742125
+  type: 'test'
+  ...
+# Subtest: a catalog without a conversation omits thread-only calls
+ok 68 - a catalog without a conversation omits thread-only calls
+  ---
+  duration_ms: 0.577125
+  type: 'test'
+  ...
+# Subtest: catalog pagination fetches every page and detects repeated cursors
+ok 69 - catalog pagination fetches every page and detects repeated cursors
+  ---
+  duration_ms: 3.075208
+  type: 'test'
+  ...
+# Subtest: goal edits send only requested fields, support explicit pause, and validate budgets
+ok 70 - goal edits send only requested fields, support explicit pause, and validate budgets
+  ---
+  duration_ms: 2.360875
+  type: 'test'
+  ...
+# Subtest: skill and app mentions must belong to the installed effective runtime
+ok 71 - skill and app mentions must belong to the installed effective runtime
+  ---
+  duration_ms: 0.776125
+  type: 'test'
+  ...
+# Subtest: connector authentication and reload use schema-supported methods
+ok 72 - connector authentication and reload use schema-supported methods
+  ---
+  duration_ms: 0.201125
+  type: 'test'
+  ...
+# Subtest: credit consumption requires explicit confirmation and fresh eligibility, and reuses its idempotency key
+ok 73 - credit consumption requires explicit confirmation and fresh eligibility, and reuses its idempotency key
+  ---
+  duration_ms: 0.259208
+  type: 'test'
+  ...
+# Subtest: archive, restore, rename and terminal actions target only the verified conversation
+ok 74 - archive, restore, rename and terminal actions target only the verified conversation
+  ---
+  duration_ms: 0.316875
+  type: 'test'
+  ...
+# Subtest: the IPC surface never accepts an arbitrary RPC method
+ok 75 - the IPC surface never accepts an arbitrary RPC method
+  ---
+  duration_ms: 0.189667
+  type: 'test'
+  ...
+# Subtest: model options use advertised reasoning and service values and clear incompatible selections
+ok 76 - model options use advertised reasoning and service values and clear incompatible selections
+  ---
+  duration_ms: 0.28375
+  type: 'test'
+  ...
+# Subtest: quota rendering prefers multi-bucket usage and does not invent unavailable usage
+ok 77 - quota rendering prefers multi-bucket usage and does not invent unavailable usage
+  ---
+  duration_ms: 0.165625
+  type: 'test'
+  ...
+# Subtest: account login cancellation targets only Messenger login IDs and logout requires explicit confirmation
+ok 78 - account login cancellation targets only Messenger login IDs and logout requires explicit confirmation
+  ---
+  duration_ms: 0.194791
+  type: 'test'
+  ...
+# Subtest: unreported model modalities stay unknown
+ok 79 - unreported model modalities stay unknown
+  ---
+  duration_ms: 0.047375
+  type: 'test'
+  ...
+# Subtest: an uncertain successful reset is reconciled with its original key after fresh quotas changed
+ok 80 - an uncertain successful reset is reconciled with its original key after fresh quotas changed
+  ---
+  duration_ms: 0.432791
+  type: 'test'
+  ...
+# Subtest: text queue CRUD preserves correlation IDs and reorders the complete current queue
+ok 81 - text queue CRUD preserves correlation IDs and reorders the complete current queue
+  ---
+  duration_ms: 0.881875
+  type: 'test'
+  ...
+# Subtest: queue edits cannot silently replace attachments or another conversation
+ok 82 - queue edits cannot silently replace attachments or another conversation
+  ---
+  duration_ms: 0.15925
+  type: 'test'
+  ...
+# Subtest: an uncertain queue send is reconciled without replaying its submission
+ok 83 - an uncertain queue send is reconciled without replaying its submission
+  ---
+  duration_ms: 0.656167
+  type: 'test'
+  ...
+# Subtest: memory mode is an explicit accepted action rather than an invented readable toggle
+ok 84 - memory mode is an explicit accepted action rather than an invented readable toggle
+  ---
+  duration_ms: 1.252417
+  type: 'test'
+  ...
+# Subtest: server thread search preserves cursors and hides conversations outside the selected contact
+ok 85 - server thread search preserves cursors and hides conversations outside the selected contact
+  ---
+  duration_ms: 0.293667
+  type: 'test'
+  ...
+# Subtest: server occurrence search uses exact thread scope and UTF-16 match metadata
+ok 86 - server occurrence search uses exact thread scope and UTF-16 match metadata
+  ---
+  duration_ms: 0.154125
+  type: 'test'
+  ...
+# Subtest: manual compact checks fresh idle direct-input metadata and sends only the schema threadId
+ok 87 - manual compact checks fresh idle direct-input metadata and sends only the schema threadId
+  ---
+  duration_ms: 0.173417
+  type: 'test'
+  ...
+# Subtest: modern history revert requires explicit confirmation and freshly verified last user turn
+ok 88 - modern history revert requires explicit confirmation and freshly verified last user turn
+  ---
+  duration_ms: 0.566875
+  type: 'test'
+  ...
+# Subtest: Codex 0.156.0 does not dispatch the removed legacy rollback RPC
+ok 89 - Codex 0.156.0 does not dispatch the removed legacy rollback RPC
+  ---
+  duration_ms: 0.228416
+  type: 'test'
+  ...
+# Subtest: lost successful history revert cannot delete another turn on a stale retry
+ok 90 - lost successful history revert cannot delete another turn on a stale retry
+  ---
+  duration_ms: 0.284333
+  type: 'test'
+  ...
+# Subtest: same-service historical mutations serialize before any second deletion RPC
+ok 91 - same-service historical mutations serialize before any second deletion RPC
+  ---
+  duration_ms: 6.946291
+  type: 'test'
+  ...
+# Subtest: unmaterialized paginated history preserves visible server refusal and performs no mutation
+ok 92 - unmaterialized paginated history preserves visible server refusal and performs no mutation
+  ---
+  duration_ms: 0.385709
+  type: 'test'
+  ...
+# Subtest: usage dashboard reads account and verified thread scopes without fabricating missing counters
+ok 93 - usage dashboard reads account and verified thread scopes without fabricating missing counters
+  ---
+  duration_ms: 0.44675
+  type: 'test'
+  ...
+# Subtest: usage provider failures remain independent and unknown daily activity remains null
+ok 94 - usage provider failures remain independent and unknown daily activity remains null
+  ---
+  duration_ms: 0.302167
+  type: 'test'
+  ...
+# Subtest: a thread usage estimate cannot expose another thread billing route
+ok 95 - a thread usage estimate cannot expose another thread billing route
+  ---
+  duration_ms: 0.191125
+  type: 'test'
+  ...
+# Subtest: plugin inventory uses installed booleans and MCP capabilities only as advertised
+ok 96 - plugin inventory uses installed booleans and MCP capabilities only as advertised
+  ---
+  duration_ms: 0.258333
+  type: 'test'
+  ...
+# Subtest: observed resume mode is readonly sanitized runtime metadata and never pins user settings
+ok 97 - observed resume mode is readonly sanitized runtime metadata and never pins user settings
+  ---
+  duration_ms: 0.5065
+  type: 'test'
+  ...
+# Subtest: actual 0.156.1 binary: discovery, metadata and unmaterialized history capability
+ok 98 - actual 0.156.1 binary: discovery, metadata and unmaterialized history capability # SKIP
+  ---
+  duration_ms: 0.5215
+  type: 'test'
+  ...
+# Subtest: normalizes Codex option aliases used by saved settings
+ok 99 - normalizes Codex option aliases used by saved settings
+  ---
+  duration_ms: 2.119333
+  type: 'test'
+  ...
+# Subtest: maps UI sandbox choices to app-server sandboxPolicy payloads
+ok 100 - maps UI sandbox choices to app-server sandboxPolicy payloads
+  ---
+  duration_ms: 0.179542
+  type: 'test'
+  ...
+# Subtest: labels option values for toolbar summaries
+ok 101 - labels option values for toolbar summaries
+  ---
+  duration_ms: 0.093583
+  type: 'test'
+  ...
+# Subtest: normalizes language choices and returns Codex language instructions
+ok 102 - normalizes language choices and returns Codex language instructions
+  ---
+  duration_ms: 0.222958
+  type: 'test'
+  ...
+# Subtest: detects explicit Codex CLI path and reads version/login status
+ok 103 - detects explicit Codex CLI path and reads version/login status
+  ---
+  duration_ms: 370.680333
+  type: 'test'
+  ...
+# Subtest: reports Codex login status success and failure
+ok 104 - reports Codex login status success and failure
+  ---
+  duration_ms: 919.24325
+  type: 'test'
+  ...
+# Subtest: checks the minimum supported Codex CLI version
+ok 105 - checks the minimum supported Codex CLI version
+  ---
+  duration_ms: 0.649958
+  type: 'test'
+  ...
+# Subtest: automatic discovery skips an old PATH Codex for the first supported fallback
+ok 106 - automatic discovery skips an old PATH Codex for the first supported fallback
+  ---
+  duration_ms: 0.207333
+  type: 'test'
+  ...
+# Subtest: automatic discovery preserves a supported PATH command before later candidates
+ok 107 - automatic discovery preserves a supported PATH command before later candidates
+  ---
+  duration_ms: 0.109833
+  type: 'test'
+  ...
+# Subtest: an unreadable candidate version does not hide a compatible fallback
+ok 108 - an unreadable candidate version does not hide a compatible fallback
+  ---
+  duration_ms: 0.1205
+  type: 'test'
+  ...
+# Subtest: a candidate without a parseable version is not treated as supported
+ok 109 - a candidate without a parseable version is not treated as supported
+  ---
+  duration_ms: 0.114875
+  type: 'test'
+  ...
+# Subtest: discovery keeps the first command when no candidate has a verified supported version
+ok 110 - discovery keeps the first command when no candidate has a verified supported version
+  ---
+  duration_ms: 0.114125
+  type: 'test'
+  ...
+# Subtest: a manual Codex path is preserved even when its version is unsupported
+ok 111 - a manual Codex path is preserved even when its version is unsupported
+  ---
+  duration_ms: 598.905625
+  type: 'test'
+  ...
+# Subtest: an explicit environment Codex override is preserved without automatic replacement
+ok 112 - an explicit environment Codex override is preserved without automatic replacement
+  ---
+  duration_ms: 365.542667
+  type: 'test'
+  ...
+# Subtest: resolves the official npm package executable for this platform
+ok 113 - resolves the official npm package executable for this platform
+  ---
+  duration_ms: 15.2845
+  type: 'test'
+  ...
+# Subtest: resolves the installed official optional platform package executable
+ok 114 - resolves the installed official optional platform package executable
+  ---
+  duration_ms: 6.792917
+  type: 'test'
+  ...
+# Subtest: the resolved npm executable runs when Node is absent from PATH
+ok 115 - the resolved npm executable runs when Node is absent from PATH
+  ---
+  duration_ms: 1084.801667
+  type: 'test'
+  ...
+# Subtest: keeps the original command for a non-Codex npm package or missing vendor executable
+ok 116 - keeps the original command for a non-Codex npm package or missing vendor executable
+  ---
+  duration_ms: 6.888416
+  type: 'test'
+  ...
+# Subtest: does not select another platform's npm vendor executable
+ok 117 - does not select another platform's npm vendor executable
+  ---
+  duration_ms: 5.29
+  type: 'test'
+  ...
+# Subtest: every 0.156.0 generated ThreadItem type retains its identity and a display representation
+ok 118 - every 0.156.0 generated ThreadItem type retains its identity and a display representation
+  ---
+  duration_ms: 2.445
+  type: 'test'
+  ...
+# Subtest: user and agent messages preserve actual text, question metadata and media descriptors
+ok 119 - user and agent messages preserve actual text, question metadata and media descriptors
+  ---
+  duration_ms: 0.8295
+  type: 'test'
+  ...
+# Subtest: commands and patches keep complete stdout, exit zero, cwd and authoritative diffs
+ok 120 - commands and patches keep complete stdout, exit zero, cwd and authoritative diffs
+  ---
+  duration_ms: 0.183625
+  type: 'test'
+  ...
+# Subtest: MCP, dynamic and code-mode function outputs display only provided result content
+ok 121 - MCP, dynamic and code-mode function outputs display only provided result content
+  ---
+  duration_ms: 0.284375
+  type: 'test'
+  ...
+# Subtest: agent collaboration, subagent activity and web searches remain attributable
+ok 122 - agent collaboration, subagent activity and web searches remain attributable
+  ---
+  duration_ms: 0.215458
+  type: 'test'
+  ...
+# Subtest: reasoning displays server-provided summaries without exposing raw content
+ok 123 - reasoning displays server-provided summaries without exposing raw content
+  ---
+  duration_ms: 0.365792
+  type: 'test'
+  ...
+# Subtest: future item types have a visible safe fallback rather than disappearing
+ok 124 - future item types have a visible safe fallback rather than disappearing
+  ---
+  duration_ms: 0.415417
+  type: 'test'
+  ...
+# Subtest: plan, diff, usage and status notifications produce authoritative partial snapshots
+ok 125 - plan, diff, usage and status notifications produce authoritative partial snapshots
+  ---
+  duration_ms: 0.235667
+  type: 'test'
+  ...
+# Subtest: item deltas distinguish append updates from replacement patches and progress
+ok 126 - item deltas distinguish append updates from replacement patches and progress
+  ---
+  duration_ms: 0.211459
+  type: 'test'
+  ...
+# Subtest: base64 command and process notifications stay connection-scoped and decode split Unicode
+ok 127 - base64 command and process notifications stay connection-scoped and decode split Unicode
+  ---
+  duration_ms: 0.504916
+  type: 'test'
+  ...
+# Subtest: unknown and malformed notifications are ignored; actual lifecycle items remain visible
+ok 128 - unknown and malformed notifications are ignored; actual lifecycle items remain visible
+  ---
+  duration_ms: 0.158208
+  type: 'test'
+  ...
+# Subtest: 0.156.0 file-backed image descriptors retain IDs without inventing a URL
+ok 129 - 0.156.0 file-backed image descriptors retain IDs without inventing a URL
+  ---
+  duration_ms: 0.663125
+  type: 'test'
+  ...
+# Subtest: 0.156.0 MCP UI descriptors preserve the resource and advertised display preference
+ok 130 - 0.156.0 MCP UI descriptors preserve the resource and advertised display preference
+  ---
+  duration_ms: 1.305959
+  type: 'test'
+  ...
+# Subtest: resume observes the server mode before a first prompt without overriding user Auto choices
+ok 131 - resume observes the server mode before a first prompt without overriding user Auto choices
+  ---
+  duration_ms: 1.961
+  type: 'test'
+  ...
+# Subtest: observations are independent per thread, reset on old responses and stop, and never replace explicit choices
+ok 132 - observations are independent per thread, reset on old responses and stop, and never replace explicit choices
+  ---
+  duration_ms: 0.301833
+  type: 'test'
+  ...
+# Subtest: malformed collaboration modes remain unobserved and raw instructions are never retained
+ok 133 - malformed collaboration modes remain unobserved and raw instructions are never retained
+  ---
+  duration_ms: 0.111833
+  type: 'test'
+  ...
+# Subtest: preload forwards the exact readonly voice getter and scalar preference setter contracts
+ok 134 - preload forwards the exact readonly voice getter and scalar preference setter contracts
+  ---
+  duration_ms: 5.372541
+  type: 'test'
+  ...
+# Subtest: a resume response settled immediately before stop cannot restore stale loaded state or mode
+ok 135 - a resume response settled immediately before stop cannot restore stale loaded state or mode
+  ---
+  duration_ms: 0.436
+  type: 'test'
+  ...
+# Subtest: Enter confirms IME input without sending; Shift+Enter remains a newline
+ok 136 - Enter confirms IME input without sending; Shift+Enter remains a newline
+  ---
+  duration_ms: 0.546125
+  type: 'test'
+  ...
+# Subtest: mixed image and local-file attachments preserve every path and use real input types
+ok 137 - mixed image and local-file attachments preserve every path and use real input types
+  ---
+  duration_ms: 0.563208
+  type: 'test'
+  ...
+# Subtest: image-only drafts can send without inserting fictional text labels
+ok 138 - image-only drafts can send without inserting fictional text labels
+  ---
+  duration_ms: 0.0925
+  type: 'test'
+  ...
+# Subtest: invalid attachment paths are excluded and attachment count is bounded
+ok 139 - invalid attachment paths are excluded and attachment count is bounded
+  ---
+  duration_ms: 0.102042
+  type: 'test'
+  ...
+# Subtest: slash commands do not swallow trailing instructions
+ok 140 - slash commands do not swallow trailing instructions
+  ---
+  duration_ms: 2.417333
+  type: 'test'
+  ...
+# Subtest: structured skill and connector input is retained with bounded canonical fields
+ok 141 - structured skill and connector input is retained with bounded canonical fields
+  ---
+  duration_ms: 0.890292
+  type: 'test'
+  ...
+# Subtest: rejects oversized, unknown, empty and malformed sends
+ok 142 - rejects oversized, unknown, empty and malformed sends
+  ---
+  duration_ms: 0.254333
+  type: 'test'
+  ...
+# Subtest: MediaRecorder codec parameters and limits are validated
+ok 143 - MediaRecorder codec parameters and limits are validated
+  ---
+  duration_ms: 0.439583
+  type: 'test'
+  ...
+# Subtest: longer matching fences preserve shorter fences as literal source
+ok 144 - longer matching fences preserve shorter fences as literal source
+  ---
+  duration_ms: 1.730125
+  type: 'test'
+  ...
+# Subtest: unfinished streaming Mermaid stays code and a suffix cannot close its fence
+ok 145 - unfinished streaming Mermaid stays code and a suffix cannot close its fence
+  ---
+  duration_ms: 0.303291
+  type: 'test'
+  ...
+# Subtest: display equations support paired dollar and bracket blocks without interpreting prices
+ok 146 - display equations support paired dollar and bracket blocks without interpreting prices
+  ---
+  duration_ms: 0.908917
+  type: 'test'
+  ...
+# Subtest: unfinished math and math inside ordinary code retain their literal source
+ok 147 - unfinished math and math inside ordinary code retain their literal source
+  ---
+  duration_ms: 0.123708
+  type: 'test'
+  ...
+# Subtest: ordinary Markdown headings, quotes and both list types retain their content
+ok 148 - ordinary Markdown headings, quotes and both list types retain their content
+  ---
+  duration_ms: 0.508625
+  type: 'test'
+  ...
+# Subtest: rich diagrams bound source and reject external image/CSS resources before rendering
+ok 149 - rich diagrams bound source and reject external image/CSS resources before rendering
+  ---
+  duration_ms: 0.533792
+  type: 'test'
+  ...
+# Subtest: Codex paths with spaces and source positions open the real local file
+ok 150 - Codex paths with spaces and source positions open the real local file
+  ---
+  duration_ms: 0.710792
+  type: 'test'
+  ...
+# Subtest: remote hosts, dangerous schemes, malformed URLs and encoded control characters are not local files
+ok 151 - remote hosts, dangerous schemes, malformed URLs and encoded control characters are not local files
+  ---
+  duration_ms: 0.171583
+  type: 'test'
+  ...
+# Subtest: native assets return exact known local bytes with MIME and opaque-file CORS
+ok 152 - native assets return exact known local bytes with MIME and opaque-file CORS
+  ---
+  duration_ms: 37.528125
+  type: 'test'
+  ...
+# Subtest: native asset allowlist rejects unknown resources, methods, credentials and traversal without disk reads
+ok 153 - native asset allowlist rejects unknown resources, methods, credentials and traversal without disk reads
+  ---
+  duration_ms: 1.056959
+  type: 'test'
+  ...
+# Subtest: native asset handler refuses symlinks outside the asset root and oversized files
+ok 154 - native asset handler refuses symlinks outside the asset root and oversized files
+  ---
+  duration_ms: 9.971959
+  type: 'test'
+  ...
+# Subtest: every active original emoticon, display picture and wink is readable media
+ok 155 - every active original emoticon, display picture and wink is readable media
+  ---
+  duration_ms: 94.041
+  type: 'test'
+  ...
+# Subtest: background catalog uses the original media and honest callback support
+ok 156 - background catalog uses the original media and honest callback support
+  ---
+  duration_ms: 16.691333
+  type: 'test'
+  ...
+# Subtest: 42 preserved exports and 79 classic icons match original pixels and Microsoft labels
+ok 157 - 42 preserved exports and 79 classic icons match original pixels and Microsoft labels
+  ---
+  duration_ms: 38.215083
+  type: 'test'
+  ...
+# Subtest: all 16 decoded dynamic-background members match their SHA256 and size
+ok 158 - all 16 decoded dynamic-background members match their SHA256 and size
+  ---
+  duration_ms: 3.773333
+  type: 'test'
+  ...
+# Subtest: all 68 preserved package members and 8 bundled Ruffle files match original hashes
+ok 159 - all 68 preserved package members and 8 bundled Ruffle files match original hashes
+  ---
+  duration_ms: 48.642167
+  type: 'test'
+  ...
+# Subtest: literal asset references and the isolated-player documents are present
+ok 160 - literal asset references and the isolated-player documents are present
+  ---
+  duration_ms: 31.942417
+  type: 'test'
+  ...
+# Subtest: MSN Flash accepts only the original local WINK and dynamic background sources
+ok 161 - MSN Flash accepts only the original local WINK and dynamic background sources
+  ---
+  duration_ms: 2.300625
+  type: 'test'
+  ...
+# Subtest: MSN Flash cannot contact networks, navigate URLs or call host JavaScript
+ok 162 - MSN Flash cannot contact networks, navigate URLs or call host JavaScript
+  ---
+  duration_ms: 0.086583
+  type: 'test'
+  ...
+# Subtest: packaged smoke CLI requires a complete canonical target and rejects ambiguous input
+ok 163 - packaged smoke CLI requires a complete canonical target and rejects ambiguous input
+  ---
+  duration_ms: 3.090417
+  type: 'test'
+  ...
+# Subtest: packaged smoke resolves only the exact unpacked release executable and archive layout
+ok 164 - packaged smoke resolves only the exact unpacked release executable and archive layout
+  ---
+  duration_ms: 0.20925
+  type: 'test'
+  ...
+# Subtest: packaged smoke refuses missing or empty archive instead of using a source Electron installation
+ok 165 - packaged smoke refuses missing or empty archive instead of using a source Electron installation
+  ---
+  duration_ms: 9.786541
+  type: 'test'
+  ...
+# Subtest: packaged smoke environment isolates profiles, disables host CLI and excludes launch overrides and credentials
+ok 166 - packaged smoke environment isolates profiles, disables host CLI and excludes launch overrides and credentials
+  ---
+  duration_ms: 0.325458
+  type: 'test'
+  ...
+# Subtest: pure packaged validation rejects each missing runtime guarantee without claiming actual execution
+ok 167 - pure packaged validation rejects each missing runtime guarantee without claiming actual execution
+  ---
+  duration_ms: 1.243375
+  type: 'test'
+  ...
+# Subtest: private startup log exports only bounded error category counts, including errors before listeners
+ok 168 - private startup log exports only bounded error category counts, including errors before listeners
+  ---
+  duration_ms: 0.849542
+  type: 'test'
+  ...
+# Subtest: initial release report is explicitly unexecuted and never claims signing or model validation
+ok 169 - initial release report is explicitly unexecuted and never claims signing or model validation
+  ---
+  duration_ms: 0.161042
+  type: 'test'
+  ...
+# Subtest: realtime uses exact V3 websocket contract and waits for the connected notification
+ok 170 - realtime uses exact V3 websocket contract and waits for the connected notification
+  ---
+  duration_ms: 2.143792
+  type: 'test'
+  ...
+# Subtest: V3 validates voices against the actual V1 voice list and enforces one call
+ok 171 - V3 validates voices against the actual V1 voice list and enforces one call
+  ---
+  duration_ms: 0.561042
+  type: 'test'
+  ...
+# Subtest: stop cancels a pending thread lookup before microphone transport starts
+ok 172 - stop cancels a pending thread lookup before microphone transport starts
+  ---
+  duration_ms: 0.15025
+  type: 'test'
+  ...
+# Subtest: realtime events stay scoped to a known call and server loss releases call state
+ok 173 - realtime events stay scoped to a known call and server loss releases call state
+  ---
+  duration_ms: 0.211541
+  type: 'test'
+  ...
+# Subtest: a Codex voice error cleans the remote session and concurrent stops send one request
+ok 174 - a Codex voice error cleans the remote session and concurrent stops send one request
+  ---
+  duration_ms: 0.229166
+  type: 'test'
+  ...
+# Subtest: microphone frames reject corrupt base64, wrong sample rates, stereo and inconsistent lengths
+ok 175 - microphone frames reject corrupt base64, wrong sample rates, stereo and inconsistent lengths
+  ---
+  duration_ms: 0.506
+  type: 'test'
+  ...
+# Subtest: unavailable and unauthorized voice errors explain the actual Codex limitation
+ok 176 - unavailable and unauthorized voice errors explain the actual Codex limitation
+  ---
+  duration_ms: 0.126375
+  type: 'test'
+  ...
+# Subtest: realtime IPC maps only the verified request endpoints
+ok 177 - realtime IPC maps only the verified request endpoints
+  ---
+  duration_ms: 0.215166
+  type: 'test'
+  ...
+# Subtest: PCM encoding clips finite samples and reads little endian interleaved channels
+ok 178 - PCM encoding clips finite samples and reads little endian interleaved channels
+  ---
+  duration_ms: 0.302791
+  type: 'test'
+  ...
+# Subtest: PCM resampling preserves fractional timing across input chunk boundaries
+ok 179 - PCM resampling preserves fractional timing across input chunk boundaries
+  ---
+  duration_ms: 6.157625
+  type: 'test'
+  ...
+# Subtest: browser audio captures PCM, immediately mutes the real track and schedules contiguous playback
+ok 180 - browser audio captures PCM, immediately mutes the real track and schedules contiguous playback
+  ---
+  duration_ms: 2.966125
+  type: 'test'
+  ...
+# Subtest: closing a call during the microphone permission prompt stops a late acquired microphone
+ok 181 - closing a call during the microphone permission prompt stops a late acquired microphone
+  ---
+  duration_ms: 0.146166
+  type: 'test'
+  ...
+# Subtest: closing during asynchronous audio setup releases resources without starting a late capture
+ok 182 - closing during asynchronous audio setup releases resources without starting a late capture
+  ---
+  duration_ms: 0.201709
+  type: 'test'
+  ...
+# Subtest: a worklet startup failure releases the microphone and context exactly once
+ok 183 - a worklet startup failure releases the microphone and context exactly once
+  ---
+  duration_ms: 0.112125
+  type: 'test'
+  ...
+# Subtest: audio congestion closes the microphone instead of retaining an unbounded recording
+ok 184 - audio congestion closes the microphone instead of retaining an unbounded recording
+  ---
+  duration_ms: 13.170667
+  type: 'test'
+  ...
+# Subtest: audio worklet averages input channels and sends complete float frames
+ok 185 - audio worklet averages input channels and sends complete float frames
+  ---
+  duration_ms: 6.289459
+  type: 'test'
+  ...
+# Subtest: canonical voice transcripts replace compatibility streams without duplicate speech
+ok 186 - canonical voice transcripts replace compatibility streams without duplicate speech
+  ---
+  duration_ms: 0.320208
+  type: 'test'
+  ...
+# Subtest: short microphone transport bursts preserve every unmuted PCM frame
+ok 187 - short microphone transport bursts preserve every unmuted PCM frame
+  ---
+  duration_ms: 8.402042
+  type: 'test'
+  ...
+# Subtest: rapid mute and unmute never replay microphone frames captured before mute
+ok 188 - rapid mute and unmute never replay microphone frames captured before mute
+  ---
+  duration_ms: 1.233833
+  type: 'test'
+  ...
+# Subtest: a paused playback clock retains a forty second incoming speech burst in order
+ok 189 - a paused playback clock retains a forty second incoming speech burst in order
+  ---
+  duration_ms: 50.095834
+  type: 'test'
+  ...
+# Subtest: the official F8 call shortcut yields to repeats, modifiers and handled shortcuts
+ok 190 - the official F8 call shortcut yields to repeats, modifiers and handled shortcuts
+  ---
+  duration_ms: 0.092084
+  type: 'test'
+  ...
+# Subtest: voice preference reads the public Codex user setting and writes only its leaf
+ok 191 - voice preference reads the public Codex user setting and writes only its leaf
+  ---
+  duration_ms: 0.268833
+  type: 'test'
+  ...
+# Subtest: a removed saved voice becomes Auto and uses the discovered server default without rewriting settings
+ok 192 - a removed saved voice becomes Auto and uses the discovered server default without rewriting settings
+  ---
+  duration_ms: 0.145
+  type: 'test'
+  ...
+# Subtest: voice preference preserves managed overrides and exposes failed writes
+ok 193 - voice preference preserves managed overrides and exposes failed writes
+  ---
+  duration_ms: 0.149459
+  type: 'test'
+  ...
+# Subtest: release metadata is consistent across package, README, and website
+ok 194 - release metadata is consistent across package, README, and website
+  ---
+  duration_ms: 5.969333
+  type: 'test'
+  ...
+# Subtest: release build keeps Codex app-server integration stable
+ok 195 - release build keeps Codex app-server integration stable
+  ---
+  duration_ms: 1.309084
+  type: 'test'
+  ...
+# Subtest: GitHub workflows keep release and Electron smoke checks stable
+ok 196 - GitHub workflows keep release and Electron smoke checks stable
+  ---
+  duration_ms: 0.631291
+  type: 'test'
+  ...
+# Subtest: release metadata derives an immutable tag and rejects different source or inconsistent package versions
+ok 197 - release metadata derives an immutable tag and rejects different source or inconsistent package versions
+  ---
+  duration_ms: 2.711417
+  type: 'test'
+  ...
+# Subtest: builder uses Node and the JS CLI, preserving literal arguments without Windows cmd or shell interpolation
+ok 198 - builder uses Node and the JS CLI, preserving literal arguments without Windows cmd or shell interpolation
+  ---
+  duration_ms: 0.192375
+  type: 'test'
+  ...
+# Subtest: installer names distinguish all supported platforms and reject unsupported architectures or unsafe versions
+ok 199 - installer names distinguish all supported platforms and reject unsupported architectures or unsafe versions
+  ---
+  duration_ms: 0.201541
+  type: 'test'
+  ...
+# Subtest: artifact staging requires a matching successful packaged smoke and hashes the exact uploaded fixture bytes
+ok 200 - artifact staging requires a matching successful packaged smoke and hashes the exact uploaded fixture bytes
+  ---
+  duration_ms: 15.949
+  type: 'test'
+  ...
+# Subtest: external URL guard only allows known safe protocols and hosts
+ok 201 - external URL guard only allows known safe protocols and hosts
+  ---
+  duration_ms: 0.694083
+  type: 'test'
+  ...
+# Subtest: IPC validation helpers reject unsafe payload shapes
+ok 202 - IPC validation helpers reject unsafe payload shapes
+  ---
+  duration_ms: 0.661583
+  type: 'test'
+  ...
+# Subtest: server requests retain wire IDs and expose a separate local ID
+ok 203 - server requests retain wire IDs and expose a separate local ID
+  ---
+  duration_ms: 2.958667
+  type: 'test'
+  ...
+# Subtest: unsupported and malformed requests cannot become actionable prompts
+ok 204 - unsupported and malformed requests cannot become actionable prompts
+  ---
+  duration_ms: 0.300292
+  type: 'test'
+  ...
+# Subtest: command decisions honor server restrictions and exact proposed amendments
+ok 205 - command decisions honor server restrictions and exact proposed amendments
+  ---
+  duration_ms: 0.956167
+  type: 'test'
+  ...
+# Subtest: file approvals use file decisions and display the actual changed files
+ok 206 - file approvals use file decisions and display the actual changed files
+  ---
+  duration_ms: 0.22375
+  type: 'test'
+  ...
+# Subtest: legacy approvals emit the structured denied decision required by Codex
+ok 207 - legacy approvals emit the structured denied decision required by Codex
+  ---
+  duration_ms: 0.335167
+  type: 'test'
+  ...
+# Subtest: question responses require valid question IDs and option labels
+ok 208 - question responses require valid question IDs and option labels
+  ---
+  duration_ms: 0.218042
+  type: 'test'
+  ...
+# Subtest: free answers are accepted only for questions that permit them
+ok 209 - free answers are accepted only for questions that permit them
+  ---
+  duration_ms: 0.107167
+  type: 'test'
+  ...
+# Subtest: permission choices reconstruct only the requested paths, entries and network access
+ok 210 - permission choices reconstruct only the requested paths, entries and network access
+  ---
+  duration_ms: 0.974208
+  type: 'test'
+  ...
+# Subtest: permission replies cannot escalate requested access or enable unrequested network
+ok 211 - permission replies cannot escalate requested access or enable unrequested network
+  ---
+  duration_ms: 0.309959
+  type: 'test'
+  ...
+# Subtest: MCP form validation enforces enum values, numeric limits and real dates
+ok 212 - MCP form validation enforces enum values, numeric limits and real dates
+  ---
+  duration_ms: 1.2025
+  type: 'test'
+  ...
+# Subtest: MCP replies validate accepted content and clear declined form content
+ok 213 - MCP replies validate accepted content and clear declined form content
+  ---
+  duration_ms: 0.613292
+  type: 'test'
+  ...
+# Subtest: server resolution matches typed wire IDs and never sends a reply
+ok 214 - server resolution matches typed wire IDs and never sends a reply
+  ---
+  duration_ms: 0.454166
+  type: 'test'
+  ...
+# Subtest: another contact and stale dialogs cannot answer a pending request
+ok 215 - another contact and stale dialogs cannot answer a pending request
+  ---
+  duration_ms: 1.287375
+  type: 'test'
+  ...
+# Subtest: invalid answers leave the dialog pending for correction
+ok 216 - invalid answers leave the dialog pending for correction
+  ---
+  duration_ms: 0.224666
+  type: 'test'
+  ...
+# Subtest: normal turn completion preserves asynchronous questions but expires blocking prompts
+ok 217 - normal turn completion preserves asynchronous questions but expires blocking prompts
+  ---
+  duration_ms: 0.217041
+  type: 'test'
+  ...
+# Subtest: interruption and process cleanup expire requests without synthesizing approvals
+ok 218 - interruption and process cleanup expire requests without synthesizing approvals
+  ---
+  duration_ms: 0.223041
+  type: 'test'
+  ...
+# Subtest: turn and thread cleanup leave other conversations intact
+ok 219 - turn and thread cleanup leave other conversations intact
+  ---
+  duration_ms: 0.148417
+  type: 'test'
+  ...
+# Subtest: secret answers reach Codex without appearing in resolution notifications
+ok 220 - secret answers reach Codex without appearing in resolution notifications
+  ---
+  duration_ms: 0.112625
+  type: 'test'
+  ...
+# Subtest: requests without a matching conversation return a wire error
+ok 221 - requests without a matching conversation return a wire error
+  ---
+  duration_ms: 0.0745
+  type: 'test'
+  ...
+# Subtest: permission subsets retain every deny restriction
+ok 222 - permission subsets retain every deny restriction
+  ---
+  duration_ms: 0.228417
+  type: 'test'
+  ...
+# Subtest: secret MCP defaults are removed before a form reaches the conversation
+ok 223 - secret MCP defaults are removed before a form reaches the conversation
+  ---
+  duration_ms: 0.095333
+  type: 'test'
+  ...
+# Subtest: MCP URL responses carry an explicit action and no arbitrary answer content
+ok 224 - MCP URL responses carry an explicit action and no arbitrary answer content
+  ---
+  duration_ms: 0.066916
+  type: 'test'
+  ...
+# Subtest: duplicate requests are delivered once and wrong-thread resolution has no effect
+ok 225 - duplicate requests are delivered once and wrong-thread resolution has no effect
+  ---
+  duration_ms: 0.092166
+  type: 'test'
+  ...
+# Subtest: a stale local ID cannot answer a reused wire ID after a server restart
+ok 226 - a stale local ID cannot answer a reused wire ID after a server restart
+  ---
+  duration_ms: 0.093083
+  type: 'test'
+  ...
+# Subtest: concurrent clicks send one wire response
+ok 227 - concurrent clicks send one wire response
+  ---
+  duration_ms: 0.113042
+  type: 'test'
+  ...
+# Subtest: a failed wire send leaves the response available for retry
+ok 228 - a failed wire send leaves the response available for retry
+  ---
+  duration_ms: 0.149041
+  type: 'test'
+  ...
+# Subtest: failed dialog delivery does not retain an unreachable request
+ok 229 - failed dialog delivery does not retain an unreachable request
+  ---
+  duration_ms: 0.113458
+  type: 'test'
+  ...
+# Subtest: a failed resolution notification cannot report an already-sent answer as unsent
+ok 230 - a failed resolution notification cannot report an already-sent answer as unsent
+  ---
+  duration_ms: 0.112042
+  type: 'test'
+  ...
+# Subtest: a completed subagent turn cannot expire its parent's pending question
+ok 231 - a completed subagent turn cannot expire its parent's pending question
+  ---
+  duration_ms: 0.157625
+  type: 'test'
+  ...
+# Subtest: a interrupted subagent turn cannot expire its parent's pending question
+ok 232 - a interrupted subagent turn cannot expire its parent's pending question
+  ---
+  duration_ms: 0.062542
+  type: 'test'
+  ...
+# Subtest: a failed subagent turn cannot expire its parent's pending question
+ok 233 - a failed subagent turn cannot expire its parent's pending question
+  ---
+  duration_ms: 0.052834
+  type: 'test'
+  ...
+# Subtest: terminal execution uses exact server PTY fields and selected read-only policy
+ok 234 - terminal execution uses exact server PTY fields and selected read-only policy
+  ---
+  duration_ms: 4.462375
+  type: 'test'
+  ...
+# Subtest: named permissions are sent without an overriding sandbox policy
+ok 235 - named permissions are sent without an overriding sandbox policy
+  ---
+  duration_ms: 0.466708
+  type: 'test'
+  ...
+# Subtest: streamed base64 bytes decode split Unicode exactly once and final output is deferred
+ok 236 - streamed base64 bytes decode split Unicode exactly once and final output is deferred
+  ---
+  duration_ms: 1.421042
+  type: 'test'
+  ...
+# Subtest: stdin, PTY resize and stop belong exclusively to the initiating window
+ok 237 - stdin, PTY resize and stop belong exclusively to the initiating window
+  ---
+  duration_ms: 1.629125
+  type: 'test'
+  ...
+# Subtest: terminal validates commands, dimensions, stdin and session limits before unsafe requests
+ok 238 - terminal validates commands, dimensions, stdin and session limits before unsafe requests
+  ---
+  duration_ms: 0.616417
+  type: 'test'
+  ...
+# Subtest: connection failures and renderer closure finish sessions and terminate owned processes
+ok 239 - connection failures and renderer closure finish sessions and terminate owned processes
+  ---
+  duration_ms: 1.70325
+  type: 'test'
+  ...
+# Subtest: the IPC surface exposes only validated terminal operations and the Windows shell is derived locally
+ok 240 - the IPC surface exposes only validated terminal operations and the Windows shell is derived locally
+  ---
+  duration_ms: 0.242584
+  type: 'test'
+  ...
+# Subtest: worker deltas, public message metadata and item lifecycle keep the parent turn active
+ok 241 - worker deltas, public message metadata and item lifecycle keep the parent turn active
+  ---
+  duration_ms: 3.425459
+  type: 'test'
+  ...
+# Subtest: an explicitly opened child conversation receives its own interrupted completion
+ok 242 - an explicitly opened child conversation receives its own interrupted completion
+  ---
+  duration_ms: 1.676417
+  type: 'test'
+  ...
+# Subtest: nested workers route to their ancestor contact with bounded cycle-safe public IDs
+ok 243 - nested workers route to their ancestor contact with bounded cycle-safe public IDs
+  ---
+  duration_ms: 0.978458
+  type: 'test'
+  ...
+# Subtest: version helpers support package and release tag formats
+ok 244 - version helpers support package and release tag formats
+  ---
+  duration_ms: 0.6725
+  type: 'test'
+  ...
+# Subtest: front release asset selection prefers platform installer assets
+ok 245 - front release asset selection prefers platform installer assets
+  ---
+  duration_ms: 0.287667
+  type: 'test'
+  ...
+# Subtest: Codex image items expose renderable image attachments
+ok 246 - Codex image items expose renderable image attachments
+  ---
+  duration_ms: 0.942208
+  type: 'test'
+  ...
+# Subtest: Windows update installer script avoids launching a broken root path
+ok 247 - Windows update installer script avoids launching a broken root path
+  ---
+  duration_ms: 0.530167
+  type: 'test'
+  ...
+# Subtest: Windows installer relaunches the app during silent legacy updates
+ok 248 - Windows installer relaunches the app during silent legacy updates
+  ---
+  duration_ms: 0.541042
+  type: 'test'
+  ...
+# Subtest: project opening chooses the newest active thread, including hidden tabs
+ok 249 - project opening chooses the newest active thread, including hidden tabs
+  ---
+  duration_ms: 0.207459
+  type: 'test'
+  ...
+# Subtest: all supported languages expose update dialog copy
+ok 250 - all supported languages expose update dialog copy
+  ---
+  duration_ms: 0.221417
+  type: 'test'
+  ...
+# Subtest: production iframe can load only the exact packaged WINK player document
+ok 251 - production iframe can load only the exact packaged WINK player document
+  ---
+  duration_ms: 1.448209
+  type: 'test'
+  ...
+# Subtest: development iframe requires the same loopback origin and exact player document
+ok 252 - development iframe requires the same loopback origin and exact player document
+  ---
+  duration_ms: 0.476542
+  type: 'test'
+  ...
+# Subtest: main frame remains restricted to the renderer while the player keeps browser sandbox isolation
+ok 253 - main frame remains restricted to the renderer while the player keeps browser sandbox isolation
+  ---
+  duration_ms: 0.391709
+  type: 'test'
+  ...
+1..253
+# tests 253
+# suites 0
+# pass 250
+# fail 0
+# cancelled 0
+# skipped 3
+# todo 0
+# duration_ms 3563.354667

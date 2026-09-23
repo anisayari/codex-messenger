@@ -1,0 +1,11 @@
+✔ actual 0.156.0 binary: discovery, metadata and unmaterialized history capability (856.095792ms)
+ℹ Unmaterialized-history response: -32600: thread 01a0cb04-75df-7d33-bb91-e8cfb31fae91 is not materialized yet; thread/turns/list is unavailable before first user message
+ℹ History is unavailable for this unmaterialized thread; metadata reads work.
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 868.59925
