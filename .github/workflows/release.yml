@@ -157,7 +157,7 @@ jobs:
           --codex-tap release-proof/codex-native.tap
 
       - name: Upload verified installers, checksums and packaged smoke proof
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: codex-messenger-${{ steps.metadata.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
           path: release-upload/*
@@ -166,7 +166,7 @@ jobs:
 
       - name: Preserve bounded native diagnostics when validation fails
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: validation-failure-${{ steps.metadata.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}
           path: release-proof/*
